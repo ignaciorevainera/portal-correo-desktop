@@ -32,15 +32,15 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [checkpoint: 562f6d1]
 
 ## Phase 3: Análisis de Binarios de KACE Systems Management y Mecanismos de Integración
-- [~] Task: Análisis funcional y de sintaxis de kwol.exe (Wake-on-LAN corporativo)
-  - [ ] Extraer strings, argumentos CLI y parámetros esperados de `C:\MDA\KACE\kwol.exe`
-  - [ ] Verificar el formato de envío de paquetes mágicos WOL (MAC address, IP broadcast, puerto UDP 7/9)
-- [ ] Task: Análisis de runkbot.exe, KInventory.exe y parámetros de sincronización forzada
-  - [ ] Determinar códigos de ejecución de `runkbot.exe` (ej. inventario `runkbot 4 0`, comprobación de scripts/parches)
-  - [ ] Documentar utilidades auxiliares (`kstatus.exe`, `klog.exe`, `KDeploy.exe`, `KacePatch.exe`)
-- [ ] Task: Auditoría de telemetría y estructura de logs de agente KACE
-  - [ ] Analizar formato de `Inventory.log` y ciclo de inventariado de estación
-  - [ ] Documentar patrones de cómo una aplicación de soporte puede monitorear o disparar acciones en KACE
+- [x] Task: Análisis funcional y de sintaxis de kwol.exe (Wake-on-LAN corporativo) [b8254d5]
+  - [x] Extraer strings, argumentos CLI y parámetros esperados de `C:\MDA\KACE\kwol.exe` [b8254d5]
+  - [x] Verificar el formato de envío de paquetes mágicos WOL (MAC address, IP broadcast, puerto UDP 7/9) [b8254d5]
+- [x] Task: Análisis de runkbot.exe, KInventory.exe y parámetros de sincronización forzada [b8254d5]
+  - [x] Determinar códigos de ejecución de `runkbot.exe` (ej. inventario `runkbot 4 0`, comprobación de scripts/parches) [b8254d5]
+  - [x] Documentar utilidades auxiliares (`kstatus.exe`, `klog.exe`, `KDeploy.exe`, `KacePatch.exe`) [b8254d5]
+- [x] Task: Auditoría de telemetría y estructura de logs de agente KACE [b8254d5]
+  - [x] Analizar formato de `Inventory.log` y ciclo de inventariado de estación [b8254d5]
+  - [x] Documentar patrones de cómo una aplicación de soporte puede monitorear o disparar acciones en KACE [b8254d5]
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Síntesis Técnica, Matriz de Paridad y PoCs de Integración para new-CMDA
