@@ -1,14 +1,14 @@
 # Implementation Plan: Ingeniería Inversa, Análisis Comparativo y Extracción de Features (CMDA-2, HMDA v1/v1.1/v2.0 y KACE)
 
 ## Phase 1: Análisis Diferencial de Binarios y Estructura Legacy (CMDA-2 vs CMDA Original)
-- [ ] Task: Inspección de arquitectura, firmas PE, cadenas de texto y hashing comparativo de ejecutables CMDA.exe
-  - [ ] Calcular y comparar hashes SHA-256 de `C:\MDA\CMDA-2\CMDA.exe` y `C:\MDA\CMDA-2\CMDA\CMDA.exe`
-  - [ ] Extraer strings legibles (ASCII y Unicode) de ambos ejecutables para buscar diferencias en cadenas de conexión, queries SQL o rutas
-  - [ ] Comparar headers PE, subsistemas, importaciones y dependencias DLL/OCX
-- [ ] Task: Análisis de archivos auxiliares (.vnc, OCX, CDR, Uptime utilities) y diferencias en log Errores.Err
-  - [ ] Analizar contenido de `admin_2.vnc` y `options.vnc` para mapear parámetros VNC y flags de visualización
-  - [ ] Evaluar binarios auxiliares `uptime.exe` y `MIke_uptime.exe` identificando APIs de Windows (`GetTickCount`, etc.)
-  - [ ] Analizar estructura y patrones de fallos en `Errores.Err`
+- [x] Task: Inspección de arquitectura, firmas PE, cadenas de texto y hashing comparativo de ejecutables CMDA.exe [f8400a0]
+  - [x] Calcular y comparar hashes SHA-256 de `C:\MDA\CMDA-2\CMDA.exe` y `C:\MDA\CMDA-2\CMDA\CMDA.exe` [f8400a0]
+  - [x] Extraer strings legibles (ASCII y Unicode) de ambos ejecutables para buscar diferencias en cadenas de conexión, queries SQL o rutas [f8400a0]
+  - [x] Comparar headers PE, subsistemas, importaciones y dependencias DLL/OCX [f8400a0]
+- [x] Task: Análisis de archivos auxiliares (.vnc, OCX, CDR, Uptime utilities) y diferencias en log Errores.Err [f8400a0]
+  - [x] Analizar contenido de `admin_2.vnc` y `options.vnc` para mapear parámetros VNC y flags de visualización [f8400a0]
+  - [x] Evaluar binarios auxiliares `uptime.exe` y `MIke_uptime.exe` identificando APIs de Windows (`GetTickCount`, etc.) [f8400a0]
+  - [x] Analizar estructura y patrones de fallos en `Errores.Err` [f8400a0]
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Descompilación e Ingeniería Inversa de HMDA (v1, v1.1 y v2.0 - .NET / C#)
