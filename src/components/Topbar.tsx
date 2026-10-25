@@ -117,7 +117,7 @@ export function Topbar({
         {/* Identidad / Brand (Arrastrable junto al header para mover la ventana con el mouse) */}
         <div className="flex items-center gap-2.5 shrink-0 cursor-default select-none">
           <div className="p-1.5 rounded-md bg-primary/10 text-primary pointer-events-none">
-            <TerminalIcon className="h-5 w-5" />
+            <img src="/correo-argentino-logo.svg" alt="Correo Argentino" className="h-5 w-5 object-contain" />
           </div>
           <h1 className="text-sm font-bold font-heading tracking-tight text-foreground whitespace-nowrap pointer-events-none">
             Portal Correo Desktop
@@ -298,3 +298,4 @@ export function Topbar({
     </>
   );
 }
+

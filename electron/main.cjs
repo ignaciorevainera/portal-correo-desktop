@@ -12,10 +12,22 @@ let activePingProcess = null;
 let activeSubnetAbortController = null;
 app.isQuiting = false;
 
+function getAppIconPath() {
+  const customIco = path.join(__dirname, '../public/correo-argentino-logo.ico');
+  if (fs.existsSync(customIco)) {
+    return customIco;
+  }
+  const fallbackIco = path.join(__dirname, '../public/favicon.ico');
+  if (fs.existsSync(fallbackIco)) {
+    return fallbackIco;
+  }
+  return null;
+}
+
 function getTrayIcon() {
-  const customPath = path.join(__dirname, '../public/favicon.ico');
-  if (fs.existsSync(customPath)) {
-    return nativeImage.createFromPath(customPath);
+  const iconPath = getAppIconPath();
+  if (iconPath) {
+    return nativeImage.createFromPath(iconPath);
   }
   return nativeImage.createFromDataURL(
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXElEQVR42mNkQAO/gZgBiBkYGBg+/vvH8J8Zf4aT+f8Zfipj+L+dgeE/E4qhn8j+g2n+b8hAjP/Ihv3/f4wUo4EYhM/CwMCgz8DA8J+RfP/TynA0DEYNAACb2y/X2bL3nQAAAABJRU5ErkJggg=='
@@ -69,6 +81,7 @@ function createTray(win) {
 }
 
 function createWindow() {
+  const iconPath = getAppIconPath();
   const win = new BrowserWindow({
     width: 1020,
     height: 680,
@@ -77,6 +90,7 @@ function createWindow() {
     backgroundColor: '#0f172a',
     frame: false,
     autoHideMenuBar: true,
+    ...(iconPath ? { icon: iconPath } : {}),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,

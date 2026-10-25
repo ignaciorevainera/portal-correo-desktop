@@ -294,3 +294,72 @@ export function subscribeToAutofocusSearch(
   return () => {};
 }
 
+export interface SubnetDiscoveredHost {
+  ip: string;
+  hostname: string;
+  alive: boolean;
+  latency: number | null;
+}
+
+export interface SubnetScanProgress {
+  scanned: number;
+  total: number;
+}
+
+export interface SubnetScanSummary {
+  aborted: boolean;
+  totalFound: number;
+  error?: string;
+}
+
+export function startSubnetScanner(
+  targetIp: string,
+  onHostFound: (host: SubnetDiscoveredHost) => void,
+  onProgress: (progress: SubnetScanProgress) => void,
+  onDone: (summary: SubnetScanSummary) => void
+): () => void {
+  const api = getElectronAPI();
+  if (api && api.startSubnetScan && api.onSubnetHostFound) {
+    const unsubHost = api.onSubnetHostFound(onHostFound);
+    const unsubProgress = api.onSubnetProgress(onProgress);
+    const unsubDone = api.onSubnetDone(onDone);
+    api.startSubnetScan(targetIp);
+
+    return () => {
+      unsubHost();
+      unsubProgress();
+      unsubDone();
+      api.abortSubnetScan?.();
+    };
+  }
+
+  // Web Browser fallback simulation
+  let current = 1;
+  const total = 254;
+  const parts = targetIp.split('.');
+  const prefix = `${parts[0] || '192'}.${parts[1] || '0'}.${parts[2] || '2'}`;
+  let timer: any = null;
+
+  timer = setInterval(() => {
+    if (current <= total) {
+      onProgress({ scanned: current, total });
+      if (current === 10 || current === 25 || current === 42 || current === 88) {
+        onHostFound({
+          ip: `${prefix}.${current}`,
+          hostname: `PC-SIM-${current}`,
+          alive: true,
+          latency: Math.floor(Math.random() * 20) + 5,
+        });
+      }
+      current += 8;
+    } else {
+      clearInterval(timer);
+      onProgress({ scanned: total, total });
+      onDone({ aborted: false, totalFound: 4 });
+    }
+  }, 100);
+
+  return () => {
+    if (timer) clearInterval(timer);
+  };
+}
