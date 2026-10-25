@@ -208,6 +208,24 @@ export async function closeWindow(): Promise<void> {
   }
 }
 
+export async function hideToTray(): Promise<void> {
+  const api = getElectronAPI();
+  if (api && api.hideToTray) {
+    try {
+      await api.hideToTray();
+    } catch {}
+  }
+}
+
+export async function stopPing(): Promise<void> {
+  const api = getElectronAPI();
+  if (api && api.stopPing) {
+    try {
+      await api.stopPing();
+    } catch {}
+  }
+}
+
 export async function openExternalUrl(url: string): Promise<void> {
   const api = getElectronAPI();
   if (api && api.openExternal) {
@@ -225,26 +243,28 @@ export async function openExternalUrl(url: string): Promise<void> {
 export function subscribeToPing(
   target: string,
   onData: (text: string) => void,
-  onEnd: (code: number) => void
+  onEnd: (code: number) => void,
+  continuous: boolean = false
 ): () => void {
   const api = getElectronAPI();
   if (api && api.ping && api.onPingData && api.onPingEnd) {
     const unsubData = api.onPingData(onData);
     const unsubEnd = api.onPingEnd(onEnd);
-    api.ping(target);
+    api.ping(target, continuous);
     return () => {
       unsubData();
       unsubEnd();
+      api.stopPing?.();
     };
   }
 
   // Web Browser fallback simulation
   let timer: any = null;
   let seq = 1;
-  onData(`Iniciando simulación Ping a [${target}] en navegador web...\n`);
+  onData(`Iniciando simulación Ping${continuous ? ' continuo (-t)' : ''} a [${target}] en navegador web...\n`);
 
   timer = setInterval(() => {
-    if (seq <= 4) {
+    if (continuous || seq <= 4) {
       const ms = Math.floor(Math.random() * 20) + 12;
       onData(`Respuesta desde ${target}: bytes=32 tiempo=${ms}ms TTL=126 (simulado)\n`);
       seq++;

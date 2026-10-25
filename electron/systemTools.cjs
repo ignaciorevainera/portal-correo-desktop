@@ -54,8 +54,15 @@ function getMsraCommand(targetIpOrHost) {
   };
 }
 
-function getPingArgs(targetIpOrHost, count = 1) {
+function getPingArgs(targetIpOrHost, options = 1) {
   const clean = sanitizeHostOrIp(targetIpOrHost);
+  if (typeof options === 'object' && options !== null && options.continuous) {
+    return {
+      exe: 'ping',
+      args: ['-t', clean],
+    };
+  }
+  const count = typeof options === 'number' ? options : (options && options.count) || 4;
   return {
     exe: 'ping',
     args: ['-n', String(count), clean],

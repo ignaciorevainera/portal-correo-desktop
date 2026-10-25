@@ -64,10 +64,16 @@ describe('systemTools orchestration & security sanitization', () => {
   });
 
   describe('getPingArgs', () => {
-    it('constructs ping args for windows', () => {
+    it('constructs ping args for windows standard 4 packets', () => {
       const cmd = getPingArgs('192.0.2.101', 4);
       expect(cmd.exe).toBe('ping');
       expect(cmd.args).toEqual(['-n', '4', '192.0.2.101']);
+    });
+
+    it('constructs ping args for continuous infinite ping (-t)', () => {
+      const cmd = getPingArgs('192.0.2.101', { continuous: true });
+      expect(cmd.exe).toBe('ping');
+      expect(cmd.args).toEqual(['-t', '192.0.2.101']);
     });
   });
 

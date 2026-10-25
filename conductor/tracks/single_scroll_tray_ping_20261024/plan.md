@@ -3,12 +3,12 @@
 ## Phase 1: Bandeja del Sistema (System Tray), Botón de Apagado (`Power`) y Backend `Ping -t` / `Stop`
 Implementación del icono y menú contextual en la Bandeja del Sistema (System Tray) en Electron (con cierre definitivo exclusivo desde el Tray), actualización del `Topbar` para dejar únicamente Minimizar y Apagado (`Power` -> ocultar al Tray) a la derecha del selector de tema, y soporte backend/IPC para `ping -t` (continuo) y detención de procesos de ping en vivo (`cmda:ping-stop`).
 
-- [ ] Task: Implementar soporte para `ping -t`, parada de proceso (`stopPing`) y Bandeja del Sistema (`Tray`) en Electron e IPC
-  - [ ] Actualizar y escribir pruebas unitarias en `src/services/systemTools.test.ts` y `src/test/windowControls.test.ts` validando `getPingArgs` con modo continuo (`-t`), `stopPing` y la acción `hideToTray`
-  - [ ] Actualizar `electron/systemTools.cjs` para soportar `continuous: true` (`ping -t`) en `getPingArgs` y `executePing`
-  - [ ] Actualizar `electron/main.cjs` integrando `Tray` + `Menu` (con opciones `Abrir new CMDA` y `Cerrar` definitivo), intercepción del cierre de ventana para ocultar al Tray, handler `cmda:window-hide-tray`, soporte de modo continuo en `cmda:ping-start` y handler `cmda:ping-stop` para terminar el proceso de ping activo
-  - [ ] Exponer `hideToTray`, `startPing(target, continuous)` y `stopPing()` en `electron/preload.cjs` y `src/services/electronClient.ts`
-- [ ] Task: Actualizar `Topbar` con botón de Minimizar y botón de Apagado (`Power`) hacia la Bandeja del Sistema
+- [x] Task: Implementar soporte para `ping -t`, parada de proceso (`stopPing`) y Bandeja del Sistema (`Tray`) en Electron e IPC
+  - [x] Actualizar y escribir pruebas unitarias en `src/services/systemTools.test.ts` y `src/test/windowControls.test.ts` validando `getPingArgs` con modo continuo (`-t`), `stopPing` y la acción `hideToTray`
+  - [x] Actualizar `electron/systemTools.cjs` para soportar `continuous: true` (`ping -t`) en `getPingArgs` y `executePing`
+  - [x] Actualizar `electron/main.cjs` integrando `Tray` + `Menu` (con opciones `Abrir new CMDA` y `Cerrar` definitivo), intercepción del cierre de ventana para ocultar al Tray, handler `cmda:window-hide-tray`, soporte de modo continuo en `cmda:ping-start` y handler `cmda:ping-stop` para terminar el proceso de ping activo
+  - [x] Exponer `hideToTray`, `startPing(target, continuous)` y `stopPing()` en `electron/preload.cjs` y `src/services/electronClient.ts`
+- [~] Task: Actualizar `Topbar` con botón de Minimizar y botón de Apagado (`Power`) hacia la Bandeja del Sistema
   - [ ] Actualizar pruebas en `src/components/Topbar.test.tsx` verificando que a la derecha del selector de tema estén el botón de Minimizar y el botón de Apagado (`Power` / ocultar en bandeja del sistema), sin los botones de maximizar ni cerrar directo
   - [ ] Refactorizar `src/components/Topbar.tsx` reemplazando los controles anteriores por el botón de Minimizar y el botón `Power` conectado a `hideToTray`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)

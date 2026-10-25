@@ -3,7 +3,9 @@ import {
   minimizeWindow,
   maximizeWindow,
   closeWindow,
+  hideToTray,
   openExternalUrl,
+  stopPing,
 } from '../services/electronClient';
 
 describe('Window Controls & External Link Contracts', () => {
@@ -21,6 +23,26 @@ describe('Window Controls & External Link Contracts', () => {
 
       await minimizeWindow();
       expect(minimizeMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls electronAPI.hideToTray when clicking turn off button', async () => {
+      const hideMock = vi.fn().mockResolvedValue(true);
+      (window as any).electronAPI = {
+        hideToTray: hideMock,
+      };
+
+      await hideToTray();
+      expect(hideMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls electronAPI.stopPing to terminate ongoing ping process', async () => {
+      const stopPingMock = vi.fn().mockResolvedValue(true);
+      (window as any).electronAPI = {
+        stopPing: stopPingMock,
+      };
+
+      await stopPing();
+      expect(stopPingMock).toHaveBeenCalledTimes(1);
     });
 
     it('calls electronAPI.maximizeWindow and toggles state', async () => {

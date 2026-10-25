@@ -1,9 +1,70 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const dbService = require('./dbService.cjs');
 const systemTools = require('./systemTools.cjs');
 const dnsResolver = require('./dnsResolver.cjs');
 const securityGate = require('./securityGate.cjs');
+
+let tray = null;
+let activePingProcess = null;
+app.isQuiting = false;
+
+function getTrayIcon() {
+  const customPath = path.join(__dirname, '../public/favicon.ico');
+  if (fs.existsSync(customPath)) {
+    return nativeImage.createFromPath(customPath);
+  }
+  return nativeImage.createFromDataURL(
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXElEQVR42mNkQAO/gZgBiBkYGBg+/vvH8J8Zf4aT+f8Zfipj+L+dgeE/E4qhn8j+g2n+b8hAjP/Ihv3/f4wUo4EYhM/CwMCgz8DA8J+RfP/TynA0DEYNAACb2y/X2bL3nQAAAABJRU5ErkJggg=='
+  );
+}
+
+function createTray(win) {
+  if (tray) return;
+  tray = new Tray(getTrayIcon());
+  tray.setToolTip('new CMDA - Monitoreo e Inventario de Estaciones');
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Abrir new CMDA',
+      click: () => {
+        if (win) {
+          win.show();
+          win.focus();
+        }
+      },
+    },
+    { type: 'separator' },
+    {
+      label: 'Cerrar',
+      click: () => {
+        app.isQuiting = true;
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
+
+  tray.on('click', () => {
+    if (win) {
+      if (win.isVisible()) {
+        win.focus();
+      } else {
+        win.show();
+        win.focus();
+      }
+    }
+  });
+
+  tray.on('double-click', () => {
+    if (win) {
+      win.show();
+      win.focus();
+    }
+  });
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -20,6 +81,16 @@ function createWindow() {
       nodeIntegration: false,
     },
     title: 'new CMDA - Monitoreo e Inventario de Estaciones',
+  });
+
+  createTray(win);
+
+  win.on('close', (event) => {
+    if (!app.isQuiting) {
+      event.preventDefault();
+      win.hide();
+      return false;
+    }
   });
 
   win.hookWindowMessage(0x0116, () => {
@@ -60,6 +131,11 @@ ipcMain.handle('cmda:window-maximize', (event) => {
 ipcMain.handle('cmda:window-close', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win) win.close();
+});
+
+ipcMain.handle('cmda:window-hide-tray', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) win.hide();
 });
 
 ipcMain.handle('cmda:open-external', async (_event, url) => {
@@ -165,7 +241,7 @@ ipcMain.handle('cmda:launch-msra', async (_event, target) => {
   return systemTools.launchMsra(target);
 });
 
-ipcMain.on('cmda:ping-start', async (event, target) => {
+ipcMain.on('cmda:ping-start', async (event, target, continuous) => {
   const gate = await securityGate.evaluateSecurityGate();
   if (!gate.authorized) {
     if (!event.sender.isDestroyed()) {
@@ -175,20 +251,45 @@ ipcMain.on('cmda:ping-start', async (event, target) => {
     return;
   }
 
-  systemTools.executePing(
+  if (activePingProcess) {
+    try {
+      activePingProcess.kill();
+    } catch {}
+    activePingProcess = null;
+  }
+
+  const pingOptions = continuous ? { continuous: true } : 4;
+
+  activePingProcess = systemTools.executePing(
     target,
-    4,
+    pingOptions,
     (data) => {
       if (!event.sender.isDestroyed()) {
         event.sender.send('cmda:ping-data', data);
       }
     },
     (code) => {
+      activePingProcess = null;
       if (!event.sender.isDestroyed()) {
         event.sender.send('cmda:ping-end', code);
       }
     }
   );
+});
+
+ipcMain.handle('cmda:ping-stop', () => {
+  if (activePingProcess) {
+    try {
+      activePingProcess.kill();
+    } catch {}
+    activePingProcess = null;
+    return true;
+  }
+  return false;
+});
+
+app.on('before-quit', () => {
+  app.isQuiting = true;
 });
 
 app.whenReady().then(() => {

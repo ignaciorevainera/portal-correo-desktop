@@ -11,8 +11,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.invoke('cmda:window-minimize'),
   maximizeWindow: () => ipcRenderer.invoke('cmda:window-maximize'),
   closeWindow: () => ipcRenderer.invoke('cmda:window-close'),
+  hideToTray: () => ipcRenderer.invoke('cmda:window-hide-tray'),
   openExternal: (url) => ipcRenderer.invoke('cmda:open-external', url),
-  ping: (target) => ipcRenderer.send('cmda:ping-start', target),
+  ping: (target, continuous) => ipcRenderer.send('cmda:ping-start', target, continuous),
+  stopPing: () => ipcRenderer.invoke('cmda:ping-stop'),
   onPingData: (callback) => {
     const listener = (_event, data) => callback(data);
     ipcRenderer.on('cmda:ping-data', listener);
