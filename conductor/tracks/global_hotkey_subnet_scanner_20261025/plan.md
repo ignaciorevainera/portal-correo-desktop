@@ -1,9 +1,9 @@
 # Implementation Plan: Global Hotkey with Clipboard Autofill & Async Subnet Scanner
 
 ## Phase 1: Global Hotkey, Clipboard Parser & Window Restoration
-- [ ] Task: Unit Tests for Clipboard Pattern Parser (`src/test/clipboardParser.test.ts`)
-- [ ] Task: Implement Clipboard Validator Module (`electron/clipboardParser.cjs`)
-- [ ] Task: Register Global Shortcut & IPC Handlers in Electron Main (`electron/main.cjs` & `electron/preload.cjs`)
+- [x] Task: Unit Tests for Clipboard Pattern Parser (`src/test/clipboardParser.test.ts`) [e377c2a]
+- [x] Task: Implement Clipboard Validator Module (`electron/clipboardParser.cjs`) [b335833]
+- [~] Task: Register Global Shortcut & IPC Handlers in Electron Main (`electron/main.cjs` & `electron/preload.cjs`)
 - [ ] Task: Integrate Renderer Global Shortcut Listener & Search Auto-Fill in React (`src/App.tsx`)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
