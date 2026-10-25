@@ -33,7 +33,7 @@ Optimización de densidad y contraste de textos en tarjetas técnicas (`Hardware
 - [x] Task: Mejorar contraste de textos, densidad compacta y copiado en 1 clic en tarjetas de datos [2d7fb36]
   - [x] Escribir pruebas en `src/test/CardsContrastCopy.test.tsx` validando los botones de copiado rápido (IP, MAC, Hostname, UserNT) y la renderización compacta de alto contraste
   - [x] Refactorizar `src/components/HardwareCard.tsx`, `src/components/NetworkAdCard.tsx`, `src/components/AlertsPanel.tsx` y `src/components/ResetUptimePanel.tsx` con jerarquía tipográfica de mayor contraste y botones de copiar en 1 clic
-- [~] Task: Implementar Menú Contextual Personalizado de Operador (Clic Derecho)
-  - [ ] Escribir pruebas en `src/test/OperatorContextMenu.test.tsx` verificando la apertura con clic derecho (`onContextMenu`) y la ejecución en 1 clic de VNC, Ping, MSRA, Copiar IP/Hostname/MAC y abrir Portal MDA
-  - [ ] Crear `src/components/OperatorContextMenu.tsx` e integrarlo en `src/App.tsx` bloqueando el menú contextual nativo de Windows/Chromium
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Implementar Menú Contextual Personalizado de Operador (Clic Derecho) [b9cdc19]
+  - [x] Escribir pruebas en `src/test/OperatorContextMenu.test.tsx` verificando la apertura con clic derecho (`onContextMenu`) y la ejecución en 1 clic de VNC, Ping, MSRA, Copiar IP/Hostname/MAC y abrir Portal MDA
+  - [x] Crear `src/components/OperatorContextMenu.tsx` e integrarlo en `src/App.tsx` bloqueando el menú contextual nativo de Windows/Chromium
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
