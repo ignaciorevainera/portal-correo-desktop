@@ -92,19 +92,21 @@ export function Topbar({
 
   return (
     <>
-      <header className="h-10 border-b border-border bg-card/80 backdrop-blur px-3 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
+      <header className="h-14 border-b border-border bg-card/90 backdrop-blur px-4 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
         {/* Identidad / Brand */}
-        <div className="flex items-center gap-2 shrink-0 app-no-drag">
-          <TerminalIcon className="h-4 w-4 text-primary" />
-          <h1 className="text-xs font-bold font-heading tracking-tight text-foreground whitespace-nowrap">
+        <div className="flex items-center gap-2.5 shrink-0 app-no-drag">
+          <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+            <TerminalIcon className="h-5 w-5" />
+          </div>
+          <h1 className="text-sm font-bold font-heading tracking-tight text-foreground whitespace-nowrap">
             Portal Correo Desktop
           </h1>
         </div>
 
         {/* Buscador Rápido Centralizado */}
-        <div className="relative flex-1 max-w-sm app-no-drag">
+        <div className="relative flex-1 max-w-md app-no-drag">
           <div className="relative flex items-center">
-            <Search className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none z-10" />
+            <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
               ref={inputRef}
               type="text"
@@ -116,9 +118,9 @@ export function Topbar({
               onKeyDown={handleKeyDownInput}
               onFocus={() => query.trim() && setIsOpen(true)}
               placeholder="Buscar terminal o IP (Ctrl+F)..."
-              className="w-full h-7 pl-8 pr-14 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-xs"
+              className="w-full h-10 pl-9 pr-16 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-sm"
             />
-            <Kbd className="absolute right-1.5 pointer-events-none">
+            <Kbd className="absolute right-2 pointer-events-none text-[10px]">
               Ctrl+F
             </Kbd>
           </div>
@@ -187,15 +189,15 @@ export function Topbar({
         </div>
 
         {/* Indicadores de Estado y Acciones Rápidas */}
-        <div className="flex items-center gap-1.5 sm:gap-2 app-no-drag">
+        <div className="flex items-center gap-2 app-no-drag">
           {/* Badge de Conexión */}
           <Badge
             variant="outline"
-            className="hidden lg:flex items-center gap-1.5 text-[11px] font-mono px-2 py-0.5 rounded-md bg-muted text-foreground border-border h-6"
+            className="hidden lg:flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-muted text-foreground border-border h-8"
             title={serverName || 'Modo actual'}
           >
-            <Database className={`h-3 w-3 ${backendMode === 'sql' ? 'text-emerald-500' : 'text-amber-500'}`} />
-            <span className={`h-1.5 w-1.5 rounded-full ${backendMode === 'sql' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+            <Database className={`h-3.5 w-3.5 ${backendMode === 'sql' ? 'text-emerald-500' : 'text-amber-500'}`} />
+            <span className={`h-2 w-2 rounded-full ${backendMode === 'sql' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
             <span>{backendMode === 'sql' ? 'SQL Online' : 'Offline / Mock'}</span>
           </Badge>
 
@@ -203,9 +205,9 @@ export function Topbar({
           {selectedPc && (
             <Badge
               variant="outline"
-              className="hidden md:flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md bg-muted text-foreground border-border h-6"
+              className="hidden md:flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-muted text-foreground border-border h-8"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
               <span><strong>{selectedPc}</strong></span>
             </Badge>
           )}
@@ -214,57 +216,59 @@ export function Topbar({
           <Button
             type="button"
             variant="outline"
-            size="xs"
+            size="sm"
             onClick={handleOpenPortalMda}
             aria-label="Abrir Portal MDA"
             title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
-            className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/25 text-[11px] cursor-pointer"
+            className="h-10 px-3 bg-primary/15 hover:bg-primary/25 text-primary border-primary/30 dark:bg-primary/20 dark:hover:bg-primary/30 dark:text-primary-foreground font-semibold text-xs cursor-pointer shadow-xs gap-1.5"
           >
-            <ExternalLink className="h-3 w-3" />
-            <span className="font-semibold">Portal MDA</span>
+            <ExternalLink className="h-4 w-4" />
+            <span>Portal MDA</span>
           </Button>
 
           {/* Info Modal Trigger */}
           <Button
             type="button"
             variant="ghost"
-            size="icon-xs"
+            size="icon"
             onClick={() => setIsInfoOpen(true)}
             aria-label="Abrir información del sistema"
             title="Información y características del aplicativo"
-            className="text-muted-foreground hover:text-foreground cursor-pointer"
+            className="h-10 w-10 text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
           >
-            <HelpCircle className="h-3.5 w-3.5" />
+            <HelpCircle className="h-4 w-4" />
           </Button>
 
-          <ThemeToggle />
+          <div className="flex items-center justify-center h-10 w-10">
+            <ThemeToggle />
+          </div>
 
           {/* Separador vertical de ventana */}
-          <Separator orientation="vertical" className="h-4 mx-0.5" />
+          <Separator orientation="vertical" className="h-6 mx-0.5" />
 
           {/* Botones de Ventana (Minimizar a barra de tareas y Apagado a Bandeja del Sistema) */}
           <div className="flex items-center gap-1">
             <Button
               type="button"
               variant="ghost"
-              size="icon-xs"
+              size="icon"
               onClick={minimizeWindow}
               aria-label="Minimizar ventana"
               title="Minimizar a barra de tareas"
-              className="text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-10 w-10 text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
             >
-              <Minus className="h-3.5 w-3.5" />
+              <Minus className="h-4 w-4" />
             </Button>
             <Button
               type="button"
               variant="ghost"
-              size="icon-xs"
+              size="icon"
               onClick={hideToTray}
               aria-label="Minimizar a bandeja del sistema"
               title="Ocultar en bandeja del sistema (Turn Off)"
-              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+              className="h-10 w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer rounded-md"
             >
-              <Power className="h-3.5 w-3.5" />
+              <Power className="h-4 w-4" />
             </Button>
           </div>
         </div>
