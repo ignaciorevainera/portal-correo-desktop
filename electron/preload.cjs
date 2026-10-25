@@ -8,6 +8,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   searchTerminal: (query) => ipcRenderer.invoke('cmda:search-terminal', query),
   launchVnc: (target) => ipcRenderer.invoke('cmda:launch-vnc', target),
   launchMsra: (target) => ipcRenderer.invoke('cmda:launch-msra', target),
+  minimizeWindow: () => ipcRenderer.invoke('cmda:window-minimize'),
+  maximizeWindow: () => ipcRenderer.invoke('cmda:window-maximize'),
+  closeWindow: () => ipcRenderer.invoke('cmda:window-close'),
+  openExternal: (url) => ipcRenderer.invoke('cmda:open-external', url),
   ping: (target) => ipcRenderer.send('cmda:ping-start', target),
   onPingData: (callback) => {
     const listener = (_event, data) => callback(data);

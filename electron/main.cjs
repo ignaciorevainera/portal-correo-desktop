@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const dbService = require('./dbService.cjs');
 const systemTools = require('./systemTools.cjs');
@@ -7,18 +7,27 @@ const securityGate = require('./securityGate.cjs');
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1280,
-    height: 820,
-    minWidth: 1024,
-    minHeight: 700,
+    width: 1020,
+    height: 680,
+    minWidth: 860,
+    minHeight: 560,
     backgroundColor: '#0f172a',
+    frame: false,
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
     },
     title: 'new CMDA - Monitoreo e Inventario de Estaciones',
-    autoHideMenuBar: true,
+  });
+
+  win.hookWindowMessage(0x0116, () => {
+    win.setEnabled(false);
+    setTimeout(() => {
+      win.setEnabled(true);
+    }, 100);
+    return true;
   });
 
   const devUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
@@ -30,6 +39,34 @@ function createWindow() {
     });
   }
 }
+
+// Window Controls & External Link IPC Handlers
+ipcMain.handle('cmda:window-minimize', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) win.minimize();
+});
+
+ipcMain.handle('cmda:window-maximize', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) {
+    if (win.isMaximized()) {
+      win.unmaximize();
+    } else {
+      win.maximize();
+    }
+  }
+});
+
+ipcMain.handle('cmda:window-close', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) win.close();
+});
+
+ipcMain.handle('cmda:open-external', async (_event, url) => {
+  if (url && typeof url === 'string') {
+    await shell.openExternal(url);
+  }
+});
 
 // Security Gate IPC Handlers
 ipcMain.handle('cmda:security-status', async () => {

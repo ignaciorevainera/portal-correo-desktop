@@ -181,6 +181,47 @@ export async function launchMsraClient(target: string): Promise<ToolExecutionRes
   };
 }
 
+export async function minimizeWindow(): Promise<void> {
+  const api = getElectronAPI();
+  if (api && api.minimizeWindow) {
+    try {
+      await api.minimizeWindow();
+    } catch {}
+  }
+}
+
+export async function maximizeWindow(): Promise<void> {
+  const api = getElectronAPI();
+  if (api && api.maximizeWindow) {
+    try {
+      await api.maximizeWindow();
+    } catch {}
+  }
+}
+
+export async function closeWindow(): Promise<void> {
+  const api = getElectronAPI();
+  if (api && api.closeWindow) {
+    try {
+      await api.closeWindow();
+    } catch {}
+  }
+}
+
+export async function openExternalUrl(url: string): Promise<void> {
+  const api = getElectronAPI();
+  if (api && api.openExternal) {
+    try {
+      await api.openExternal(url);
+      return;
+    } catch {}
+  }
+
+  if (typeof window !== 'undefined' && window.open) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+}
+
 export function subscribeToPing(
   target: string,
   onData: (text: string) => void,
