@@ -27,6 +27,7 @@ interface QuickActionsBarProps {
   onLaunchVnc: () => void;
   onLaunchMsra: () => void;
   onTogglePing: () => void;
+  onLaunchPingInfinite?: () => void;
 }
 
 export function QuickActionsBar({
@@ -36,6 +37,7 @@ export function QuickActionsBar({
   onLaunchVnc,
   onLaunchMsra,
   onTogglePing,
+  onLaunchPingInfinite,
 }: QuickActionsBarProps): React.JSX.Element {
   const [localFeedback, setLocalFeedback] = useState<string | null>(null);
 
@@ -116,21 +118,34 @@ export function QuickActionsBar({
           <kbd className="hidden md:inline-block ml-1 px-1 text-[9px] rounded bg-muted-foreground/20 font-mono">F4</kbd>
         </button>
 
-        <button
-          type="button"
-          onClick={onTogglePing}
-          aria-label={isPinging ? 'Detener Ping en vivo' : 'Iniciar Ping continuo'}
-          title="Iniciar / Detener Ping continuo (Atajo F3)"
-          className={`flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md transition-colors border cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring ${
-            isPinging
-              ? 'bg-destructive text-white border-destructive'
-              : 'bg-muted text-foreground border-border hover:bg-muted/80'
-          }`}
-        >
-          <Activity className={`h-4 w-4 ${isPinging ? 'animate-spin' : 'text-emerald-500'}`} />
-          <span>{isPinging ? 'Detener Ping' : 'Iniciar Ping'}</span>
-          <kbd className="hidden md:inline-block ml-1 px-1 text-[9px] rounded bg-background/60 font-mono">F3</kbd>
-        </button>
+        {/* Grupo Ping 2:1 (Ping 4 paquetes + Ping -t continuo) */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onTogglePing}
+            aria-label={isPinging ? 'Detener Ping en vivo' : 'Iniciar Ping'}
+            title="Iniciar Ping estándar (4 paquetes) (Atajo F3)"
+            className={`flex-[2] flex items-center justify-center gap-1 px-2 py-2 text-xs font-semibold rounded-md transition-colors border cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring ${
+              isPinging
+                ? 'bg-destructive text-white border-destructive'
+                : 'bg-muted text-foreground border-border hover:bg-muted/80'
+            }`}
+          >
+            <Activity className={`h-3.5 w-3.5 ${isPinging ? 'animate-spin' : 'text-emerald-500'}`} />
+            <span>{isPinging ? 'Detener' : 'Ping'}</span>
+            <kbd className="hidden md:inline-block ml-0.5 px-1 text-[9px] rounded bg-background/60 font-mono">F3</kbd>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onLaunchPingInfinite?.()}
+            aria-label="Iniciar Ping continuo -t"
+            title="Ejecutar Ping infinito / continuo (-t)"
+            className="flex-1 flex items-center justify-center gap-1 px-1.5 py-2 text-xs font-semibold rounded-md bg-muted text-foreground border border-border hover:bg-muted/80 transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <span className="font-mono text-[11px] font-bold">-t</span>
+          </button>
+        </div>
 
         <div className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-muted/60 border border-border text-xs">
           <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium">

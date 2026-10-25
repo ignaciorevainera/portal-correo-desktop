@@ -1,0 +1,110 @@
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { LivePingConsole } from '../components/LivePingConsole';
+import * as electronClient from '../services/electronClient';
+
+describe('LivePingConsole Component', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('renders target IP and controls: Iniciar/Detener, Limpiar, and Copiar Logs', () => {
+    render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={false}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('192.0.2.100')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /iniciar/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /copiar logs de ping/i })).toBeInTheDocument();
+  });
+
+  it('replaces logs on new ping start and subscribes to ping output', () => {
+    let capturedCallback: ((text: string) => void) | null = null;
+    vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
+      capturedCallback = onData;
+      return () => {};
+    });
+
+    const { rerender } = render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={false}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    // Start ping
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        pingMode="infinite"
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(/ejecutando ping/i)).toBeInTheDocument();
+
+    // Emit live data
+    act(() => {
+      capturedCallback?.('Respuesta desde 192.0.2.100: bytes=32 tiempo=1ms TTL=128');
+    });
+
+    expect(screen.getByText(/Respuesta desde 192.0.2.100/i)).toBeInTheDocument();
+  });
+
+  it('allows stopping active ping, clearing logs and copying complete logs with feedback', async () => {
+    const onTogglePing = vi.fn();
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextMock,
+      },
+    });
+
+    let dataHandler: ((t: string) => void) | null = null;
+    vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
+      dataHandler = onData;
+      return () => {};
+    });
+
+    render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        onTogglePing={onTogglePing}
+      />
+    );
+
+    // Simulate arriving logs
+    act(() => {
+      dataHandler?.('Respuesta 1: bytes=32 tiempo=2ms');
+      dataHandler?.('Respuesta 2: bytes=32 tiempo=3ms');
+    });
+
+    // Click Stop button
+    const stopBtn = screen.getByRole('button', { name: /detener/i });
+    fireEvent.click(stopBtn);
+    expect(onTogglePing).toHaveBeenCalledTimes(1);
+
+    // Click Copy Logs button
+    const copyBtn = screen.getByRole('button', { name: /copiar logs de ping/i });
+    fireEvent.click(copyBtn);
+
+    await waitFor(() => {
+      expect(writeTextMock).toHaveBeenCalled();
+    });
+    expect(screen.getByText(/logs copiados/i)).toBeInTheDocument();
+
+    // Click Clear button
+    const clearBtn = screen.getByRole('button', { name: /limpiar/i });
+    fireEvent.click(clearBtn);
+
+    expect(screen.queryByText(/Respuesta 1/i)).not.toBeInTheDocument();
+  });
+});

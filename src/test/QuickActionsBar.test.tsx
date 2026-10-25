@@ -6,21 +6,40 @@ import { getAllTerminals } from '../services/terminalService';
 describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
   const terminal = getAllTerminals()[0];
 
-  it('renders default quick actions and Uptime metric', () => {
+  it('renders default quick actions and Uptime metric including Ping and secondary Ping -t', () => {
+    const onTogglePing = vi.fn();
+    const onLaunchPingInfinite = vi.fn();
+
     render(
       <QuickActionsBar
         terminal={terminal}
         isPinging={false}
         onLaunchVnc={vi.fn()}
         onLaunchMsra={vi.fn()}
-        onTogglePing={vi.fn()}
+        onTogglePing={onTogglePing}
+        onLaunchPingInfinite={onLaunchPingInfinite}
       />
     );
 
     expect(screen.getByRole('button', { name: /conectar por vnc viewer/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /iniciar asistencia msra/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /iniciar ping continuo/i })).toBeInTheDocument();
+    
+    const pingBtn = screen.getByRole('button', { name: /^iniciar ping$/i });
+    const pingInfiniteBtn = screen.getByRole('button', { name: /iniciar ping continuo -t/i });
+
+    expect(pingBtn).toBeInTheDocument();
+    expect(pingInfiniteBtn).toBeInTheDocument();
     expect(screen.getByText(/uptime/i)).toBeInTheDocument();
+
+    // Ratio 2:1 check
+    expect(pingBtn.className).toContain('flex-[2]');
+    expect(pingInfiniteBtn.className).toContain('flex-1');
+
+    fireEvent.click(pingBtn);
+    expect(onTogglePing).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(pingInfiniteBtn);
+    expect(onLaunchPingInfinite).toHaveBeenCalledTimes(1);
   });
 
   it('renders success inline feedback without top banner', () => {

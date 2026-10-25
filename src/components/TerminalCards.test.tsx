@@ -42,7 +42,7 @@ describe('Terminal Inventory & Actions components', () => {
     fireEvent.click(screen.getByRole('button', { name: /asistencia msra/i }));
     expect(onMsra).toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: /iniciar ping/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^iniciar ping$/i }));
     expect(onPing).toHaveBeenCalled();
   });
 });
