@@ -31,7 +31,7 @@
   - [x] Analizar la generación de planillas Excel con `SpreadsheetLight.dll` y `DocumentFormat.OpenXml.dll` [562f6d1]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [checkpoint: 562f6d1]
 
-## Phase 3: Análisis de Binarios de KACE Systems Management y Mecanismos de Integración
+## Phase 3: Análisis de Binarios de KACE Systems Management y Mecanismos de Integración [checkpoint: b8254d5]
 - [x] Task: Análisis funcional y de sintaxis de kwol.exe (Wake-on-LAN corporativo) [b8254d5]
   - [x] Extraer strings, argumentos CLI y parámetros esperados de `C:\MDA\KACE\kwol.exe` [b8254d5]
   - [x] Verificar el formato de envío de paquetes mágicos WOL (MAC address, IP broadcast, puerto UDP 7/9) [b8254d5]
@@ -41,10 +41,10 @@
 - [x] Task: Auditoría de telemetría y estructura de logs de agente KACE [b8254d5]
   - [x] Analizar formato de `Inventory.log` y ciclo de inventariado de estación [b8254d5]
   - [x] Documentar patrones de cómo una aplicación de soporte puede monitorear o disparar acciones en KACE [b8254d5]
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [checkpoint: b8254d5]
 
 ## Phase 4: Síntesis Técnica, Matriz de Paridad y PoCs de Integración para new-CMDA
-- [ ] Task: Redacción de documentación técnica exhaustiva y matriz de paridad en docs/
+- [~] Task: Redacción de documentación técnica exhaustiva y matriz de paridad en docs/
   - [ ] Redactar informe consolidado en `docs/reverse_engineering_mda_kace_report.md` con hallazgos de CMDA-2, HMDA y KACE
   - [ ] Construir la matriz comparativa de features y tecnologías entre todos los aplicativos vs `new-CMDA`
 - [ ] Task: Desarrollo de módulo PoC seguro en Electron Main con pruebas unitarias TDD
