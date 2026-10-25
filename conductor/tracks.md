@@ -58,7 +58,7 @@
 
 ---
 
-- [ ] **Track: Compactación de Reseteo/Uptime, Iconos Consistentes y Rediseño de Consola de Ping Contigua**
+- [x] **Track: Compactación de Reseteo/Uptime, Iconos Consistentes y Rediseño de Consola de Ping Contigua**
   *Link: [./tracks/ui_compact_ping_uptime_20261025/index.md](./tracks/ui_compact_ping_uptime_20261025/index.md)*
 
 ---
