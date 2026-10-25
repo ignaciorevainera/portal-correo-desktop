@@ -10,6 +10,7 @@ import {
   Power,
   Play,
   MonitorPlay,
+  Settings,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { InfoModal } from './InfoModal';
@@ -32,6 +33,7 @@ interface TopbarProps {
   selectedPc?: string;
   backendMode?: 'sql' | 'mock';
   serverName?: string;
+  onOpenSettings?: () => void;
 }
 
 const PORTAL_MDA_URL = 'https://mda.corporativo.internal/inventario-terminales';
@@ -43,6 +45,7 @@ export function Topbar({
   selectedPc,
   backendMode = 'mock',
   serverName,
+  onOpenSettings,
 }: TopbarProps): React.JSX.Element {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -85,6 +88,10 @@ export function Topbar({
         e.preventDefault();
         inputRef.current?.focus();
         inputRef.current?.select();
+      }
+      if (e.key === 'F10') {
+        e.preventDefault();
+        onOpenSettings?.();
       }
       if (e.key === 'Escape') {
         setIsOpen(false);
@@ -245,6 +252,19 @@ export function Topbar({
           >
             <ExternalLink className="h-4 w-4" />
             <span>Portal MDA</span>
+          </Button>
+
+          {/* Settings Modal Trigger */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => onOpenSettings?.()}
+            aria-label="Abrir ajustes y configuración"
+            title="Configuración y Actualizaciones (Atajo F10)"
+            className="h-10 w-10 text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
+          >
+            <Settings className="h-4 w-4" />
           </Button>
 
           {/* Info Modal Trigger */}

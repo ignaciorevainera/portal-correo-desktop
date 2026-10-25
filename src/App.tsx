@@ -8,6 +8,7 @@ import { AlertsPanel } from './components/AlertsPanel';
 import { ResetUptimePanel } from './components/ResetUptimePanel';
 import { OperatorContextMenu } from './components/OperatorContextMenu';
 import { SubnetScannerDrawer } from './components/SubnetScannerDrawer';
+import { SettingsModal } from './components/SettingsModal';
 import {
   getAllTerminals,
   addAlertToTerminal,
@@ -39,6 +40,7 @@ export default function App(): React.JSX.Element {
   const [actionFeedback, setActionFeedback] = useState<ActionFeedbackState | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [isSubnetDrawerOpen, setIsSubnetDrawerOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
   const allTerminals = getAllTerminals();
@@ -228,6 +230,7 @@ export default function App(): React.JSX.Element {
           selectedPc={terminal?.pc}
           backendMode={status.mode}
           serverName={status.server}
+          onOpenSettings={() => setIsSettingsOpen(true)}
         />
 
         {/* Barra de Comandos Fija (siempre debajo del header, sin contenido pasando por debajo) */}
@@ -352,6 +355,14 @@ export default function App(): React.JSX.Element {
             }}
           />
         )}
+
+        {/* Modal de Ajustes y Actualizaciones */}
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          currentVersion="1.0.0"
+          backendConnected={status.connected}
+        />
 
         {/* Notificaciones animadas Sonner Toaster oficiales de Shadcn */}
         <Toaster />

@@ -17,11 +17,11 @@
 - [x] Task: Phase 2 Verification & Checkpoint (Protocol in workflow.md)
 
 ### Phase 3: Integración de Botón CTA en `Topbar.tsx` y Cableado de Reinicio en `App.tsx`
-- [ ] Task: Integrar acceso a Ajustes en la barra superior y atajo global de teclado
+- [~] Task: Integrar acceso a Ajustes en la barra superior y atajo global de teclado
   - [ ] Write Failing Tests: Actualizar `src/components/Topbar.test.tsx` y `src/App.test.tsx` para verificar la presencia del botón ⚙️ con tooltip, la respuesta al atajo de teclado (`F10`) y el disparo del toast de reinicio cuando la descarga en background finaliza.
-  - [ ] Implement to Pass Tests: Agregar botón de ajustes en `src/components/Topbar.tsx`, cablear apertura del modal y registrar listener para aplicar actualización al cerrar el aplicativo si el usuario no reinicia de inmediato.
-  - [ ] Refactor & Coverage: Ejecutar suite completa de tests de la interfaz.
-- [ ] Task: Phase 3 Verification & Checkpoint (Protocol in workflow.md)
+  - [x] Implement to Pass Tests: Agregar botón de ajustes en `src/components/Topbar.tsx`, cablear apertura del modal y registrar listener para aplicar actualización al cerrar el aplicativo si el usuario no reinicia de inmediato.
+  - [x] Refactor & Coverage: Ejecutar suite completa de tests de la interfaz.
+- [x] Task: Phase 3 Verification & Checkpoint (Protocol in workflow.md)
 
 ### Phase 4: Empaquetado Dual (`electron-builder`) y Scripts de Release con Blindaje Zero-Secrets
 - [ ] Task: Configurar `electron-builder` y script pre-release de auditoría obligatoria

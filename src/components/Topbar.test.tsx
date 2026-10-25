@@ -114,3 +114,24 @@ describe('Topbar & Compact Unified Titlebar component', () => {
     expect(portalBtn.className).toContain('h-10');
   });
 });
+
+  it('renders settings button in topbar and opens settings modal on click or F10 shortcut', () => {
+    const handleOpenSettings = vi.fn();
+    render(
+      <ThemeProvider>
+        <Topbar
+          onSelectTerminal={vi.fn()}
+          onOpenSettings={handleOpenSettings}
+        />
+      </ThemeProvider>
+    );
+
+    const settingsBtn = screen.getByRole('button', { name: /abrir ajustes y configuración/i });
+    expect(settingsBtn).toBeInTheDocument();
+
+    fireEvent.click(settingsBtn);
+    expect(handleOpenSettings).toHaveBeenCalledTimes(1);
+
+    fireEvent.keyDown(window, { key: 'F10' });
+    expect(handleOpenSettings).toHaveBeenCalledTimes(2);
+  });
