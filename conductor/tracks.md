@@ -42,6 +42,7 @@
 
 ---
 
-- [ ] **Track: Ingeniería Inversa, Análisis Comparativo y Extracción de Features (CMDA-2, HMDA v1/v1.1/v2.0 y KACE)**
+- [~] **Track: Ingeniería Inversa, Análisis Comparativo y Extracción de Features (CMDA-2, HMDA v1/v1.1/v2.0 y KACE)**
   *Link: [./tracks/reverse_eng_mda_kace_20261025/index.md](./tracks/reverse_eng_mda_kace_20261025/index.md)*
+
 
