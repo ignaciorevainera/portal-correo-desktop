@@ -24,17 +24,9 @@
   - [x] Refactor & Verify Coverage: Ejecutar auditoría automatizada de expresiones regulares sobre el árbol de archivos para verificar 0 fugas de IPs/claves/hostnames reales.
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Sanitización Zero-Secrets en Servicios Backend, Mocks y Documentación' (Protocol in workflow.md) 6628110
 
-## Phase 3: Pantalla de Bloqueo Corporativo (`SecurityLockScreen`) e Integración IPC [checkpoint: dd771bb]
-
-- [x] Task: Integrar canales IPC de Seguridad y bloqueo de handlers en `electron/main.cjs` y `electron/preload.cjs` dd771bb
-  - [x] Write Failing Tests: Actualizar `src/services/electronClient.test.ts` para probar `getSecurityStatus()`, `unlockApplication(configPath, corporateKey)` y el bloqueo de consultas cuando la sesión no está autorizada.
-  - [x] Implement to Pass Tests: Exponer los canales IPC `cmda:security-status` y `cmda:security-unlock` en `main.cjs` y `preload.cjs`, protegiendo todos los demás handlers IPC (`cmda:search`, `cmda:launch-vnc`, `cmda:launch-msra`, `cmda:ping`) para que rechacen invocaciones si `securityGate` no está autorizado.
-  - [x] Refactor & Verify Coverage: Verificar tipado estricto en `src/types/terminal.ts` y `src/services/electronClient.ts`.
-- [x] Task: Crear componente `SecurityLockScreen.tsx` y conectar el bloqueo en `App.tsx` dd771bb
-  - [x] Write Failing Tests: Crear `src/components/SecurityLockScreen.test.tsx` y actualizar `src/App.test.tsx` verificando que cuando el Gatekeeper devuelve `authorized: false`, no se renderice la consola ni datos mock y se muestre la pantalla de activación/bloqueo corporativo.
-  - [x] Implement to Pass Tests: Construir `src/components/SecurityLockScreen.tsx` (permitiendo indicar la ruta UNC/local de `cmda.config.json` e ingresar la Clave Corporativa, además de mostrar el diagnóstico de red/dominio) e integrarlo en `src/App.tsx`.
-  - [x] Refactor & Verify Coverage: Ejecutar `npm test` y `npm run build` verificando 0 referencias a datos reales en `dist/`.
-- [x] Task: Conductor - User Manual Verification 'Phase 3: Pantalla de Bloqueo Corporativo (SecurityLockScreen) e Integración IPC' (Protocol in workflow.md) dd771bb
+## Phase 3: Pantalla de Bloqueo Corporativo (`SecurityLockScreen`) e Integración IPC [REVERTIDO]
+> **Nota de Reversión (Revert Track)**: A solicitud del usuario mediante `/conductor-revert`, se eliminó el requisito de clave corporativa y la pantalla de bloqueo (`SecurityLockScreen`). La aplicación queda abierta y disponible de forma directa para cualquier usuario sin necesidad de ingresar claves o archivos de configuración externos. El resguardo de seguridad se mantiene íntegramente mediante la política Zero-Secrets en el repositorio (sin IPs sensibles ni credenciales en GitHub) y el acceso natural por red corporativa / VPN.
+- [~] Task: Revertido - Prescindir de `SecurityLockScreen.tsx` y requisito de clave corporativa en handlers IPC, habilitando acceso directo a la consola para cualquier usuario.
 
 ## Phase 4: Purga Criptográfica del Historial de Git y Auditoría Final [checkpoint: 2fe0692]
 

@@ -2,7 +2,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from './App';
 
-describe('App Smoke, Security Gatekeeper & Remote Tools Feedback Test', () => {
+describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
   const originalWindow = global.window;
 
   beforeEach(() => {
@@ -14,35 +14,12 @@ describe('App Smoke, Security Gatekeeper & Remote Tools Feedback Test', () => {
     (global as any).window = originalWindow;
   });
 
-  it('renders the application header with new CMDA title when authorized', async () => {
+  it('renders the application header with new CMDA title directly for any user', async () => {
     render(<App />);
     expect(screen.getByText(/new CMDA/i)).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText(/PC-DEMO-001/i)).toBeInTheDocument();
     });
-  });
-
-  it('blocks the console and shows SecurityLockScreen when outside corporate network/domain', async () => {
-    (global as any).window.electronAPI = {
-      getSecurityStatus: vi.fn().mockResolvedValue({
-        authorized: false,
-        configured: true,
-        domainMatched: false,
-        networkReachable: false,
-        detectedDomain: 'HOME-PC',
-        reason: 'OUTSIDE_CORPORATE_NETWORK',
-        message: 'Acceso denegado: El equipo se encuentra fuera del dominio corporativo y sin VPN.',
-      }),
-    };
-
-    render(<App />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Control de Acceso Corporativo/i)).toBeInTheDocument();
-      expect(screen.getByText(/Consola Bloqueada por Política de Seguridad/i)).toBeInTheDocument();
-    });
-
-    expect(screen.queryByText(/PC-DEMO-001/i)).not.toBeInTheDocument();
   });
 
   it('shows diagnostic warning banner and MSRA suggestion button when VNC is closed and MSRA is available', async () => {
@@ -58,15 +35,6 @@ describe('App Smoke, Security Gatekeeper & Remote Tools Feedback Test', () => {
     });
 
     (global as any).window.electronAPI = {
-      getSecurityStatus: vi.fn().mockResolvedValue({
-        authorized: true,
-        configured: true,
-        domainMatched: true,
-        networkReachable: true,
-        detectedDomain: 'CORP.LOCAL',
-        reason: 'AUTHORIZED',
-        message: 'Autorizado',
-      }),
       checkStatus: vi.fn().mockResolvedValue({ connected: true, mode: 'sql', server: '192.0.2.50' }),
       searchTerminal: vi.fn().mockResolvedValue({
         source: 'sql',
@@ -115,15 +83,6 @@ describe('App Smoke, Security Gatekeeper & Remote Tools Feedback Test', () => {
     const startPingMock = vi.fn();
 
     (global as any).window.electronAPI = {
-      getSecurityStatus: vi.fn().mockResolvedValue({
-        authorized: true,
-        configured: true,
-        domainMatched: true,
-        networkReachable: true,
-        detectedDomain: 'CORP.LOCAL',
-        reason: 'AUTHORIZED',
-        message: 'Autorizado',
-      }),
       checkStatus: vi.fn().mockResolvedValue({ connected: true, mode: 'sql', server: '192.0.2.50' }),
       searchTerminal: vi.fn().mockResolvedValue({
         source: 'sql',

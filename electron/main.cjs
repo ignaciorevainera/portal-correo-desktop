@@ -4,7 +4,6 @@ const fs = require('fs');
 const dbService = require('./dbService.cjs');
 const systemTools = require('./systemTools.cjs');
 const dnsResolver = require('./dnsResolver.cjs');
-const securityGate = require('./securityGate.cjs');
 
 let tray = null;
 let activePingProcess = null;
@@ -144,38 +143,20 @@ ipcMain.handle('cmda:open-external', async (_event, url) => {
   }
 });
 
-// Security Gate IPC Handlers
+// Operational IPC Handlers (Direct access without lock screen)
 ipcMain.handle('cmda:security-status', async () => {
-  return await securityGate.evaluateSecurityGate();
+  return { authorized: true, reason: 'AUTHORIZED', message: 'Acceso directo habilitado' };
 });
 
-ipcMain.handle('cmda:security-unlock', async (_event, configPath, corporateKey) => {
-  const status = await securityGate.unlockApplication(configPath, corporateKey);
-  dbService.resetPool();
-  return status;
+ipcMain.handle('cmda:security-unlock', async () => {
+  return { authorized: true, reason: 'AUTHORIZED', message: 'Acceso directo habilitado' };
 });
 
-// Protected Operational IPC Handlers
 ipcMain.handle('cmda:status', async () => {
-  const gate = await securityGate.evaluateSecurityGate();
-  if (!gate.authorized) {
-    return {
-      connected: false,
-      server: 'Bloqueado por Seguridad',
-      database: '',
-      mode: 'mock',
-      error: gate.message,
-    };
-  }
   return await dbService.checkStatus();
 });
 
 ipcMain.handle('cmda:search-terminal', async (_event, query) => {
-  const gate = await securityGate.evaluateSecurityGate();
-  if (!gate.authorized) {
-    return { source: 'mock', data: null, error: gate.message };
-  }
-
   try {
     const raw = await dbService.getTerminalInfo(query);
     if (raw) {
@@ -226,30 +207,14 @@ ipcMain.handle('cmda:search-terminal', async (_event, query) => {
 });
 
 ipcMain.handle('cmda:launch-vnc', async (_event, target) => {
-  const gate = await securityGate.evaluateSecurityGate();
-  if (!gate.authorized) {
-    return { success: false, message: gate.message };
-  }
   return await systemTools.launchVncSmart(target);
 });
 
 ipcMain.handle('cmda:launch-msra', async (_event, target) => {
-  const gate = await securityGate.evaluateSecurityGate();
-  if (!gate.authorized) {
-    return { success: false, message: gate.message };
-  }
   return systemTools.launchMsra(target);
 });
 
 ipcMain.on('cmda:ping-start', async (event, target, continuous) => {
-  const gate = await securityGate.evaluateSecurityGate();
-  if (!gate.authorized) {
-    if (!event.sender.isDestroyed()) {
-      event.sender.send('cmda:ping-data', `Acceso denegado: ${gate.message}\n`);
-      event.sender.send('cmda:ping-end', 1);
-    }
-    return;
-  }
 
   if (activePingProcess) {
     try {

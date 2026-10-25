@@ -7,7 +7,6 @@ import { QuickActionsBar, ActionFeedbackState } from './components/QuickActionsB
 import { LivePingConsole } from './components/LivePingConsole';
 import { AlertsPanel } from './components/AlertsPanel';
 import { ResetUptimePanel } from './components/ResetUptimePanel';
-import { SecurityLockScreen } from './components/SecurityLockScreen';
 import { OperatorContextMenu } from './components/OperatorContextMenu';
 import {
   getAllTerminals,
@@ -19,11 +18,8 @@ import {
   searchTerminalUnified,
   launchVncClient,
   launchMsraClient,
-  checkSecurityGateStatus,
-  unlockCorporateSecurity,
   openExternalUrl,
   BackendStatus,
-  SecurityGateStatus,
 } from './services/electronClient';
 import { TerminalData } from './types/terminal';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -36,39 +32,16 @@ export default function App(): React.JSX.Element {
   const [pingMode, setPingMode] = useState<'standard' | 'infinite'>('standard');
   const [status, setStatus] = useState<BackendStatus>({ connected: false, mode: 'mock' });
   const [actionFeedback, setActionFeedback] = useState<ActionFeedbackState | null>(null);
-  const [securityStatus, setSecurityStatus] = useState<SecurityGateStatus | null>(null);
-  const [isUnlocking, setIsUnlocking] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const allTerminals = getAllTerminals();
 
-  const verifySecurity = async () => {
-    try {
-      const sec = await checkSecurityGateStatus();
-      setSecurityStatus(sec);
-      if (sec.authorized) {
-        const backend = await checkBackendStatus();
-        setStatus(backend);
-      }
-    } catch {
-      setSecurityStatus({
-        authorized: true,
-        configured: true,
-        domainMatched: true,
-        networkReachable: true,
-        detectedDomain: 'DEV-MODE',
-        reason: 'AUTHORIZED',
-        message: 'Modo desarrollo',
-      });
-    }
-  };
-
   useEffect(() => {
-    verifySecurity();
+    checkBackendStatus().then(setStatus).catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (!selectedPc || (securityStatus && !securityStatus.authorized)) return;
+    if (!selectedPc) return;
     setIsLoading(true);
     setIsPinging(false);
 
@@ -84,7 +57,7 @@ export default function App(): React.JSX.Element {
       .catch(() => {
         setIsLoading(false);
       });
-  }, [selectedPc, securityStatus]);
+  }, [selectedPc]);
 
   const handleStartPing = (mode: 'standard' | 'infinite' = 'standard') => {
     setPingMode(mode);
@@ -120,34 +93,6 @@ export default function App(): React.JSX.Element {
     window.addEventListener('keydown', handleGlobalShortcuts);
     return () => window.removeEventListener('keydown', handleGlobalShortcuts);
   }, [terminal, isPinging]);
-
-  const handleUnlockSecurity = async (configPath: string, key: string) => {
-    setIsUnlocking(true);
-    try {
-      const res = await unlockCorporateSecurity(configPath, key);
-      setSecurityStatus(res);
-      if (res.authorized) {
-        const backend = await checkBackendStatus();
-        setStatus(backend);
-      }
-    } finally {
-      setIsUnlocking(false);
-    }
-  };
-
-  const handleRetrySecurity = async () => {
-    setIsUnlocking(true);
-    try {
-      const updated = await checkSecurityGateStatus();
-      setSecurityStatus(updated);
-      if (updated.authorized) {
-        const backend = await checkBackendStatus();
-        setStatus(backend);
-      }
-    } finally {
-      setIsUnlocking(false);
-    }
-  };
 
   const handleSelectTerminal = (pc: string): void => {
     setSelectedPc(pc);
@@ -243,19 +188,6 @@ export default function App(): React.JSX.Element {
     setSelectedPc(pc);
     handleStartPing('standard');
   };
-
-  if (securityStatus && !securityStatus.authorized) {
-    return (
-      <ThemeProvider>
-        <SecurityLockScreen
-          status={securityStatus}
-          onUnlock={handleUnlockSecurity}
-          onRetry={handleRetrySecurity}
-          isLoading={isUnlocking}
-        />
-      </ThemeProvider>
-    );
-  }
 
   return (
     <ThemeProvider>
