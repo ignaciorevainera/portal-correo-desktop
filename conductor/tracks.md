@@ -68,7 +68,7 @@
 
 ---
 
-- [ ] **Track: Empty State de Terminal Inexistente y Supresión de Auto-Scroll / Foco en Ping**
+- [~] **Track: Empty State de Terminal Inexistente y Supresión de Auto-Scroll / Foco en Ping**
   *Link: [./tracks/terminal_empty_state_ping_no_scroll_20261025/index.md](./tracks/terminal_empty_state_ping_no_scroll_20261025/index.md)*
 
 
