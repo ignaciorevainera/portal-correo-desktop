@@ -51,5 +51,11 @@
 - [x] **Track: UI/UX Refinements, QuickActionsBar Minimalista, Topbar Expandida y Estado Inicial Limpio**
   *Link: [./tracks/ui_refinements_topbar_quickactions_20261025/index.md](./tracks/ui_refinements_topbar_quickactions_20261025/index.md)*
 
+---
+
+- [ ] **Track: Reorganización Integral UI, Unificación Técnica, Consola Windows de Ping y Arrastre de Ventana**
+  *Link: [./tracks/ui_reorganization_ping_table_20261025/index.md](./tracks/ui_reorganization_ping_table_20261025/index.md)*
+
+
 
 
