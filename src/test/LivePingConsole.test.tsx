@@ -186,4 +186,48 @@ describe('LivePingConsole Component', () => {
     const terminalBox = container.querySelector('.bg-\\[\\#0C0C0C\\]');
     expect(terminalBox?.className).toContain('h-64');
   });
+
+  it('never calls scrollIntoView when ping data arrives, ping finishes, or logs are cleared', () => {
+    const scrollMock = vi.fn();
+    window.HTMLElement.prototype.scrollIntoView = scrollMock;
+
+    let dataCallback: ((text: string) => void) | null = null;
+    let doneCallback: ((code: number) => void) | null = null;
+    vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData, onDone) => {
+      dataCallback = onData;
+      doneCallback = onDone || null;
+      return () => {};
+    });
+
+    render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    // Initial mount and log replacement
+    scrollMock.mockClear();
+
+    // Data arrives
+    act(() => {
+      dataCallback?.('Respuesta desde 192.0.2.100: bytes=32 tiempo=1ms');
+    });
+
+    expect(scrollMock).not.toHaveBeenCalled();
+
+    // Ping finishes
+    act(() => {
+      doneCallback?.(0);
+    });
+
+    expect(scrollMock).not.toHaveBeenCalled();
+
+    // Logs cleared
+    const clearBtn = screen.getByRole('button', { name: /limpiar/i });
+    fireEvent.click(clearBtn);
+
+    expect(scrollMock).not.toHaveBeenCalled();
+  });
 });
