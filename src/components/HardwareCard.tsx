@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { TerminalData } from '../types/terminal';
 import { Cpu, HardDrive, Shield, Globe, Calendar, Layers, Copy, Check } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export function HardwareCard({ terminal }: { terminal: TerminalData }): React.JSX.Element {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -14,15 +17,18 @@ export function HardwareCard({ terminal }: { terminal: TerminalData }): React.JS
   };
 
   return (
-    <div className="rounded-lg border border-border bg-card p-3 space-y-3 shadow-xs">
+    <Card size="sm" className="rounded-lg border border-border bg-card p-3 space-y-3 shadow-xs gap-0 py-3">
       <div className="flex items-center justify-between border-b border-border/60 pb-2">
         <h2 className="text-xs font-bold font-heading uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
           <Cpu className="h-3.5 w-3.5 text-primary" />
           Ficha Técnica & Sistema
         </h2>
-        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border font-medium">
+        <Badge
+          variant="outline"
+          className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted text-muted-foreground border-border font-medium h-5"
+        >
           {terminal.architecture}
-        </span>
+        </Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
@@ -41,12 +47,14 @@ export function HardwareCard({ terminal }: { terminal: TerminalData }): React.JS
             <span className="text-muted-foreground font-medium flex items-center gap-1 text-[11px]">
               <Cpu className="h-3 w-3 text-muted-foreground" /> Modelo y CPU
             </span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-xs"
               onClick={() => handleCopy('cpu', terminal.cpuModel)}
               aria-label="Copiar Modelo y CPU"
               title={copiedKey === 'cpu' ? 'Copiado al portapapeles' : 'Copiar especificación de CPU'}
-              className="h-5 w-5 shrink-0 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
             >
               {copiedKey === 'cpu' ? (
                 <Check className="h-3 w-3 text-emerald-500 animate-in zoom-in-75 duration-150" />
@@ -54,7 +62,7 @@ export function HardwareCard({ terminal }: { terminal: TerminalData }): React.JS
                 <Copy className="h-3 w-3" />
               )}
               {copiedKey === 'cpu' && <span className="sr-only">Copiado</span>}
-            </button>
+            </Button>
           </div>
           <p className="text-foreground font-mono text-[11px] line-clamp-2" title={terminal.cpuModel}>
             {terminal.cpuModel}
@@ -89,6 +97,6 @@ export function HardwareCard({ terminal }: { terminal: TerminalData }): React.JS
           <p className="font-mono text-foreground text-xs">{terminal.surveyDate}</p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

@@ -107,4 +107,30 @@ describe('LivePingConsole Component', () => {
 
     expect(screen.queryByText(/Respuesta 1/i)).not.toBeInTheDocument();
   });
+
+  it('calls onPingComplete when the ping process finishes (onDone callback)', () => {
+    const onPingComplete = vi.fn();
+    let doneHandler: ((code: number) => void) | null = null;
+
+    vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, _onData, onDone) => {
+      doneHandler = onDone || null;
+      return () => {};
+    });
+
+    render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        onTogglePing={vi.fn()}
+        onPingComplete={onPingComplete}
+      />
+    );
+
+    act(() => {
+      doneHandler?.(0);
+    });
+
+    expect(onPingComplete).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/Proceso ping finalizado/i)).toBeInTheDocument();
+  });
 });

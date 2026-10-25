@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import { TerminalData, TerminalAlert } from '../types/terminal';
+import { TerminalData } from '../types/terminal';
 import { Bell, PlusCircle, CheckCircle, AlertTriangle, User } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
 interface AlertsPanelProps {
   terminal: TerminalData;
@@ -49,69 +53,77 @@ export function AlertsPanel({
           </p>
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="default"
+          size="sm"
           onClick={() => setShowAddForm((prev) => !prev)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+          className="text-xs font-semibold cursor-pointer"
         >
           <PlusCircle className="h-4 w-4" />
           {showAddForm ? 'Cancelar' : 'Nueva Alerta'}
-        </button>
+        </Button>
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleSubmit} className="p-4 rounded-lg border border-border bg-card space-y-3 shadow-sm animate-fade-in">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-primary">Registrar Nueva Alerta</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div className="space-y-1">
-              <label className="text-muted-foreground font-medium">Título de la Alerta</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Título de la alerta..."
-                className="w-full h-8 px-2.5 rounded bg-muted/60 border border-input text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+        <Card size="sm" className="p-4 rounded-lg border border-border bg-card shadow-xs animate-fade-in">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-primary">Registrar Nueva Alerta</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="space-y-1">
+                <label className="text-muted-foreground font-medium">Título de la Alerta</label>
+                <Input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Título de la alerta..."
+                  className="h-8 text-xs bg-muted/60"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-muted-foreground font-medium">Operador Responsable</label>
+                <Input
+                  type="text"
+                  value={operator}
+                  onChange={(e) => setOperator(e.target.value)}
+                  className="h-8 text-xs bg-muted/60 font-mono"
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-1 text-xs">
+              <label className="text-muted-foreground font-medium">Descripción Detallada</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Descripción detallada de la incidencia..."
+                rows={3}
+                className="w-full p-2.5 rounded-md bg-muted/60 border border-input text-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
                 required
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-muted-foreground font-medium">Operador Responsable</label>
-              <input
-                type="text"
-                value={operator}
-                onChange={(e) => setOperator(e.target.value)}
-                className="w-full h-8 px-2.5 rounded bg-muted/60 border border-input text-foreground focus:outline-none focus:ring-1 focus:ring-ring font-mono"
-                required
-              />
+            <div className="flex justify-end gap-2 pt-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={() => setShowAddForm(false)}
+                className="text-muted-foreground cursor-pointer"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="default"
+                size="xs"
+                className="font-semibold cursor-pointer"
+              >
+                Registrar Alerta
+              </Button>
             </div>
-          </div>
-          <div className="space-y-1 text-xs">
-            <label className="text-muted-foreground font-medium">Descripción Detallada</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descripción detallada de la incidencia..."
-              rows={3}
-              className="w-full p-2.5 rounded bg-muted/60 border border-input text-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
-              required
-            />
-          </div>
-          <div className="flex justify-end gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => setShowAddForm(false)}
-              className="px-3 py-1.5 rounded text-xs text-muted-foreground hover:bg-muted"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-3 py-1.5 rounded bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90"
-            >
-              Registrar Alerta
-            </button>
-          </div>
-        </form>
+          </form>
+        </Card>
       )}
 
       <div className="space-y-2.5">
@@ -122,9 +134,10 @@ export function AlertsPanel({
           </div>
         ) : (
           terminal.alerts.map((alert) => (
-            <div
+            <Card
               key={alert.id}
-              className={`p-3.5 rounded-lg border text-xs space-y-2 transition-all ${
+              size="sm"
+              className={`p-3.5 rounded-lg border text-xs space-y-2 transition-all gap-0 py-3.5 ${
                 alert.active
                   ? 'bg-amber-500/5 border-amber-500/30'
                   : 'bg-card border-border opacity-70'
@@ -138,15 +151,16 @@ export function AlertsPanel({
                     <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
                   )}
                   <h4 className="font-semibold text-foreground text-sm">{alert.title}</h4>
-                  <span
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase h-5 ${
                       alert.active
-                        ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                        : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                        ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                        : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
                     }`}
                   >
                     {alert.active ? 'Activa' : 'Cerrada'}
-                  </span>
+                  </Badge>
                 </div>
                 <span className="font-mono text-[11px] text-muted-foreground">{alert.date}</span>
               </div>
@@ -159,13 +173,15 @@ export function AlertsPanel({
                 </span>
 
                 {alert.active && closingAlertId !== alert.id && (
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
+                    size="xs"
                     onClick={() => setClosingAlertId(alert.id)}
-                    className="text-primary hover:underline font-medium"
+                    className="text-primary font-medium h-auto p-0 cursor-pointer"
                   >
                     Cerrar Alerta
-                  </button>
+                  </Button>
                 )}
               </div>
 
@@ -174,28 +190,32 @@ export function AlertsPanel({
                   <label className="block text-[11px] font-medium text-muted-foreground">
                     Texto de Cierre / Resolución
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={resolutionText}
                     onChange={(e) => setResolutionText(e.target.value)}
                     placeholder="Describe cómo se resolvió la alerta..."
-                    className="w-full h-8 px-2.5 rounded bg-muted/60 border border-input text-foreground text-xs"
+                    className="h-8 text-xs bg-muted/60"
                   />
                   <div className="flex justify-end gap-2">
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="xs"
                       onClick={() => setClosingAlertId(null)}
-                      className="px-2 py-1 text-xs text-muted-foreground hover:bg-muted rounded"
+                      className="text-muted-foreground cursor-pointer"
                     >
                       Cancelar
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="default"
+                      size="xs"
                       onClick={() => handleConfirmClose(alert.id)}
-                      className="px-2 py-1 text-xs bg-emerald-600 text-white rounded font-medium hover:bg-emerald-500"
+                      className="bg-emerald-600 text-white hover:bg-emerald-500 cursor-pointer"
                     >
                       Confirmar Cierre
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -206,7 +226,7 @@ export function AlertsPanel({
                   <p>{alert.resolutionText}</p>
                 </div>
               )}
-            </div>
+            </Card>
           ))
         )}
       </div>

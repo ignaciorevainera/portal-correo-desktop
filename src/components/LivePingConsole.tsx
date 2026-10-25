@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Terminal as TerminalIcon, Play, Square, Trash2, Copy, Check } from 'lucide-react';
 import { subscribeToPing } from '../services/electronClient';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface LivePingConsoleProps {
   ip: string;
   isPinging: boolean;
   pingMode?: 'standard' | 'infinite';
   onTogglePing: () => void;
+  onPingComplete?: () => void;
 }
 
 export function LivePingConsole({
@@ -14,10 +17,13 @@ export function LivePingConsole({
   isPinging,
   pingMode = 'standard',
   onTogglePing,
+  onPingComplete,
 }: LivePingConsoleProps): React.JSX.Element {
   const [logs, setLogs] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const consoleBottomRef = useRef<HTMLDivElement>(null);
+  const onPingCompleteRef = useRef(onPingComplete);
+  onPingCompleteRef.current = onPingComplete;
 
   useEffect(() => {
     if (!isPinging || !ip) return;
@@ -39,6 +45,7 @@ export function LivePingConsole({
           ...prev,
           `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).`,
         ]);
+        onPingCompleteRef.current?.();
       },
       isInfinite
     );
@@ -76,53 +83,62 @@ export function LivePingConsole({
     <div className="rounded-lg border border-border bg-slate-950 text-slate-100 p-3 sm:p-4 space-y-2.5 font-mono text-xs shadow-inner">
       <div className="flex items-center justify-between border-b border-slate-800 pb-2 flex-wrap gap-2">
         <div className="flex items-center gap-2 text-slate-300">
-          <TerminalIcon className="h-4 w-4 text-emerald-400" />
+          <TerminalIcon className={`h-4 w-4 text-emerald-400 ${isPinging ? 'animate-pulse' : ''}`} />
           <span className="font-semibold text-slate-200">Consola de Ping en Vivo:</span>
           <span className="text-emerald-400 font-bold">{ip}</span>
           {pingMode === 'infinite' && (
-            <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] uppercase font-bold">
+            <Badge
+              variant="outline"
+              className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border-amber-500/40 text-[10px] uppercase font-bold h-5"
+            >
               Modo -t
-            </span>
+            </Badge>
           )}
         </div>
 
         {/* Acciones de Consola en la Esquina Superior Derecha: Detener/Iniciar, Limpiar, Copiar Logs */}
         <div className="flex items-center gap-1.5">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="xs"
             onClick={onTogglePing}
             aria-label={isPinging ? 'Detener ping en vivo' : 'Iniciar ping'}
-            className={`px-2.5 py-1 rounded text-[11px] font-sans font-medium flex items-center gap-1 transition-colors cursor-pointer ${
+            className={`h-7 px-2.5 rounded text-[11px] font-sans font-medium flex items-center gap-1 transition-colors cursor-pointer ${
               isPinging
-                ? 'bg-red-950 text-red-300 border border-red-800 hover:bg-red-900'
-                : 'bg-emerald-950 text-emerald-300 border border-emerald-800 hover:bg-emerald-900'
+                ? 'bg-red-950 text-red-300 border-red-800 hover:bg-red-900 hover:text-red-200'
+                : 'bg-emerald-950 text-emerald-300 border-emerald-800 hover:bg-emerald-900 hover:text-emerald-200'
             }`}
           >
             {isPinging ? <Square className="h-3 w-3" /> : <Play className="h-3 w-3" />}
             <span>{isPinging ? 'Detener' : 'Iniciar'}</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="xs"
             onClick={handleClear}
             aria-label="Limpiar logs de ping"
             title="Limpiar pantalla de logs"
-            className="px-2 py-1 rounded text-[11px] font-sans text-slate-400 hover:text-slate-200 border border-slate-800 hover:bg-slate-900 transition-colors flex items-center gap-1 cursor-pointer"
+            className="h-7 px-2 rounded text-[11px] font-sans bg-transparent text-slate-400 hover:text-slate-200 border-slate-800 hover:bg-slate-900 transition-colors flex items-center gap-1 cursor-pointer"
           >
             <Trash2 className="h-3 w-3" />
             <span>Limpiar</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="xs"
             onClick={handleCopyLogs}
             disabled={logs.length === 0}
             aria-label="Copiar logs de ping"
             title="Copiar logs completos al portapapeles"
-            className={`h-7 min-w-[105px] px-2.5 rounded text-[11px] font-sans border transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`h-7 min-w-[105px] px-2.5 rounded text-[11px] font-sans transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
               copied
-                ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700'
-                : 'text-slate-300 border-slate-800 hover:bg-slate-900 hover:text-white'
+                ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700 hover:bg-emerald-950'
+                : 'bg-transparent text-slate-300 border-slate-800 hover:bg-slate-900 hover:text-white'
             }`}
           >
             {copied ? (
@@ -131,7 +147,7 @@ export function LivePingConsole({
               <Copy className="h-3 w-3 text-slate-400" />
             )}
             <span>{copied ? 'Logs copiados' : 'Copiar Logs'}</span>
-          </button>
+          </Button>
         </div>
       </div>
 

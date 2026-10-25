@@ -107,9 +107,12 @@ describe('App Smoke, Security Gatekeeper & Remote Tools Feedback Test', () => {
     });
   });
 
-  it('renders single-scroll layout without Sidebar and with all terminal sections in strict hierarchical order', async () => {
+  it('renders single-scroll layout without Sidebar, auto-triggers 4-packet ping on terminal load, and never scrolls main to ping section', async () => {
     const scrollMock = vi.fn();
     window.HTMLElement.prototype.scrollIntoView = scrollMock;
+
+    let doneCallback: ((code: number) => void) | null = null;
+    const startPingMock = vi.fn();
 
     (global as any).window.electronAPI = {
       getSecurityStatus: vi.fn().mockResolvedValue({
@@ -144,6 +147,13 @@ describe('App Smoke, Security Gatekeeper & Remote Tools Feedback Test', () => {
           resetHistory: [],
         },
       }),
+      ping: startPingMock,
+      stopPing: vi.fn(),
+      onPingData: vi.fn().mockReturnValue(() => {}),
+      onPingEnd: vi.fn().mockImplementation((cb: (code: number) => void) => {
+        doneCallback = cb;
+        return () => {};
+      }),
     };
 
     render(<App />);
@@ -159,15 +169,27 @@ describe('App Smoke, Security Gatekeeper & Remote Tools Feedback Test', () => {
 
     // Verify Sidebar is completely absent
     expect(screen.queryByRole('navigation', { name: /barra lateral/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /colapsar barra lateral/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /expandir barra lateral/i })).not.toBeInTheDocument();
 
-    // Verify Ping click scrolls smoothly to internal console
+    // 1. Verify 4-packet standard ping started automatically upon terminal search/load
+    await waitFor(() => {
+      expect(startPingMock).toHaveBeenCalledWith('192.0.2.101', false);
+      expect(screen.getAllByRole('button', { name: /detener ping en vivo/i }).length).toBeGreaterThan(0);
+    });
+
+    // 2. Verify when the 4-packet ping completes, isPinging turns off automatically
+    (doneCallback as ((code: number) => void) | null)?.(0);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /^iniciar ping$/i }).length).toBeGreaterThan(0);
+    });
+
+    // 3. Verify clicking Ping or Ping -t does NOT scroll the main container to pingConsoleRef
+    scrollMock.mockClear();
     const pingBtn = screen.getAllByRole('button', { name: /^iniciar ping$/i })[0];
     fireEvent.click(pingBtn);
 
-    await waitFor(() => {
-      expect(scrollMock).toHaveBeenCalled();
-    }, { timeout: 3000 });
+    // Wait 100ms to ensure no delayed scrollIntoView is triggered on ping section
+    await new Promise((r) => setTimeout(r, 100));
+    expect(scrollMock).not.toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
   });
 });

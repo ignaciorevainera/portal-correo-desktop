@@ -32,5 +32,5 @@
 
 ---
 
-- [ ] **Track: Incorporación de Shadcn UI (`preset b5XRZYXrNg`), Auto-Ping al Buscar Terminal, Sin Auto-Scroll y Animación de Pulsación**
+- [x] **Track: Incorporación de Shadcn UI (`preset b5XRZYXrNg`), Auto-Ping al Buscar Terminal, Sin Auto-Scroll y Animación de Pulsación**
   *Link: [./tracks/shadcn_autoping_pulse_20261025/index.md](./tracks/shadcn_autoping_pulse_20261025/index.md)*

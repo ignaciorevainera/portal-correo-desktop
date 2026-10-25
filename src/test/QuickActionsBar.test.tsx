@@ -93,4 +93,22 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
     fireEvent.click(fallbackBtn);
     expect(onFallbackMsra).toHaveBeenCalledTimes(1);
   });
+
+  it('uses pulse animation (animate-pulse) instead of spin (animate-spin) while pinging', () => {
+    render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={true}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    const stopPingBtn = screen.getByRole('button', { name: /detener ping en vivo/i });
+    const icon = stopPingBtn.querySelector('svg');
+    expect(icon).not.toBeNull();
+    expect(icon?.getAttribute('class')).toContain('animate-pulse');
+    expect(icon?.getAttribute('class')).not.toContain('animate-spin');
+  });
 });

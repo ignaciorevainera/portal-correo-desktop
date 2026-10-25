@@ -19,6 +19,9 @@ import {
   hideToTray,
   openExternalUrl,
 } from '../services/electronClient';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
 interface TopbarProps {
   onSelectTerminal: (pc: string) => void;
@@ -99,8 +102,8 @@ export function Topbar({
         {/* Buscador Rápido Centralizado */}
         <div className="relative flex-1 max-w-sm app-no-drag">
           <div className="relative flex items-center">
-            <Search className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-            <input
+            <Search className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none z-10" />
+            <Input
               ref={inputRef}
               type="text"
               value={query}
@@ -111,9 +114,9 @@ export function Topbar({
               onKeyDown={handleKeyDownInput}
               onFocus={() => query.trim() && setIsOpen(true)}
               placeholder="Buscar terminal o IP (Ctrl+F)..."
-              className="w-full h-7 pl-8 pr-12 text-xs rounded-md bg-muted/70 border border-input focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring text-foreground font-mono transition-colors"
+              className="w-full h-7 pl-8 pr-12 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-xs"
             />
-            <kbd className="absolute right-1.5 px-1 py-0.2 text-[9px] uppercase font-mono tracking-wider bg-background/80 text-muted-foreground rounded border border-border">
+            <kbd className="absolute right-1.5 px-1 py-0.2 text-[9px] uppercase font-mono tracking-wider bg-background/80 text-muted-foreground rounded border border-border pointer-events-none">
               Ctrl+F
             </kbd>
           </div>
@@ -143,8 +146,10 @@ export function Topbar({
 
                     {/* Acciones directas en 1 clic */}
                     <div className="flex items-center gap-1 shrink-0">
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon-xs"
                         onClick={(e) => {
                           e.stopPropagation();
                           onSelectTerminal(term.pc);
@@ -152,12 +157,14 @@ export function Topbar({
                         }}
                         aria-label={`Conectar VNC a ${term.pc}`}
                         title={`Lanzar VNC Viewer a ${term.pc}`}
-                        className="p-1 rounded bg-primary/10 hover:bg-primary/20 text-primary text-xs transition-colors"
+                        className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
                       >
                         <MonitorPlay className="h-3 w-3" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon-xs"
                         onClick={(e) => {
                           e.stopPropagation();
                           onSelectTerminal(term.pc);
@@ -165,10 +172,10 @@ export function Topbar({
                         }}
                         aria-label={`Ping a ${term.pc}`}
                         title={`Lanzar Ping a ${term.pc}`}
-                        className="p-1 rounded bg-muted hover:bg-accent/20 text-foreground text-xs transition-colors"
+                        className="bg-muted hover:bg-accent/20 text-foreground cursor-pointer"
                       >
                         <Play className="h-3 w-3 text-emerald-500" />
-                      </button>
+                      </Button>
                     </div>
                   </li>
                 ))}
@@ -180,68 +187,80 @@ export function Topbar({
         {/* Indicadores de Estado y Acciones Rápidas */}
         <div className="flex items-center gap-1.5 sm:gap-2 app-no-drag">
           {/* Badge de Conexión */}
-          <div
-            className="hidden lg:flex items-center gap-1.5 text-[11px] font-mono px-2 py-0.5 rounded bg-muted text-foreground border border-border"
+          <Badge
+            variant="outline"
+            className="hidden lg:flex items-center gap-1.5 text-[11px] font-mono px-2 py-0.5 rounded-md bg-muted text-foreground border-border h-6"
             title={serverName || 'Modo actual'}
           >
             <Database className={`h-3 w-3 ${backendMode === 'sql' ? 'text-emerald-500' : 'text-amber-500'}`} />
             <span className={`h-1.5 w-1.5 rounded-full ${backendMode === 'sql' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
             <span>{backendMode === 'sql' ? 'SQL Online' : 'Offline / Mock'}</span>
-          </div>
+          </Badge>
 
           {/* Terminal seleccionada */}
           {selectedPc && (
-            <div className="hidden md:flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded bg-muted text-foreground border border-border">
+            <Badge
+              variant="outline"
+              className="hidden md:flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md bg-muted text-foreground border-border h-6"
+            >
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               <span><strong>{selectedPc}</strong></span>
-            </div>
+            </Badge>
           )}
 
           {/* Botón Portal MDA */}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="xs"
             onClick={handleOpenPortalMda}
             aria-label="Abrir Portal MDA"
             title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
-            className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25 transition-colors cursor-pointer"
+            className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/25 text-[11px] cursor-pointer"
           >
             <ExternalLink className="h-3 w-3" />
             <span className="font-semibold">Portal MDA</span>
-          </button>
+          </Button>
 
           {/* Info Modal Trigger */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setIsInfoOpen(true)}
             aria-label="Abrir información del sistema"
             title="Información y características del aplicativo"
-            className="p-1 text-muted-foreground hover:text-foreground rounded hover:bg-muted transition-colors"
+            className="text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <HelpCircle className="h-3.5 w-3.5" />
-          </button>
+          </Button>
 
           <ThemeToggle />
 
           {/* Botones de Ventana (Minimizar a barra de tareas y Apagado a Bandeja del Sistema) */}
           <div className="flex items-center ml-1 border-l border-border pl-1.5 gap-1">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-xs"
               onClick={minimizeWindow}
               aria-label="Minimizar ventana"
               title="Minimizar a barra de tareas"
-              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+              className="text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <Minus className="h-3.5 w-3.5" />
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-xs"
               onClick={hideToTray}
               aria-label="Minimizar a bandeja del sistema"
               title="Ocultar en bandeja del sistema (Turn Off)"
-              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
             >
               <Power className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           </div>
         </div>
       </header>

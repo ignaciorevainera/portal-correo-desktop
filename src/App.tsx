@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { Topbar } from './components/Topbar';
 import { HardwareCard } from './components/HardwareCard';
@@ -40,7 +40,6 @@ export default function App(): React.JSX.Element {
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
-  const pingConsoleRef = useRef<HTMLDivElement>(null);
   const allTerminals = getAllTerminals();
 
   const verifySecurity = async () => {
@@ -71,11 +70,16 @@ export default function App(): React.JSX.Element {
   useEffect(() => {
     if (!selectedPc || (securityStatus && !securityStatus.authorized)) return;
     setIsLoading(true);
+    setIsPinging(false);
 
     searchTerminalUnified(selectedPc)
       .then((res) => {
         setTerminal(res.data);
         setIsLoading(false);
+        if (res.data?.ip) {
+          setPingMode('standard');
+          setIsPinging(true);
+        }
       })
       .catch(() => {
         setIsLoading(false);
@@ -85,11 +89,6 @@ export default function App(): React.JSX.Element {
   const handleStartPing = (mode: 'standard' | 'infinite' = 'standard') => {
     setPingMode(mode);
     setIsPinging(true);
-    setTimeout(() => {
-      if (typeof pingConsoleRef.current?.scrollIntoView === 'function') {
-        pingConsoleRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 50);
   };
 
   const handleTogglePing = () => {
@@ -328,13 +327,14 @@ export default function App(): React.JSX.Element {
                 <HardwareCard terminal={terminal} />
               </div>
 
-              {/* 2° Consola Interna de Ping: Con auto-scroll al pulsar Ping / Ping -t y controles avanzados */}
-              <div ref={pingConsoleRef} className="scroll-mt-4">
+              {/* 2° Consola Interna de Ping: Sin redirección/auto-scroll y con controles avanzados */}
+              <div>
                 <LivePingConsole
                   ip={terminal.ip}
                   isPinging={isPinging}
                   pingMode={pingMode}
                   onTogglePing={handleTogglePing}
+                  onPingComplete={() => setIsPinging(false)}
                 />
               </div>
 
