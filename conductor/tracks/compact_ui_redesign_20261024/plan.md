@@ -27,7 +27,7 @@ Fijación del layout general (`h-screen overflow-hidden`) para que solo `<main>`
   - [x] Actualizar `src/App.tsx` y `src/components/LivePingConsole.tsx` para acoplar el Ping en vivo en la vista principal sin requerir cambio de pestaña
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: Alto Contraste Tipográfico, Copiado en 1 Clic y Menú Contextual Personalizado de Operador
+## Phase 3: Alto Contraste Tipográfico, Copiado en 1 Clic y Menú Contextual Personalizado de Operador [checkpoint: b9cdc19]
 Optimización de densidad y contraste de textos en tarjetas técnicas (`HardwareCard`, `NetworkAdCard`, `AlertsPanel`, `ResetUptimePanel`) respetando los tokens OKLCH, botones de copiado rápido en 1 clic y reemplazo del menú contextual de clic derecho por un menú propio de operador.
 
 - [x] Task: Mejorar contraste de textos, densidad compacta y copiado en 1 clic en tarjetas de datos [2d7fb36]
@@ -36,4 +36,4 @@ Optimización de densidad y contraste de textos en tarjetas técnicas (`Hardware
 - [x] Task: Implementar Menú Contextual Personalizado de Operador (Clic Derecho) [b9cdc19]
   - [x] Escribir pruebas en `src/test/OperatorContextMenu.test.tsx` verificando la apertura con clic derecho (`onContextMenu`) y la ejecución en 1 clic de VNC, Ping, MSRA, Copiar IP/Hostname/MAC y abrir Portal MDA
   - [x] Crear `src/components/OperatorContextMenu.tsx` e integrarlo en `src/App.tsx` bloqueando el menú contextual nativo de Windows/Chromium
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
