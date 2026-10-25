@@ -172,4 +172,38 @@ HMDA no se limita a consultas locales; se conecta a un servidor MySQL corporativ
 
 ---
 
-*(Continuará en la Fase 4: Síntesis Técnica, Matriz de Paridad y PoCs de Integración para new-CMDA)*
+## 4. Fase 4: Matriz de Paridad Exhaustiva y Roadmap para Portal Correo Desktop
+
+### 4.1 Matriz Comparativa de Capacidades Técnicas
+
+| Capacidad / Feature | CMDA Original (VB6) | CMDA-2 (VB6 + Auxiliares) | HMDA v1/v1.1/v2.0 (.NET) | Quest KACE Agent | Portal Correo Desktop (`new-CMDA`) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Runtime & Base Tecnológica** | VB6 (COM / 32-bit) | VB6 (COM / 32-bit) | .NET 4.7.2 (WinForms) | Go + C/C++ Nativo | **Electron 34 + Node 24 + React 19** |
+| **Diseño y Estilo UI** | Windows Clásico (Tabbed) | Windows Clásico (Tabbed) | WinForms Flat con Colores | En segundo plano / CLI | **Tailwind CSS v4 + Shadcn UI (Radix)** |
+| **Búsqueda e Inventario de PC** | SQL Server (Vía UDL) | SQL Server (Vía UDL) | WMI + MySQL (`hmda_sas`) | Agente KACE (`Inventory.exe`) | **SQL Server Corporativo Seguro (tedious)** |
+| **Control Remoto VNC** | UltraVNC (`vncviewer.exe`) | UltraVNC (`vncviewer.exe`) | No integrado directamente | No | **UltraVNC Seguro (sin archivos en disco)** |
+| **Asistencia Remota MSRA** | No integrado | No integrado | No integrado | No | **Lanzador 1-Clic (`offerRA`) sin bloqueos** |
+| **Monitor de Ping en Vivo** | Inexistente | Inexistente | Timer ICMP WinForms | No | **Ping Reactivo en Vivo (`ping -t`, buffer)** |
+| **Wake-on-LAN (WOL)** | Inexistente | Inexistente | Inexistente | `kwol.exe` (Go multired) | **Integración vía `kaceBridge` / UDP nativo** |
+| **Sincronización de Inventario** | Inexistente | Inexistente | Inexistente | `runkbot.exe 4 0` | **Trigger de actualización KACE en 1-clic** |
+| **Botones de Operador Dinámicos** | Inexistente | Inexistente | 3 botones personalizables | No | **Configuración modular en perfil operador** |
+| **Notificaciones Nativas** | Inexistente | Inexistente | Windows Toast (UWP) | `KUserAlert.exe` | **Notificaciones Electron / Toast nativo** |
+| **Exportación a Excel** | Inexistente | Inexistente | `SpreadsheetLight` (.xlsx) | Reportes XML servidor | **Exportación directa XLSX (`xlsx` o IPC)** |
+| **M365 / Microsoft Graph** | Inexistente | Inexistente | MSAL + Graph `/me/sendMail` | No | **En roadmap de autenticación M365** |
+| **Seguridad de Credenciales** | Inseguro (Claves en UDL) | Inseguro (Claves en UDL) | Parcial (Config local XML) | Certificados KACE | **Zero-Secrets (Cifrado AES-256-GCM + Gate)** |
+
+---
+
+### 4.2 Oportunidades Clave de Mejora Identificadas para `new-CMDA`
+
+1. **Botón Wake-on-LAN (WOL) en Ficha de Terminal:**
+   - La estación consultada incluye dirección MAC en la tarjeta de Hardware.
+   - Con el bridge de KACE (`kwol.exe`) o socket UDP nativo de Node.js `dgram`, podemos habilitar un botón **"Encender Estación (WOL)"** junto a VNC y MSRA.
+2. **Acción Rápida "Sincronizar Inventario KACE":**
+   - Botón en la consola para ejecutar `runkbot.exe 4 0` remotamente o en terminales para forzar la actualización de inventario sin esperar el ciclo programado.
+3. **Barra de Enlaces Rápidos de Operador (Quick Launch):**
+   - Adoptar el patrón de HMDA (`bt_edit1..3`) permitiendo que cada operador configure hasta 4 accesos directos (ej. Portal MDA, SOTI MobiControl, Service Manager, Webmail) con colores e iconos personalizados.
+4. **Notificaciones de Alertas en Tiempo Real:**
+   - Replicar la funcionalidad de `alerta_comunicados` de HMDA mediante el sistema de notificaciones de Electron cuando se publique una alerta urgente de red o infraestructura.
+5. **Exportación de Ficha a Excel:**
+   - Botón en la cabecera para descargar los datos técnicos y el historial de Uptime en un archivo `.xlsx` estructurado.
