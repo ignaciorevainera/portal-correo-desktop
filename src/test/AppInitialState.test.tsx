@@ -84,9 +84,14 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
     fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Conectar por VNC Viewer/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Iniciar Asistencia MSRA/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /conexión remota inteligente/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /opciones de conexión remota/i })).toBeInTheDocument();
       expect(startPingMock).toHaveBeenCalledWith('192.0.2.100', false);
     });
+
+    // Verify manual options inside dropdown
+    fireEvent.click(screen.getByRole('button', { name: /opciones de conexión remota/i }));
+    expect(screen.getByRole('button', { name: /Conectar por VNC Viewer/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Iniciar Asistencia MSRA/i })).toBeInTheDocument();
   });
 });

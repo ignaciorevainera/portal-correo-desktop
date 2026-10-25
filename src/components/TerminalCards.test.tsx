@@ -36,10 +36,13 @@ describe('Terminal Inventory & Actions components', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /vnc viewer/i }));
+    // Primary CTA triggers VNC (or smart remote)
+    fireEvent.click(screen.getByRole('button', { name: /conexión remota inteligente/i }));
     expect(onVnc).toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: /asistencia msra/i }));
+    // Dropdown allows forcing MSRA
+    fireEvent.click(screen.getByRole('button', { name: /opciones de conexión remota/i }));
+    fireEvent.click(screen.getByRole('button', { name: /iniciar asistencia msra/i }));
     expect(onMsra).toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: /^iniciar ping$/i }));

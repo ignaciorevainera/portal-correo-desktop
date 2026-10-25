@@ -19,6 +19,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     expect(screen.getByText(/Portal Correo Desktop/i)).toBeInTheDocument();
     expect(screen.getByText(/Buscar una terminal para comenzar/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Conectar por VNC Viewer/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /conexión remota inteligente/i })).not.toBeInTheDocument();
   });
 
   it('shows diagnostic warning banner and MSRA suggestion button when VNC is closed and MSRA is available', async () => {
@@ -61,6 +62,8 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
       expect(screen.getAllByText(/WS-DEMO-002/i).length).toBeGreaterThan(0);
     });
 
+    const dropdownTrigger = screen.getByRole('button', { name: /opciones de conexión remota/i });
+    fireEvent.click(dropdownTrigger);
     const vncButton = screen.getByRole('button', { name: /Conectar por VNC Viewer/i });
     fireEvent.click(vncButton);
 
@@ -166,7 +169,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Conectar por VNC Viewer/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /conexión remota inteligente/i })).toBeInTheDocument();
       expect(screen.getByText(/Ficha Técnica, Red y Sistema/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /iniciar ping/i })).toBeInTheDocument();
       expect(screen.getByText(/Alertas de Terminal/i)).toBeInTheDocument();

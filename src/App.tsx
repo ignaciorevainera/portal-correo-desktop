@@ -19,6 +19,9 @@ import {
   searchTerminalUnified,
   launchVncClient,
   launchMsraClient,
+  probeRemoteStatus,
+  launchSmartRemoteClient,
+  RemoteProbeResult,
   openExternalUrl,
   BackendStatus,
   subscribeToAutofocusSearch,
@@ -38,6 +41,8 @@ export default function App(): React.JSX.Element {
   const [pingMode, setPingMode] = useState<'standard' | 'infinite'>('standard');
   const [status, setStatus] = useState<BackendStatus>({ connected: false, mode: 'mock' });
   const [actionFeedback, setActionFeedback] = useState<ActionFeedbackState | null>(null);
+  const [remoteProbe, setRemoteProbe] = useState<RemoteProbeResult | null>(null);
+  const [isProbingRemote, setIsProbingRemote] = useState<boolean>(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [isSubnetDrawerOpen, setIsSubnetDrawerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -61,10 +66,23 @@ export default function App(): React.JSX.Element {
     };
   }, []);
 
+  const handleProbeRemote = async (ipOrHost: string) => {
+    setIsProbingRemote(true);
+    try {
+      const probeRes = await probeRemoteStatus(ipOrHost);
+      setRemoteProbe(probeRes);
+    } catch {
+      setRemoteProbe(null);
+    } finally {
+      setIsProbingRemote(false);
+    }
+  };
+
   useEffect(() => {
     if (!selectedPc) {
       setTerminal(null);
       setNotFoundTerm(null);
+      setRemoteProbe(null);
       return;
     }
     setIsLoading(true);
@@ -76,6 +94,7 @@ export default function App(): React.JSX.Element {
         setTerminal(res.data);
         if (!res.data) {
           setNotFoundTerm(selectedPc);
+          setRemoteProbe(null);
         }
         setIsLoading(false);
         if (mainRef.current) {
@@ -84,12 +103,16 @@ export default function App(): React.JSX.Element {
         if (res.data?.ip) {
           setPingMode('standard');
           setIsPinging(true);
+          handleProbeRemote(res.data.ip);
+        } else {
+          setRemoteProbe(null);
         }
       })
       .catch(() => {
         setTerminal(null);
         setNotFoundTerm(selectedPc);
         setIsLoading(false);
+        setRemoteProbe(null);
       });
   }, [selectedPc]);
 
@@ -99,6 +122,8 @@ export default function App(): React.JSX.Element {
     setNotFoundTerm(null);
     setIsPinging(false);
     setActionFeedback(null);
+    setRemoteProbe(null);
+    setIsProbingRemote(false);
   };
 
   const handleStartPing = (mode: 'standard' | 'infinite' = 'standard') => {
@@ -118,12 +143,12 @@ export default function App(): React.JSX.Element {
     handleStartPing('infinite');
   };
 
-  // Global Keyboard Shortcuts (F2 VNC, F3 Ping, F4 MSRA)
+  // Global Keyboard Shortcuts (F2 Smart Remote, F3 Ping, F4 MSRA)
   useEffect(() => {
     const handleGlobalShortcuts = (e: KeyboardEvent) => {
       if (e.key === 'F2') {
         e.preventDefault();
-        handleLaunchVnc();
+        handleLaunchSmartRemote();
       } else if (e.key === 'F3') {
         e.preventDefault();
         handleTogglePing();
@@ -140,6 +165,8 @@ export default function App(): React.JSX.Element {
     setSelectedPc(pc);
     setIsPinging(false);
     setActionFeedback(null);
+    setRemoteProbe(null);
+    setIsProbingRemote(false);
   };
 
   const handleAddAlert = (alert: { title: string; description: string; operator: string }): void => {
@@ -172,6 +199,28 @@ export default function App(): React.JSX.Element {
         ),
       };
     });
+  };
+
+  const handleLaunchSmartRemote = async (targetOverride?: string): Promise<void> => {
+    const target = targetOverride || terminal?.ip || terminal?.pc;
+    if (!target) return;
+
+    const res = await launchSmartRemoteClient(target);
+    if (res.probe) {
+      setRemoteProbe(res.probe);
+    }
+
+    if (res.success) {
+      if (res.methodUsed === 'vnc') {
+        toast.success(res.message || `VNC Viewer iniciado correctamente hacia ${target}${res.portUsed ? `:${res.portUsed}` : ''}`);
+      } else if (res.methodUsed === 'msra') {
+        toast.info(res.message || `VNC cerrado. Asistencia Remota (MSRA) iniciada para ${target}`);
+      } else {
+        toast.success(res.message || `Conexión remota exitosa hacia ${target}`);
+      }
+    } else {
+      toast.error(res.message || `Sin acceso remoto directo a ${target}`);
+    }
   };
 
   const handleLaunchVnc = async (targetOverride?: string): Promise<void> => {
@@ -240,6 +289,10 @@ export default function App(): React.JSX.Element {
               terminal={terminal}
               isPinging={isPinging}
               actionFeedback={actionFeedback}
+              remoteProbe={remoteProbe}
+              isProbingRemote={isProbingRemote}
+              onLaunchSmartRemote={() => handleLaunchSmartRemote()}
+              onReProbeRemote={() => terminal.ip && handleProbeRemote(terminal.ip)}
               onLaunchVnc={() => handleLaunchVnc()}
               onLaunchMsra={() => handleLaunchMsra()}
               onTogglePing={handleTogglePing}
