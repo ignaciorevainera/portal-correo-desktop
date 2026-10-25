@@ -240,13 +240,13 @@ export default function App(): React.JSX.Element {
               </p>
             </div>
           ) : notFoundTerm ? (
-            <div className="h-96 flex flex-col items-center justify-center text-center p-8 border border-dashed border-destructive/40 rounded-lg bg-destructive/5 space-y-4">
-              <div className="p-3.5 rounded-full bg-destructive/10 text-destructive">
-                <SearchX className="h-8 w-8" />
+            <div className="h-96 flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-card/30 space-y-3">
+              <div className="p-3 rounded-full bg-muted/70 text-muted-foreground">
+                <SearchX className="h-8 w-8 text-amber-500/80 dark:text-amber-400/80" />
               </div>
-              <div className="space-y-1.5 max-w-md">
+              <div className="space-y-1 max-w-md">
                 <h3 className="text-sm font-semibold font-heading text-foreground">
-                  No se encontró la terminal &ldquo;<span className="font-mono text-destructive font-bold">{notFoundTerm}</span>&rdquo;
+                  No se encontró la terminal &ldquo;<span className="font-mono font-bold text-foreground">{notFoundTerm}</span>&rdquo;
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   No existe un registro técnico para este equipo o dirección IP en la base corporativa. Verificá la ortografía del Hostname o el alcance de red.
@@ -254,12 +254,12 @@ export default function App(): React.JSX.Element {
               </div>
               <Button
                 variant="outline"
-                size="sm"
+                size="xs"
                 onClick={handleClearSearch}
                 aria-label="Limpiar búsqueda"
-                className="text-xs font-mono gap-1.5 h-8 border-border hover:bg-muted cursor-pointer"
+                className="text-xs font-sans gap-1.5 h-7 px-3 border-border bg-background/50 hover:bg-muted cursor-pointer"
               >
-                <RotateCcw className="h-3.5 w-3.5" />
+                <RotateCcw className="h-3 w-3" />
                 <span>Limpiar búsqueda</span>
               </Button>
             </div>
