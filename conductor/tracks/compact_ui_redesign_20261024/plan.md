@@ -3,11 +3,11 @@
 ## Phase 1: Ventana Frameless en Electron, Controles IPC y Header Compacto con Portal MDA
 Configuración de ventana sin marco nativo en Electron (`1020x680`), bloqueo del menú de sistema nativo de Windows, canales IPC para minimizar/maximizar/cerrar y apertura de enlaces externos (`https://mda.corporativo.internal/inventario-terminales`), y rediseño compacto del `Topbar` (`h-10`) con acciones en 1 clic desde el buscador.
 
-- [ ] Task: Configurar ventana frameless compacta y canales IPC de ventana/enlaces externos en Electron
-  - [ ] Escribir pruebas unitarias en `src/test/windowControls.test.ts` validando los contratos IPC (`minimizeWindow`, `maximizeWindow`, `closeWindow`, `openExternalUrl`) y su fallback en navegador
-  - [ ] Actualizar `electron/main.cjs` con `frame: false`, dimensiones `1020x680` (min `860x560`), bloqueo de menú nativo de sistema y handlers IPC `cmda:window-minimize`, `cmda:window-maximize`, `cmda:window-close` y `cmda:open-external` (usando `shell.openExternal`)
-  - [ ] Exponer los nuevos métodos en `electron/preload.cjs` y `src/services/electronClient.ts`
-- [ ] Task: Rediseñar `Topbar` como barra de título unificada y arrastrable con botón "Portal MDA" y acciones rápidas en buscador
+- [x] Task: Configurar ventana frameless compacta y canales IPC de ventana/enlaces externos en Electron [30dbe11]
+  - [x] Escribir pruebas unitarias en `src/test/windowControls.test.ts` validando los contratos IPC (`minimizeWindow`, `maximizeWindow`, `closeWindow`, `openExternalUrl`) y su fallback en navegador
+  - [x] Actualizar `electron/main.cjs` con `frame: false`, dimensiones `1020x680` (min `860x560`), bloqueo de menú nativo de sistema y handlers IPC `cmda:window-minimize`, `cmda:window-maximize`, `cmda:window-close` y `cmda:open-external` (usando `shell.openExternal`)
+  - [x] Exponer los nuevos métodos en `electron/preload.cjs` y `src/services/electronClient.ts`
+- [~] Task: Rediseñar `Topbar` como barra de título unificada y arrastrable con botón "Portal MDA" y acciones rápidas en buscador
   - [ ] Actualizar/escribir pruebas en `src/test/Topbar.test.tsx` verificando el botón "Portal MDA" (`https://mda.corporativo.internal/inventario-terminales`), los botones de control de ventana (Minimizar, Maximizar, Cerrar) y las acciones rápidas en resultados de búsqueda
   - [ ] Implementar utilidades CSS `.app-drag-region` y `.app-no-drag` en `src/index.css` sin alterar los tokens OKLCH
   - [ ] Refactorizar `src/components/Topbar.tsx` a una altura compacta (`h-10`), integrando el botón **Portal MDA**, acciones directas de VNC/Ping en el desplegable del buscador y controles de ventana personalizados
