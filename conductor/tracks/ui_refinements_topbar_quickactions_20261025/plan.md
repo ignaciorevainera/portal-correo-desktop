@@ -1,10 +1,10 @@
 # Implementation Plan: UI/UX Refinements, QuickActionsBar Minimalista, Topbar Expandida y Estado Inicial Limpio
 
-### Phase 1: Estado Inicial Limpio, Zero-Preload y Gestión de Scroll
+### Phase 1: Estado Inicial Limpio, Zero-Preload y Gestión de Scroll [checkpoint: b6b53db]
 - [x] Task: Escribir tests para el estado inicial de la app sin terminal seleccionada (no ping, no QuickActionsBar, placeholder limpio sin botones demo de muestra) y scroll al tope en búsqueda [3f287dc]
-- [~] Task: Modificar `App.tsx` para inicializar `selectedPc` y `terminal` en vacío, asegurando que no se dispare ping al inicio y que el contenedor `<main>` haga reset de scroll (`scrollTop = 0`) al cargar una terminal
-- [ ] Task: Reemplazar el mensaje vacío en `<main>` con un componente minimalista y limpio indicando buscar una terminal en la barra superior (sin botones ni listas residuales de demo)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Modificar `App.tsx` para inicializar `selectedPc` y `terminal` en vacío, asegurando que no se dispare ping al inicio y que el contenedor `<main>` haga reset de scroll (`scrollTop = 0`) al cargar una terminal [b6b53db]
+- [x] Task: Reemplazar el mensaje vacío en `<main>` con un componente minimalista y limpio indicando buscar una terminal en la barra superior (sin botones ni listas residuales de demo) [b6b53db]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [b6b53db]
 
 ### Phase 2: Rediseño Minimalista de QuickActionsBar y Corrección de Alertas/Badges
 - [ ] Task: Escribir tests para `QuickActionsBar` sin contenedor `<Card>`, sólo con botones de acción y alineación precisa del badge/alert de feedback
