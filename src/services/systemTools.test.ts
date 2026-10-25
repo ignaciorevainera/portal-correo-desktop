@@ -71,7 +71,7 @@ describe('systemTools orchestration & security sanitization', () => {
     });
 
     it('constructs ping args for continuous infinite ping (-t)', () => {
-      const cmd = getPingArgs('192.0.2.101', { continuous: true });
+      const cmd = getPingArgs('192.0.2.101', { continuous: true } as any);
       expect(cmd.exe).toBe('ping');
       expect(cmd.args).toEqual(['-t', '192.0.2.101']);
     });

@@ -54,6 +54,10 @@ function getMsraCommand(targetIpOrHost) {
   };
 }
 
+/**
+ * @param {string} targetIpOrHost
+ * @param {number | { count?: number; continuous?: boolean }} [options=1]
+ */
 function getPingArgs(targetIpOrHost, options = 1) {
   const clean = sanitizeHostOrIp(targetIpOrHost);
   if (typeof options === 'object' && options !== null && options.continuous) {

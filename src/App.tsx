@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { Topbar } from './components/Topbar';
-import { Sidebar, ActiveTab } from './components/Sidebar';
 import { HardwareCard } from './components/HardwareCard';
 import { NetworkAdCard } from './components/NetworkAdCard';
 import { QuickActionsBar, ActionFeedbackState } from './components/QuickActionsBar';
@@ -33,15 +32,15 @@ export default function App(): React.JSX.Element {
   const [selectedPc, setSelectedPc] = useState<string>('PC-DEMO-001');
   const [terminal, setTerminal] = useState<TerminalData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('inventory');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [isPinging, setIsPinging] = useState(false);
+  const [pingMode, setPingMode] = useState<'standard' | 'infinite'>('standard');
   const [status, setStatus] = useState<BackendStatus>({ connected: false, mode: 'mock' });
   const [actionFeedback, setActionFeedback] = useState<ActionFeedbackState | null>(null);
   const [securityStatus, setSecurityStatus] = useState<SecurityGateStatus | null>(null);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
+  const pingConsoleRef = useRef<HTMLDivElement>(null);
   const allTerminals = getAllTerminals();
 
   const verifySecurity = async () => {
@@ -71,24 +70,39 @@ export default function App(): React.JSX.Element {
 
   useEffect(() => {
     if (!selectedPc || (securityStatus && !securityStatus.authorized)) return;
-    let isMounted = true;
     setIsLoading(true);
 
     searchTerminalUnified(selectedPc)
       .then((res) => {
-        if (isMounted) {
-          setTerminal(res.data);
-          setIsLoading(false);
-        }
+        setTerminal(res.data);
+        setIsLoading(false);
       })
       .catch(() => {
-        if (isMounted) setIsLoading(false);
+        setIsLoading(false);
       });
-
-    return () => {
-      isMounted = false;
-    };
   }, [selectedPc, securityStatus]);
+
+  const handleStartPing = (mode: 'standard' | 'infinite' = 'standard') => {
+    setPingMode(mode);
+    setIsPinging(true);
+    setTimeout(() => {
+      if (typeof pingConsoleRef.current?.scrollIntoView === 'function') {
+        pingConsoleRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
+  };
+
+  const handleTogglePing = () => {
+    if (isPinging) {
+      setIsPinging(false);
+    } else {
+      handleStartPing('standard');
+    }
+  };
+
+  const handleLaunchPingInfinite = () => {
+    handleStartPing('infinite');
+  };
 
   // Global Keyboard Shortcuts (F2 VNC, F3 Ping, F4 MSRA)
   useEffect(() => {
@@ -98,7 +112,7 @@ export default function App(): React.JSX.Element {
         handleLaunchVnc();
       } else if (e.key === 'F3') {
         e.preventDefault();
-        setIsPinging((prev) => !prev);
+        handleTogglePing();
       } else if (e.key === 'F4') {
         e.preventDefault();
         handleLaunchMsra();
@@ -106,7 +120,7 @@ export default function App(): React.JSX.Element {
     };
     window.addEventListener('keydown', handleGlobalShortcuts);
     return () => window.removeEventListener('keydown', handleGlobalShortcuts);
-  }, [terminal]);
+  }, [terminal, isPinging]);
 
   const handleUnlockSecurity = async (configPath: string, key: string) => {
     setIsUnlocking(true);
@@ -228,7 +242,7 @@ export default function App(): React.JSX.Element {
 
   const handleDirectPing = (pc: string) => {
     setSelectedPc(pc);
-    setIsPinging(true);
+    handleStartPing('standard');
   };
 
   if (securityStatus && !securityStatus.authorized) {
@@ -262,91 +276,78 @@ export default function App(): React.JSX.Element {
           serverName={status.server}
         />
 
-        <div className="flex-1 flex overflow-hidden">
-          <Sidebar
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            collapsed={sidebarCollapsed}
-            onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
-            activeAlertsCount={terminal?.alerts.filter((a) => a.active).length || 0}
-          />
-
-          <main className="flex-1 p-3.5 overflow-y-auto space-y-3">
-            {isLoading ? (
-              <div className="h-96 flex flex-col items-center justify-center text-center p-6 space-y-3">
-                <Loader2 className="h-7 w-7 text-primary animate-spin" />
-                <p className="text-xs text-muted-foreground font-mono">
-                  Consultando base de datos técnica...
-                </p>
+        {/* Layout Unificado Sin Sidebar: Todo el contenido vive en <main> con scroll continuo */}
+        <main className="flex-1 p-3.5 overflow-y-auto space-y-3 relative">
+          {isLoading ? (
+            <div className="h-96 flex flex-col items-center justify-center text-center p-6 space-y-3">
+              <Loader2 className="h-7 w-7 text-primary animate-spin" />
+              <p className="text-xs text-muted-foreground font-mono">
+                Consultando base de datos técnica...
+              </p>
+            </div>
+          ) : !terminal ? (
+            <div className="h-96 flex flex-col items-center justify-center text-center p-6 border border-dashed border-border rounded-lg bg-card/40 space-y-3">
+              <AlertCircle className="h-9 w-9 text-muted-foreground opacity-60" />
+              <h3 className="text-sm font-semibold font-heading">No se encontró la terminal</h3>
+              <p className="text-xs text-muted-foreground max-w-sm">
+                Utiliza la barra de búsqueda superior (Ctrl+F) o escribe un Hostname o IP (ej. PC-DEMO-001, WS-DEMO-002).
+              </p>
+              <div className="flex gap-2 pt-1 flex-wrap justify-center">
+                {allTerminals.map((t) => (
+                  <button
+                    key={t.pc}
+                    type="button"
+                    onClick={() => handleSelectTerminal(t.pc)}
+                    className="px-2 py-0.5 text-xs font-mono rounded bg-muted hover:bg-accent/20 border border-border cursor-pointer"
+                  >
+                    {t.pc}
+                  </button>
+                ))}
               </div>
-            ) : !terminal ? (
-              <div className="h-96 flex flex-col items-center justify-center text-center p-6 border border-dashed border-border rounded-lg bg-card/40 space-y-3">
-                <AlertCircle className="h-9 w-9 text-muted-foreground opacity-60" />
-                <h3 className="text-sm font-semibold font-heading">No se encontró la terminal</h3>
-                <p className="text-xs text-muted-foreground max-w-sm">
-                  Utiliza la barra de búsqueda superior (Ctrl+F) o escribe un Hostname o IP (ej. PC-DEMO-001, WS-DEMO-002).
-                </p>
-                <div className="flex gap-2 pt-1 flex-wrap justify-center">
-                  {allTerminals.map((t) => (
-                    <button
-                      key={t.pc}
-                      type="button"
-                      onClick={() => handleSelectTerminal(t.pc)}
-                      className="px-2 py-0.5 text-xs font-mono rounded bg-muted hover:bg-accent/20 border border-border cursor-pointer"
-                    >
-                      {t.pc}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* Actions Bar */}
+            </div>
+          ) : (
+            <>
+              {/* 1° Subheader Fijo: Barra de Comandos y Herramientas a mano durante el scroll */}
+              <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md pb-1 border-b border-border/50">
                 <QuickActionsBar
                   terminal={terminal}
                   isPinging={isPinging}
                   actionFeedback={actionFeedback}
                   onLaunchVnc={() => handleLaunchVnc()}
                   onLaunchMsra={() => handleLaunchMsra()}
-                  onTogglePing={() => setIsPinging((p) => !p)}
+                  onTogglePing={handleTogglePing}
+                  onLaunchPingInfinite={handleLaunchPingInfinite}
                 />
+              </div>
 
-                {/* Tab content */}
-                {activeTab === 'inventory' && (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                      <HardwareCard terminal={terminal} />
-                      <NetworkAdCard terminal={terminal} />
-                    </div>
+              {/* 2° Grilla Principal Compacta: Red / Directorio Activo y Especificaciones de Hardware */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <NetworkAdCard terminal={terminal} />
+                <HardwareCard terminal={terminal} />
+              </div>
 
-                    {/* Consola Ping en vivo acoplada en la vista principal */}
-                    {isPinging && (
-                      <div className="animate-fade-in">
-                        <LivePingConsole
-                          ip={terminal.ip}
-                          isPinging={isPinging}
-                          onTogglePing={() => setIsPinging((p) => !p)}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
+              {/* 3° Consola Interna de Ping: Con auto-scroll al pulsar Ping / Ping -t y controles avanzados */}
+              <div ref={pingConsoleRef} className="scroll-mt-16">
+                <LivePingConsole
+                  ip={terminal.ip}
+                  isPinging={isPinging}
+                  pingMode={pingMode}
+                  onTogglePing={handleTogglePing}
+                />
+              </div>
 
-                {activeTab === 'alerts' && (
-                  <AlertsPanel
-                    terminal={terminal}
-                    onAddAlert={handleAddAlert}
-                    onCloseAlert={handleCloseAlert}
-                  />
-                )}
+              {/* 4° Alertas de Terminal: Observaciones operativas e incidencias */}
+              <AlertsPanel
+                terminal={terminal}
+                onAddAlert={handleAddAlert}
+                onCloseAlert={handleCloseAlert}
+              />
 
-                {activeTab === 'reset-uptime' && (
-                  <ResetUptimePanel terminal={terminal} />
-                )}
-              </>
-            )}
-          </main>
-        </div>
+              {/* 5° Reseteo AD e Historial: Contraseña, desbloqueo y métricas */}
+              <ResetUptimePanel terminal={terminal} />
+            </>
+          )}
+        </main>
 
         {/* Custom Operator Context Menu */}
         {contextMenu && (
@@ -357,7 +358,7 @@ export default function App(): React.JSX.Element {
             isPinging={isPinging}
             onClose={() => setContextMenu(null)}
             onLaunchVnc={() => handleLaunchVnc()}
-            onTogglePing={() => setIsPinging((p) => !p)}
+            onTogglePing={handleTogglePing}
             onLaunchMsra={() => handleLaunchMsra()}
             onOpenPortalMda={() => openExternalUrl('https://mda.corporativo.internal/inventario-terminales')}
           />

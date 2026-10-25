@@ -80,11 +80,11 @@ export function ResetUptimePanel({ terminal }: { terminal: TerminalData }): Reac
           <History className="h-3.5 w-3.5" /> Historial de Reseteos Previos
         </h3>
 
-        {terminal.resetHistory.length === 0 ? (
+        {(!terminal.resetHistory || terminal.resetHistory.length === 0) ? (
           <p className="text-xs text-muted-foreground italic">No hay historial de reseteos registrado para este equipo.</p>
         ) : (
           <div className="divide-y divide-border/50 text-xs font-mono">
-            {terminal.resetHistory.map((item) => (
+            {(terminal.resetHistory || []).map((item) => (
               <div key={item.id} className="py-2.5 flex items-center justify-between">
                 <div className="space-y-0.5">
                   <div className="font-semibold text-foreground">{item.reason}</div>

@@ -27,5 +27,5 @@
 
 ---
 
-- [~] **Track: Vista Unificada Sin Sidebar, Subheader Fijo, Bandeja del Sistema (Tray) y Consola Ping Avanzada (`Ping -t` & Copiar Logs)**
+- [x] **Track: Vista Unificada Sin Sidebar, Subheader Fijo, Bandeja del Sistema (Tray) y Consola Ping Avanzada (`Ping -t` & Copiar Logs)**
   *Link: [./tracks/single_scroll_tray_ping_20261024/index.md](./tracks/single_scroll_tray_ping_20261024/index.md)*

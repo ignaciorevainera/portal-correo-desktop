@@ -27,7 +27,7 @@ Actualización de `QuickActionsBar` como Subheader fijo con el CTA de Ping norma
 ## Phase 3: Diseño Single-Scroll Sin Sidebar y Orden Jerárquico de Secciones en `<main>`
 Eliminación completa de la Sidebar y unificación de todas las secciones de la terminal en `<main>` con el orden jerárquico definido (1° Subheader Fijo -> 2° Grilla Red/AD + Hardware -> 3° Consola Interna de Ping con auto-scroll al pulsar `Ping`/`Ping -t` -> 4° Alertas de Terminal -> 5° Reseteo AD e Historial).
 
-- [~] Task: Eliminar `Sidebar` y estructurar la vista única scrollable en `App.tsx` con auto-scroll a la consola de Ping
-  - [ ] Actualizar pruebas en `src/App.test.tsx` comprobando que no exista Sidebar, que todas las secciones (`NetworkAdCard`, `HardwareCard`, `LivePingConsole`, `AlertsPanel`, `ResetUptimePanel`) se rendericen en orden dentro de `<main>`, que el Subheader permanezca fijo arriba y que al pulsar `Ping` o `Ping -t` se haga scroll hacia la consola interna reemplazando los logs previos
-  - [ ] Refactorizar `src/App.tsx` eliminando toda referencia a `Sidebar`, fijando el Subheader de comandos en la parte superior del contenedor principal y disponiendo las secciones en el orden acordado con auto-scroll a `LivePingConsole`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Eliminar `Sidebar` y estructurar la vista única scrollable en `App.tsx` con auto-scroll a la consola de Ping
+  - [x] Actualizar pruebas en `src/App.test.tsx` comprobando que no exista Sidebar, que todas las secciones (`NetworkAdCard`, `HardwareCard`, `LivePingConsole`, `AlertsPanel`, `ResetUptimePanel`) se rendericen en orden dentro de `<main>`, que el Subheader permanezca fijo arriba y que al pulsar `Ping` o `Ping -t` se haga scroll hacia la consola interna reemplazando los logs previos
+  - [x] Refactorizar `src/App.tsx` eliminando toda referencia a `Sidebar`, fijando el Subheader de comandos en la parte superior del contenedor principal y disponiendo las secciones en el orden acordado con auto-scroll a `LivePingConsole`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
