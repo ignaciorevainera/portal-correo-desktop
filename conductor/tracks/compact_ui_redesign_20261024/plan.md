@@ -1,6 +1,6 @@
 # Implementation Plan (`plan.md`): Rediseño UI/UX Compacto, Ventana Personalizada y Flujos en 1 Clic
 
-## Phase 1: Ventana Frameless en Electron, Controles IPC y Header Compacto con Portal MDA
+## Phase 1: Ventana Frameless en Electron, Controles IPC y Header Compacto con Portal MDA [checkpoint: 678c12a]
 Configuración de ventana sin marco nativo en Electron (`1020x680`), bloqueo del menú de sistema nativo de Windows, canales IPC para minimizar/maximizar/cerrar y apertura de enlaces externos (`https://mda.corporativo.internal/inventario-terminales`), y rediseño compacto del `Topbar` (`h-10`) con acciones en 1 clic desde el buscador.
 
 - [x] Task: Configurar ventana frameless compacta y canales IPC de ventana/enlaces externos en Electron [30dbe11]
@@ -11,12 +11,12 @@ Configuración de ventana sin marco nativo en Electron (`1020x680`), bloqueo del
   - [x] Actualizar/escribir pruebas en `src/test/Topbar.test.tsx` verificando el botón "Portal MDA" (`https://mda.corporativo.internal/inventario-terminales`), los botones de control de ventana (Minimizar, Maximizar, Cerrar) y las acciones rápidas en resultados de búsqueda
   - [x] Implementar utilidades CSS `.app-drag-region` y `.app-no-drag` en `src/index.css` sin alterar los tokens OKLCH
   - [x] Refactorizar `src/components/Topbar.tsx` a una altura compacta (`h-10`), integrando el botón **Portal MDA**, acciones directas de VNC/Ping en el desplegable del buscador y controles de ventana personalizados
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Layout Fijo (`h-screen`), Sidebar Compacta Corregida y Vista Unificada de Diagnóstico
 Fijación del layout general (`h-screen overflow-hidden`) para que solo `<main>` tenga scroll, corrección de la `Sidebar` colapsada por defecto (`w-12`) con botones cuadrados centrados sin espacio sobrante a la derecha, y unificación de Hardware + Red + Consola Ping en la vista principal.
 
-- [ ] Task: Corregir `Sidebar` colapsada por defecto (`w-12`) con botones centrados y 3 vistas operativas
+- [~] Task: Corregir `Sidebar` colapsada por defecto (`w-12`) con botones centrados y 3 vistas operativas
   - [ ] Escribir pruebas en `src/test/Sidebar.test.tsx` comprobando el estado colapsado por defecto, ausencia de espaciado lateral asimétrico (`justify-center px-0`), badge flotante de alertas y navegación entre las 3 vistas (`inventory`, `alerts`, `reset-uptime`)
   - [ ] Refactorizar `src/components/Sidebar.tsx` eliminando el padding/gap causante del espacio a la derecha cuando está colapsada, dejándola fija e integrando las 3 vistas principales
 - [ ] Task: Unificar Feedback Inline de Éxito/Error en `QuickActionsBar` y eliminar el banner bajo el Header
