@@ -1,18 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import { TerminalData } from "../types/terminal";
 import {
   MonitorPlay,
   HelpCircle,
   Activity,
   Clock,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Kbd } from "@/components/ui/kbd";
+import { toast } from "sonner";
 
 export interface ActionFeedbackState {
   type: "success" | "error" | "warning" | "info";
@@ -42,60 +39,13 @@ export function QuickActionsBar({
   onTogglePing,
   onLaunchPingInfinite,
 }: QuickActionsBarProps): React.JSX.Element {
-  const [localFeedback, setLocalFeedback] = useState<string | null>(null);
-
   const handleAction = (label: string, callback: () => void): void => {
     callback();
-    setLocalFeedback(`Acción disparada: ${label} para ${terminal.pc}`);
-    setTimeout(() => setLocalFeedback(null), 3000);
+    toast.info(`Acción disparada: ${label} para ${terminal.pc}`);
   };
-
-  const currentFeedback =
-    actionFeedback ||
-    (localFeedback
-      ? { type: "success" as const, message: localFeedback }
-      : null);
 
   return (
     <div className="w-full flex flex-col gap-2">
-      {/* Feedback Inline Sustitutivo con Alert vanilla centrado */}
-      {currentFeedback && (
-        <Alert
-          variant={
-            currentFeedback.type === "error"
-              ? "destructive"
-              : currentFeedback.type === "warning"
-                ? "warning"
-                : "success"
-          }
-          className="w-auto py-1 px-3 inline-flex items-center gap-2 rounded-md shadow-xs self-start"
-        >
-          {currentFeedback.type === "error" ? (
-            <XCircle className="h-3.5 w-3.5 shrink-0" />
-          ) : currentFeedback.type === "warning" ? (
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-          ) : (
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-          )}
-          <AlertDescription className="font-mono text-[11px] font-semibold text-current inline-flex items-center gap-1.5 leading-none">
-            <span>{currentFeedback.message}</span>
-            {currentFeedback.fallbackAction && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="xs"
-                onClick={currentFeedback.fallbackAction.onClick}
-                aria-label={currentFeedback.fallbackAction.label}
-                className="inline-flex items-center gap-1 ml-1.5 px-2 py-0.5 h-5 text-[10px] font-bold cursor-pointer"
-              >
-                <span>{currentFeedback.fallbackAction.label}</span>
-                <ArrowRight className="h-2.5 w-2.5" />
-              </Button>
-            )}
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Acciones principales en contenedor minimalista directo */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
         <Button

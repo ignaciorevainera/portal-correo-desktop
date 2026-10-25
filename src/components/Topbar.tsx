@@ -239,9 +239,7 @@ export function Topbar({
             <HelpCircle className="h-4 w-4" />
           </Button>
 
-          <div className="flex items-center justify-center h-10 w-10">
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
 
           {/* Separador vertical de ventana */}
           <Separator orientation="vertical" className="h-6 mx-0.5" />

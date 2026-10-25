@@ -24,6 +24,8 @@ import {
 import { TerminalData } from './types/terminal';
 import { Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 export default function App(): React.JSX.Element {
   const [selectedPc, setSelectedPc] = useState<string>('');
@@ -144,29 +146,19 @@ export default function App(): React.JSX.Element {
     const res = await launchVncClient(target);
 
     if (res.vncClosed) {
-      setActionFeedback({
-        type: 'error',
-        message: res.message || `Puertos VNC (5901/5900) cerrados en ${target}.`,
-        fallbackAction: res.msraAvailable
+      toast.error(res.message || `Puertos VNC (5901/5900) cerrados en ${target}.`, {
+        description: res.msraAvailable ? 'Asistencia Remota (MSRA) está disponible como alternativa.' : undefined,
+        action: res.msraAvailable
           ? {
-              label: 'Conectar por Asistencia Remota (MSRA)',
-              onClick: () => {
-                handleLaunchMsra(target);
-              },
+              label: 'Conectar por MSRA',
+              onClick: () => handleLaunchMsra(target),
             }
           : undefined,
       });
     } else if (res.success) {
-      setActionFeedback({
-        type: 'success',
-        message: res.message || `VNC Viewer iniciado correctamente hacia ${target}${res.portUsed ? `:${res.portUsed}` : ''}`,
-      });
-      setTimeout(() => setActionFeedback(null), 4000);
+      toast.success(res.message || `VNC Viewer iniciado correctamente hacia ${target}${res.portUsed ? `:${res.portUsed}` : ''}`);
     } else {
-      setActionFeedback({
-        type: 'error',
-        message: res.message || `Error al intentar conectar por VNC a ${target}`,
-      });
+      toast.error(res.message || `Error al intentar conectar por VNC a ${target}`);
     }
   };
 
@@ -176,16 +168,9 @@ export default function App(): React.JSX.Element {
 
     const res = await launchMsraClient(target);
     if (res.success) {
-      setActionFeedback({
-        type: 'success',
-        message: res.message || `Asistencia Remota iniciada para ${target}`,
-      });
-      setTimeout(() => setActionFeedback(null), 4000);
+      toast.success(res.message || `Asistencia Remota iniciada para ${target}`);
     } else {
-      setActionFeedback({
-        type: 'error',
-        message: res.message || `Error al iniciar Asistencia Remota para ${target}`,
-      });
+      toast.error(res.message || `Error al iniciar Asistencia Remota para ${target}`);
     }
   };
 
@@ -296,6 +281,9 @@ export default function App(): React.JSX.Element {
             onOpenPortalMda={() => openExternalUrl('https://mda.corporativo.internal/inventario-terminales')}
           />
         )}
+
+        {/* Notificaciones animadas Sonner Toaster oficiales de Shadcn */}
+        <Toaster />
       </div>
     </ThemeProvider>
   );

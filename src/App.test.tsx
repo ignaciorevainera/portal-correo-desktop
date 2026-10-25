@@ -66,10 +66,10 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Puertos VNC \(5901\/5900\) cerrados/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Conectar por Asistencia Remota \(MSRA\)/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Conectar por MSRA/i })).toBeInTheDocument();
     });
 
-    const msraSuggestButton = screen.getByRole('button', { name: /Conectar por Asistencia Remota \(MSRA\)/i });
+    const msraSuggestButton = screen.getByRole('button', { name: /Conectar por MSRA/i });
     fireEvent.click(msraSuggestButton);
 
     await waitFor(() => {
