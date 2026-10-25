@@ -1,3 +1,4 @@
+import net from 'net';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import configManager from '../../electron/configManager.cjs';
 import {
@@ -9,6 +10,7 @@ import {
   probeTcpPort,
   probeRemotePorts,
   launchVncSmart,
+  launchRemoteSmart,
 } from '../../electron/systemTools.cjs';
 
 describe('systemTools orchestration & security sanitization', () => {
@@ -87,6 +89,123 @@ describe('systemTools orchestration & security sanitization', () => {
       const probe = await probeRemotePorts('127.0.0.1', 50);
       expect(probe).toHaveProperty('vncPort');
       expect(probe).toHaveProperty('msraAvailable');
+    });
+
+    it('returns recommendedMethod vnc if 5901 or 5900 open', async () => {
+      const connectSpy = vi.spyOn(net.Socket.prototype, 'connect').mockImplementation(function (this: any, port: any) {
+        if (port === 5901) {
+          queueMicrotask(() => this.emit('connect'));
+        } else {
+          queueMicrotask(() => this.emit('error', new Error('ECONNREFUSED')));
+        }
+        return this;
+      });
+
+      const probe = await probeRemotePorts('192.0.2.101', 50);
+      expect(probe.recommendedMethod).toBe('vnc');
+      expect(probe.vncPort).toBe(5901);
+      connectSpy.mockRestore();
+    });
+
+    it('returns recommendedMethod msra if vnc is closed but 3389 or 135 is open', async () => {
+      const connectSpy = vi.spyOn(net.Socket.prototype, 'connect').mockImplementation(function (this: any, port: any) {
+        if (port === 135) {
+          queueMicrotask(() => this.emit('connect'));
+        } else {
+          queueMicrotask(() => this.emit('error', new Error('ECONNREFUSED')));
+        }
+        return this;
+      });
+
+      const probe = await probeRemotePorts('192.0.2.102', 50);
+      expect(probe.recommendedMethod).toBe('msra');
+      expect(probe.msraAvailable).toBe(true);
+      expect(probe.vncPort).toBeNull();
+      connectSpy.mockRestore();
+    });
+
+    it('returns recommendedMethod none if all remote ports are closed', async () => {
+      const connectSpy = vi.spyOn(net.Socket.prototype, 'connect').mockImplementation(function (this: any) {
+        queueMicrotask(() => this.emit('error', new Error('ECONNREFUSED')));
+        return this;
+      });
+
+      const probe = await probeRemotePorts('192.0.2.103', 50);
+      expect(probe.recommendedMethod).toBe('none');
+      expect(probe.vncPort).toBeNull();
+      expect(probe.msraAvailable).toBe(false);
+      connectSpy.mockRestore();
+    });
+  });
+
+  describe('launchRemoteSmart (Unified VNC + MSRA Orchestrator)', () => {
+    it('prioritizes VNC when both VNC (5901) and MSRA (3389) are open', async () => {
+      const mockVnc = vi.fn().mockReturnValue({ success: true, processId: 1001 });
+      const mockMsra = vi.fn();
+
+      const res = await launchRemoteSmart('192.0.2.101', {
+        mockProbe: {
+          host: '192.0.2.101',
+          vncPort: 5901,
+          port5901Open: true,
+          port5900Open: false,
+          msraAvailable: true,
+          recommendedMethod: 'vnc',
+        },
+        mockLaunchVnc: mockVnc,
+        mockLaunchMsra: mockMsra,
+      });
+
+      expect(res.success).toBe(true);
+      expect(res.methodUsed).toBe('vnc');
+      expect(res.portUsed).toBe(5901);
+      expect(mockVnc).toHaveBeenCalledWith('192.0.2.101', 5901);
+      expect(mockMsra).not.toHaveBeenCalled();
+    });
+
+    it('automatically falls back to MSRA when VNC ports are closed and MSRA is available', async () => {
+      const mockVnc = vi.fn();
+      const mockMsra = vi.fn().mockReturnValue({
+        success: true,
+        processId: 2002,
+        message: 'Solicitud de Asistencia Remota (MSRA) enviada a 192.0.2.102',
+      });
+
+      const res = await launchRemoteSmart('192.0.2.102', {
+        mockProbe: {
+          host: '192.0.2.102',
+          vncPort: null,
+          port5901Open: false,
+          port5900Open: false,
+          msraAvailable: true,
+          recommendedMethod: 'msra',
+        },
+        mockLaunchVnc: mockVnc,
+        mockLaunchMsra: mockMsra,
+      });
+
+      expect(res.success).toBe(true);
+      expect(res.methodUsed).toBe('msra');
+      expect(mockVnc).not.toHaveBeenCalled();
+      expect(mockMsra).toHaveBeenCalledWith('192.0.2.102');
+    });
+
+    it('returns methodUsed="none" and success=false when neither VNC nor MSRA is reachable', async () => {
+      const res = await launchRemoteSmart('192.0.2.103', {
+        mockProbe: {
+          host: '192.0.2.103',
+          vncPort: null,
+          port5901Open: false,
+          port5900Open: false,
+          msraAvailable: false,
+          recommendedMethod: 'none',
+        },
+      });
+
+      expect(res.success).toBe(false);
+      expect(res.methodUsed).toBe('none');
+      expect(res.vncClosed).toBe(true);
+      expect(res.msraAvailable).toBe(false);
     });
   });
 

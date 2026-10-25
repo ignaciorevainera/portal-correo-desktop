@@ -126,11 +126,12 @@ function probeTcpPort(host, port, timeoutMs = 1200) {
   });
 }
 
-async function probeRemotePorts(host, timeoutMs = 1200) {
-  const [res5901, res5900, res3389] = await Promise.all([
+async function probeRemotePorts(host, timeoutMs = 800) {
+  const [res5901, res5900, res3389, res135] = await Promise.all([
     probeTcpPort(host, 5901, timeoutMs),
     probeTcpPort(host, 5900, timeoutMs),
     probeTcpPort(host, 3389, timeoutMs),
+    probeTcpPort(host, 135, timeoutMs),
   ]);
 
   let vncPort = null;
@@ -140,13 +141,68 @@ async function probeRemotePorts(host, timeoutMs = 1200) {
     vncPort = 5900;
   }
 
+  const msraAvailable = Boolean(res3389.open || res135.open);
+  let recommendedMethod = 'none';
+  if (vncPort) {
+    recommendedMethod = 'vnc';
+  } else if (msraAvailable) {
+    recommendedMethod = 'msra';
+  }
+
   return {
     host,
     vncPort,
     port5901Open: res5901.open,
     port5900Open: res5900.open,
-    msraAvailable: res3389.open,
+    msraAvailable,
+    recommendedMethod,
   };
+}
+
+async function launchRemoteSmart(targetIpOrHost, options = {}) {
+  try {
+    const cleanHost = sanitizeHostOrIp(targetIpOrHost);
+    const probe =
+      options.mockProbe || (await probeRemotePorts(cleanHost, options.timeoutMs || 600));
+
+    if (probe.vncPort) {
+      const vncLauncher = options.mockLaunchVnc || launchVnc;
+      const res = vncLauncher(cleanHost, probe.vncPort);
+      return {
+        ...res,
+        methodUsed: 'vnc',
+        portUsed: probe.vncPort,
+        probe,
+        message: `VNC Viewer iniciado hacia ${cleanHost}:${probe.vncPort}`,
+      };
+    }
+
+    if (probe.msraAvailable) {
+      const msraLauncher = options.mockLaunchMsra || launchMsra;
+      const res = msraLauncher(cleanHost);
+      return {
+        ...res,
+        methodUsed: 'msra',
+        probe,
+        message: `VNC cerrado en ${cleanHost}; se inició Asistencia Remota (MSRA) automáticamente`,
+      };
+    }
+
+    return {
+      success: false,
+      methodUsed: 'none',
+      vncClosed: true,
+      msraAvailable: false,
+      probe,
+      message: `Sin acceso remoto directo en ${cleanHost} (Puertos VNC 5901/5900 y MSRA cerrados).`,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      methodUsed: 'none',
+      message: `Error al verificar acceso remoto: ${err.message}`,
+    };
+  }
 }
 
 function launchVnc(targetIpOrHost, port = 5901) {
@@ -297,6 +353,7 @@ module.exports = {
   probeRemotePorts,
   launchVnc,
   launchVncSmart,
+  launchRemoteSmart,
   launchMsra,
   executePing,
   sanitizePingOutput,

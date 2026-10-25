@@ -33,6 +33,18 @@ declare module '../../electron/systemTools.cjs' {
     port5901Open: boolean;
     port5900Open: boolean;
     msraAvailable: boolean;
+    recommendedMethod?: 'vnc' | 'msra' | 'none';
+  }>;
+  export function launchRemoteSmart(targetIpOrHost: string, options?: any): Promise<{
+    success: boolean;
+    methodUsed: 'vnc' | 'msra' | 'none';
+    processId?: number;
+    portUsed?: number;
+    configPath?: string;
+    vncClosed?: boolean;
+    msraAvailable?: boolean;
+    probe?: any;
+    message?: string;
   }>;
   export function launchVnc(targetIpOrHost: string, port?: number): { success: boolean; processId?: number; configPath?: string; portUsed?: number; message?: string };
   export function launchVncSmart(targetIpOrHost: string, options?: any): Promise<{
