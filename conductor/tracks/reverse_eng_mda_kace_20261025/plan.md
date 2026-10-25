@@ -43,7 +43,7 @@
   - [x] Documentar patrones de cómo una aplicación de soporte puede monitorear o disparar acciones en KACE [b8254d5]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [checkpoint: b8254d5]
 
-## Phase 4: Síntesis Técnica, Matriz de Paridad y PoCs de Integración para new-CMDA
+## Phase 4: Síntesis Técnica, Matriz de Paridad y PoCs de Integración para new-CMDA [checkpoint: 9169330]
 - [x] Task: Redacción de documentación técnica exhaustiva y matriz de paridad en docs/ [9169330]
   - [x] Redactar informe consolidado en `docs/reverse_engineering_mda_kace_report.md` con hallazgos de CMDA-2, HMDA y KACE [9169330]
   - [x] Construir la matriz comparativa de features y tecnologías entre todos los aplicativos vs `new-CMDA` [9169330]
@@ -53,4 +53,4 @@
 - [x] Task: Roadmap arquitectónico de unificación para Portal Correo Desktop [9169330]
   - [x] Documentar recomendaciones y especificaciones para botones personalizables en UI [9169330]
   - [x] Especificar integración de notificaciones nativas Toast y exportación Excel (.xlsx) en `new-CMDA` [9169330]
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [checkpoint: 9169330]
