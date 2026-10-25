@@ -6,8 +6,9 @@ import {
   buildRunkbotCommand,
   executeWakeOnLan,
   executeRunkbotAction,
-  KaceActionType,
 } from '../../electron/kaceBridge.cjs';
+
+type KaceActionType = 'inventory' | 'cache' | 'config' | 'patch';
 
 describe('KACE & Wake-on-LAN Bridge Service (PoC)', () => {
   describe('isValidMacAddress', () => {

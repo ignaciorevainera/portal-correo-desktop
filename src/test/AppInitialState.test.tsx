@@ -86,9 +86,7 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Conectar por VNC Viewer/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Iniciar Asistencia MSRA/i })).toBeInTheDocument();
+      expect(startPingMock).toHaveBeenCalledWith('192.0.2.100', false);
     });
-
-    // Verify ping was automatically triggered for the searched terminal
-    expect(startPingMock).toHaveBeenCalledWith('192.0.2.100', false);
   });
 });
