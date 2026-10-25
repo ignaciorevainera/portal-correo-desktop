@@ -12,8 +12,8 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [ddf0baf]
 
 ### Phase 3: Aumento de Dimensiones de Topbar (h-14 / 56px) y Normalización de Acciones
-- [ ] Task: Escribir tests de layout e interacción para la barra superior ampliada y contraste del botón Portal MDA
-- [ ] Task: Actualizar `Topbar.tsx` a altura `h-14` (56px), con input `h-10`, botones normalizados a `h-10` y estilos de alto contraste en modo claro/oscuro para el botón Portal MDA
+- [x] Task: Escribir tests de layout e interacción para la barra superior ampliada y contraste del botón Portal MDA [9df59b3]
+- [~] Task: Actualizar `Topbar.tsx` a altura `h-14` (56px), con input `h-10`, botones normalizados a `h-10` y estilos de alto contraste en modo claro/oscuro para el botón Portal MDA
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 4: Consolidación, Limpieza de Referencias Demo y Verificación Integral
