@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-// @ts-expect-error - CJS module in electron
 import { parseClipboardQuery } from '../../electron/clipboardParser.cjs';
 
 describe('Clipboard Parser (Global Hotkey Autofill)', () => {

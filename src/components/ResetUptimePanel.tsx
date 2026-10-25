@@ -34,7 +34,7 @@ export function ResetUptimePanel({ terminal }: { terminal: TerminalData }): Reac
         {/* Card Uptime Compacta */}
         <Card size="sm" className="rounded-lg border-border bg-card shadow-xs flex flex-col justify-between">
           <CardHeader className="pb-1">
-            <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground uppercase tracking-wider">
               <Clock className="h-4 w-4 text-emerald-500 shrink-0" />
               Tiempo de Actividad Registrado
             </CardTitle>
@@ -52,7 +52,7 @@ export function ResetUptimePanel({ terminal }: { terminal: TerminalData }): Reac
         {/* Card Reset Request Compacta con Formulario en Línea */}
         <Card size="sm" className="rounded-lg border-border bg-card shadow-xs">
           <CardHeader className="pb-1">
-            <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground uppercase tracking-wider">
               <ShieldAlert className="h-4 w-4 text-amber-500 shrink-0" />
               Solicitar Reseteo de Cuenta AD
             </CardTitle>
