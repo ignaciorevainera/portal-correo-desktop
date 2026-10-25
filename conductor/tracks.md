@@ -66,6 +66,12 @@
 - [ ] **Track: Global Hotkey con Detección de Portapapeles y Escáner Visual Asíncrono de Subred**
   *Link: [./tracks/global_hotkey_subnet_scanner_20261025/index.md](./tracks/global_hotkey_subnet_scanner_20261025/index.md)*
 
+---
+
+- [ ] **Track: Empty State de Terminal Inexistente y Supresión de Auto-Scroll / Foco en Ping**
+  *Link: [./tracks/terminal_empty_state_ping_no_scroll_20261025/index.md](./tracks/terminal_empty_state_ping_no_scroll_20261025/index.md)*
+
+
 
 
 
