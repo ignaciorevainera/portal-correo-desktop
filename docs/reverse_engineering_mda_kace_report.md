@@ -129,4 +129,47 @@ HMDA no se limita a consultas locales; se conecta a un servidor MySQL corporativ
 
 ---
 
-*(Continuará en la Fase 3: Análisis de Binarios de KACE)*
+## 3. Fase 3: Análisis de Binarios de KACE Systems Management y Mecanismos de Integración
+
+### 3.1 Binario Wake-on-LAN Corporativo (`kwol.exe`)
+- **Arquitectura:** Binario compilado en Go (`kwol.go`).
+- **Sintaxis de Invocación:**
+  ```cmd
+  kwol.exe <mac-address1>[,<mac-address2>,...<mac-addressN>]
+  ```
+- **Parámetros y Comportamiento:**
+  - Acepta una lista de direcciones MAC separadas por coma sin espacios (formatos aceptados: `XX:XX:XX:XX:XX:XX` o `XX-XX-XX-XX-XX-XX`).
+  - Flag `-v`: Muestra la versión del utilitario.
+  - Flag `-h`: Muestra la ayuda de uso.
+  - **Mecanismo de Envío:** Por cada dirección MAC recibida, genera un paquete mágico Wake-on-LAN estándar (6 bytes `0xFF` seguidos de 16 repeticiones de la dirección MAC de 6 bytes = 102 bytes en total) y lo transmite vía broadcast UDP (puerto 9) a través de **todas las interfaces de red locales activas** para garantizar la cobertura de subred sin necesidad de adivinar el adaptador LAN principal.
+
+---
+
+### 3.2 Agente de Tareas y Sincronización Forzada (`runkbot.exe`)
+- **Arquitectura:** Binario nativo C/C++ del motor de ejecución de bots de Quest KACE.
+- **Sintaxis de Invocación:**
+  ```cmd
+  runkbot.exe <kbotid> <kbot_version> [-noLogUpload] [-launchtype=type] [-event=eventtype]
+  ```
+- **Códigos de Ejecución Estándar Identificados:**
+  - `runkbot.exe 4 0`: **Actualización forzada de inventario (Inventory Update)**. Escanea hardware, software instalado, parches de seguridad y envía el payload XML al servidor KACE de inmediato.
+  - `runkbot.exe 3 0`: **Actualización de caché de scripts y tareas (Kbots Cache Update)**. Sincroniza scripts y políticas pendientes asignadas al host.
+  - `runkbot.exe 1 0`: **Comprobación de configuración del agente**. Valida certificados y conectividad con el appliance.
+  - `runkbot.exe 6 0`: **Detección y ciclo de parches (Patching Task)**.
+
+---
+
+### 3.3 Auditoría de Telemetría y Logs (`Inventory.log` y utilidades)
+- **`Inventory.log`:**
+  - Muestra el ciclo secuencial del escaneo local:
+    - Escaneo de etiquetas SWIDTAG.
+    - Extracción de registros de ejecutables (`exe records`).
+    - Catálogo de aplicaciones de usuario (`program records`, `AppV records`, `MuiCache records`).
+    - Marcador final: `Software Inventory: Done`.
+- **Integración con HMDA y Soporte:**
+  - HMDA incorpora un toggle `habilitarBotonKaceToolStripMenuItem` que habilita un botón "KACE" en la cabecera.
+  - Cuando el operador consulta una estación, el botón KACE abre directamente la ficha de la terminal en la consola web de KACE o ejecuta el diagnóstico del agente de terminal.
+
+---
+
+*(Continuará en la Fase 4: Síntesis Técnica, Matriz de Paridad y PoCs de Integración para new-CMDA)*
