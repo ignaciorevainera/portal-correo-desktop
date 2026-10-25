@@ -93,12 +93,12 @@ export function Topbar({
   return (
     <>
       <header className="h-14 border-b border-border bg-card/90 backdrop-blur px-4 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
-        {/* Identidad / Brand */}
-        <div className="flex items-center gap-2.5 shrink-0 app-no-drag">
-          <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+        {/* Identidad / Brand (Arrastrable junto al header para mover la ventana con el mouse) */}
+        <div className="flex items-center gap-2.5 shrink-0 cursor-default select-none">
+          <div className="p-1.5 rounded-md bg-primary/10 text-primary pointer-events-none">
             <TerminalIcon className="h-5 w-5" />
           </div>
-          <h1 className="text-sm font-bold font-heading tracking-tight text-foreground whitespace-nowrap">
+          <h1 className="text-sm font-bold font-heading tracking-tight text-foreground whitespace-nowrap pointer-events-none">
             Portal Correo Desktop
           </h1>
         </div>
