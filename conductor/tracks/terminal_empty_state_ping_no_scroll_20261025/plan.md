@@ -1,15 +1,15 @@
 # Implementation Plan: Empty State de Terminal Inexistente y Supresión de Auto-Scroll en Ping
 
-## Phase 1: Empty State para Terminal No Encontrada (TDD)
+## Phase 1: Empty State para Terminal No Encontrada (TDD) [checkpoint: ff599c0]
 - [x] Task: Escribir pruebas unitarias (Red Phase) para el estado de búsqueda fallida (87bbc46)
   - [x] Escribir tests en `src/App.test.tsx` que verifiquen el estado inicial vs. estado no encontrado cuando la consulta no devuelve terminal.
   - [x] Validar que los tests fallen antes de implementar los cambios.
-- [~] Task: Implementar lógica de estado no encontrado y componente UI (Green Phase)
-  - [ ] Actualizar `App.tsx` con tracking de término buscado no encontrado (`notFoundTerm`).
-  - [ ] Diseñar el bloque visual del empty state con icono `SearchX`, nombre buscado, orientación técnica y botón para limpiar búsqueda.
-  - [ ] Hacer pasar todos los tests de la fase.
-- [ ] Task: Refactorización y verificación de cobertura de Fase 1
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Implementar lógica de estado no encontrado y componente UI (Green Phase) (c8e732e)
+  - [x] Actualizar `App.tsx` con tracking de término buscado no encontrado (`notFoundTerm`).
+  - [x] Diseñar el bloque visual del empty state con icono `SearchX`, nombre buscado, orientación técnica y botón para limpiar búsqueda.
+  - [x] Hacer pasar todos los tests de la fase.
+- [x] Task: Refactorización y verificación de cobertura de Fase 1
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (ff599c0)
 
 ## Phase 2: Supresión Total de Auto-Scroll y Foco en Ping y Terminal (TDD)
 - [ ] Task: Escribir pruebas unitarias (Red Phase) para eliminación de scrollIntoView
