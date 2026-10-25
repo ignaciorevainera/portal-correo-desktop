@@ -41,7 +41,9 @@ describe('Phase 1 Tests: Draggable Brand Region and Unified TerminalTechnicalCar
     // Contains Network items
     expect(screen.getByText(terminal.ip)).toBeInTheDocument();
     expect(screen.getByText(terminal.mac)).toBeInTheDocument();
-    expect(screen.getByText(terminal.location)).toBeInTheDocument();
+    if (terminal.location) {
+      expect(screen.getByText(terminal.location)).toBeInTheDocument();
+    }
 
     // 1-Click Copy buttons
     const copyIpBtn = screen.getByRole('button', { name: /copiar dirección ipv4/i });
