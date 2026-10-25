@@ -1,7 +1,7 @@
 {
-  "name": "new-cmda",
+  "name": "portal-correo-desktop",
   "version": "1.0.0",
-  "description": "Monitoreo e Inventario de Estaciones de Trabajo",
+  "description": "Portal Correo Desktop - Monitoreo e Inventario de Estaciones de Trabajo",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",

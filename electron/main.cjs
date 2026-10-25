@@ -22,11 +22,11 @@ function getTrayIcon() {
 function createTray(win) {
   if (tray) return;
   tray = new Tray(getTrayIcon());
-  tray.setToolTip('new CMDA - Monitoreo e Inventario de Estaciones');
+  tray.setToolTip('Portal Correo Desktop - Monitoreo e Inventario de Estaciones');
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Abrir new CMDA',
+      label: 'Abrir Portal Correo Desktop',
       click: () => {
         if (win) {
           win.show();
@@ -79,7 +79,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-    title: 'new CMDA - Monitoreo e Inventario de Estaciones',
+    title: 'Portal Correo Desktop - Monitoreo e Inventario de Estaciones',
   });
 
   createTray(win);

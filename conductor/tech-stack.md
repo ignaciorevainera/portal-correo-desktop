@@ -1,4 +1,4 @@
-# Technology Stack: new CMDA
+# Technology Stack: Portal Correo Desktop
 
 ## 1. Application Architecture & Runtime
 - **Desktop Runtime:** Electron (Proceso Main y Renderer desacoplados con IPC seguro y `contextIsolation: true`).

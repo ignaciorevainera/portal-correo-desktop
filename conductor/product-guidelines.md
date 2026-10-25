@@ -1,4 +1,4 @@
-# Product Guidelines: new CMDA
+# Product Guidelines: Portal Correo Desktop
 
 ## 1. Visual Identity & Design System
 

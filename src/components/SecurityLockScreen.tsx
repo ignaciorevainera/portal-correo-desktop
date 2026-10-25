@@ -49,7 +49,7 @@ export function SecurityLockScreen({
           </div>
           <div>
             <CardTitle className="text-lg font-bold font-heading tracking-tight text-foreground">
-              Control de Acceso Corporativo — new CMDA
+              Control de Acceso Corporativo — Portal Correo Desktop
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground mt-0.5">
               Uso exclusivo dentro de la red interna o VPN corporativa autorizada

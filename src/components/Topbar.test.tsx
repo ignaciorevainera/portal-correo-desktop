@@ -19,7 +19,7 @@ describe('Topbar & Compact Unified Titlebar component', () => {
 
     const input = screen.getByPlaceholderText(/buscar terminal o ip/i);
     expect(input).toBeInTheDocument();
-    expect(screen.getByText(/new cmda/i)).toBeInTheDocument();
+    expect(screen.getByText(/portal correo desktop/i)).toBeInTheDocument();
   });
 
   it('renders "Portal MDA" button and calls openExternalUrl with exact URL', async () => {

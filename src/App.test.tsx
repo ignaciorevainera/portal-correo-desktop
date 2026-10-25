@@ -14,9 +14,9 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     (global as any).window = originalWindow;
   });
 
-  it('renders the application header with new CMDA title directly for any user', async () => {
+  it('renders the application header with Portal Correo Desktop title directly for any user', async () => {
     render(<App />);
-    expect(screen.getByText(/new CMDA/i)).toBeInTheDocument();
+    expect(screen.getByText(/Portal Correo Desktop/i)).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText(/PC-DEMO-001/i)).toBeInTheDocument();
     });

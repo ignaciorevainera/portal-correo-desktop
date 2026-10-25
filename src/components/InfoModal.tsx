@@ -84,7 +84,7 @@ export function InfoModal({
             <div>
               <div className="flex items-center gap-2">
                 <DialogTitle id="info-modal-title" className="text-base font-bold font-heading text-foreground">
-                  Acerca de new CMDA
+                  Acerca de Portal Correo Desktop
                 </DialogTitle>
                 <Badge variant="outline" className="text-[11px] font-mono font-medium rounded-full bg-primary/15 text-primary border-primary/25">
                   {appVersion}
@@ -109,7 +109,7 @@ export function InfoModal({
           </Alert>
 
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-1">
-            ¿Qué podés hacer con new CMDA?
+            ¿Qué podés hacer con Portal Correo Desktop?
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

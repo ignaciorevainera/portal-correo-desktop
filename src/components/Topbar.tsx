@@ -97,7 +97,7 @@ export function Topbar({
         <div className="flex items-center gap-2 shrink-0 app-no-drag">
           <TerminalIcon className="h-4 w-4 text-primary" />
           <h1 className="text-xs font-bold font-heading tracking-tight text-foreground whitespace-nowrap">
-            new CMDA
+            Portal Correo Desktop
           </h1>
         </div>
 

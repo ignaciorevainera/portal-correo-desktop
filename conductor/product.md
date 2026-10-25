@@ -1,7 +1,7 @@
-# Product Definition: new CMDA
+# Product Definition: Portal Correo Desktop
 
 ## Overview
-**new CMDA** es una aplicación de escritorio moderna desarrollada sobre Electron y Node.js para sustituir el aplicativo heredado de Visual Basic 6. Su objetivo principal es el **monitoreo, inventario técnico en tiempo real, diagnóstico y soporte remoto de estaciones de trabajo** en la infraestructura corporativa.
+**Portal Correo Desktop** es una aplicación de escritorio moderna desarrollada sobre Electron y Node.js para sustituir el aplicativo heredado de Visual Basic 6. Su objetivo principal es el **monitoreo, inventario técnico en tiempo real, diagnóstico y soporte remoto de estaciones de trabajo** en la infraestructura corporativa.
 
 ## Core Features
 1. **Búsqueda e Inventario Técnico en Tiempo Real:**

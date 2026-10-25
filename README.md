@@ -1,4 +1,4 @@
-# new CMDA - Consola de Monitoreo y Diagnóstico de Terminales
+# Portal Correo Desktop - Consola de Monitoreo y Diagnóstico de Terminales
 
 Aplicación nativa moderna basada en Electron, React 19, TypeScript y Tailwind CSS, diseñada para el soporte técnico y administración de estaciones de trabajo en entorno corporativo.
 
