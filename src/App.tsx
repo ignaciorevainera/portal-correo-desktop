@@ -21,7 +21,7 @@ import {
   BackendStatus,
 } from './services/electronClient';
 import { TerminalData } from './types/terminal';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, SearchX, RotateCcw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 export default function App(): React.JSX.Element {
   const [selectedPc, setSelectedPc] = useState<string>('');
   const [terminal, setTerminal] = useState<TerminalData | null>(null);
+  const [notFoundTerm, setNotFoundTerm] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPinging, setIsPinging] = useState(false);
   const [pingMode, setPingMode] = useState<'standard' | 'infinite'>('standard');
@@ -44,13 +45,21 @@ export default function App(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (!selectedPc) return;
+    if (!selectedPc) {
+      setTerminal(null);
+      setNotFoundTerm(null);
+      return;
+    }
     setIsLoading(true);
     setIsPinging(false);
+    setNotFoundTerm(null);
 
     searchTerminalUnified(selectedPc)
       .then((res) => {
         setTerminal(res.data);
+        if (!res.data) {
+          setNotFoundTerm(selectedPc);
+        }
         setIsLoading(false);
         if (mainRef.current) {
           mainRef.current.scrollTop = 0;
@@ -61,9 +70,19 @@ export default function App(): React.JSX.Element {
         }
       })
       .catch(() => {
+        setTerminal(null);
+        setNotFoundTerm(selectedPc);
         setIsLoading(false);
       });
   }, [selectedPc]);
+
+  const handleClearSearch = (): void => {
+    setSelectedPc('');
+    setTerminal(null);
+    setNotFoundTerm(null);
+    setIsPinging(false);
+    setActionFeedback(null);
+  };
 
   const handleStartPing = (mode: 'standard' | 'infinite' = 'standard') => {
     setPingMode(mode);
@@ -219,6 +238,30 @@ export default function App(): React.JSX.Element {
               <p className="text-xs text-muted-foreground font-mono">
                 Consultando base de datos técnica...
               </p>
+            </div>
+          ) : notFoundTerm ? (
+            <div className="h-96 flex flex-col items-center justify-center text-center p-8 border border-dashed border-destructive/40 rounded-lg bg-destructive/5 space-y-4">
+              <div className="p-3.5 rounded-full bg-destructive/10 text-destructive">
+                <SearchX className="h-8 w-8" />
+              </div>
+              <div className="space-y-1.5 max-w-md">
+                <h3 className="text-sm font-semibold font-heading text-foreground">
+                  No se encontró la terminal &ldquo;<span className="font-mono text-destructive font-bold">{notFoundTerm}</span>&rdquo;
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  No existe un registro técnico para este equipo o dirección IP en la base corporativa. Verificá la ortografía del Hostname o el alcance de red.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearSearch}
+                aria-label="Limpiar búsqueda"
+                className="text-xs font-mono gap-1.5 h-8 border-border hover:bg-muted cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Limpiar búsqueda</span>
+              </Button>
             </div>
           ) : !terminal ? (
             <div className="h-96 flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-card/30 space-y-3">

@@ -103,7 +103,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     // Wait for search result
     await waitFor(() => {
       expect(screen.getByText(/No se encontró la terminal/i)).toBeInTheDocument();
-      expect(screen.getByText(/PC-NOEXISTE-999/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/PC-NOEXISTE-999/i).length).toBeGreaterThan(0);
     });
 
     // Should NOT show the generic initial prompt
