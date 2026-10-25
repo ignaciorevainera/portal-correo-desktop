@@ -7,7 +7,7 @@
   - [x] Implement to Pass Tests: Desarrollar `electron/updaterService.cjs` con soporte para verificación de releases públicas en GitHub y descarga controlada a directorio temporal.
   - [x] Implement to Pass Tests: Exponer canales IPC en `main.cjs` y `preload.cjs` (`cmda:check-updates`, `cmda:download-update`, `cmda:install-update-on-quit`) y cablear en `src/services/electronClient.ts`.
   - [x] Refactor & Coverage: Confirmar cobertura >85% en pruebas unitarias del updater.
-- [ ] Task: Phase 1 Verification & Checkpoint (Protocol in workflow.md)
+- [x] Task: Phase 1 Verification & Checkpoint (Protocol in workflow.md) d0126e6
 
 ### Phase 2: Componente `SettingsModal.tsx` con Shadcn Radix (Actualizador & Preferencias)
 - [ ] Task: Construir diálogo de ajustes con pestañas (Actualizaciones, Preferencias y Diagnóstico)
