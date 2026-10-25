@@ -20,6 +20,10 @@
    - Conexión directa a SQL Server corporativo mediante `mssql` / `tedious` con configuración externa (`cmda.config.json` / `.env` ignorado por Git).
    - Candado Dual Adaptativo (Security Gatekeeper) que exige pertenencia al dominio Active Directory corporativo o alcance de red/VPN interna + clave corporativa antes de habilitar el aplicativo.
    - Eliminación de dependencias de archivos compartidos `.udl` y componentes COM/ActiveX de 32 bits.
+5. **Integración con Ecosistema KACE y Soporte Unificado:**
+   - Servicio de Wake-on-LAN para encendido remoto de terminales mediante difusión de paquetes mágicos.
+   - Sincronización forzada de inventario y políticas con el appliance Quest KACE (`runkbot 4 0`).
+   - Matriz de interoperabilidad y mejoras unificadas basadas en ingeniería inversa de aplicativos legacy (HMDA v1/v1.1/v2.0, CMDA-2).
 
 ## Target Audience
 Operadores de soporte técnico, administradores de sistemas y analistas de monitoreo e inventario de estaciones de trabajo.
