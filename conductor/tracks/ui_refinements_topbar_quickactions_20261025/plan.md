@@ -7,8 +7,8 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [b6b53db]
 
 ### Phase 2: Rediseño Minimalista de QuickActionsBar y Corrección de Alertas/Badges
-- [ ] Task: Escribir tests para `QuickActionsBar` sin contenedor `<Card>`, sólo con botones de acción y alineación precisa del badge/alert de feedback
-- [ ] Task: Refactorizar `QuickActionsBar.tsx` eliminando el envoltorio `<Card>` y títulos, dejando exclusivamente los botones de acción (`VNC Viewer`, `Asistencia MSRA`, grupo `Ping`/`Ping -t`, y `Uptime`), corrigiendo la alineación flex de los iconos/emojis en los alerts
+- [x] Task: Escribir tests para `QuickActionsBar` sin contenedor `<Card>`, sólo con botones de acción y alineación precisa del badge/alert de feedback [3a5b478]
+- [~] Task: Refactorizar `QuickActionsBar.tsx` eliminando el envoltorio `<Card>` y títulos, dejando exclusivamente los botones de acción (`VNC Viewer`, `Asistencia MSRA`, grupo `Ping`/`Ping -t`, y `Uptime`), corrigiendo la alineación flex de los iconos/emojis en los alerts
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 3: Aumento de Dimensiones de Topbar (h-14 / 56px) y Normalización de Acciones
