@@ -16,10 +16,10 @@ Configuración de ventana sin marco nativo en Electron (`1020x680`), bloqueo del
 ## Phase 2: Layout Fijo (`h-screen`), Sidebar Compacta Corregida y Vista Unificada de Diagnóstico
 Fijación del layout general (`h-screen overflow-hidden`) para que solo `<main>` tenga scroll, corrección de la `Sidebar` colapsada por defecto (`w-12`) con botones cuadrados centrados sin espacio sobrante a la derecha, y unificación de Hardware + Red + Consola Ping en la vista principal.
 
-- [~] Task: Corregir `Sidebar` colapsada por defecto (`w-12`) con botones centrados y 3 vistas operativas
-  - [ ] Escribir pruebas en `src/test/Sidebar.test.tsx` comprobando el estado colapsado por defecto, ausencia de espaciado lateral asimétrico (`justify-center px-0`), badge flotante de alertas y navegación entre las 3 vistas (`inventory`, `alerts`, `reset-uptime`)
-  - [ ] Refactorizar `src/components/Sidebar.tsx` eliminando el padding/gap causante del espacio a la derecha cuando está colapsada, dejándola fija e integrando las 3 vistas principales
-- [ ] Task: Unificar Feedback Inline de Éxito/Error en `QuickActionsBar` y eliminar el banner bajo el Header
+- [x] Task: Corregir `Sidebar` colapsada por defecto (`w-12`) con botones centrados y 3 vistas operativas [ad0c5b7]
+  - [x] Escribir pruebas en `src/test/Sidebar.test.tsx` comprobando el estado colapsado por defecto, ausencia de espaciado lateral asimétrico (`justify-center px-0`), badge flotante de alertas y navegación entre las 3 vistas (`inventory`, `alerts`, `reset-uptime`)
+  - [x] Refactorizar `src/components/Sidebar.tsx` eliminando el padding/gap causante del espacio a la derecha cuando está colapsada, dejándola fija e integrando las 3 vistas principales
+- [~] Task: Unificar Feedback Inline de Éxito/Error en `QuickActionsBar` y eliminar el banner bajo el Header
   - [ ] Escribir pruebas en `src/test/QuickActionsBar.test.tsx` verificando que el mensaje de *"Acción disparada"* se muestre en caso de éxito y sea sustituido en el mismo lugar por el motivo de error con color de error (`text-destructive`) y botón inline de fallback a MSRA cuando falle VNC
   - [ ] Refactorizar `src/components/QuickActionsBar.tsx` y `src/App.tsx` para eliminar el banner debajo del Header y pasar el estado de resultado/error directamente al área de mensaje de `QuickActionsBar`, además de soportar atajos `F2` (VNC), `F3` (Ping) y `F4` (MSRA)
 - [ ] Task: Integrar Hardware, Red y Consola de Ping en vivo en la vista principal con layout fijo (`h-screen overflow-hidden`)
