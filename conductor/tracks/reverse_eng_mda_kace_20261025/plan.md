@@ -11,7 +11,7 @@
   - [x] Analizar estructura y patrones de fallos en `Errores.Err` [f8400a0]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [checkpoint: f8400a0]
 
-## Phase 2: Descompilación e Ingeniería Inversa de HMDA (v1, v1.1 y v2.0 - .NET / C#)
+## Phase 2: Descompilación e Ingeniería Inversa de HMDA (v1, v1.1 y v2.0 - .NET / C#) [checkpoint: 562f6d1]
 - [x] Task: Desensamblado / descompilación IL y extracción de tipos, métodos y namespaces en HMDA.exe [562f6d1]
   - [x] Inspeccionar metadatos de ensamblado, versiones de runtime y dependencias cargadas en HMDA v1, v1.1 y v2.0 [562f6d1]
   - [x] Extraer clases principales, formularios WinForms/WPF y controladores de eventos mediante reflexión e inspección IL [562f6d1]
@@ -29,10 +29,10 @@
   - [x] Analizar parámetros visuales (`Transparente`, `Fijar`, fuentes y colores personalizados) [562f6d1]
   - [x] Analizar la integración de `Microsoft.Toolkit.Uwp.Notifications` para envío de notificaciones nativas de Windows [562f6d1]
   - [x] Analizar la generación de planillas Excel con `SpreadsheetLight.dll` y `DocumentFormat.OpenXml.dll` [562f6d1]
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [checkpoint: 562f6d1]
 
 ## Phase 3: Análisis de Binarios de KACE Systems Management y Mecanismos de Integración
-- [ ] Task: Análisis funcional y de sintaxis de kwol.exe (Wake-on-LAN corporativo)
+- [~] Task: Análisis funcional y de sintaxis de kwol.exe (Wake-on-LAN corporativo)
   - [ ] Extraer strings, argumentos CLI y parámetros esperados de `C:\MDA\KACE\kwol.exe`
   - [ ] Verificar el formato de envío de paquetes mágicos WOL (MAC address, IP broadcast, puerto UDP 7/9)
 - [ ] Task: Análisis de runkbot.exe, KInventory.exe y parámetros de sincronización forzada
