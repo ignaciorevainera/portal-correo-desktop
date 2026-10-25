@@ -19,13 +19,13 @@ Fijación del layout general (`h-screen overflow-hidden`) para que solo `<main>`
 - [x] Task: Corregir `Sidebar` colapsada por defecto (`w-12`) con botones centrados y 3 vistas operativas [ad0c5b7]
   - [x] Escribir pruebas en `src/test/Sidebar.test.tsx` comprobando el estado colapsado por defecto, ausencia de espaciado lateral asimétrico (`justify-center px-0`), badge flotante de alertas y navegación entre las 3 vistas (`inventory`, `alerts`, `reset-uptime`)
   - [x] Refactorizar `src/components/Sidebar.tsx` eliminando el padding/gap causante del espacio a la derecha cuando está colapsada, dejándola fija e integrando las 3 vistas principales
-- [~] Task: Unificar Feedback Inline de Éxito/Error en `QuickActionsBar` y eliminar el banner bajo el Header
-  - [ ] Escribir pruebas en `src/test/QuickActionsBar.test.tsx` verificando que el mensaje de *"Acción disparada"* se muestre en caso de éxito y sea sustituido en el mismo lugar por el motivo de error con color de error (`text-destructive`) y botón inline de fallback a MSRA cuando falle VNC
-  - [ ] Refactorizar `src/components/QuickActionsBar.tsx` y `src/App.tsx` para eliminar el banner debajo del Header y pasar el estado de resultado/error directamente al área de mensaje de `QuickActionsBar`, además de soportar atajos `F2` (VNC), `F3` (Ping) y `F4` (MSRA)
-- [ ] Task: Integrar Hardware, Red y Consola de Ping en vivo en la vista principal con layout fijo (`h-screen overflow-hidden`)
-  - [ ] Escribir pruebas en `src/test/App.test.tsx` verificando que `<main>` sea el único contenedor scrollable (`overflow-y-auto`), que la Sidebar inicie colapsada y que al iniciar Ping la consola `LivePingConsole` sea visible directamente en la vista principal
-  - [ ] Actualizar `src/App.tsx` y `src/components/LivePingConsole.tsx` para acoplar el Ping en vivo en la vista principal sin requerir cambio de pestaña
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Unificar Feedback Inline de Éxito/Error en `QuickActionsBar` y eliminar el banner bajo el Header [e1ae30a]
+  - [x] Escribir pruebas en `src/test/QuickActionsBar.test.tsx` verificando que el mensaje de *"Acción disparada"* se muestre en caso de éxito y sea sustituido en el mismo lugar por el motivo de error con color de error (`text-destructive`) y botón inline de fallback a MSRA cuando falle VNC
+  - [x] Refactorizar `src/components/QuickActionsBar.tsx` y `src/App.tsx` para eliminar el banner debajo del Header y pasar el estado de resultado/error directamente al área de mensaje de `QuickActionsBar`, además de soportar atajos `F2` (VNC), `F3` (Ping) y `F4` (MSRA)
+- [x] Task: Integrar Hardware, Red y Consola de Ping en vivo en la vista principal con layout fijo (`h-screen overflow-hidden`) [e1ae30a]
+  - [x] Escribir pruebas en `src/test/App.test.tsx` verificando que `<main>` sea el único contenedor scrollable (`overflow-y-auto`), que la Sidebar inicie colapsada y que al iniciar Ping la consola `LivePingConsole` sea visible directamente en la vista principal
+  - [x] Actualizar `src/App.tsx` y `src/components/LivePingConsole.tsx` para acoplar el Ping en vivo en la vista principal sin requerir cambio de pestaña
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Alto Contraste Tipográfico, Copiado en 1 Clic y Menú Contextual Personalizado de Operador
 Optimización de densidad y contraste de textos en tarjetas técnicas (`HardwareCard`, `NetworkAdCard`, `AlertsPanel`, `ResetUptimePanel`) respetando los tokens OKLCH, botones de copiado rápido en 1 clic y reemplazo del menú contextual de clic derecho por un menú propio de operador.
