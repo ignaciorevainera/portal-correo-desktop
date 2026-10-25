@@ -14,8 +14,15 @@ import {
 import { Card, CardHeader, CardTitle, CardAction, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Network } from 'lucide-react';
 
-export function TerminalTechnicalCard({ terminal }: { terminal: TerminalData }): React.JSX.Element {
+export function TerminalTechnicalCard({
+  terminal,
+  onOpenSubnetScanner,
+}: {
+  terminal: TerminalData;
+  onOpenSubnetScanner?: () => void;
+}): React.JSX.Element {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopy = async (key: string, text: string) => {
@@ -38,6 +45,19 @@ export function TerminalTechnicalCard({ terminal }: { terminal: TerminalData }):
           </p>
         </div>
         <CardAction className="flex items-center gap-1.5">
+          {onOpenSubnetScanner && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onOpenSubnetScanner}
+              className="h-6 text-[10px] px-2 font-mono gap-1 text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
+              title="Escanear toda la subred de esta terminal"
+            >
+              <Network className="h-3 w-3" />
+              <span>Escanear Subred</span>
+            </Button>
+          )}
           <Badge
             variant="outline"
             className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25 font-bold h-5"

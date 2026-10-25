@@ -7,6 +7,7 @@ import { LivePingConsole } from './components/LivePingConsole';
 import { AlertsPanel } from './components/AlertsPanel';
 import { ResetUptimePanel } from './components/ResetUptimePanel';
 import { OperatorContextMenu } from './components/OperatorContextMenu';
+import { SubnetScannerDrawer } from './components/SubnetScannerDrawer';
 import {
   getAllTerminals,
   addAlertToTerminal,
@@ -37,6 +38,7 @@ export default function App(): React.JSX.Element {
   const [status, setStatus] = useState<BackendStatus>({ connected: false, mode: 'mock' });
   const [actionFeedback, setActionFeedback] = useState<ActionFeedbackState | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [isSubnetDrawerOpen, setIsSubnetDrawerOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
   const allTerminals = getAllTerminals();
@@ -293,7 +295,10 @@ export default function App(): React.JSX.Element {
           ) : (
             <>
               {/* 1° Card Unificada: Especificaciones Técnicas, Hardware, Red y Directorio Activo */}
-              <TerminalTechnicalCard terminal={terminal} />
+              <TerminalTechnicalCard
+                terminal={terminal}
+                onOpenSubnetScanner={() => setIsSubnetDrawerOpen(true)}
+              />
 
               {/* 2° Consola Interna de Ping: Estilo Terminal Windows, sin auto-scroll forzado */}
               <LivePingConsole
@@ -329,6 +334,22 @@ export default function App(): React.JSX.Element {
             onTogglePing={handleTogglePing}
             onLaunchMsra={() => handleLaunchMsra()}
             onOpenPortalMda={() => openExternalUrl('https://mda.corporativo.internal/inventario-terminales')}
+          />
+        )}
+
+        {/* Panel Deslizable de Escaneo Asíncrono de Subred */}
+        {terminal && (
+          <SubnetScannerDrawer
+            isOpen={isSubnetDrawerOpen}
+            onClose={() => setIsSubnetDrawerOpen(false)}
+            targetIp={terminal.ip}
+            onSelectTerminal={(pc) => {
+              handleSelectTerminal(pc);
+              setIsSubnetDrawerOpen(false);
+            }}
+            onLaunchVnc={(target) => {
+              handleLaunchVnc(target);
+            }}
           />
         )}
 
