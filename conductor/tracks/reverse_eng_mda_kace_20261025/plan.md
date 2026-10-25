@@ -1,6 +1,6 @@
 # Implementation Plan: Ingeniería Inversa, Análisis Comparativo y Extracción de Features (CMDA-2, HMDA v1/v1.1/v2.0 y KACE)
 
-## Phase 1: Análisis Diferencial de Binarios y Estructura Legacy (CMDA-2 vs CMDA Original)
+## Phase 1: Análisis Diferencial de Binarios y Estructura Legacy (CMDA-2 vs CMDA Original) [checkpoint: f8400a0]
 - [x] Task: Inspección de arquitectura, firmas PE, cadenas de texto y hashing comparativo de ejecutables CMDA.exe [f8400a0]
   - [x] Calcular y comparar hashes SHA-256 de `C:\MDA\CMDA-2\CMDA.exe` y `C:\MDA\CMDA-2\CMDA\CMDA.exe` [f8400a0]
   - [x] Extraer strings legibles (ASCII y Unicode) de ambos ejecutables para buscar diferencias en cadenas de conexión, queries SQL o rutas [f8400a0]
@@ -9,10 +9,10 @@
   - [x] Analizar contenido de `admin_2.vnc` y `options.vnc` para mapear parámetros VNC y flags de visualización [f8400a0]
   - [x] Evaluar binarios auxiliares `uptime.exe` y `MIke_uptime.exe` identificando APIs de Windows (`GetTickCount`, etc.) [f8400a0]
   - [x] Analizar estructura y patrones de fallos en `Errores.Err` [f8400a0]
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [checkpoint: f8400a0]
 
 ## Phase 2: Descompilación e Ingeniería Inversa de HMDA (v1, v1.1 y v2.0 - .NET / C#)
-- [ ] Task: Desensamblado / descompilación IL y extracción de tipos, métodos y namespaces en HMDA.exe
+- [~] Task: Desensamblado / descompilación IL y extracción de tipos, métodos y namespaces en HMDA.exe
   - [ ] Inspeccionar metadatos de ensamblado, versiones de runtime y dependencias cargadas en HMDA v1, v1.1 y v2.0
   - [ ] Extraer clases principales, formularios WinForms/WPF y controladores de eventos mediante reflexión e inspección IL
   - [ ] Mapear el ciclo de vida de la aplicación y diferencias estructurales entre v1, v1.1 y v2.0
