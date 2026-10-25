@@ -58,4 +58,75 @@ Esto ocurría cuando el motor OLE DB de VB6 intentaba resolver el archivo de enl
 
 ---
 
-*(Continuará en la Fase 2: Descompilación de HMDA v1/v1.1/v2.0)*
+## 2. Fase 2: Descompilación e Ingeniería Inversa de HMDA (v1, v1.1 y v2.0 - .NET / C#)
+
+### 2.1 Arquitectura de Ensamblados y Comparativa de Versiones
+Se analizaron los tres paquetes de HMDA mediante inspección de metadatos y reflexión en 32 bits:
+- **HMDA v1.0 y v1.1 (`C:\MDA\HMDA` y `C:\MDA\HMDA1.1`):**
+  - Ejecutables idénticos en SHA-256 (`4,034,560 bytes`, fecha 10/08/2023).
+  - Target: .NET Framework 4.7.2 (compilado como `MSIL` / AnyCPU).
+  - Dependencias: Azure.Core 1.30, Microsoft.Identity.Client 4.53, Microsoft.Graph 4.x.
+- **HMDA v2.0 (`C:\MDA\HMDA2.0`):**
+  - Ejecutable actualizado (`4,070,912 bytes`, fecha 25/08/2023).
+  - Target: .NET Framework 4.7.2 (compilado específicamente para `x86` / 32 bits).
+  - Dependencias actualizadas: Azure.Core 1.34, Microsoft.Identity.Client 4.55, Microsoft.Kiota.Abstractions 1.3.1, ZstdNet.
+  - Incorpora cadena de conexión local: `<add name="DefaultConnection" connectionString="Data Source = |SQL/CE|" />`.
+
+---
+
+### 2.2 Integración con Microsoft 365, Azure AD y Microsoft Graph
+HMDA implementa un cliente nativo moderno de autenticación corporativa con Azure Active Directory:
+- **Client ID de Azure AD:** `904430ee-6e1b-4112-97a3-d58eeeebc536`
+- **Redirect URI:** `https://login.microsoftonline.com/common/oauth2/nativeclient`
+- **Flujo de Autenticación:** Utiliza `Microsoft.Identity.Client` (MSAL) con `AcquireTokenSilentParameterBuilder` e interactivo con soporte de WebView2 embebido.
+- **Llamadas a Microsoft Graph API:**
+  - `MeRequestBuilder` (`GET /me`): Obtiene perfil del operador, foto, nombre de usuario y correo corporativo.
+  - `SendMailRequestBuilder` (`POST /me/sendMail`): Envío directo y asíncrono de correos con formato HTML enriquecido a través de la API Graph sin depender de cliente Outlook local instalado ni de protocolos SMTP inseguros.
+- **Sistema de Plantillas de Correo:**
+  - Estructurado en clase `Listas.correo`:
+    - Variables de configuración: `correo_inicio`, `correo_final`, `correo_asunto`, `correo_cc`, `firma`.
+    - Resuelve automáticamente destinatarios y contactos usando `traerContacto(contacto, op)` y plantillas de saludo/despedida dinámicas.
+
+---
+
+### 2.3 Capa de Datos y Persistencia (MySQL & SQL Server CE)
+HMDA no se limita a consultas locales; se conecta a un servidor MySQL corporativo mediante `MySql.Data.dll`.
+
+#### Tablas y Consultas Principales Extraídas:
+1. **Padrón de Sucursales y Sitios Postales (`hmda_sas`):**
+   - Consulta: `SELECT * FROM hmda_sas WHERE NIS = @nis`
+   - Datos provistos: `NIS`, `DENOMINACION`, `CPA_SUCURSAL`, `TIPO`, `CATEGORIA`, `PARTIDO`, `PROVINCIA`, `TITULAR`, `DIRECCION`, `TELEFONO`, `HORARIO`.
+2. **Jerarquía Zonal y Referentes (`hmda_zonal`):**
+   - Consulta: `SELECT * FROM hmda_zonal WHERE REGION = @region AND ZONA = @zona`
+   - Datos provistos: `JEFE`, `SUC_BASE`, `TELEFONO`, `CELULAR`, `DIRECCION`, `CPA`, `MAIL`.
+3. **Muro de Comunicados y Alertas en Vivo (`alerta_comunicados`):**
+   - Consulta: `SELECT id, urgente, titulo AS Titulo, contenido AS Descripcion, link AS Link, tipo FROM alerta_comunicados ORDER BY urgente DESC`
+   - Registro de lectura: `SELECT * FROM alerta_alertavistas WHERE tipo = @tipo AND id_alerta = @id AND usuario = @user`
+   - Confirmación: `UPDATE alerta_alertavistas SET estado=1 WHERE id_alerta = @id`
+4. **Catálogo de Respuestas y Plantillas de Soporte (`plantillas_titulos`):**
+   - Permite a los analistas guardar respuestas predeterminadas por usuario y equipo para agilizar la resolución de incidencias.
+5. **Auditoría de Uptime Remoto:**
+   - Registra peticiones en `hmda_uptime_peticiones(nom_pc, usuario, estado)`.
+   - Consulta WMI remota: `SELECT LastBootUpTime FROM Win32_OperatingSystem` apuntando a `\\{0}\root\cimv2`.
+
+---
+
+### 2.4 Experiencia de Usuario, Herramientas y Notificaciones Toast
+1. **Botones de Operador Totalmente Configurables:**
+   - La aplicación incluye 3 accesos directos personalizables en su interfaz:
+     - `bt_edit1_nombre`, `bt_edit1_color`, `bt_edit1_Fcolor`, `bt_edit1_enlace`, `bt_edit1_nomreal` (repetido para `edit2` y `edit3`).
+   - Permite a cada operador enlazar sistemas corporativos externos (ej. Webmail, SOTI MobiControl, Service Manager, Portal MDA).
+2. **Monitoreo de Portapapeles (Clipboard Spy):**
+   - Registra listeners nativos de Windows (`SetClipboardViewer`, `ChangeClipboardChain`).
+   - Si el operador copia una IP o un NIS en cualquier ventana del sistema operativo, HMDA lo detecta instantáneamente y ofrece autocompletar la búsqueda.
+3. **Escaner de Rango IP Multihilo (`HMDA.scanIP`):**
+   - Permite escanear subredes divididas en 5 rangos paralelos (`star1..star5`, `end1..end5`) disparando hilos de ping simultáneos.
+4. **Notificaciones Nativas de Windows (Toast):**
+   - Mediante `Microsoft.Toolkit.Uwp.Notifications.ToastNotificationManagerCompat` y `ToastContentBuilder`:
+     - Alerta visual emergente en la bandeja del sistema con botones interactivos (`AddButton`), duración configurable y soporte de avatar/icono corporativo (`ToastGenericAppLogoCrop`).
+5. **Reportería en Excel sin Dependencia de Office:**
+   - Generación de libros `.xlsx` mediante `SpreadsheetLight.dll` y `DocumentFormat.OpenXml.dll`, permitiendo exportar listados de terminales o sucursales con doble clic.
+
+---
+
+*(Continuará en la Fase 3: Análisis de Binarios de KACE)*
