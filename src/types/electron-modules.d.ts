@@ -52,3 +52,34 @@ declare module '../../electron/systemTools.cjs' {
     onDone?: (code: number) => void
   ): any;
 }
+
+
+declare module '../../electron/updaterService.cjs' {
+  export function parseSemver(ver: string): { major: number; minor: number; patch: number; prerelease: string };
+  export function compareVersions(v1: string, v2: string): number;
+  export function isNewerVersion(remoteVer: string, currentVer: string): boolean;
+  export function checkForUpdates(options?: {
+    currentVersion?: string;
+    repoOwner?: string;
+    repoName?: string;
+    fetcher?: any;
+  }): Promise<{
+    hasUpdate: boolean;
+    currentVersion: string;
+    latestVersion: string;
+    releaseName?: string;
+    releaseNotes?: string;
+    publishedAt?: string;
+    downloadUrl?: string;
+    portableDownloadUrl?: string;
+    downloadSize?: number;
+    error?: string | null;
+  }>;
+  export function downloadUpdateFile(
+    fileUrl: string,
+    destPath: string,
+    onProgress?: (progress: { receivedBytes: number; totalBytes: number; percent: number }) => void,
+    onComplete?: (destPath: string) => void,
+    onError?: (err: Error) => void
+  ): void;
+}

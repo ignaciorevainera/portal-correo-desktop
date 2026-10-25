@@ -47,4 +47,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('cmda:subnet-done', listener);
     return () => ipcRenderer.removeListener('cmda:subnet-done', listener);
   },
+  // In-App Updater channels
+  checkForUpdates: () => ipcRenderer.invoke('cmda:check-updates'),
+  startDownloadUpdate: (downloadUrl) => ipcRenderer.invoke('cmda:start-download-update', downloadUrl),
+  onUpdateProgress: (callback) => {
+    const listener = (_event, progress) => callback(progress);
+    ipcRenderer.on('cmda:update-progress', listener);
+    return () => ipcRenderer.removeListener('cmda:update-progress', listener);
+  },
+  onUpdateDownloaded: (callback) => {
+    const listener = (_event, filePath) => callback(filePath);
+    ipcRenderer.on('cmda:update-downloaded', listener);
+    return () => ipcRenderer.removeListener('cmda:update-downloaded', listener);
+  },
+  installUpdateNow: () => ipcRenderer.invoke('cmda:install-update-now'),
 });

@@ -363,3 +363,96 @@ export function startSubnetScanner(
     if (timer) clearInterval(timer);
   };
 }
+
+
+export interface UpdateCheckResult {
+  hasUpdate: boolean;
+  currentVersion: string;
+  latestVersion: string;
+  releaseName?: string;
+  releaseNotes?: string;
+  publishedAt?: string;
+  downloadUrl?: string;
+  portableDownloadUrl?: string;
+  downloadSize?: number;
+  error?: string | null;
+}
+
+export interface UpdateDownloadProgress {
+  receivedBytes: number;
+  totalBytes: number;
+  percent: number;
+}
+
+export async function checkAppUpdates(): Promise<UpdateCheckResult> {
+  const api = getElectronAPI();
+  if (api && api.checkForUpdates) {
+    try {
+      return await api.checkForUpdates();
+    } catch (err: any) {
+      return {
+        hasUpdate: false,
+        currentVersion: '1.0.0',
+        latestVersion: '1.0.0',
+        error: err.message || 'Error al consultar actualizaciones',
+      };
+    }
+  }
+
+  // Web Browser fallback simulation
+  return {
+    hasUpdate: false,
+    currentVersion: '1.0.0',
+    latestVersion: '1.0.0',
+    releaseNotes: 'Modo navegador web (simulación sin ejecutable nativo)',
+    error: null,
+  };
+}
+
+export function startDownloadUpdate(
+  downloadUrl: string,
+  onProgress: (progress: UpdateDownloadProgress) => void,
+  onDownloaded: (filePath: string) => void
+): () => void {
+  const api = getElectronAPI();
+  if (api && api.startDownloadUpdate && api.onUpdateProgress && api.onUpdateDownloaded) {
+    const unsubProgress = api.onUpdateProgress(onProgress);
+    const unsubDownloaded = api.onUpdateDownloaded(onDownloaded);
+    api.startDownloadUpdate(downloadUrl);
+
+    return () => {
+      unsubProgress();
+      unsubDownloaded();
+    };
+  }
+
+  // Web Browser fallback simulation
+  let percent = 0;
+  const timer = setInterval(() => {
+    percent += 20;
+    if (percent <= 100) {
+      onProgress({ receivedBytes: percent * 100000, totalBytes: 10000000, percent });
+    }
+    if (percent >= 100) {
+      clearInterval(timer);
+      onDownloaded('simulated://download/PortalCorreoDesktop-Setup.exe');
+    }
+  }, 400);
+
+  return () => {
+    clearInterval(timer);
+  };
+}
+
+export async function installUpdateNow(): Promise<{ success: boolean; error?: string }> {
+  const api = getElectronAPI();
+  if (api && api.installUpdateNow) {
+    try {
+      return await api.installUpdateNow();
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  return { success: true };
+}

@@ -2,11 +2,11 @@
 ## Track: `settings_updater_release_pipeline_20261025`
 
 ### Phase 1: Servicio In-App Updater en Electron y Bridge IPC (`updaterService.cjs` & `electronClient.ts`)
-- [ ] Task: Implementar lógica de comparación de versiones semánticas y consulta a GitHub Releases
-  - [ ] Write Failing Tests: Crear `src/test/updaterService.test.ts` evaluando: (1) comparación semántica de versiones (`v1.0.0` vs `v1.1.0`), (2) consulta mockeada a GitHub Releases endpoint y filtrado de assets (`.exe`), (3) reporte de progreso de descarga y errores de red.
-  - [ ] Implement to Pass Tests: Desarrollar `electron/updaterService.cjs` con soporte para verificación de releases públicas en GitHub y descarga controlada a directorio temporal.
-  - [ ] Implement to Pass Tests: Exponer canales IPC en `main.cjs` y `preload.cjs` (`cmda:check-updates`, `cmda:download-update`, `cmda:install-update-on-quit`) y cablear en `src/services/electronClient.ts`.
-  - [ ] Refactor & Coverage: Confirmar cobertura >85% en pruebas unitarias del updater.
+- [x] Task: Implementar lógica de comparación de versiones semánticas y consulta a GitHub Releases
+  - [x] Write Failing Tests: Crear `src/test/updaterService.test.ts` evaluando: (1) comparación semántica de versiones (`v1.0.0` vs `v1.1.0`), (2) consulta mockeada a GitHub Releases endpoint y filtrado de assets (`.exe`), (3) reporte de progreso de descarga y errores de red.
+  - [x] Implement to Pass Tests: Desarrollar `electron/updaterService.cjs` con soporte para verificación de releases públicas en GitHub y descarga controlada a directorio temporal.
+  - [x] Implement to Pass Tests: Exponer canales IPC en `main.cjs` y `preload.cjs` (`cmda:check-updates`, `cmda:download-update`, `cmda:install-update-on-quit`) y cablear en `src/services/electronClient.ts`.
+  - [x] Refactor & Coverage: Confirmar cobertura >85% en pruebas unitarias del updater.
 - [ ] Task: Phase 1 Verification & Checkpoint (Protocol in workflow.md)
 
 ### Phase 2: Componente `SettingsModal.tsx` con Shadcn Radix (Actualizador & Preferencias)

@@ -6,10 +6,12 @@ const systemTools = require('./systemTools.cjs');
 const dnsResolver = require('./dnsResolver.cjs');
 const { parseClipboardQuery } = require('./clipboardParser.cjs');
 const { generateSubnetRange, scanSubnetBatch } = require('./subnetScanner.cjs');
+const { checkForUpdates, downloadUpdateFile } = require('./updaterService.cjs');
 
 let tray = null;
 let activePingProcess = null;
 let activeSubnetAbortController = null;
+let downloadedInstallerPath = null;
 app.isQuiting = false;
 
 function getAppIconPath() {
@@ -333,6 +335,62 @@ ipcMain.handle('cmda:subnet-scan-abort', () => {
     return true;
   }
   return false;
+});
+
+// In-App Updater IPC Handlers
+ipcMain.handle('cmda:check-updates', async () => {
+  const currentVersion = app.getVersion ? app.getVersion() : require('../package.json').version;
+  return await checkForUpdates({
+    currentVersion,
+    repoOwner: 'correoargentino',
+    repoName: 'new-CMDA',
+  });
+});
+
+ipcMain.handle('cmda:start-download-update', async (event, downloadUrl) => {
+  if (!downloadUrl) return { success: false, error: 'URL de descarga vacía' };
+  
+  const tempDir = app.getPath ? app.getPath('temp') : require('os').tmpdir();
+  const fileName = path.basename(new URL(downloadUrl).pathname) || 'PortalCorreoDesktop-Update.exe';
+  const targetPath = path.join(tempDir, fileName);
+
+  return new Promise((resolve) => {
+    downloadUpdateFile(
+      downloadUrl,
+      targetPath,
+      (progress) => {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('cmda:update-progress', progress);
+        }
+      },
+      (completedPath) => {
+        downloadedInstallerPath = completedPath;
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('cmda:update-downloaded', completedPath);
+        }
+        resolve({ success: true, filePath: completedPath });
+      },
+      (err) => {
+        resolve({ success: false, error: err.message });
+      }
+    );
+  });
+});
+
+ipcMain.handle('cmda:install-update-now', async () => {
+  if (downloadedInstallerPath && fs.existsSync(downloadedInstallerPath)) {
+    try {
+      shell.openPath(downloadedInstallerPath);
+      setTimeout(() => {
+        app.isQuiting = true;
+        app.quit();
+      }, 500);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+  return { success: false, error: 'No hay instalador descargado' };
 });
 
 app.on('before-quit', () => {
