@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal as TerminalIcon, Play, Square, Trash2, Copy, Check } from 'lucide-react';
+import { Play, Square, Trash2, Copy, Check, Activity } from 'lucide-react';
 import { subscribeToPing } from '../services/electronClient';
-import { Card, CardHeader, CardTitle, CardAction, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -53,7 +52,7 @@ export function LivePingConsole({
       (text: string) => {
         const sanitized = sanitizePingText(text);
         const lines = sanitized.split(/\r?\n/).filter(Boolean);
-        setLogs((prev) => [...prev, ...lines].slice(-150));
+        setLogs((prev) => [...prev, ...lines].slice(-200));
       },
       (code: number) => {
         setLogs((prev) => [
@@ -95,23 +94,31 @@ export function LivePingConsole({
   };
 
   return (
-    <Card size="sm" className="rounded-lg border-border bg-card shadow-xs">
-      <CardHeader className="border-b border-border/60 pb-2 flex-row items-center justify-between">
-        <CardTitle className="text-xs font-semibold flex items-center gap-2">
-          <span className="text-muted-foreground font-heading">Consola de Ping en Vivo:</span>
-          <span className="font-mono font-bold text-foreground">{ip}</span>
-          {pingMode === 'infinite' && (
+    <div className="rounded-lg border border-border bg-card shadow-xs overflow-hidden">
+      {/* Barra de Controles Superior: Sin título textual, solo IP/Badge y los 3 CTAs */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
+        <div className="flex items-center gap-2">
+          <Activity className="h-3.5 w-3.5 text-primary shrink-0" />
+          <span className="font-mono text-xs font-bold text-foreground">{ip}</span>
+          {pingMode === 'infinite' ? (
             <Badge
               variant="outline"
-              className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-500 dark:text-amber-300 border-amber-500/40 text-[10px] uppercase font-bold h-5 ml-1"
+              className="px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] uppercase font-bold h-5"
             >
               Modo -t
             </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="px-1.5 py-0.2 rounded bg-muted text-muted-foreground border-border text-[10px] font-mono h-5"
+            >
+              4 Paquetes
+            </Badge>
           )}
-        </CardTitle>
+        </div>
 
-        {/* Acciones de Consola en la Esquina Superior Derecha: Detener/Iniciar, Limpiar, Copiar Logs */}
-        <CardAction className="flex items-center gap-1.5">
+        {/* Los 3 CTAs: Iniciar/Detener, Limpiar, Copiar Logs */}
+        <div className="flex items-center gap-1.5">
           <Button
             type="button"
             variant={isPinging ? 'destructive' : 'default'}
@@ -154,37 +161,35 @@ export function LivePingConsole({
             )}
             <span>{copied ? 'Logs copiados' : 'Copiar Logs'}</span>
           </Button>
-        </CardAction>
-      </CardHeader>
-
-      <CardContent className="pt-2">
-        {/* Terminal Windows Style: bg-[#0C0C0C], fuente Consolas/monospace, igual en modo claro y oscuro, overflow-x-auto */}
-        <div className="h-48 overflow-y-auto overflow-x-auto p-3.5 rounded-md bg-[#0C0C0C] border border-border/80 font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] shadow-inner select-text scrollbar-thin">
-          {logs.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
-              Presiona &quot;Iniciar&quot;, &quot;Ping&quot; o &quot;Ping -t&quot; para monitorear la latencia de red en tiempo real.
-            </div>
-          ) : (
-            logs.map((line, idx) => (
-              <div
-                key={idx}
-                className={`whitespace-pre font-mono ${
-                  line.includes('Iniciando') || line.includes('Ejecutando')
-                    ? 'text-amber-400 font-semibold'
-                    : line.includes('finalizado')
-                    ? 'text-emerald-400 font-semibold'
-                    : line.includes('Error') || line.includes('cerrado') || line.includes('inaccesible')
-                    ? 'text-red-400 font-semibold'
-                    : 'text-[#E5E5E5]'
-                }`}
-              >
-                {line}
-              </div>
-            ))
-          )}
-          <div ref={consoleBottomRef} />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Pantalla Contigua estilo Windows Terminal: bg-[#0C0C0C], altura generosa h-64, sin contenedor intermedio */}
+      <div className="h-64 overflow-y-auto overflow-x-auto p-3.5 bg-[#0C0C0C] font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] select-text scrollbar-thin">
+        {logs.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
+            Presiona &quot;Iniciar&quot;, &quot;Ping&quot; o &quot;Ping -t&quot; para monitorear la latencia de red en tiempo real.
+          </div>
+        ) : (
+          logs.map((line, idx) => (
+            <div
+              key={idx}
+              className={`whitespace-pre font-mono ${
+                line.includes('Iniciando') || line.includes('Ejecutando')
+                  ? 'text-amber-400 font-semibold'
+                  : line.includes('finalizado')
+                  ? 'text-emerald-400 font-semibold'
+                  : line.includes('Error') || line.includes('cerrado') || line.includes('inaccesible')
+                  ? 'text-red-400 font-semibold'
+                  : 'text-[#E5E5E5]'
+              }`}
+            >
+              {line}
+            </div>
+          ))
+        )}
+        <div ref={consoleBottomRef} />
+      </div>
+    </div>
   );
 }
