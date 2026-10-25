@@ -14,11 +14,10 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { getAllTerminals } from '@/services/terminalService';
 
 describe('Shadcn Preset b5XRZYXrNg & UI Primitives', () => {
-  it('verifica que components.json está configurado con el preset base-vega y lucide', () => {
+  it('verifica que components.json está configurado con lucide y aliases correctos', () => {
     const configPath = path.resolve(process.cwd(), 'components.json');
     expect(fs.existsSync(configPath)).toBe(true);
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    expect(config.style).toBe('base-vega');
     expect(config.iconLibrary).toBe('lucide');
     expect(config.aliases.ui).toBe('@/components/ui');
   });

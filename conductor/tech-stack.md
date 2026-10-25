@@ -9,8 +9,8 @@
 
 ## 2. Frontend Layer (Renderer)
 - **UI Framework:** React 19 (Componentes funcionales y Hooks).
-- **Styling & Design System:** Tailwind CSS v4 con variables CSS nativas, temas OKLCH, fuentes variables (`@fontsource-variable/geist`, `@fontsource-variable/roboto-slab`) y preset `b5XRZYXrNg` (`base-vega`).
-- **Component Primitives:** Shadcn UI (`@/components/ui/button`, `@/components/ui/card`, `@/components/ui/badge`, `@/components/ui/input`) construidos sobre `@base-ui/react` y utilidades `cn`.
+- **Styling & Design System:** Tailwind CSS v4 con variables CSS nativas, temas OKLCH y fuentes variables (`@fontsource-variable/geist`, `@fontsource-variable/roboto-slab`).
+- **Component Primitives:** Shadcn UI (`@/components/ui/button`, `@/components/ui/card`, `@/components/ui/badge`, `@/components/ui/input`) construidos sobre Radix UI (`@radix-ui/react-slot`) y utilidades `cn`.
 - **Operator Context Menu:** Menú contextual propio integrado con clic derecho para acciones en 1 clic.
 - **Icons:** `lucide-react`.
 
