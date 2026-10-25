@@ -1,0 +1,8 @@
+{
+  "track_id": "shadcn_autoping_pulse_20261025",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-10-25T00:28:30-03:00",
+  "updated_at": "2026-10-25T00:28:30-03:00",
+  "description": "Incorporación obligatoria de Shadcn UI con preset b5XRZYXrNg (componentes y fuentes), Auto-Ping de 4 tics al buscar terminal, sin auto-scroll al hacer ping y animación de pulsación"
+}

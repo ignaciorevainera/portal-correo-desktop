@@ -29,3 +29,8 @@
 
 - [x] **Track: Vista Unificada Sin Sidebar, Subheader Fijo, Bandeja del Sistema (Tray) y Consola Ping Avanzada (`Ping -t` & Copiar Logs)**
   *Link: [./tracks/single_scroll_tray_ping_20261024/index.md](./tracks/single_scroll_tray_ping_20261024/index.md)*
+
+---
+
+- [ ] **Track: Incorporación de Shadcn UI (`preset b5XRZYXrNg`), Auto-Ping al Buscar Terminal, Sin Auto-Scroll y Animación de Pulsación**
+  *Link: [./tracks/shadcn_autoping_pulse_20261025/index.md](./tracks/shadcn_autoping_pulse_20261025/index.md)*
