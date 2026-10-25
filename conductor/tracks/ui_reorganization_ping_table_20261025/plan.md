@@ -1,8 +1,8 @@
 # Implementation Plan: Reorganización Integral UI, Unificación Técnica, Consola Windows de Ping y Arrastre de Ventana
 
 ### Phase 1: Arrastre de Ventana en Header y Card Unificada Técnica (Hardware + Red)
-- [ ] Task: Escribir tests para el área arrastrable del brand/logo en `Topbar` y para la nueva `TerminalTechnicalCard` unificada (conservando copiado de IP/MAC/CPU/UserNT)
-- [ ] Task: Actualizar `Topbar.tsx` permitiendo que el logo y el nombre de la app formen parte de la región de arrastre (`app-drag-region`)
+- [x] Task: Escribir tests para el área arrastrable del brand/logo en `Topbar` y para la nueva `TerminalTechnicalCard` unificada (conservando copiado de IP/MAC/CPU/UserNT) [6f9e779]
+- [~] Task: Actualizar `Topbar.tsx` permitiendo que el logo y el nombre de la app formen parte de la región de arrastre (`app-drag-region`)
 - [ ] Task: Crear el componente unificado `TerminalTechnicalCard.tsx` que combina Ficha Técnica, Sistema, Red, Ubicación y Active Directory en una sola card eficiente, sustituyendo las dos tarjetas separadas
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
