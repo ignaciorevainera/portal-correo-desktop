@@ -75,11 +75,18 @@ describe('AlertsPanel & ResetUptimePanel UI refinements', () => {
     expect(closeBtn).toBeDefined();
   });
 
-  it('renders ResetUptimePanel without decorative icon in section header', () => {
-    render(<ResetUptimePanel terminal={mockTerminal} />);
+  it('renders ResetUptimePanel without decorative icon in section header and with consistent h-4 icons', () => {
+    const { container } = render(<ResetUptimePanel terminal={mockTerminal} />);
 
     const heading = screen.getByRole('heading', { level: 2 });
     expect(heading.textContent).toContain('Reseteo de Cuentas & Historial de Uptime (SUC01-POS01)');
     expect(heading.querySelector('svg')).toBeNull();
+
+    // Icons in inner titles are consistent (e.g. h-4 w-4)
+    const cardTitleSvgs = container.querySelectorAll('[data-slot="card-title"] svg');
+    cardTitleSvgs.forEach((svg) => {
+      expect(svg.getAttribute('class')).toContain('h-4');
+      expect(svg.getAttribute('class')).toContain('w-4');
+    });
   });
 });
