@@ -210,7 +210,7 @@ export default function App(): React.JSX.Element {
           onSelectTerminal={handleSelectTerminal}
           onDirectVnc={handleLaunchVnc}
           onDirectPing={handleDirectPing}
-          selectedPc={terminal?.pc || selectedPc}
+          selectedPc={terminal?.pc}
           backendMode={status.mode}
           serverName={status.server}
         />

@@ -128,11 +128,8 @@ export async function searchTerminalUnified(query: string): Promise<TerminalSear
   if (api && api.searchTerminal) {
     try {
       const res = await api.searchTerminal(query);
-      if (res && res.data) {
+      if (res) {
         return res;
-      }
-      if (res && res.error) {
-        return { source: 'mock', data: null };
       }
     } catch {
       // fallback to mock in dev

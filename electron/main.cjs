@@ -100,9 +100,12 @@ function createWindow() {
     return true;
   });
 
+  const isDev = !app.isPackaged || process.env.NODE_ENV === 'development';
   const devUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
-  if (process.env.NODE_ENV === 'development') {
-    win.loadURL(devUrl);
+  if (isDev) {
+    win.loadURL(devUrl).catch(() => {
+      win.loadFile(path.join(__dirname, '../dist/index.html'));
+    });
   } else {
     win.loadFile(path.join(__dirname, '../dist/index.html')).catch(() => {
       win.loadURL(devUrl);
