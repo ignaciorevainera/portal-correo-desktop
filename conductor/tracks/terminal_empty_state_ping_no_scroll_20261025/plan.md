@@ -1,10 +1,10 @@
 # Implementation Plan: Empty State de Terminal Inexistente y Supresión de Auto-Scroll en Ping
 
 ## Phase 1: Empty State para Terminal No Encontrada (TDD)
-- [ ] Task: Escribir pruebas unitarias (Red Phase) para el estado de búsqueda fallida
-  - [ ] Escribir tests en `src/App.test.tsx` que verifiquen el estado inicial vs. estado no encontrado cuando la consulta no devuelve terminal.
-  - [ ] Validar que los tests fallen antes de implementar los cambios.
-- [ ] Task: Implementar lógica de estado no encontrado y componente UI (Green Phase)
+- [x] Task: Escribir pruebas unitarias (Red Phase) para el estado de búsqueda fallida (87bbc46)
+  - [x] Escribir tests en `src/App.test.tsx` que verifiquen el estado inicial vs. estado no encontrado cuando la consulta no devuelve terminal.
+  - [x] Validar que los tests fallen antes de implementar los cambios.
+- [~] Task: Implementar lógica de estado no encontrado y componente UI (Green Phase)
   - [ ] Actualizar `App.tsx` con tracking de término buscado no encontrado (`notFoundTerm`).
   - [ ] Diseñar el bloque visual del empty state con icono `SearchX`, nombre buscado, orientación técnica y botón para limpiar búsqueda.
   - [ ] Hacer pasar todos los tests de la fase.
