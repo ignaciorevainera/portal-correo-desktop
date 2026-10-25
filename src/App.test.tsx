@@ -78,6 +78,47 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     });
   });
 
+  it('renders dedicated not found empty state when searching for a non-existent terminal and allows clearing search', async () => {
+    (global as any).window.electronAPI = {
+      checkStatus: vi.fn().mockResolvedValue({ connected: true, mode: 'sql', server: '192.0.2.50' }),
+      searchTerminal: vi.fn().mockResolvedValue({
+        source: 'sql',
+        data: null,
+      }),
+      ping: vi.fn(),
+      stopPing: vi.fn(),
+      onPingData: vi.fn().mockReturnValue(() => {}),
+      onPingEnd: vi.fn().mockReturnValue(() => {}),
+    };
+
+    render(<App />);
+
+    // Initial state check
+    expect(screen.getByText(/Buscar una terminal para comenzar/i)).toBeInTheDocument();
+
+    const searchInput = screen.getByPlaceholderText(/Buscar terminal o IP/i);
+    fireEvent.change(searchInput, { target: { value: 'PC-NOEXISTE-999' } });
+    fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
+
+    // Wait for search result
+    await waitFor(() => {
+      expect(screen.getByText(/No se encontró la terminal/i)).toBeInTheDocument();
+      expect(screen.getByText(/PC-NOEXISTE-999/i)).toBeInTheDocument();
+    });
+
+    // Should NOT show the generic initial prompt
+    expect(screen.queryByText(/Buscar una terminal para comenzar/i)).not.toBeInTheDocument();
+
+    // Verify reset/clear button returns to initial state
+    const clearButton = screen.getByRole('button', { name: /Limpiar búsqueda/i });
+    fireEvent.click(clearButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Buscar una terminal para comenzar/i)).toBeInTheDocument();
+      expect(screen.queryByText(/No se encontró la terminal/i)).not.toBeInTheDocument();
+    });
+  });
+
   it('renders single-scroll layout without Sidebar, auto-triggers 4-packet ping on terminal load, and never scrolls main to ping section', async () => {
     const scrollMock = vi.fn();
     window.HTMLElement.prototype.scrollIntoView = scrollMock;
