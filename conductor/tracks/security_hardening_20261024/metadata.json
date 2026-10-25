@@ -2,7 +2,7 @@
   "track_id": "security_hardening_20261024",
   "title": "Blindaje de Seguridad, Sanitización Zero-Secrets y Control de Acceso Corporativo (Gatekeeper)",
   "type": "feature",
-  "status": "in_progress",
+  "status": "completed",
   "created_at": "2026-10-24T20:22:00-03:00",
-  "updated_at": "2026-10-24T20:22:00-03:00"
+  "updated_at": "2026-10-24T21:05:00-03:00"
 }

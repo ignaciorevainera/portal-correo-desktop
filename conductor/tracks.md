@@ -17,7 +17,7 @@
 
 ---
 
-- [~] **Track: Blindaje de Seguridad, Sanitización Zero-Secrets y Control de Acceso Corporativo (Gatekeeper)**
+- [x] **Track: Blindaje de Seguridad, Sanitización Zero-Secrets y Control de Acceso Corporativo (Gatekeeper)**
   *Link: [./tracks/security_hardening_20261024/index.md](./tracks/security_hardening_20261024/index.md)*
 
 ---
