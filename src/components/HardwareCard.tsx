@@ -1,66 +1,88 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TerminalData } from '../types/terminal';
-import { Cpu, HardDrive, Shield, Globe, Calendar, Layers } from 'lucide-react';
+import { Cpu, HardDrive, Shield, Globe, Calendar, Layers, Copy, Check } from 'lucide-react';
 
 export function HardwareCard({ terminal }: { terminal: TerminalData }): React.JSX.Element {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const handleCopy = async (key: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    } catch {}
+  };
+
   return (
-    <div className="rounded-lg border border-border bg-card p-4 space-y-4 shadow-sm">
-      <div className="flex items-center justify-between border-b border-border/60 pb-3">
-        <h2 className="text-sm font-semibold font-heading text-foreground flex items-center gap-2">
-          <Cpu className="h-4 w-4 text-primary" />
+    <div className="rounded-lg border border-border bg-card p-3 space-y-3 shadow-xs">
+      <div className="flex items-center justify-between border-b border-border/60 pb-2">
+        <h2 className="text-xs font-bold font-heading uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <Cpu className="h-3.5 w-3.5 text-primary" />
           Ficha Técnica & Sistema
         </h2>
-        <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border font-medium">
           {terminal.architecture}
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-        <div className="space-y-1">
-          <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-            <Layers className="h-3.5 w-3.5 text-muted-foreground" /> Sistema Operativo
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
+        <div className="space-y-0.5">
+          <span className="text-muted-foreground font-medium flex items-center gap-1 text-[11px]">
+            <Layers className="h-3 w-3 text-muted-foreground" /> Sistema Operativo
           </span>
-          <p className="font-semibold text-foreground">{terminal.os}</p>
-          <p className="font-mono text-[11px] text-muted-foreground truncate" title={terminal.servicePack}>
+          <p className="font-semibold text-foreground text-xs">{terminal.os}</p>
+          <p className="font-mono text-[10px] text-muted-foreground truncate" title={terminal.servicePack}>
             Build: {terminal.servicePack}
           </p>
         </div>
 
-        <div className="space-y-1">
-          <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-            <Cpu className="h-3.5 w-3.5 text-muted-foreground" /> Modelo y CPU
-          </span>
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground font-medium flex items-center gap-1 text-[11px]">
+              <Cpu className="h-3 w-3 text-muted-foreground" /> Modelo y CPU
+            </span>
+            <button
+              type="button"
+              onClick={() => handleCopy('cpu', terminal.cpuModel)}
+              aria-label="Copiar Modelo y CPU"
+              title="Copiar especificación de CPU"
+              className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 p-0.5 rounded hover:bg-muted transition-colors cursor-pointer"
+            >
+              {copiedKey === 'cpu' ? <Check className="h-2.5 w-2.5 text-emerald-500" /> : <Copy className="h-2.5 w-2.5" />}
+              {copiedKey === 'cpu' && <span className="text-[9px] text-emerald-500">Copiado</span>}
+            </button>
+          </div>
           <p className="text-foreground font-mono text-[11px] line-clamp-2" title={terminal.cpuModel}>
             {terminal.cpuModel}
           </p>
         </div>
 
-        <div className="space-y-1">
-          <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-            <HardDrive className="h-3.5 w-3.5 text-muted-foreground" /> Memoria RAM
+        <div className="space-y-0.5">
+          <span className="text-muted-foreground font-medium flex items-center gap-1 text-[11px]">
+            <HardDrive className="h-3 w-3 text-muted-foreground" /> Memoria RAM
           </span>
-          <p className="font-mono font-semibold text-foreground">{terminal.ram}</p>
+          <p className="font-mono font-bold text-foreground text-xs">{terminal.ram}</p>
         </div>
 
-        <div className="space-y-1">
-          <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-            <Shield className="h-3.5 w-3.5 text-emerald-500" /> Antivirus
+        <div className="space-y-0.5">
+          <span className="text-muted-foreground font-medium flex items-center gap-1 text-[11px]">
+            <Shield className="h-3 w-3 text-emerald-500" /> Antivirus
           </span>
-          <p className="font-mono text-foreground">{terminal.antivirusVersion}</p>
+          <p className="font-mono font-medium text-foreground text-xs">{terminal.antivirusVersion}</p>
         </div>
 
-        <div className="space-y-1">
-          <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-            <Globe className="h-3.5 w-3.5 text-blue-500" /> Internet Explorer
+        <div className="space-y-0.5">
+          <span className="text-muted-foreground font-medium flex items-center gap-1 text-[11px]">
+            <Globe className="h-3 w-3 text-blue-500" /> Internet Explorer / Navegador
           </span>
-          <p className="font-mono text-foreground">{terminal.ieVersion}</p>
+          <p className="font-mono text-foreground text-xs">{terminal.ieVersion}</p>
         </div>
 
-        <div className="space-y-1">
-          <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5 text-muted-foreground" /> Fecha de Relevamiento
+        <div className="space-y-0.5">
+          <span className="text-muted-foreground font-medium flex items-center gap-1 text-[11px]">
+            <Calendar className="h-3 w-3 text-muted-foreground" /> Fecha de Relevamiento
           </span>
-          <p className="font-mono text-foreground">{terminal.surveyDate}</p>
+          <p className="font-mono text-foreground text-xs">{terminal.surveyDate}</p>
         </div>
       </div>
     </div>
