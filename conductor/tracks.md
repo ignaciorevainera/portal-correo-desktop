@@ -22,5 +22,5 @@
 
 ---
 
-- [~] **Track: Rediseño UI/UX Compacto, Ventana Personalizada, Sidebar Fija y Flujos en 1 Clic (VNC/Ping/Portal MDA)**
+- [x] **Track: Rediseño UI/UX Compacto, Ventana Personalizada, Sidebar Fija y Flujos en 1 Clic (VNC/Ping/Portal MDA)**
   *Link: [./tracks/compact_ui_redesign_20261024/index.md](./tracks/compact_ui_redesign_20261024/index.md)*
