@@ -111,4 +111,21 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
     expect(icon?.getAttribute('class')).toContain('animate-pulse');
     expect(icon?.getAttribute('class')).not.toContain('animate-spin');
   });
+
+  it('renders directly inside the container without Card wrapper or extra CardTitle', () => {
+    const { container } = render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={false}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    // Should NOT contain a data-slot="card" wrapper
+    expect(container.querySelector('[data-slot="card"]')).toBeNull();
+    expect(container.querySelector('[data-slot="card-header"]')).toBeNull();
+    expect(container.querySelector('[data-slot="card-title"]')).toBeNull();
+  });
 });
