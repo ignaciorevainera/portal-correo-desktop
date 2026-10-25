@@ -85,7 +85,7 @@ export function QuickActionsBar({
             onClick={onTogglePing}
             aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
             title="Iniciar Ping estándar (4 paquetes) (Atajo F3)"
-            className={`flex-2 text-xs font-semibold cursor-pointer ${
+            className={`flex-[2] text-xs font-semibold cursor-pointer ${
               isPinging
                 ? "animate-pulse"
                 : "bg-muted text-foreground border-border hover:bg-muted/80"
