@@ -47,7 +47,7 @@
 
 ---
 
-- [ ] **Track: UI/UX Refinements, QuickActionsBar Minimalista, Topbar Expandida y Estado Inicial Limpio**
+- [~] **Track: UI/UX Refinements, QuickActionsBar Minimalista, Topbar Expandida y Estado Inicial Limpio**
   *Link: [./tracks/ui_refinements_topbar_quickactions_20261025/index.md](./tracks/ui_refinements_topbar_quickactions_20261025/index.md)*
 
 
