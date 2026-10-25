@@ -13,6 +13,19 @@ interface LivePingConsoleProps {
   onPingComplete?: () => void;
 }
 
+function sanitizePingText(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/Estad[\ufffd\?s]?sticas/gi, 'Estadísticas')
+    .replace(/M[\ufffd\?a]?ximo/gi, 'Máximo')
+    .replace(/M[\ufffd\?i]?nimo/gi, 'Mínimo')
+    .replace(/milise[\ufffd\?]?gundos/gi, 'milisegundos')
+    .replace(/perdid[\ufffd\?]?s/gi, 'perdidos')
+    .replace(/recibid[\ufffd\?]?s/gi, 'recibidos')
+    .replace(/enviad[\ufffd\?]?s/gi, 'enviados')
+    .replace(/aproximad[\ufffd\?]?s/gi, 'aproximados');
+}
+
 export function LivePingConsole({
   ip,
   isPinging,
@@ -38,7 +51,8 @@ export function LivePingConsole({
     const unsubscribe = subscribeToPing(
       ip,
       (text: string) => {
-        const lines = text.split(/\r?\n/).filter(Boolean);
+        const sanitized = sanitizePingText(text);
+        const lines = sanitized.split(/\r?\n/).filter(Boolean);
         setLogs((prev) => [...prev, ...lines].slice(-150));
       },
       (code: number) => {
@@ -84,8 +98,7 @@ export function LivePingConsole({
     <Card size="sm" className="rounded-lg border-border bg-card shadow-xs">
       <CardHeader className="border-b border-border/60 pb-2 flex-row items-center justify-between">
         <CardTitle className="text-xs font-semibold flex items-center gap-2">
-          <TerminalIcon className={`h-4 w-4 text-emerald-500 ${isPinging ? 'animate-pulse' : ''}`} />
-          <span className="text-muted-foreground">Consola de Ping en Vivo:</span>
+          <span className="text-muted-foreground font-heading">Consola de Ping en Vivo:</span>
           <span className="font-mono font-bold text-foreground">{ip}</span>
           {pingMode === 'infinite' && (
             <Badge
@@ -145,7 +158,8 @@ export function LivePingConsole({
       </CardHeader>
 
       <CardContent className="pt-2">
-        <div className="h-44 overflow-y-auto space-y-1 p-3 rounded-md bg-muted/40 border border-border/70 font-mono text-xs text-foreground scrollbar-thin">
+        {/* Terminal Windows Style: bg-[#0C0C0C], fuente Consolas/monospace, igual en modo claro y oscuro, overflow-x-auto */}
+        <div className="h-48 overflow-y-auto overflow-x-auto p-3.5 rounded-md bg-[#0C0C0C] border border-border/80 font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] shadow-inner select-text scrollbar-thin">
           {logs.length === 0 ? (
             <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
               Presiona &quot;Iniciar&quot;, &quot;Ping&quot; o &quot;Ping -t&quot; para monitorear la latencia de red en tiempo real.
@@ -154,12 +168,14 @@ export function LivePingConsole({
             logs.map((line, idx) => (
               <div
                 key={idx}
-                className={`leading-relaxed ${
+                className={`whitespace-pre font-mono ${
                   line.includes('Iniciando') || line.includes('Ejecutando')
-                    ? 'text-amber-500 dark:text-amber-400 font-semibold'
+                    ? 'text-amber-400 font-semibold'
                     : line.includes('finalizado')
-                    ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                    : 'text-foreground/90'
+                    ? 'text-emerald-400 font-semibold'
+                    : line.includes('Error') || line.includes('cerrado') || line.includes('inaccesible')
+                    ? 'text-red-400 font-semibold'
+                    : 'text-[#E5E5E5]'
                 }`}
               >
                 {line}

@@ -238,6 +238,20 @@ function launchMsra(targetIpOrHost) {
   }
 }
 
+function sanitizePingOutput(rawText) {
+  if (!rawText || typeof rawText !== 'string') return '';
+  return rawText
+    // Reemplaza patrones de caracteres corruptos de CP850/CP1252 a UTF-8
+    .replace(/Estad[\ufffd\?s]?sticas/gi, 'Estadísticas')
+    .replace(/M[\ufffd\?a]?ximo/gi, 'Máximo')
+    .replace(/M[\ufffd\?i]?nimo/gi, 'Mínimo')
+    .replace(/milise[\ufffd\?]?gundos/gi, 'milisegundos')
+    .replace(/perdid[\ufffd\?]?s/gi, 'perdidos')
+    .replace(/recibid[\ufffd\?]?s/gi, 'recibidos')
+    .replace(/enviad[\ufffd\?]?s/gi, 'enviados')
+    .replace(/aproximad[\ufffd\?]?s/gi, 'aproximados');
+}
+
 function executePing(targetIpOrHost, count = 4, onData, onDone) {
   try {
     const cmd = getPingArgs(targetIpOrHost, count);
@@ -245,13 +259,13 @@ function executePing(targetIpOrHost, count = 4, onData, onDone) {
 
     if (proc.stdout) {
       proc.stdout.on('data', (data) => {
-        if (onData) onData(data.toString());
+        if (onData) onData(sanitizePingOutput(data.toString()));
       });
     }
 
     if (proc.stderr) {
       proc.stderr.on('data', (data) => {
-        if (onData) onData(data.toString());
+        if (onData) onData(sanitizePingOutput(data.toString()));
       });
     }
 
@@ -285,4 +299,5 @@ module.exports = {
   launchVncSmart,
   launchMsra,
   executePing,
+  sanitizePingOutput,
 };

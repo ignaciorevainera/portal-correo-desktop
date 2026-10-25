@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { Topbar } from './components/Topbar';
-import { HardwareCard } from './components/HardwareCard';
-import { NetworkAdCard } from './components/NetworkAdCard';
+import { TerminalTechnicalCard } from './components/TerminalTechnicalCard';
 import { QuickActionsBar, ActionFeedbackState } from './components/QuickActionsBar';
 import { LivePingConsole } from './components/LivePingConsole';
 import { AlertsPanel } from './components/AlertsPanel';
@@ -213,7 +212,7 @@ export default function App(): React.JSX.Element {
         )}
 
         {/* Layout Unificado: El desplazamiento / scroll vertical es exclusivo sobre este contenedor <main> */}
-        <main ref={mainRef} className="flex-1 p-3.5 overflow-y-auto space-y-3">
+        <main ref={mainRef} className="flex-1 p-3.5 overflow-y-auto space-y-4">
           {isLoading ? (
             <div className="h-96 flex flex-col items-center justify-center text-center p-6 space-y-3">
               <Loader2 className="h-7 w-7 text-primary animate-spin" />
@@ -237,32 +236,27 @@ export default function App(): React.JSX.Element {
             </div>
           ) : (
             <>
-              {/* 1° Grilla Principal Compacta: Red / Directorio Activo y Especificaciones de Hardware */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                <NetworkAdCard terminal={terminal} />
-                <HardwareCard terminal={terminal} />
-              </div>
+              {/* 1° Card Unificada: Especificaciones Técnicas, Hardware, Red y Directorio Activo */}
+              <TerminalTechnicalCard terminal={terminal} />
 
-              {/* 2° Consola Interna de Ping: Sin redirección/auto-scroll y con controles avanzados */}
-              <div>
-                <LivePingConsole
-                  ip={terminal.ip}
-                  isPinging={isPinging}
-                  pingMode={pingMode}
-                  onTogglePing={handleTogglePing}
-                  onPingComplete={() => setIsPinging(false)}
-                />
-              </div>
+              {/* 2° Consola Interna de Ping: Estilo Terminal Windows, sin auto-scroll forzado */}
+              <LivePingConsole
+                ip={terminal.ip}
+                isPinging={isPinging}
+                pingMode={pingMode}
+                onTogglePing={handleTogglePing}
+                onPingComplete={() => setIsPinging(false)}
+              />
 
-              {/* 3° Alertas de Terminal: Observaciones operativas e incidencias */}
+              {/* 3° Reseteo AD e Historial de Uptime */}
+              <ResetUptimePanel terminal={terminal} />
+
+              {/* 4° Alertas de Terminal (al final): Formato tabla compacta de una fila por alerta */}
               <AlertsPanel
                 terminal={terminal}
                 onAddAlert={handleAddAlert}
                 onCloseAlert={handleCloseAlert}
               />
-
-              {/* 4° Reseteo AD e Historial: Contraseña, desbloqueo y métricas */}
-              <ResetUptimePanel terminal={terminal} />
             </>
           )}
         </main>

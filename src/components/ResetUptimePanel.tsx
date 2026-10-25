@@ -20,8 +20,7 @@ export function ResetUptimePanel({ terminal }: { terminal: TerminalData }): Reac
   return (
     <div className="space-y-4">
       <div className="border-b border-border pb-3">
-        <h2 className="text-base font-semibold font-heading text-foreground flex items-center gap-2">
-          <RotateCcw className="h-4 w-4 text-primary" />
+        <h2 className="text-base font-semibold font-heading text-foreground">
           Reseteo de Cuentas & Historial de Uptime ({terminal.pc})
         </h2>
         <p className="text-xs text-muted-foreground">

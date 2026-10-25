@@ -24,10 +24,10 @@ describe('Alerts and Reset Panels', () => {
     fireEvent.click(screen.getByRole('button', { name: /nueva alerta/i }));
 
     // Fill form and submit
-    fireEvent.change(screen.getByPlaceholderText(/título de la alerta/i), {
+    fireEvent.change(screen.getByPlaceholderText(/título breve del incidente/i), {
       target: { value: 'Nueva Alerta Test' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/descripción detallada/i), {
+    fireEvent.change(screen.getByPlaceholderText(/detalles sobre la falla/i), {
       target: { value: 'Detalle de la prueba' },
     });
     fireEvent.click(screen.getByRole('button', { name: /registrar alerta/i }));

@@ -133,4 +133,35 @@ describe('LivePingConsole Component', () => {
     expect(onPingComplete).toHaveBeenCalledTimes(1);
     expect(screen.getByText(/Proceso ping finalizado/i)).toBeInTheDocument();
   });
+
+  it('renders windows console aesthetic with bg-[#0C0C0C], whitespace-pre, horizontal overflow and sanitizes corrupt ping accents', () => {
+    let capturedCallback: ((text: string) => void) | null = null;
+    vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
+      capturedCallback = onData;
+      return () => {};
+    });
+
+    const { container } = render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    // Feed raw Windows ping text with CP850/CP1252 corrupted characters
+    act(() => {
+      capturedCallback?.('Estadsticas de ping para 192.0.2.100:\r\n    Paquetes: enviados = 4, recibidos = 4, perdidos = 0\r\n    (0% perdidos),\r\nTiempos aproximados de ida y vuelta en milisegundos:\r\n    Mnimo = 14ms, Mximo = 14ms, Media = 14ms');
+    });
+
+    // Sanitized output check
+    expect(screen.getByText(/Estadísticas de ping/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mínimo = 14ms/i)).toBeInTheDocument();
+    expect(screen.getByText(/Máximo = 14ms/i)).toBeInTheDocument();
+
+    // Check terminal styling
+    const terminalBox = container.querySelector('.bg-\\[\\#0C0C0C\\]');
+    expect(terminalBox).not.toBeNull();
+    expect(terminalBox?.className).toContain('overflow-x-auto');
+  });
 });
