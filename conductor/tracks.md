@@ -34,3 +34,8 @@
 
 - [x] **Track: Incorporación de Shadcn UI (`preset b5XRZYXrNg`), Auto-Ping al Buscar Terminal, Sin Auto-Scroll y Animación de Pulsación**
   *Link: [./tracks/shadcn_autoping_pulse_20261025/index.md](./tracks/shadcn_autoping_pulse_20261025/index.md)*
+
+---
+
+- [ ] **Track: Migración Integral a Componentes Vanilla de Shadcn UI (Radix UI) y Paleta Estricta del Preset**
+  *Link: [./tracks/shadcn_vanilla_overhaul_20261025/index.md](./tracks/shadcn_vanilla_overhaul_20261025/index.md)*
