@@ -8,6 +8,9 @@ import {
   ExternalLink,
   Search,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Kbd } from '@/components/ui/kbd';
 
 interface OperatorContextMenuProps {
   x: number;
@@ -79,107 +82,121 @@ export function OperatorContextMenu({
       )}
 
       <div className="py-1 space-y-0.5">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => {
             onLaunchVnc();
             onClose();
           }}
           aria-label="Conectar VNC Viewer"
-          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-accent/15 hover:text-accent font-medium text-left transition-colors cursor-pointer"
+          className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
         >
           <span className="flex items-center gap-2">
             <MonitorPlay className="h-3.5 w-3.5 text-primary" /> Conectar VNC
           </span>
-          <kbd className="text-[10px] text-muted-foreground font-mono">F2</kbd>
-        </button>
+          <Kbd>F2</Kbd>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => {
             onTogglePing();
             onClose();
           }}
           aria-label={isPinging ? 'Detener Ping' : 'Iniciar Ping'}
-          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-accent/15 hover:text-accent font-medium text-left transition-colors cursor-pointer"
+          className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
         >
           <span className="flex items-center gap-2">
             <Activity className={`h-3.5 w-3.5 ${isPinging ? 'text-destructive' : 'text-emerald-500'}`} />
             {isPinging ? 'Detener Ping' : 'Iniciar Ping'}
           </span>
-          <kbd className="text-[10px] text-muted-foreground font-mono">F3</kbd>
-        </button>
+          <Kbd>F3</Kbd>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => {
             onLaunchMsra();
             onClose();
           }}
           aria-label="Asistencia MSRA"
-          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-accent/15 hover:text-accent font-medium text-left transition-colors cursor-pointer"
+          className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
         >
           <span className="flex items-center gap-2">
             <HelpCircle className="h-3.5 w-3.5 text-blue-500" /> Asistencia MSRA
           </span>
-          <kbd className="text-[10px] text-muted-foreground font-mono">F4</kbd>
-        </button>
+          <Kbd>F4</Kbd>
+        </Button>
       </div>
 
       {terminal && (
         <>
-          <div className="border-t border-border/60 my-1" />
+          <Separator className="my-1" />
           <div className="py-0.5 space-y-0.5">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => copyText(terminal.ip)}
               aria-label="Copiar IP"
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-accent/15 hover:text-accent font-medium text-left transition-colors cursor-pointer"
+              className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
             >
               <Copy className="h-3.5 w-3.5 text-muted-foreground" /> Copiar IP ({terminal.ip})
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => copyText(terminal.pc)}
               aria-label="Copiar Hostname"
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-accent/15 hover:text-accent font-medium text-left transition-colors cursor-pointer"
+              className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
             >
               <Copy className="h-3.5 w-3.5 text-muted-foreground" /> Copiar Hostname ({terminal.pc})
-            </button>
+            </Button>
           </div>
         </>
       )}
 
-      <div className="border-t border-border/60 my-1" />
+      <Separator className="my-1" />
       <div className="py-0.5 space-y-0.5">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => {
             onOpenPortalMda();
             onClose();
           }}
           aria-label="Abrir Portal MDA"
-          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-accent/15 hover:text-accent font-medium text-left transition-colors cursor-pointer"
+          className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
         >
           <ExternalLink className="h-3.5 w-3.5 text-primary" /> Abrir Portal MDA
-        </button>
+        </Button>
 
         {onFocusSearch && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => {
               onFocusSearch();
               onClose();
             }}
             aria-label="Buscar otra terminal"
-            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded hover:bg-accent/15 hover:text-accent font-medium text-left transition-colors cursor-pointer"
+            className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
           >
             <span className="flex items-center gap-2">
               <Search className="h-3.5 w-3.5 text-muted-foreground" /> Buscar Terminal
             </span>
-            <kbd className="text-[10px] text-muted-foreground font-mono">Ctrl+F</kbd>
-          </button>
+            <Kbd>Ctrl+F</Kbd>
+          </Button>
         )}
       </div>
     </div>

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { TerminalData } from '../types/terminal';
 import { Bell, PlusCircle, CheckCircle, AlertTriangle, User } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 interface AlertsPanelProps {
   terminal: TerminalData;
@@ -66,63 +69,78 @@ export function AlertsPanel({
       </div>
 
       {showAddForm && (
-        <Card size="sm" className="p-4 rounded-lg border border-border bg-card shadow-xs animate-fade-in">
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-primary">Registrar Nueva Alerta</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-medium">Título de la Alerta</label>
-                <Input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Título de la alerta..."
-                  className="h-8 text-xs bg-muted/60"
+        <Card size="sm" className="rounded-lg border-border bg-card shadow-xs animate-fade-in">
+          <CardHeader className="pb-1">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary">
+              Registrar Nueva Alerta
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="space-y-1">
+                  <Label htmlFor="alert-title-input" className="text-muted-foreground font-medium">
+                    Título de la Alerta
+                  </Label>
+                  <Input
+                    id="alert-title-input"
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Título de la alerta..."
+                    className="h-8 text-xs bg-muted/60"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="alert-operator-input" className="text-muted-foreground font-medium">
+                    Operador Responsable
+                  </Label>
+                  <Input
+                    id="alert-operator-input"
+                    type="text"
+                    value={operator}
+                    onChange={(e) => setOperator(e.target.value)}
+                    className="h-8 text-xs bg-muted/60 font-mono"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-1 text-xs">
+                <Label htmlFor="alert-desc-textarea" className="text-muted-foreground font-medium">
+                  Descripción Detallada
+                </Label>
+                <Textarea
+                  id="alert-desc-textarea"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Descripción detallada de la incidencia..."
+                  rows={3}
+                  className="bg-muted/60 resize-none text-xs"
                   required
                 />
               </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-medium">Operador Responsable</label>
-                <Input
-                  type="text"
-                  value={operator}
-                  onChange={(e) => setOperator(e.target.value)}
-                  className="h-8 text-xs bg-muted/60 font-mono"
-                  required
-                />
+              <div className="flex justify-end gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => setShowAddForm(false)}
+                  className="text-muted-foreground cursor-pointer"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  variant="default"
+                  size="xs"
+                  className="font-semibold cursor-pointer"
+                >
+                  Registrar Alerta
+                </Button>
               </div>
-            </div>
-            <div className="space-y-1 text-xs">
-              <label className="text-muted-foreground font-medium">Descripción Detallada</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Descripción detallada de la incidencia..."
-                rows={3}
-                className="w-full p-2.5 rounded-md bg-muted/60 border border-input text-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
-                required
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                onClick={() => setShowAddForm(false)}
-                className="text-muted-foreground cursor-pointer"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                variant="default"
-                size="xs"
-                className="font-semibold cursor-pointer"
-              >
-                Registrar Alerta
-              </Button>
-            </div>
-          </form>
+            </form>
+          </CardContent>
         </Card>
       )}
 
@@ -137,20 +155,20 @@ export function AlertsPanel({
             <Card
               key={alert.id}
               size="sm"
-              className={`p-3.5 rounded-lg border text-xs space-y-2 transition-all gap-0 py-3.5 ${
+              className={`rounded-lg border text-xs space-y-2 transition-all ${
                 alert.active
                   ? 'bg-amber-500/5 border-amber-500/30'
                   : 'bg-card border-border opacity-70'
               }`}
             >
-              <div className="flex items-center justify-between">
+              <CardHeader className="flex-row items-center justify-between pb-1">
                 <div className="flex items-center gap-2">
                   {alert.active ? (
                     <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
                   ) : (
                     <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
                   )}
-                  <h4 className="font-semibold text-foreground text-sm">{alert.title}</h4>
+                  <CardTitle className="font-semibold text-foreground text-sm">{alert.title}</CardTitle>
                   <Badge
                     variant="outline"
                     className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase h-5 ${
@@ -162,70 +180,75 @@ export function AlertsPanel({
                     {alert.active ? 'Activa' : 'Cerrada'}
                   </Badge>
                 </div>
-                <span className="font-mono text-[11px] text-muted-foreground">{alert.date}</span>
-              </div>
+                <CardAction>
+                  <span className="font-mono text-[11px] text-muted-foreground">{alert.date}</span>
+                </CardAction>
+              </CardHeader>
 
-              <p className="text-foreground/90 pl-6 leading-relaxed">{alert.description}</p>
+              <CardContent className="pt-0 space-y-2">
+                <p className="text-foreground/90 pl-6 leading-relaxed">{alert.description}</p>
 
-              <div className="flex items-center justify-between pl-6 text-[11px] text-muted-foreground pt-1 border-t border-border/40">
-                <span className="flex items-center gap-1 font-mono">
-                  <User className="h-3 w-3" /> Operador: {alert.operator}
-                </span>
+                <div className="flex items-center justify-between pl-6 text-[11px] text-muted-foreground pt-1 border-t border-border/40">
+                  <span className="flex items-center gap-1 font-mono">
+                    <User className="h-3 w-3" /> Operador: {alert.operator}
+                  </span>
 
-                {alert.active && closingAlertId !== alert.id && (
-                  <Button
-                    type="button"
-                    variant="link"
-                    size="xs"
-                    onClick={() => setClosingAlertId(alert.id)}
-                    className="text-primary font-medium h-auto p-0 cursor-pointer"
-                  >
-                    Cerrar Alerta
-                  </Button>
-                )}
-              </div>
-
-              {closingAlertId === alert.id && (
-                <div className="mt-2 pl-6 pt-2 border-t border-border space-y-2">
-                  <label className="block text-[11px] font-medium text-muted-foreground">
-                    Texto de Cierre / Resolución
-                  </label>
-                  <Input
-                    type="text"
-                    value={resolutionText}
-                    onChange={(e) => setResolutionText(e.target.value)}
-                    placeholder="Describe cómo se resolvió la alerta..."
-                    className="h-8 text-xs bg-muted/60"
-                  />
-                  <div className="flex justify-end gap-2">
+                  {alert.active && closingAlertId !== alert.id && (
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="link"
                       size="xs"
-                      onClick={() => setClosingAlertId(null)}
-                      className="text-muted-foreground cursor-pointer"
+                      onClick={() => setClosingAlertId(alert.id)}
+                      className="text-primary font-medium h-auto p-0 cursor-pointer"
                     >
-                      Cancelar
+                      Cerrar Alerta
                     </Button>
-                    <Button
-                      type="button"
-                      variant="default"
-                      size="xs"
-                      onClick={() => handleConfirmClose(alert.id)}
-                      className="bg-emerald-600 text-white hover:bg-emerald-500 cursor-pointer"
-                    >
-                      Confirmar Cierre
-                    </Button>
+                  )}
+                </div>
+
+                {closingAlertId === alert.id && (
+                  <div className="mt-2 pl-6 pt-2 border-t border-border space-y-2">
+                    <Label htmlFor="alert-resolution-input" className="block text-[11px] font-medium text-muted-foreground">
+                      Texto de Cierre / Resolución
+                    </Label>
+                    <Input
+                      id="alert-resolution-input"
+                      type="text"
+                      value={resolutionText}
+                      onChange={(e) => setResolutionText(e.target.value)}
+                      placeholder="Describe cómo se resolvió la alerta..."
+                      className="h-8 text-xs bg-muted/60"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => setClosingAlertId(null)}
+                        className="text-muted-foreground cursor-pointer"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="xs"
+                        onClick={() => handleConfirmClose(alert.id)}
+                        className="cursor-pointer"
+                      >
+                        Confirmar Cierre
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {!alert.active && alert.resolutionText && (
-                <div className="ml-6 p-2 rounded bg-muted/40 border border-border/60 text-[11px] text-muted-foreground space-y-0.5">
-                  <span className="font-semibold text-emerald-500">Resolución:</span>
-                  <p>{alert.resolutionText}</p>
-                </div>
-              )}
+                {!alert.active && alert.resolutionText && (
+                  <div className="ml-6 p-2 rounded bg-muted/40 border border-border/60 text-[11px] text-muted-foreground space-y-0.5">
+                    <span className="font-semibold text-emerald-500">Resolución:</span>
+                    <p>{alert.resolutionText}</p>
+                  </div>
+                )}
+              </CardContent>
             </Card>
           ))
         )}

@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  X,
   Search,
   Monitor,
   Activity,
@@ -9,6 +8,19 @@ import {
   Sparkles,
   Info,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Kbd } from '@/components/ui/kbd';
 
 interface InfoModalProps {
   isOpen: boolean;
@@ -21,14 +33,13 @@ export function InfoModal({
   onClose,
   appVersion = 'v1.0.0-rc',
 }: InfoModalProps): React.JSX.Element | null {
-  if (!isOpen) return null;
-
   const features = [
     {
       icon: Search,
       title: 'Búsqueda Inteligente',
       desc: 'Encontrá cualquier estación escribiendo su nombre (ej. PC-DEMO-001) o su dirección IP directamente.',
       badge: 'Ctrl + F',
+      badgeSlot: 'kbd',
       color: 'text-sky-500 bg-sky-500/10 border-sky-500/20',
     },
     {
@@ -62,53 +73,40 @@ export function InfoModal({
   ];
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="info-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-    >
-      <div className="relative w-full max-w-2xl bg-card border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
         {/* Header Modal */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/40">
+        <DialogHeader className="px-6 py-4 border-b border-border bg-muted/40">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 id="info-modal-title" className="text-base font-bold font-heading text-foreground">
+                <DialogTitle id="info-modal-title" className="text-base font-bold font-heading text-foreground">
                   Acerca de new CMDA
-                </h2>
-                <span className="px-2 py-0.5 text-[11px] font-mono font-medium rounded-full bg-primary/15 text-primary border border-primary/25">
+                </DialogTitle>
+                <Badge variant="outline" className="text-[11px] font-mono font-medium rounded-full bg-primary/15 text-primary border-primary/25">
                   {appVersion}
-                </span>
+                </Badge>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <DialogDescription className="text-xs text-muted-foreground">
                 Consola moderna para soporte, diagnóstico e inventario en la red postal.
-              </p>
+              </DialogDescription>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar ventana de información"
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* Body */}
         <div className="p-6 overflow-y-auto space-y-4">
-          <div className="bg-primary/5 border border-primary/15 rounded-lg p-3.5 flex items-start gap-3">
-            <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-            <p className="text-xs text-foreground/90 leading-relaxed">
+          <Alert variant="default" className="bg-primary/5 border-primary/15 p-3.5">
+            <Info className="h-5 w-5 text-primary shrink-0" />
+            <AlertDescription className="text-xs text-foreground/90 leading-relaxed font-sans">
               <strong>¿Para qué sirve esta herramienta?</strong> Reemplaza y moderniza el aplicativo tradicional
               de monitoreo. Te permite buscar cualquier puesto de trabajo de la organización, inspeccionar su
               estado y resolver incidentes con un solo clic.
-            </p>
-          </div>
+            </AlertDescription>
+          </Alert>
 
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-1">
             ¿Qué podés hacer con new CMDA?
@@ -118,9 +116,10 @@ export function InfoModal({
             {features.map((feat) => {
               const Icon = feat.icon;
               return (
-                <div
+                <Card
                   key={feat.title}
-                  className="p-3.5 rounded-lg border border-border bg-card/60 hover:bg-muted/30 transition-colors space-y-2 flex flex-col justify-between"
+                  size="sm"
+                  className="p-3.5 rounded-lg border-border bg-card/60 hover:bg-muted/30 transition-colors space-y-2 flex flex-col justify-between"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -131,33 +130,39 @@ export function InfoModal({
                         {feat.title}
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border shrink-0">
-                      {feat.badge}
-                    </span>
+                    {feat.badgeSlot === 'kbd' ? (
+                      <Kbd>{feat.badge}</Kbd>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground border-border shrink-0">
+                        {feat.badge}
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {feat.desc}
                   </p>
-                </div>
+                </Card>
               );
             })}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-border bg-muted/20 flex items-center justify-between text-xs text-muted-foreground">
+        <DialogFooter className="px-6 py-3 border-t border-border bg-muted/20 flex items-center justify-between text-xs text-muted-foreground sm:justify-between">
           <span className="font-mono text-[11px]">
             Conectividad: <strong>SQL Server Corporativo</strong> + Herramientas Win32
           </span>
-          <button
+          <Button
             type="button"
+            variant="default"
+            size="sm"
             onClick={onClose}
-            className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground font-medium text-xs hover:bg-primary/90 transition-colors shadow-sm"
+            className="cursor-pointer"
           >
             Entendido
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

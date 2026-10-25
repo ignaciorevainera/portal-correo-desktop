@@ -23,6 +23,7 @@ import {
 } from './services/electronClient';
 import { TerminalData } from './types/terminal';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function App(): React.JSX.Element {
   const [selectedPc, setSelectedPc] = useState<string>('PC-DEMO-001');
@@ -240,14 +241,16 @@ export default function App(): React.JSX.Element {
               </p>
               <div className="flex gap-2 pt-1 flex-wrap justify-center">
                 {allTerminals.map((t) => (
-                  <button
+                  <Button
                     key={t.pc}
                     type="button"
+                    variant="outline"
+                    size="xs"
                     onClick={() => handleSelectTerminal(t.pc)}
-                    className="px-2 py-0.5 text-xs font-mono rounded bg-muted hover:bg-accent/20 border border-border cursor-pointer"
+                    className="font-mono text-xs cursor-pointer"
                   >
                     {t.pc}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>

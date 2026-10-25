@@ -37,5 +37,5 @@
 
 ---
 
-- [ ] **Track: Migración Integral a Componentes Vanilla de Shadcn UI (Radix UI) y Paleta Estricta del Preset**
+- [x] **Track: Migración Integral a Componentes Vanilla de Shadcn UI (Radix UI) y Paleta Estricta del Preset**
   *Link: [./tracks/shadcn_vanilla_overhaul_20261025/index.md](./tracks/shadcn_vanilla_overhaul_20261025/index.md)*

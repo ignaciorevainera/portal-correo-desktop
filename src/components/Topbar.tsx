@@ -22,6 +22,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Kbd } from '@/components/ui/kbd';
 
 interface TopbarProps {
   onSelectTerminal: (pc: string) => void;
@@ -114,11 +116,11 @@ export function Topbar({
               onKeyDown={handleKeyDownInput}
               onFocus={() => query.trim() && setIsOpen(true)}
               placeholder="Buscar terminal o IP (Ctrl+F)..."
-              className="w-full h-7 pl-8 pr-12 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-xs"
+              className="w-full h-7 pl-8 pr-14 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-xs"
             />
-            <kbd className="absolute right-1.5 px-1 py-0.2 text-[9px] uppercase font-mono tracking-wider bg-background/80 text-muted-foreground rounded border border-border pointer-events-none">
+            <Kbd className="absolute right-1.5 pointer-events-none">
               Ctrl+F
-            </kbd>
+            </Kbd>
           </div>
 
           {/* Menú de resultados de búsqueda */}
@@ -237,8 +239,11 @@ export function Topbar({
 
           <ThemeToggle />
 
+          {/* Separador vertical de ventana */}
+          <Separator orientation="vertical" className="h-4 mx-0.5" />
+
           {/* Botones de Ventana (Minimizar a barra de tareas y Apagado a Bandeja del Sistema) */}
-          <div className="flex items-center ml-1 border-l border-border pl-1.5 gap-1">
+          <div className="flex items-center gap-1">
             <Button
               type="button"
               variant="ghost"
