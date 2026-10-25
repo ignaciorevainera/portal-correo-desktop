@@ -16,7 +16,7 @@
 - Modify: `electron/systemTools.cjs:129-240`
 - Test: `src/services/systemTools.test.ts`
 
-- [ ] **Step 1: Write the failing unit tests for `probeRemotePorts` (`recommendedMethod`) and `launchRemoteSmart`**
+- [x] **Step 1: Write the failing unit tests for `probeRemotePorts` (`recommendedMethod`) and `launchRemoteSmart`**
 
 Add to `src/services/systemTools.test.ts`:
 
@@ -93,12 +93,12 @@ Add to `src/services/systemTools.test.ts`:
   });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx.cmd vitest run src/services/systemTools.test.ts`
 Expected: FAIL with `launchRemoteSmart is not a function`
 
-- [ ] **Step 3: Implement `recommendedMethod` in `probeRemotePorts` and `launchRemoteSmart` in `electron/systemTools.cjs`**
+- [x] **Step 3: Implement `recommendedMethod` in `probeRemotePorts` and `launchRemoteSmart` in `electron/systemTools.cjs`**
 
 Update `electron/systemTools.cjs`:
 
@@ -185,12 +185,12 @@ async function launchRemoteSmart(targetIpOrHost, options = {}) {
 
 Export `launchRemoteSmart` in `module.exports` of `electron/systemTools.cjs`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx.cmd vitest run src/services/systemTools.test.ts`
 Expected: PASS (all tests in `systemTools.test.ts` green)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add electron/systemTools.cjs src/services/systemTools.test.ts
@@ -207,7 +207,7 @@ git commit -m "feat(remote): Add unified launchRemoteSmart orchestrator and reco
 - Modify: `src/services/electronClient.ts`
 - Test: `src/services/electronClient.test.ts`
 
-- [ ] **Step 1: Write failing test in `src/services/electronClient.test.ts`**
+- [x] **Step 1: Write failing test in `src/services/electronClient.test.ts`**
 
 Add tests for `probeRemoteStatus` and `launchSmartRemoteClient` in `src/services/electronClient.test.ts`:
 
@@ -222,12 +222,12 @@ Add tests for `probeRemoteStatus` and `launchSmartRemoteClient` in `src/services
   });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx.cmd vitest run src/services/electronClient.test.ts`
 Expected: FAIL (`probeRemoteStatus` / `launchSmartRemoteClient` not exported)
 
-- [ ] **Step 3: Add IPC handlers in `electron/main.cjs`, `electron/preload.cjs`, and `src/services/electronClient.ts`**
+- [x] **Step 3: Add IPC handlers in `electron/main.cjs`, `electron/preload.cjs`, and `src/services/electronClient.ts`**
 
 In `electron/main.cjs`:
 ```javascript
@@ -294,12 +294,12 @@ export async function launchSmartRemoteClient(target: string): Promise<ToolExecu
 ```
 Also add `methodUsed?: 'vnc' | 'msra' | 'none';` and `probe?: RemoteProbeResult;` to `ToolExecutionResult`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx.cmd vitest run src/services/electronClient.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add electron/main.cjs electron/preload.cjs src/services/electronClient.ts src/services/electronClient.test.ts
@@ -315,19 +315,19 @@ git commit -m "feat(ipc): Expose probeRemoteStatus and launchSmartRemoteClient I
 - Modify: `src/App.tsx`
 - Test: `src/test/QuickActionsBar.test.tsx`
 
-- [ ] **Step 1: Write unit tests for the Unified Smart Split Button in `src/test/QuickActionsBar.test.tsx`**
+- [x] **Step 1: Write unit tests for the Unified Smart Split Button in `src/test/QuickActionsBar.test.tsx`**
 
 Update `src/test/QuickActionsBar.test.tsx` to verify:
 1. Primary CTA adapts label according to `remoteProbe` (`Conectar VNC :5901`, `Conectar MSRA`, `Detectando acceso...`, or `Sin Acceso (Reintentar)`).
 2. Clicking the primary CTA invokes `onLaunchSmartRemote` (or falls back to `onLaunchVnc` when not provided for backwards compatibility in older tests).
 3. Clicking the dropdown trigger (`Opciones de conexión remota`) opens the menu allowing manual override for VNC (`Conectar por VNC Viewer`) and MSRA (`Iniciar Asistencia MSRA`).
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx.cmd vitest run src/test/QuickActionsBar.test.tsx`
 Expected: FAIL
 
-- [ ] **Step 3: Implement the Unified Smart Split Button in `src/components/QuickActionsBar.tsx` and wire pre-probe in `src/App.tsx`**
+- [x] **Step 3: Implement the Unified Smart Split Button in `src/components/QuickActionsBar.tsx` and wire pre-probe in `src/App.tsx`**
 
 In `src/components/QuickActionsBar.tsx`:
 - Replace the 2 separate VNC and MSRA buttons in the grid with a 3-column grid (`grid-cols-1 sm:grid-cols-3 gap-2 w-full`):
@@ -345,12 +345,12 @@ In `src/App.tsx`:
 - When `searchTerminalUnified` resolves a terminal with `res.data?.ip`, automatically call `probeRemoteStatus(res.data.ip)` in parallel with the initial ping to populate `remoteProbe`.
 - Create `handleLaunchSmartRemote()` which calls `launchSmartRemoteClient(target)`, updates `remoteProbe` if `res.probe` is returned, and shows a clear toast message indicating whether VNC or MSRA was launched.
 
-- [ ] **Step 4: Run full test suite to verify all tests pass**
+- [x] **Step 4: Run full test suite to verify all tests pass**
 
 Run: `npx.cmd vitest run`
 Expected: PASS (100% of test files green, including `securityAudit.test.ts`)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/QuickActionsBar.tsx src/App.tsx src/test/QuickActionsBar.test.tsx
