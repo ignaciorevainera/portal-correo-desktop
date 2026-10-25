@@ -9,13 +9,13 @@
   - Aumentar la altura de la consola a `h-64` para mayor visibilidad del flujo de paquetes.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [0eccdb6]
 
-### Phase 2: Compactación de Reseteo de Cuentas y Uptime con Iconos de Título Consistentes
-- [ ] Task: Escribir tests para `ResetUptimePanel` validando el tamaño uniforme de iconos en títulos (`h-4 w-4`) y estructura compacta
-- [ ] Task: Refactorizar `ResetUptimePanel.tsx` para optimizar el espacio vertical:
+### Phase 2: Compactación de Reseteo de Cuentas y Uptime con Iconos de Título Consistentes [checkpoint: 28a4fb8]
+- [x] Task: Escribir tests para `ResetUptimePanel` validando el tamaño uniforme de iconos en títulos (`h-4 w-4`) y estructura compacta [5b995b0]
+- [x] Task: Refactorizar `ResetUptimePanel.tsx` para optimizar el espacio vertical: [28a4fb8]
   - Consolidar en una card compacta o grilla integrada.
   - Normalizar todos los iconos de los títulos internos (`Clock`, `ShieldAlert`, etc.) a un tamaño estricto y alineación uniforme.
   - Optimizar el formulario de reset a una fila horizontal compacta con input y botón en línea.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [28a4fb8]
 
 ### Phase 3: Verificación Integral del Sistema y Build
 - [ ] Task: Ejecutar la suite completa de tests automatizados (`npm test`) y verificar cero regresiones en los 25+ archivos de prueba
