@@ -63,5 +63,8 @@ The application visual identity strictly mirrors the corporate design system bas
 
 ## 3. UX & Interaction Principles
 - **Density:** Compact, high-information-density dashboard layout designed for IT operators and helpdesk engineers.
-- **Keyboard-First:** Full keyboard shortcuts (`Ctrl+F` to search, `Enter` to query, `Esc` to clear, quick action shortcuts for VNC and Ping).
+- **Fixed Layout & Contained Scroll:** Header and sidebar remain fixed (`h-screen overflow-hidden`); all scrolling is strictly contained within the `<main>` data canvas.
+- **Keyboard-First:** Full keyboard shortcuts (`Ctrl+F` to search, `Enter` to query, `Esc` to clear, `F2` for VNC, `F3` for Live Ping, `F4` for MSRA).
+- **Inline Non-Disruptive Feedback:** Action confirmations and failure reasons are rendered inline within the `QuickActionsBar` header with high-contrast semantics (no layout-shifting top banners).
+- **1-Click Copy:** Fast clipboard copying for critical workstation identifiers (IP, MAC, UserNT, CPU Model) with transient visual cues.
 - **Graceful Fallbacks:** Automatic resolution between Hostname and IP; clear visual cue when an asset is unreachable or inactive.

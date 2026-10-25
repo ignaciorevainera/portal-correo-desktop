@@ -2,6 +2,8 @@
 
 ## 1. Application Architecture & Runtime
 - **Desktop Runtime:** Electron (Proceso Main y Renderer desacoplados con IPC seguro y `contextIsolation: true`).
+  - Ventana sin marco nativo de Windows (`frame: false`), dimensiones compactas `1020x680` (min `860x560`) y captura de mensaje `WM_INITMENU` (`0x0116`).
+  - Canales IPC para control de ventana (`minimizeWindow`, `maximizeWindow`, `closeWindow`) y apertura segura de enlaces corporativos (`shell.openExternal`).
 - **Runtime Environment:** Node.js v24.x (LTS) / npm v12.x.
 - **Language:** JavaScript (ESNext) / TypeScript para tipado estricto de contratos IPC y modelos de datos.
 
@@ -9,6 +11,7 @@
 - **UI Framework:** React 19 (Componentes funcionales y Hooks).
 - **Styling & Design System:** Tailwind CSS v4 con variables CSS nativas y tokens OKLCH del sistema corporativo (`--primary`, `--background`, `--card`, etc.).
 - **Component Primitives:** Basados en Shadcn UI / Radix UI para diálogos, tabs, tooltips y tablas de alta densidad.
+- **Operator Context Menu:** Menú contextual propio integrado con clic derecho para acciones en 1 clic.
 - **Icons:** `lucide-react`.
 
 ## 3. Data Access, Security & Backend Services (Main Process)

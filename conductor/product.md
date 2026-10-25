@@ -26,6 +26,9 @@ Operadores de soporte técnico, administradores de sistemas y analistas de monit
 
 ## Quality Goals
 - Interfaz moderna, reactiva y sin congelamientos (arquitectura asíncrona con IPC seguro).
+- Consola compacta de alta densidad espacial con ventana sin marco nativo (`frame: false`) y controles de ventana integrados.
+- Operación ágil en 1 clic para VNC Viewer, Asistencia MSRA y Ping continuo acoplado directamente en la vista principal con atajos (`F2`, `F3`, `F4`).
+- Menú contextual personalizado de operador (clic derecho) con accesos directos, copiado de identificadores técnicos y enlace a Portal MDA (`https://mda.corporativo.internal/inventario-terminales`).
 - Tiempos de respuesta de consulta inferiores a 500 ms en red local.
 - Cero exposición de secretos, IPs o credenciales en el repositorio de código fuente.
 - Compatibilidad nativa con entornos Windows corporativos.
