@@ -19,6 +19,7 @@ import {
   launchMsraClient,
   openExternalUrl,
   BackendStatus,
+  subscribeToAutofocusSearch,
 } from './services/electronClient';
 import { TerminalData } from './types/terminal';
 import { Search, SearchX, RotateCcw, Loader2 } from 'lucide-react';
@@ -42,6 +43,18 @@ export default function App(): React.JSX.Element {
 
   useEffect(() => {
     checkBackendStatus().then(setStatus).catch(() => {});
+
+    // Listen to Global Hotkey Autofocus Search (Ctrl+Space from background)
+    const unsubHotkey = subscribeToAutofocusSearch((payload) => {
+      window.dispatchEvent(new CustomEvent('cmda:app-autofocus-search', { detail: payload }));
+      if (payload.autoSearch && payload.query) {
+        handleSelectTerminal(payload.query);
+      }
+    });
+
+    return () => {
+      unsubHotkey();
+    };
   }, []);
 
   useEffect(() => {

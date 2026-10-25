@@ -48,6 +48,27 @@ export function Topbar({
   const [isOpen, setIsOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleAutofocusSearch = (e: any) => {
+      const payload = e.detail;
+      if (inputRef.current) {
+        inputRef.current.focus();
+        if (payload && payload.query) {
+          setQuery(payload.query);
+          if (payload.autoSearch) {
+            handleSelect(payload.query);
+          } else {
+            inputRef.current.select();
+          }
+        } else {
+          inputRef.current.select();
+        }
+      }
+    };
+    window.addEventListener('cmda:app-autofocus-search', handleAutofocusSearch);
+    return () => window.removeEventListener('cmda:app-autofocus-search', handleAutofocusSearch);
+  }, []);
   const terminals = getAllTerminals();
 
   const filtered = query.trim()

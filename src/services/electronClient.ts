@@ -276,3 +276,21 @@ export function subscribeToPing(
     if (timer) clearInterval(timer);
   };
 }
+
+export interface AutofocusSearchPayload {
+  isValid: boolean;
+  query: string;
+  type: 'ip' | 'hostname' | 'none';
+  autoSearch: boolean;
+}
+
+export function subscribeToAutofocusSearch(
+  callback: (payload: AutofocusSearchPayload) => void
+): () => void {
+  const api = getElectronAPI();
+  if (api && api.onTriggerAutofocusSearch) {
+    return api.onTriggerAutofocusSearch(callback);
+  }
+  return () => {};
+}
+

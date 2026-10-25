@@ -288,17 +288,33 @@ function registerGlobalSearchShortcut(win) {
   }
 }
 
-app.whenReady().then(() => {
-  const win = createWindow();
-  registerGlobalSearchShortcut(win);
+let mainWindow = null;
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      const newWin = createWindow();
-      registerGlobalSearchShortcut(newWin);
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      if (!mainWindow.isVisible()) mainWindow.show();
+      mainWindow.focus();
     }
   });
-});
+
+  app.whenReady().then(() => {
+    mainWindow = createWindow();
+    registerGlobalSearchShortcut(mainWindow);
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        mainWindow = createWindow();
+        registerGlobalSearchShortcut(mainWindow);
+      }
+    });
+  });
+}
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
