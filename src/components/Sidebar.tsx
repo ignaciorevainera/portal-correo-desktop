@@ -3,14 +3,11 @@ import {
   Monitor,
   Bell,
   RotateCcw,
-  Network,
-  Clock,
-  Server,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 
-export type ActiveTab = 'inventory' | 'alerts' | 'reset-uptime' | 'network';
+export type ActiveTab = 'inventory' | 'alerts' | 'reset-uptime';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -28,27 +25,28 @@ export function Sidebar({
   activeAlertsCount = 0,
 }: SidebarProps): React.JSX.Element {
   const navItems = [
-    { id: 'inventory' as ActiveTab, label: 'Ficha Técnica', icon: Monitor },
+    { id: 'inventory' as ActiveTab, label: 'Ficha & Diagnóstico', icon: Monitor },
     {
       id: 'alerts' as ActiveTab,
       label: 'Alertas Activas',
       icon: Bell,
       badge: activeAlertsCount > 0 ? activeAlertsCount : undefined,
     },
-    { id: 'network' as ActiveTab, label: 'Diagnóstico & Ping', icon: Network },
     { id: 'reset-uptime' as ActiveTab, label: 'Reseteos & Uptime', icon: RotateCcw },
   ];
 
   return (
     <aside
-      className={`border-r border-border bg-card/40 transition-all duration-200 flex flex-col justify-between select-none ${
-        collapsed ? 'w-16' : 'w-60'
+      className={`border-r border-border bg-card/60 backdrop-blur transition-all duration-200 flex flex-col justify-between shrink-0 select-none ${
+        collapsed ? 'w-12' : 'w-52'
       }`}
     >
-      <div className="p-2 space-y-1">
-        <div className="px-3 py-2 text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
-          {!collapsed && 'Navegación'}
-        </div>
+      <div className={`space-y-1 ${collapsed ? 'p-1' : 'p-2'}`}>
+        {!collapsed && (
+          <div className="px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-muted-foreground/80">
+            Navegación
+          </div>
+        )}
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -57,8 +55,13 @@ export function Sidebar({
               key={item.id}
               type="button"
               onClick={() => onTabChange(item.id)}
+              aria-label={item.label}
               title={collapsed ? item.label : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`relative flex items-center rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                collapsed
+                  ? 'w-10 h-10 mx-auto justify-center px-0'
+                  : 'w-full gap-2.5 px-3 py-2'
+              } ${
                 isActive
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -66,8 +69,16 @@ export function Sidebar({
             >
               <Icon className="h-4 w-4 shrink-0" />
               {!collapsed && <span className="flex-1 text-left truncate">{item.label}</span>}
-              {!collapsed && item.badge !== undefined && (
-                <span className="text-[11px] font-bold px-1.5 py-0.2 rounded-full bg-destructive text-white">
+
+              {/* Badge contador de alertas activas */}
+              {item.badge !== undefined && (
+                <span
+                  className={
+                    collapsed
+                      ? 'absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-destructive text-white text-[9px] font-bold flex items-center justify-center border-2 border-background shadow-xs'
+                      : 'text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-destructive text-white ml-auto'
+                  }
+                >
                   {item.badge}
                 </span>
               )}
@@ -76,14 +87,19 @@ export function Sidebar({
         })}
       </div>
 
-      <div className="p-2 border-t border-border">
+      {/* Botón de alternar colapso / expandir */}
+      <div className={`border-t border-border ${collapsed ? 'p-1' : 'p-2'}`}>
         <button
           type="button"
           onClick={onToggleCollapse}
-          className="w-full flex items-center justify-center gap-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+          aria-label={collapsed ? 'Expandir panel' : 'Colapsar panel'}
+          title={collapsed ? 'Expandir navegación' : 'Colapsar navegación'}
+          className={`flex items-center justify-center text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer ${
+            collapsed ? 'w-10 h-8 mx-auto' : 'w-full py-1.5 gap-2'
+          }`}
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          {!collapsed && <span>Colapsar panel</span>}
+          {!collapsed && <span className="font-medium">Colapsar</span>}
         </button>
       </div>
     </aside>
