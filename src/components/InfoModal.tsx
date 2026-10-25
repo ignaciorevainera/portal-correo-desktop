@@ -37,7 +37,7 @@ export function InfoModal({
     {
       icon: Search,
       title: 'Búsqueda Inteligente',
-      desc: 'Encontrá cualquier estación escribiendo su nombre (ej. PC-DEMO-001) o su dirección IP directamente.',
+      desc: 'Encontrá cualquier estación escribiendo su nombre (ej. WS-001) o su dirección IP directamente.',
       badge: 'Ctrl + F',
       badgeSlot: 'kbd',
       color: 'text-sky-500 bg-sky-500/10 border-sky-500/20',
