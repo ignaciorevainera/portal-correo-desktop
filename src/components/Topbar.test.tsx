@@ -1,10 +1,15 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Topbar } from './Topbar';
 import { ThemeProvider } from '../context/ThemeContext';
+import * as electronClient from '../services/electronClient';
 
-describe('Topbar & Search component', () => {
-  it('renders search input and shortcut indicator', () => {
+describe('Topbar & Compact Unified Titlebar component', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('renders search input, brand and compact layout', () => {
     const handleSelect = vi.fn();
     render(
       <ThemeProvider>
@@ -14,13 +19,66 @@ describe('Topbar & Search component', () => {
 
     const input = screen.getByPlaceholderText(/buscar terminal o ip/i);
     expect(input).toBeInTheDocument();
+    expect(screen.getByText(/new cmda/i)).toBeInTheDocument();
   });
 
-  it('filters and selects a terminal from quick suggestions', () => {
-    const handleSelect = vi.fn();
+  it('renders "Portal MDA" button and calls openExternalUrl with exact URL', async () => {
+    const openSpy = vi.spyOn(electronClient, 'openExternalUrl').mockResolvedValue();
     render(
       <ThemeProvider>
-        <Topbar onSelectTerminal={handleSelect} selectedPc="" />
+        <Topbar onSelectTerminal={vi.fn()} selectedPc="PC-DEMO-001" />
+      </ThemeProvider>
+    );
+
+    const portalBtn = screen.getByRole('button', { name: /portal mda/i });
+    expect(portalBtn).toBeInTheDocument();
+
+    fireEvent.click(portalBtn);
+    expect(openSpy).toHaveBeenCalledWith('https://mda.corporativo.internal/inventario-terminales');
+  });
+
+  it('renders window control buttons and invokes IPC actions', async () => {
+    const minSpy = vi.spyOn(electronClient, 'minimizeWindow').mockResolvedValue();
+    const maxSpy = vi.spyOn(electronClient, 'maximizeWindow').mockResolvedValue();
+    const closeSpy = vi.spyOn(electronClient, 'closeWindow').mockResolvedValue();
+
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} selectedPc="PC-DEMO-001" />
+      </ThemeProvider>
+    );
+
+    const minBtn = screen.getByRole('button', { name: /minimizar ventana/i });
+    const maxBtn = screen.getByRole('button', { name: /maximizar ventana/i });
+    const closeBtn = screen.getByRole('button', { name: /cerrar ventana/i });
+
+    expect(minBtn).toBeInTheDocument();
+    expect(maxBtn).toBeInTheDocument();
+    expect(closeBtn).toBeInTheDocument();
+
+    fireEvent.click(minBtn);
+    expect(minSpy).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(maxBtn);
+    expect(maxSpy).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(closeBtn);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('provides direct 1-click VNC and Ping actions on search suggestions', () => {
+    const handleSelect = vi.fn();
+    const handleDirectVnc = vi.fn();
+    const handleDirectPing = vi.fn();
+
+    render(
+      <ThemeProvider>
+        <Topbar
+          onSelectTerminal={handleSelect}
+          onDirectVnc={handleDirectVnc}
+          onDirectPing={handleDirectPing}
+          selectedPc=""
+        />
       </ThemeProvider>
     );
 
@@ -30,28 +88,16 @@ describe('Topbar & Search component', () => {
     const suggestion = screen.getByText(/WS-DEMO-002/i);
     expect(suggestion).toBeInTheDocument();
 
-    fireEvent.click(suggestion);
-    expect(handleSelect).toHaveBeenCalledWith('WS-DEMO-002');
-  });
+    const vncQuickBtn = screen.getByRole('button', { name: /conectar vnc a ws-demo-002/i });
+    const pingQuickBtn = screen.getByRole('button', { name: /ping a ws-demo-002/i });
 
-  it('opens and closes the info modal on button click', () => {
-    const handleSelect = vi.fn();
-    render(
-      <ThemeProvider>
-        <Topbar onSelectTerminal={handleSelect} selectedPc="PC-DEMO-001" />
-      </ThemeProvider>
-    );
+    expect(vncQuickBtn).toBeInTheDocument();
+    expect(pingQuickBtn).toBeInTheDocument();
 
-    const infoBtn = screen.getByRole('button', { name: /abrir información del sistema/i });
-    expect(infoBtn).toBeInTheDocument();
+    fireEvent.click(vncQuickBtn);
+    expect(handleDirectVnc).toHaveBeenCalledWith('WS-DEMO-002');
 
-    fireEvent.click(infoBtn);
-    expect(screen.getByText(/acerca de new cmda/i)).toBeInTheDocument();
-    expect(screen.getByText(/v1.0.0/i)).toBeInTheDocument();
-    expect(screen.getByText(/búsqueda inteligente/i)).toBeInTheDocument();
-
-    const closeBtn = screen.getByRole('button', { name: /entendido/i });
-    fireEvent.click(closeBtn);
-    expect(screen.queryByText(/acerca de new cmda/i)).not.toBeInTheDocument();
+    fireEvent.click(pingQuickBtn);
+    expect(handleDirectPing).toHaveBeenCalledWith('WS-DEMO-002');
   });
 });
