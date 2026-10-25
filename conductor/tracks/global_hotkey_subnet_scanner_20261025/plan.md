@@ -3,8 +3,8 @@
 ## Phase 1: Global Hotkey, Clipboard Parser & Window Restoration
 - [x] Task: Unit Tests for Clipboard Pattern Parser (`src/test/clipboardParser.test.ts`) [e377c2a]
 - [x] Task: Implement Clipboard Validator Module (`electron/clipboardParser.cjs`) [b335833]
-- [~] Task: Register Global Shortcut & IPC Handlers in Electron Main (`electron/main.cjs` & `electron/preload.cjs`)
-- [ ] Task: Integrate Renderer Global Shortcut Listener & Search Auto-Fill in React (`src/App.tsx`)
+- [x] Task: Register Global Shortcut & IPC Handlers in Electron Main (`electron/main.cjs` & `electron/preload.cjs`) [16bfe7a]
+- [~] Task: Integrate Renderer Global Shortcut Listener & Search Auto-Fill in React (`src/App.tsx`)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Async Subnet Scanner Core & Reverse DNS Engine
