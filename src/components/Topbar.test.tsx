@@ -96,4 +96,21 @@ describe('Topbar & Compact Unified Titlebar component', () => {
     fireEvent.click(pingQuickBtn);
     expect(handleDirectPing).toHaveBeenCalledWith('WS-DEMO-002');
   });
+
+  it('renders topbar with expanded h-14 dimensions, h-10 input and high contrast Portal MDA CTA', () => {
+    const { container } = render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} selectedPc="PC-DEMO-001" />
+      </ThemeProvider>
+    );
+
+    const header = container.querySelector('header');
+    expect(header?.className).toContain('h-14');
+
+    const input = screen.getByPlaceholderText(/buscar terminal o ip/i);
+    expect(input.className).toContain('h-10');
+
+    const portalBtn = screen.getByRole('button', { name: /portal mda/i });
+    expect(portalBtn.className).toContain('h-10');
+  });
 });
