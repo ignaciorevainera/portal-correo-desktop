@@ -44,13 +44,13 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [checkpoint: b8254d5]
 
 ## Phase 4: Síntesis Técnica, Matriz de Paridad y PoCs de Integración para new-CMDA
-- [~] Task: Redacción de documentación técnica exhaustiva y matriz de paridad en docs/
-  - [ ] Redactar informe consolidado en `docs/reverse_engineering_mda_kace_report.md` con hallazgos de CMDA-2, HMDA y KACE
-  - [ ] Construir la matriz comparativa de features y tecnologías entre todos los aplicativos vs `new-CMDA`
-- [ ] Task: Desarrollo de módulo PoC seguro en Electron Main con pruebas unitarias TDD
-  - [ ] Escribir tests unitarios en Vitest para servicio bridge de KACE/WOL (`test/kaceBridge.test.ts` o equivalente)
-  - [ ] Implementar servicio de invocación segura de Wake-on-LAN y KACE CLI con validación estricta de parámetros
-- [ ] Task: Roadmap arquitectónico de unificación para Portal Correo Desktop
-  - [ ] Documentar recomendaciones y especificaciones para botones personalizables en UI
-  - [ ] Especificar integración de notificaciones nativas Toast y exportación Excel (.xlsx) en `new-CMDA`
+- [x] Task: Redacción de documentación técnica exhaustiva y matriz de paridad en docs/ [9169330]
+  - [x] Redactar informe consolidado en `docs/reverse_engineering_mda_kace_report.md` con hallazgos de CMDA-2, HMDA y KACE [9169330]
+  - [x] Construir la matriz comparativa de features y tecnologías entre todos los aplicativos vs `new-CMDA` [9169330]
+- [x] Task: Desarrollo de módulo PoC seguro en Electron Main con pruebas unitarias TDD [9169330]
+  - [x] Escribir tests unitarios en Vitest para servicio bridge de KACE/WOL (`test/kaceBridge.test.ts` o equivalente) [9169330]
+  - [x] Implementar servicio de invocación segura de Wake-on-LAN y KACE CLI con validación estricta de parámetros [9169330]
+- [x] Task: Roadmap arquitectónico de unificación para Portal Correo Desktop [9169330]
+  - [x] Documentar recomendaciones y especificaciones para botones personalizables en UI [9169330]
+  - [x] Especificar integración de notificaciones nativas Toast y exportación Excel (.xlsx) en `new-CMDA` [9169330]
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
