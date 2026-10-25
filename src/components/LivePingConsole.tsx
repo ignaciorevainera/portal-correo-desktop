@@ -34,7 +34,6 @@ export function LivePingConsole({
 }: LivePingConsoleProps): React.JSX.Element {
   const [logs, setLogs] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
-  const consoleBottomRef = useRef<HTMLDivElement>(null);
   const onPingCompleteRef = useRef(onPingComplete);
   onPingCompleteRef.current = onPingComplete;
 
@@ -68,12 +67,6 @@ export function LivePingConsole({
       unsubscribe();
     };
   }, [isPinging, ip, pingMode]);
-
-  useEffect(() => {
-    if (typeof consoleBottomRef.current?.scrollIntoView === 'function') {
-      consoleBottomRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [logs]);
 
   const handleClear = (): void => {
     setLogs([]);
@@ -188,7 +181,6 @@ export function LivePingConsole({
             </div>
           ))
         )}
-        <div ref={consoleBottomRef} />
       </div>
     </div>
   );
