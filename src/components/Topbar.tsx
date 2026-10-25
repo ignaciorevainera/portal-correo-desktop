@@ -7,8 +7,7 @@ import {
   HelpCircle,
   ExternalLink,
   Minus,
-  Square,
-  X,
+  Power,
   Play,
   MonitorPlay,
 } from 'lucide-react';
@@ -17,8 +16,7 @@ import { InfoModal } from './InfoModal';
 import { getAllTerminals } from '../services/terminalService';
 import {
   minimizeWindow,
-  maximizeWindow,
-  closeWindow,
+  hideToTray,
   openExternalUrl,
 } from '../services/electronClient';
 
@@ -224,34 +222,25 @@ export function Topbar({
 
           <ThemeToggle />
 
-          {/* Botones de Ventana Personalizados (Minimizar, Maximizar, Cerrar) */}
-          <div className="flex items-center ml-1 border-l border-border pl-1.5 gap-0.5">
+          {/* Botones de Ventana (Minimizar a barra de tareas y Apagado a Bandeja del Sistema) */}
+          <div className="flex items-center ml-1 border-l border-border pl-1.5 gap-1">
             <button
               type="button"
               onClick={minimizeWindow}
               aria-label="Minimizar ventana"
-              title="Minimizar"
+              title="Minimizar a barra de tareas"
               className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
             >
-              <Minus className="h-3 w-3" />
+              <Minus className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
-              onClick={maximizeWindow}
-              aria-label="Maximizar ventana"
-              title="Maximizar / Restaurar"
-              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+              onClick={hideToTray}
+              aria-label="Minimizar a bandeja del sistema"
+              title="Ocultar en bandeja del sistema (Turn Off)"
+              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
             >
-              <Square className="h-2.5 w-2.5" />
-            </button>
-            <button
-              type="button"
-              onClick={closeWindow}
-              aria-label="Cerrar ventana"
-              title="Cerrar"
-              className="p-1.5 text-muted-foreground hover:text-white hover:bg-destructive rounded transition-colors"
-            >
-              <X className="h-3 w-3" />
+              <Power className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>

@@ -37,10 +37,9 @@ describe('Topbar & Compact Unified Titlebar component', () => {
     expect(openSpy).toHaveBeenCalledWith('https://mda.corporativo.internal/inventario-terminales');
   });
 
-  it('renders window control buttons and invokes IPC actions', async () => {
+  it('renders window control buttons (minimizar and power to tray) and invokes IPC actions', async () => {
     const minSpy = vi.spyOn(electronClient, 'minimizeWindow').mockResolvedValue();
-    const maxSpy = vi.spyOn(electronClient, 'maximizeWindow').mockResolvedValue();
-    const closeSpy = vi.spyOn(electronClient, 'closeWindow').mockResolvedValue();
+    const traySpy = vi.spyOn(electronClient, 'hideToTray').mockResolvedValue();
 
     render(
       <ThemeProvider>
@@ -49,21 +48,18 @@ describe('Topbar & Compact Unified Titlebar component', () => {
     );
 
     const minBtn = screen.getByRole('button', { name: /minimizar ventana/i });
-    const maxBtn = screen.getByRole('button', { name: /maximizar ventana/i });
-    const closeBtn = screen.getByRole('button', { name: /cerrar ventana/i });
+    const powerBtn = screen.getByRole('button', { name: /minimizar a bandeja del sistema/i });
 
     expect(minBtn).toBeInTheDocument();
-    expect(maxBtn).toBeInTheDocument();
-    expect(closeBtn).toBeInTheDocument();
+    expect(powerBtn).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /maximizar ventana/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /cerrar ventana/i })).not.toBeInTheDocument();
 
     fireEvent.click(minBtn);
     expect(minSpy).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(maxBtn);
-    expect(maxSpy).toHaveBeenCalledTimes(1);
-
-    fireEvent.click(closeBtn);
-    expect(closeSpy).toHaveBeenCalledTimes(1);
+    fireEvent.click(powerBtn);
+    expect(traySpy).toHaveBeenCalledTimes(1);
   });
 
   it('provides direct 1-click VNC and Ping actions on search suggestions', () => {

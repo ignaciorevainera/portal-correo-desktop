@@ -8,15 +8,15 @@ Implementación del icono y menú contextual en la Bandeja del Sistema (System T
   - [x] Actualizar `electron/systemTools.cjs` para soportar `continuous: true` (`ping -t`) en `getPingArgs` y `executePing`
   - [x] Actualizar `electron/main.cjs` integrando `Tray` + `Menu` (con opciones `Abrir new CMDA` y `Cerrar` definitivo), intercepción del cierre de ventana para ocultar al Tray, handler `cmda:window-hide-tray`, soporte de modo continuo en `cmda:ping-start` y handler `cmda:ping-stop` para terminar el proceso de ping activo
   - [x] Exponer `hideToTray`, `startPing(target, continuous)` y `stopPing()` en `electron/preload.cjs` y `src/services/electronClient.ts`
-- [~] Task: Actualizar `Topbar` con botón de Minimizar y botón de Apagado (`Power`) hacia la Bandeja del Sistema
-  - [ ] Actualizar pruebas en `src/components/Topbar.test.tsx` verificando que a la derecha del selector de tema estén el botón de Minimizar y el botón de Apagado (`Power` / ocultar en bandeja del sistema), sin los botones de maximizar ni cerrar directo
-  - [ ] Refactorizar `src/components/Topbar.tsx` reemplazando los controles anteriores por el botón de Minimizar y el botón `Power` conectado a `hideToTray`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Actualizar `Topbar` con botón de Minimizar y botón de Apagado (`Power`) hacia la Bandeja del Sistema
+  - [x] Actualizar pruebas en `src/components/Topbar.test.tsx` verificando que a la derecha del selector de tema estén el botón de Minimizar y el botón de Apagado (`Power` / ocultar en bandeja del sistema), sin los botones de maximizar ni cerrar directo
+  - [x] Refactorizar `src/components/Topbar.tsx` reemplazando los controles anteriores por el botón de Minimizar y el botón `Power` conectado a `hideToTray`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Subheader Fijo con `Ping` / `Ping -t` (2:1) y Consola Interna con Detener, Limpiar y Copiar Logs
 Actualización de `QuickActionsBar` como Subheader fijo con el CTA de Ping normal y el botón secundario `Ping -t` ocupando la mitad de su ancho (ambos reemplazando logs e iniciando su modo respectivo), y mejora de `LivePingConsole` con controles de **Detener**, **Limpiar** y **Copiar Logs** en la esquina superior derecha.
 
-- [ ] Task: Añadir botón secundario `Ping -t` (mitad de ancho del CTA de Ping) en `QuickActionsBar`
+- [~] Task: Añadir botón secundario `Ping -t` (mitad de ancho del CTA de Ping) en `QuickActionsBar`
   - [ ] Actualizar pruebas en `src/test/QuickActionsBar.test.tsx` verificando la presencia del botón `Ping` (4 paquetes) y del botón secundario `Ping -t` (proporción 2:1) y que ambos disparen su callback correspondiente
   - [ ] Refactorizar `src/components/QuickActionsBar.tsx` para ser el Subheader fijo (`sticky top-0 z-20`) e incluir el grupo de botones `Ping` (`flex-[2]`) + `Ping -t` (`flex-1`)
 - [ ] Task: Potenciar `LivePingConsole` con reemplazo de logs al iniciar, Detener proceso, Limpiar y Copiar Logs completos
