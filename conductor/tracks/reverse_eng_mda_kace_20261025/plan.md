@@ -12,23 +12,23 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [checkpoint: f8400a0]
 
 ## Phase 2: Descompilación e Ingeniería Inversa de HMDA (v1, v1.1 y v2.0 - .NET / C#)
-- [~] Task: Desensamblado / descompilación IL y extracción de tipos, métodos y namespaces en HMDA.exe
-  - [ ] Inspeccionar metadatos de ensamblado, versiones de runtime y dependencias cargadas en HMDA v1, v1.1 y v2.0
-  - [ ] Extraer clases principales, formularios WinForms/WPF y controladores de eventos mediante reflexión e inspección IL
-  - [ ] Mapear el ciclo de vida de la aplicación y diferencias estructurales entre v1, v1.1 y v2.0
-- [ ] Task: Análisis de lógica de negocio e integración con Microsoft Graph / M365 y Azure AD
-  - [ ] Extraer configuración de MSAL / Azure AD (Client ID, Scopes, endpoints OAuth2)
-  - [ ] Analizar llamadas a Microsoft Graph API (`Microsoft.Graph.dll`, Kiota) para lectura de perfiles y envío de correos
-  - [ ] Analizar lógica de generación y despacho de plantillas de correo (`correo_inicio`, `correo_final`, `correo_asunto`, `cc`, firmas)
-- [ ] Task: Análisis de persistencia y base de datos (MySql.Data, SQL Server CE)
-  - [ ] Inspeccionar inicialización y uso de `MySql.Data.dll` y queries ejecutadas hacia el servidor MySQL
-  - [ ] Analizar la cadena de conexión `DefaultConnection` (`|SQL/CE|`) y uso de bases de datos locales compactas
-  - [ ] Auditar credenciales y rutas de red configuradas
-- [ ] Task: Análisis de UI interactiva, botones de operador, personalización y notificaciones Toast
-  - [ ] Documentar el mecanismo de botones dinámicos configurables (`bt_edit1_nombre`, `bt_edit1_enlace`, etc.)
-  - [ ] Analizar parámetros visuales (`Transparente`, `Fijar`, fuentes y colores personalizados)
-  - [ ] Analizar la integración de `Microsoft.Toolkit.Uwp.Notifications` para envío de notificaciones nativas de Windows
-  - [ ] Analizar la generación de planillas Excel con `SpreadsheetLight.dll` y `DocumentFormat.OpenXml.dll`
+- [x] Task: Desensamblado / descompilación IL y extracción de tipos, métodos y namespaces en HMDA.exe [562f6d1]
+  - [x] Inspeccionar metadatos de ensamblado, versiones de runtime y dependencias cargadas en HMDA v1, v1.1 y v2.0 [562f6d1]
+  - [x] Extraer clases principales, formularios WinForms/WPF y controladores de eventos mediante reflexión e inspección IL [562f6d1]
+  - [x] Mapear el ciclo de vida de la aplicación y diferencias estructurales entre v1, v1.1 y v2.0 [562f6d1]
+- [x] Task: Análisis de lógica de negocio e integración con Microsoft Graph / M365 y Azure AD [562f6d1]
+  - [x] Extraer configuración de MSAL / Azure AD (Client ID, Scopes, endpoints OAuth2) [562f6d1]
+  - [x] Analizar llamadas a Microsoft Graph API (`Microsoft.Graph.dll`, Kiota) para lectura de perfiles y envío de correos [562f6d1]
+  - [x] Analizar lógica de generación y despacho de plantillas de correo (`correo_inicio`, `correo_final`, `correo_asunto`, `cc`, firmas) [562f6d1]
+- [x] Task: Análisis de persistencia y base de datos (MySql.Data, SQL Server CE) [562f6d1]
+  - [x] Inspeccionar inicialización y uso de `MySql.Data.dll` y queries ejecutadas hacia el servidor MySQL [562f6d1]
+  - [x] Analizar la cadena de conexión `DefaultConnection` (`|SQL/CE|`) y uso de bases de datos locales compactas [562f6d1]
+  - [x] Auditar credenciales y rutas de red configuradas [562f6d1]
+- [x] Task: Análisis de UI interactiva, botones de operador, personalización y notificaciones Toast [562f6d1]
+  - [x] Documentar el mecanismo de botones dinámicos configurables (`bt_edit1_nombre`, `bt_edit1_enlace`, etc.) [562f6d1]
+  - [x] Analizar parámetros visuales (`Transparente`, `Fijar`, fuentes y colores personalizados) [562f6d1]
+  - [x] Analizar la integración de `Microsoft.Toolkit.Uwp.Notifications` para envío de notificaciones nativas de Windows [562f6d1]
+  - [x] Analizar la generación de planillas Excel con `SpreadsheetLight.dll` y `DocumentFormat.OpenXml.dll` [562f6d1]
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Análisis de Binarios de KACE Systems Management y Mecanismos de Integración
