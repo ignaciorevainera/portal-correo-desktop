@@ -30,4 +30,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('cmda:trigger-autofocus-search', listener);
     return () => ipcRenderer.removeListener('cmda:trigger-autofocus-search', listener);
   },
+  startSubnetScan: (targetIp) => ipcRenderer.send('cmda:subnet-scan-start', targetIp),
+  abortSubnetScan: () => ipcRenderer.invoke('cmda:subnet-scan-abort'),
+  onSubnetHostFound: (callback) => {
+    const listener = (_event, host) => callback(host);
+    ipcRenderer.on('cmda:subnet-host-found', listener);
+    return () => ipcRenderer.removeListener('cmda:subnet-host-found', listener);
+  },
+  onSubnetProgress: (callback) => {
+    const listener = (_event, progress) => callback(progress);
+    ipcRenderer.on('cmda:subnet-progress', listener);
+    return () => ipcRenderer.removeListener('cmda:subnet-progress', listener);
+  },
+  onSubnetDone: (callback) => {
+    const listener = (_event, summary) => callback(summary);
+    ipcRenderer.on('cmda:subnet-done', listener);
+    return () => ipcRenderer.removeListener('cmda:subnet-done', listener);
+  },
 });

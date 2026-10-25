@@ -5,9 +5,11 @@ const dbService = require('./dbService.cjs');
 const systemTools = require('./systemTools.cjs');
 const dnsResolver = require('./dnsResolver.cjs');
 const { parseClipboardQuery } = require('./clipboardParser.cjs');
+const { generateSubnetRange, scanSubnetBatch } = require('./subnetScanner.cjs');
 
 let tray = null;
 let activePingProcess = null;
+let activeSubnetAbortController = null;
 app.isQuiting = false;
 
 function getTrayIcon() {
@@ -254,6 +256,61 @@ ipcMain.handle('cmda:ping-stop', () => {
       activePingProcess.kill();
     } catch {}
     activePingProcess = null;
+    return true;
+  }
+  return false;
+});
+
+// Subnet Scanner IPC Handlers
+ipcMain.on('cmda:subnet-scan-start', async (event, targetIp) => {
+  if (activeSubnetAbortController) {
+    activeSubnetAbortController.abort();
+    activeSubnetAbortController = null;
+  }
+
+  activeSubnetAbortController = new AbortController();
+  const signal = activeSubnetAbortController.signal;
+
+  try {
+    const range = generateSubnetRange(targetIp);
+    const result = await scanSubnetBatch(range, {
+      concurrency: 16,
+      signal,
+      onHostFound: (host) => {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('cmda:subnet-host-found', host);
+        }
+      },
+      onProgress: (scanned, total) => {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('cmda:subnet-progress', { scanned, total });
+        }
+      },
+    });
+
+    if (!event.sender.isDestroyed()) {
+      event.sender.send('cmda:subnet-done', {
+        aborted: result.aborted,
+        totalFound: result.hosts.length,
+      });
+    }
+  } catch (err) {
+    if (!event.sender.isDestroyed()) {
+      event.sender.send('cmda:subnet-done', {
+        aborted: false,
+        error: err.message,
+        totalFound: 0,
+      });
+    }
+  } finally {
+    activeSubnetAbortController = null;
+  }
+});
+
+ipcMain.handle('cmda:subnet-scan-abort', () => {
+  if (activeSubnetAbortController) {
+    activeSubnetAbortController.abort();
+    activeSubnetAbortController = null;
     return true;
   }
   return false;
