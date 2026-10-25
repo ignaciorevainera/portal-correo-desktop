@@ -14,12 +14,11 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     (global as any).window = originalWindow;
   });
 
-  it('renders the application header with Portal Correo Desktop title directly for any user', async () => {
+  it('renders the application header with Portal Correo Desktop title directly for any user and clean search prompt', async () => {
     render(<App />);
     expect(screen.getByText(/Portal Correo Desktop/i)).toBeInTheDocument();
-    await waitFor(() => {
-      expect(screen.getByText(/PC-DEMO-001/i)).toBeInTheDocument();
-    });
+    expect(screen.getByText(/Buscar una terminal para comenzar/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Conectar por VNC Viewer/i })).not.toBeInTheDocument();
   });
 
   it('shows diagnostic warning banner and MSRA suggestion button when VNC is closed and MSRA is available', async () => {
@@ -53,6 +52,10 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     };
 
     render(<App />);
+
+    const searchInput = screen.getByPlaceholderText(/Buscar terminal o IP/i);
+    fireEvent.change(searchInput, { target: { value: 'WS-DEMO-002' } });
+    fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
 
     await waitFor(() => {
       expect(screen.getAllByText(/WS-DEMO-002/i).length).toBeGreaterThan(0);
@@ -117,8 +120,12 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
 
     render(<App />);
 
+    const searchInput = screen.getByPlaceholderText(/Buscar terminal o IP/i);
+    fireEvent.change(searchInput, { target: { value: 'PC-DEMO-001' } });
+    fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
+
     await waitFor(() => {
-      expect(screen.getByText(/Herramientas y Acciones Remotas/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Conectar por VNC Viewer/i })).toBeInTheDocument();
       expect(screen.getByText(/Ficha Técnica & Sistema/i)).toBeInTheDocument();
       expect(screen.getByText(/Red, Ubicación y Active Directory/i)).toBeInTheDocument();
       expect(screen.getByText(/Consola de Ping en Vivo:/i)).toBeInTheDocument();

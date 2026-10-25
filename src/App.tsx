@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { Topbar } from './components/Topbar';
 import { HardwareCard } from './components/HardwareCard';
@@ -22,11 +22,11 @@ import {
   BackendStatus,
 } from './services/electronClient';
 import { TerminalData } from './types/terminal';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function App(): React.JSX.Element {
-  const [selectedPc, setSelectedPc] = useState<string>('PC-DEMO-001');
+  const [selectedPc, setSelectedPc] = useState<string>('');
   const [terminal, setTerminal] = useState<TerminalData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPinging, setIsPinging] = useState(false);
@@ -34,6 +34,7 @@ export default function App(): React.JSX.Element {
   const [status, setStatus] = useState<BackendStatus>({ connected: false, mode: 'mock' });
   const [actionFeedback, setActionFeedback] = useState<ActionFeedbackState | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const mainRef = useRef<HTMLElement>(null);
 
   const allTerminals = getAllTerminals();
 
@@ -50,6 +51,9 @@ export default function App(): React.JSX.Element {
       .then((res) => {
         setTerminal(res.data);
         setIsLoading(false);
+        if (mainRef.current) {
+          mainRef.current.scrollTop = 0;
+        }
         if (res.data?.ip) {
           setPingMode('standard');
           setIsPinging(true);
@@ -224,7 +228,7 @@ export default function App(): React.JSX.Element {
         )}
 
         {/* Layout Unificado: El desplazamiento / scroll vertical es exclusivo sobre este contenedor <main> */}
-        <main className="flex-1 p-3.5 overflow-y-auto space-y-3">
+        <main ref={mainRef} className="flex-1 p-3.5 overflow-y-auto space-y-3">
           {isLoading ? (
             <div className="h-96 flex flex-col items-center justify-center text-center p-6 space-y-3">
               <Loader2 className="h-7 w-7 text-primary animate-spin" />
@@ -233,25 +237,17 @@ export default function App(): React.JSX.Element {
               </p>
             </div>
           ) : !terminal ? (
-            <div className="h-96 flex flex-col items-center justify-center text-center p-6 border border-dashed border-border rounded-lg bg-card/40 space-y-3">
-              <AlertCircle className="h-9 w-9 text-muted-foreground opacity-60" />
-              <h3 className="text-sm font-semibold font-heading">No se encontró la terminal</h3>
-              <p className="text-xs text-muted-foreground max-w-sm">
-                Utiliza la barra de búsqueda superior (Ctrl+F) o escribe un Hostname o IP (ej. PC-DEMO-001, WS-DEMO-002).
-              </p>
-              <div className="flex gap-2 pt-1 flex-wrap justify-center">
-                {allTerminals.map((t) => (
-                  <Button
-                    key={t.pc}
-                    type="button"
-                    variant="outline"
-                    size="xs"
-                    onClick={() => handleSelectTerminal(t.pc)}
-                    className="font-mono text-xs cursor-pointer"
-                  >
-                    {t.pc}
-                  </Button>
-                ))}
+            <div className="h-96 flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-card/30 space-y-3">
+              <div className="p-3 rounded-full bg-muted/70 text-muted-foreground">
+                <Search className="h-8 w-8 text-primary/70" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold font-heading text-foreground">
+                  Buscar una terminal para comenzar
+                </h3>
+                <p className="text-xs text-muted-foreground max-w-sm">
+                  Ingresá el Hostname o IP en la barra superior (presioná <kbd className="font-mono font-semibold px-1 py-0.5 rounded bg-muted text-[10px] border border-border">Ctrl+F</kbd>) para consultar el inventario técnico y monitoreo en vivo.
+                </p>
               </div>
             </div>
           ) : (
