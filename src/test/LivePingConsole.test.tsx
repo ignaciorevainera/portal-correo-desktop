@@ -164,4 +164,26 @@ describe('LivePingConsole Component', () => {
     expect(terminalBox).not.toBeNull();
     expect(terminalBox?.className).toContain('overflow-x-auto');
   });
+
+  it('renders contiguous console without section title and with height h-64', () => {
+    const { container } = render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={false}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    // Section title is omitted (no "Consola de Ping en Vivo:")
+    expect(screen.queryByText(/Consola de Ping en Vivo:/i)).toBeNull();
+
+    // The 3 CTAs are present
+    expect(screen.getByRole('button', { name: /iniciar/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
+
+    // Console terminal has height class h-64
+    const terminalBox = container.querySelector('.bg-\\[\\#0C0C0C\\]');
+    expect(terminalBox?.className).toContain('h-64');
+  });
 });
