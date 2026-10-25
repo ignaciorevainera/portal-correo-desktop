@@ -53,7 +53,7 @@
 
 ---
 
-- [~] **Track: Reorganización Integral UI, Unificación Técnica, Consola Windows de Ping y Arrastre de Ventana**
+- [x] **Track: Reorganización Integral UI, Unificación Técnica, Consola Windows de Ping y Arrastre de Ventana**
   *Link: [./tracks/ui_reorganization_ping_table_20261025/index.md](./tracks/ui_reorganization_ping_table_20261025/index.md)*
 
 ---
