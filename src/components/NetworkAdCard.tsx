@@ -34,11 +34,15 @@ export function NetworkAdCard({ terminal }: { terminal: TerminalData }): React.J
               type="button"
               onClick={() => handleCopy('ip', terminal.ip)}
               aria-label="Copiar Dirección IPv4"
-              title="Copiar dirección IP al portapapeles"
-              className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 p-0.5 rounded hover:bg-muted transition-colors cursor-pointer"
+              title={copiedKey === 'ip' ? 'Copiado al portapapeles' : 'Copiar dirección IP al portapapeles'}
+              className="h-5 w-5 shrink-0 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
             >
-              {copiedKey === 'ip' ? <Check className="h-2.5 w-2.5 text-emerald-500" /> : <Copy className="h-2.5 w-2.5" />}
-              {copiedKey === 'ip' && <span className="text-[9px] text-emerald-500">Copiado</span>}
+              {copiedKey === 'ip' ? (
+                <Check className="h-3 w-3 text-emerald-500 animate-in zoom-in-75 duration-150" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+              {copiedKey === 'ip' && <span className="sr-only">Copiado</span>}
             </button>
           </div>
           <p className="font-mono text-xs font-bold text-foreground bg-muted/40 px-2 py-0.5 rounded border border-border/50">
@@ -54,11 +58,15 @@ export function NetworkAdCard({ terminal }: { terminal: TerminalData }): React.J
               type="button"
               onClick={() => handleCopy('mac', terminal.mac)}
               aria-label="Copiar Dirección MAC"
-              title="Copiar MAC al portapapeles"
-              className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 p-0.5 rounded hover:bg-muted transition-colors cursor-pointer"
+              title={copiedKey === 'mac' ? 'Copiado al portapapeles' : 'Copiar MAC al portapapeles'}
+              className="h-5 w-5 shrink-0 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
             >
-              {copiedKey === 'mac' ? <Check className="h-2.5 w-2.5 text-emerald-500" /> : <Copy className="h-2.5 w-2.5" />}
-              {copiedKey === 'mac' && <span className="text-[9px] text-emerald-500">Copiado</span>}
+              {copiedKey === 'mac' ? (
+                <Check className="h-3 w-3 text-emerald-500 animate-in zoom-in-75 duration-150" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+              {copiedKey === 'mac' && <span className="sr-only">Copiado</span>}
             </button>
           </div>
           <p className="font-mono text-xs text-foreground bg-muted/40 px-2 py-0.5 rounded border border-border/50">
@@ -76,11 +84,15 @@ export function NetworkAdCard({ terminal }: { terminal: TerminalData }): React.J
               type="button"
               onClick={() => handleCopy('user', terminal.userNt)}
               aria-label="Copiar Usuario NT"
-              title="Copiar usuario(s) de dominio"
-              className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 p-0.5 rounded hover:bg-muted transition-colors cursor-pointer"
+              title={copiedKey === 'user' ? 'Copiado al portapapeles' : 'Copiar usuario(s) de dominio'}
+              className="h-5 w-5 shrink-0 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
             >
-              {copiedKey === 'user' ? <Check className="h-2.5 w-2.5 text-emerald-500" /> : <Copy className="h-2.5 w-2.5" />}
-              {copiedKey === 'user' && <span className="text-[9px] text-emerald-500">Copiado</span>}
+              {copiedKey === 'user' ? (
+                <Check className="h-3 w-3 text-emerald-500 animate-in zoom-in-75 duration-150" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+              {copiedKey === 'user' && <span className="sr-only">Copiado</span>}
             </button>
           </div>
           <div className="px-2.5 py-1.5 rounded bg-muted/50 border border-border font-mono text-xs text-foreground font-medium break-all">

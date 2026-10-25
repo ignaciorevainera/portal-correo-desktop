@@ -119,7 +119,7 @@ export function LivePingConsole({
             disabled={logs.length === 0}
             aria-label="Copiar logs de ping"
             title="Copiar logs completos al portapapeles"
-            className={`px-2.5 py-1 rounded text-[11px] font-sans border transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`h-7 min-w-[105px] px-2.5 rounded text-[11px] font-sans border transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
               copied
                 ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700'
                 : 'text-slate-300 border-slate-800 hover:bg-slate-900 hover:text-white'

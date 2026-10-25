@@ -276,8 +276,23 @@ export default function App(): React.JSX.Element {
           serverName={status.server}
         />
 
-        {/* Layout Unificado Sin Sidebar: Todo el contenido vive en <main> con scroll continuo */}
-        <main className="flex-1 p-3.5 overflow-y-auto space-y-3 relative">
+        {/* Barra de Comandos Fija (siempre debajo del header, sin contenido pasando por debajo) */}
+        {terminal && (
+          <section className="shrink-0 px-3.5 pt-2.5 pb-2 border-b border-border bg-card/40">
+            <QuickActionsBar
+              terminal={terminal}
+              isPinging={isPinging}
+              actionFeedback={actionFeedback}
+              onLaunchVnc={() => handleLaunchVnc()}
+              onLaunchMsra={() => handleLaunchMsra()}
+              onTogglePing={handleTogglePing}
+              onLaunchPingInfinite={handleLaunchPingInfinite}
+            />
+          </section>
+        )}
+
+        {/* Layout Unificado: El desplazamiento / scroll vertical es exclusivo sobre este contenedor <main> */}
+        <main className="flex-1 p-3.5 overflow-y-auto space-y-3">
           {isLoading ? (
             <div className="h-96 flex flex-col items-center justify-center text-center p-6 space-y-3">
               <Loader2 className="h-7 w-7 text-primary animate-spin" />
@@ -307,27 +322,14 @@ export default function App(): React.JSX.Element {
             </div>
           ) : (
             <>
-              {/* 1° Subheader Fijo: Barra de Comandos y Herramientas a mano durante el scroll */}
-              <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md pb-1 border-b border-border/50">
-                <QuickActionsBar
-                  terminal={terminal}
-                  isPinging={isPinging}
-                  actionFeedback={actionFeedback}
-                  onLaunchVnc={() => handleLaunchVnc()}
-                  onLaunchMsra={() => handleLaunchMsra()}
-                  onTogglePing={handleTogglePing}
-                  onLaunchPingInfinite={handleLaunchPingInfinite}
-                />
-              </div>
-
-              {/* 2° Grilla Principal Compacta: Red / Directorio Activo y Especificaciones de Hardware */}
+              {/* 1° Grilla Principal Compacta: Red / Directorio Activo y Especificaciones de Hardware */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <NetworkAdCard terminal={terminal} />
                 <HardwareCard terminal={terminal} />
               </div>
 
-              {/* 3° Consola Interna de Ping: Con auto-scroll al pulsar Ping / Ping -t y controles avanzados */}
-              <div ref={pingConsoleRef} className="scroll-mt-16">
+              {/* 2° Consola Interna de Ping: Con auto-scroll al pulsar Ping / Ping -t y controles avanzados */}
+              <div ref={pingConsoleRef} className="scroll-mt-4">
                 <LivePingConsole
                   ip={terminal.ip}
                   isPinging={isPinging}
@@ -336,14 +338,14 @@ export default function App(): React.JSX.Element {
                 />
               </div>
 
-              {/* 4° Alertas de Terminal: Observaciones operativas e incidencias */}
+              {/* 3° Alertas de Terminal: Observaciones operativas e incidencias */}
               <AlertsPanel
                 terminal={terminal}
                 onAddAlert={handleAddAlert}
                 onCloseAlert={handleCloseAlert}
               />
 
-              {/* 5° Reseteo AD e Historial: Contraseña, desbloqueo y métricas */}
+              {/* 4° Reseteo AD e Historial: Contraseña, desbloqueo y métricas */}
               <ResetUptimePanel terminal={terminal} />
             </>
           )}

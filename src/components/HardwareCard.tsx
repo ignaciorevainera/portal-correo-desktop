@@ -45,11 +45,15 @@ export function HardwareCard({ terminal }: { terminal: TerminalData }): React.JS
               type="button"
               onClick={() => handleCopy('cpu', terminal.cpuModel)}
               aria-label="Copiar Modelo y CPU"
-              title="Copiar especificación de CPU"
-              className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 p-0.5 rounded hover:bg-muted transition-colors cursor-pointer"
+              title={copiedKey === 'cpu' ? 'Copiado al portapapeles' : 'Copiar especificación de CPU'}
+              className="h-5 w-5 shrink-0 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
             >
-              {copiedKey === 'cpu' ? <Check className="h-2.5 w-2.5 text-emerald-500" /> : <Copy className="h-2.5 w-2.5" />}
-              {copiedKey === 'cpu' && <span className="text-[9px] text-emerald-500">Copiado</span>}
+              {copiedKey === 'cpu' ? (
+                <Check className="h-3 w-3 text-emerald-500 animate-in zoom-in-75 duration-150" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+              {copiedKey === 'cpu' && <span className="sr-only">Copiado</span>}
             </button>
           </div>
           <p className="text-foreground font-mono text-[11px] line-clamp-2" title={terminal.cpuModel}>
