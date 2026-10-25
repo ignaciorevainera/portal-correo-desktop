@@ -9,6 +9,7 @@ import { LivePingConsole } from './components/LivePingConsole';
 import { AlertsPanel } from './components/AlertsPanel';
 import { ResetUptimePanel } from './components/ResetUptimePanel';
 import { SecurityLockScreen } from './components/SecurityLockScreen';
+import { OperatorContextMenu } from './components/OperatorContextMenu';
 import {
   getAllTerminals,
   addAlertToTerminal,
@@ -21,6 +22,7 @@ import {
   launchMsraClient,
   checkSecurityGateStatus,
   unlockCorporateSecurity,
+  openExternalUrl,
   BackendStatus,
   SecurityGateStatus,
 } from './services/electronClient';
@@ -38,6 +40,7 @@ export default function App(): React.JSX.Element {
   const [actionFeedback, setActionFeedback] = useState<ActionFeedbackState | null>(null);
   const [securityStatus, setSecurityStatus] = useState<SecurityGateStatus | null>(null);
   const [isUnlocking, setIsUnlocking] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const allTerminals = getAllTerminals();
 
@@ -243,7 +246,13 @@ export default function App(): React.JSX.Element {
 
   return (
     <ThemeProvider>
-      <div className="h-screen w-screen overflow-hidden bg-background text-foreground flex flex-col font-sans select-none antialiased">
+      <div
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setContextMenu({ x: e.clientX, y: e.clientY });
+        }}
+        className="h-screen w-screen overflow-hidden bg-background text-foreground flex flex-col font-sans select-none antialiased"
+      >
         <Topbar
           onSelectTerminal={handleSelectTerminal}
           onDirectVnc={handleLaunchVnc}
@@ -338,6 +347,21 @@ export default function App(): React.JSX.Element {
             )}
           </main>
         </div>
+
+        {/* Custom Operator Context Menu */}
+        {contextMenu && (
+          <OperatorContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            terminal={terminal}
+            isPinging={isPinging}
+            onClose={() => setContextMenu(null)}
+            onLaunchVnc={() => handleLaunchVnc()}
+            onTogglePing={() => setIsPinging((p) => !p)}
+            onLaunchMsra={() => handleLaunchMsra()}
+            onOpenPortalMda={() => openExternalUrl('https://mda.corporativo.internal/inventario-terminales')}
+          />
+        )}
       </div>
     </ThemeProvider>
   );
