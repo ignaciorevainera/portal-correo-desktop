@@ -11,10 +11,10 @@
 - [x] Task: Refactorizar `QuickActionsBar.tsx` eliminando el envoltorio `<Card>` y títulos, dejando exclusivamente los botones de acción (`VNC Viewer`, `Asistencia MSRA`, grupo `Ping`/`Ping -t`, y `Uptime`), corrigiendo la alineación flex de los iconos/emojis en los alerts [ddf0baf]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [ddf0baf]
 
-### Phase 3: Aumento de Dimensiones de Topbar (h-14 / 56px) y Normalización de Acciones
+### Phase 3: Aumento de Dimensiones de Topbar (h-14 / 56px) y Normalización de Acciones [checkpoint: f8c7b08]
 - [x] Task: Escribir tests de layout e interacción para la barra superior ampliada y contraste del botón Portal MDA [9df59b3]
-- [~] Task: Actualizar `Topbar.tsx` a altura `h-14` (56px), con input `h-10`, botones normalizados a `h-10` y estilos de alto contraste en modo claro/oscuro para el botón Portal MDA
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Actualizar `Topbar.tsx` a altura `h-14` (56px), con input `h-10`, botones normalizados a `h-10` y estilos de alto contraste en modo claro/oscuro para el botón Portal MDA [f8c7b08]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [f8c7b08]
 
 ### Phase 4: Consolidación, Limpieza de Referencias Demo y Verificación Integral
 - [ ] Task: Limpiar o estandarizar textos de prueba o demo restantes en componentes y tests asociados
