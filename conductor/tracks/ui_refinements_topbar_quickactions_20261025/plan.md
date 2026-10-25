@@ -16,7 +16,7 @@
 - [x] Task: Actualizar `Topbar.tsx` a altura `h-14` (56px), con input `h-10`, botones normalizados a `h-10` y estilos de alto contraste en modo claro/oscuro para el botón Portal MDA [f8c7b08]
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [f8c7b08]
 
-### Phase 4: Consolidación, Limpieza de Referencias Demo y Verificación Integral
-- [ ] Task: Limpiar o estandarizar textos de prueba o demo restantes en componentes y tests asociados
-- [ ] Task: Ejecución del suite de pruebas completo (`npm test`) y compilación limpia (`npm run build`)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+### Phase 4: Consolidación, Limpieza de Referencias Demo y Verificación Integral [checkpoint: 8d84c41]
+- [x] Task: Limpiar o estandarizar textos de prueba o demo restantes en componentes y tests asociados [813b2b4]
+- [x] Task: Ejecución del suite de pruebas completo (`npm test`) y compilación limpia (`npm run build`) [8d84c41]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [8d84c41]
