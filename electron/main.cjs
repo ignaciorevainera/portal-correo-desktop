@@ -243,6 +243,14 @@ ipcMain.handle('cmda:launch-msra', async (_event, target) => {
   return systemTools.launchMsra(target);
 });
 
+ipcMain.handle('cmda:probe-remote', async (_event, target) => {
+  return await systemTools.probeRemotePorts(target, 800);
+});
+
+ipcMain.handle('cmda:launch-remote-smart', async (_event, target) => {
+  return await systemTools.launchRemoteSmart(target);
+});
+
 ipcMain.on('cmda:ping-start', async (event, target, continuous) => {
 
   if (activePingProcess) {

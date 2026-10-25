@@ -32,6 +32,17 @@ export interface ToolExecutionResult {
   vncClosed?: boolean;
   msraAvailable?: boolean;
   portUsed?: number;
+  methodUsed?: 'vnc' | 'msra' | 'none';
+  probe?: RemoteProbeResult;
+}
+
+export interface RemoteProbeResult {
+  host: string;
+  vncPort: number | null;
+  port5901Open: boolean;
+  port5900Open: boolean;
+  msraAvailable: boolean;
+  recommendedMethod: 'vnc' | 'msra' | 'none';
 }
 
 function getElectronAPI() {
@@ -175,6 +186,41 @@ export async function launchMsraClient(target: string): Promise<ToolExecutionRes
     success: true,
     simulated: true,
     message: `[Simulación Web] Asistencia Remota (MSRA) solicitada para ${target}`,
+  };
+}
+
+export async function probeRemoteStatus(target: string): Promise<RemoteProbeResult> {
+  const api = getElectronAPI();
+  if (api && api.probeRemote) {
+    try {
+      return await api.probeRemote(target);
+    } catch {}
+  }
+  return {
+    host: target,
+    vncPort: 5901,
+    port5901Open: true,
+    port5900Open: false,
+    msraAvailable: true,
+    recommendedMethod: 'vnc',
+  };
+}
+
+export async function launchSmartRemoteClient(target: string): Promise<ToolExecutionResult> {
+  const api = getElectronAPI();
+  if (api && api.launchRemoteSmart) {
+    try {
+      return await api.launchRemoteSmart(target);
+    } catch (err: any) {
+      return { success: false, methodUsed: 'none', message: err.message };
+    }
+  }
+  return {
+    success: true,
+    simulated: true,
+    methodUsed: 'vnc',
+    portUsed: 5901,
+    message: `Conexión Remota Inteligente (VNC :5901) iniciada hacia ${target} (Modo Simulación)`,
   };
 }
 
