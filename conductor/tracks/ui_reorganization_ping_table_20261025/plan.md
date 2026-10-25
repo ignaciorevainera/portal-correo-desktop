@@ -1,10 +1,10 @@
 # Implementation Plan: Reorganización Integral UI, Unificación Técnica, Consola Windows de Ping y Arrastre de Ventana
 
-### Phase 1: Arrastre de Ventana en Header y Card Unificada Técnica (Hardware + Red)
+### Phase 1: Arrastre de Ventana en Header y Card Unificada Técnica (Hardware + Red) [checkpoint: bedf890]
 - [x] Task: Escribir tests para el área arrastrable del brand/logo en `Topbar` y para la nueva `TerminalTechnicalCard` unificada (conservando copiado de IP/MAC/CPU/UserNT) [6f9e779]
-- [~] Task: Actualizar `Topbar.tsx` permitiendo que el logo y el nombre de la app formen parte de la región de arrastre (`app-drag-region`)
-- [ ] Task: Crear el componente unificado `TerminalTechnicalCard.tsx` que combina Ficha Técnica, Sistema, Red, Ubicación y Active Directory en una sola card eficiente, sustituyendo las dos tarjetas separadas
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Actualizar `Topbar.tsx` permitiendo que el logo y el nombre de la app formen parte de la región de arrastre (`app-drag-region`) [bedf890]
+- [x] Task: Crear el componente unificado `TerminalTechnicalCard.tsx` que combina Ficha Técnica, Sistema, Red, Ubicación y Active Directory en una sola card eficiente, sustituyendo las dos tarjetas separadas [bedf890]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [bedf890]
 
 ### Phase 2: Consola de Ping Estilo Terminal de Windows & Limpieza de Caracteres
 - [ ] Task: Escribir tests para `LivePingConsole` validando la estética oscura inmutable `#0C0C0C`, scroll horizontal libre (`overflow-x-auto` / `whitespace-pre`) y sanitización de caracteres corruptos de Windows Ping
