@@ -261,7 +261,9 @@ ipcMain.handle('cmda:ping-stop', () => {
 
 app.on('before-quit', () => {
   app.isQuiting = true;
-  globalShortcut.unregisterAll();
+  if (app.isReady()) {
+    globalShortcut.unregisterAll();
+  }
 });
 
 function registerGlobalSearchShortcut(win) {
@@ -317,7 +319,9 @@ if (!gotTheLock) {
 }
 
 app.on('will-quit', () => {
-  globalShortcut.unregisterAll();
+  if (app.isReady()) {
+    globalShortcut.unregisterAll();
+  }
 });
 
 app.on('window-all-closed', () => {
