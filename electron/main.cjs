@@ -1,9 +1,10 @@
-const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, globalShortcut, clipboard } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const dbService = require('./dbService.cjs');
 const systemTools = require('./systemTools.cjs');
 const dnsResolver = require('./dnsResolver.cjs');
+const { parseClipboardQuery } = require('./clipboardParser.cjs');
 
 let tray = null;
 let activePingProcess = null;
@@ -111,6 +112,8 @@ function createWindow() {
       win.loadURL(devUrl);
     });
   }
+
+  return win;
 }
 
 // Window Controls & External Link IPC Handlers
@@ -258,14 +261,47 @@ ipcMain.handle('cmda:ping-stop', () => {
 
 app.on('before-quit', () => {
   app.isQuiting = true;
+  globalShortcut.unregisterAll();
 });
 
+function registerGlobalSearchShortcut(win) {
+  try {
+    globalShortcut.register('CommandOrControl+Space', () => {
+      if (!win || win.isDestroyed()) return;
+
+      if (win.isMinimized()) {
+        win.restore();
+      }
+      if (!win.isVisible()) {
+        win.show();
+      }
+      win.focus();
+
+      // Read clipboard and parse query
+      const rawClipboard = clipboard.readText();
+      const parsed = parseClipboardQuery(rawClipboard);
+
+      win.webContents.send('cmda:trigger-autofocus-search', parsed);
+    });
+  } catch (err) {
+    console.error('[GlobalShortcut] Failed to register CommandOrControl+Space:', err);
+  }
+}
+
 app.whenReady().then(() => {
-  createWindow();
+  const win = createWindow();
+  registerGlobalSearchShortcut(win);
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      const newWin = createWindow();
+      registerGlobalSearchShortcut(newWin);
+    }
   });
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', () => {

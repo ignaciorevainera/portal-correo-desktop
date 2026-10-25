@@ -25,4 +25,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('cmda:ping-end', listener);
     return () => ipcRenderer.removeListener('cmda:ping-end', listener);
   },
+  onTriggerAutofocusSearch: (callback) => {
+    const listener = (_event, payload) => callback(payload);
+    ipcRenderer.on('cmda:trigger-autofocus-search', listener);
+    return () => ipcRenderer.removeListener('cmda:trigger-autofocus-search', listener);
+  },
 });
