@@ -1,0 +1,8 @@
+{
+  "id": "settings_updater_release_pipeline_20261025",
+  "name": "CTA de Ajustes en Navbar, In-App Updater con Descarga en Segundo Plano y Pipeline de Releases Zero-Secrets",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-10-25T16:19:00Z",
+  "updated_at": "2026-10-25T16:19:00Z"
+}

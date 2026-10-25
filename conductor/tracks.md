@@ -66,6 +66,12 @@
 - [x] **Track: Empty State de Terminal Inexistente y Supresión de Auto-Scroll / Foco en Ping**
   *Link: [./tracks/terminal_empty_state_ping_no_scroll_20261025/index.md](./tracks/terminal_empty_state_ping_no_scroll_20261025/index.md)*
 
+---
+
+- [ ] **Track: CTA de Ajustes en Navbar, In-App Updater con Descarga en Segundo Plano y Pipeline de Releases Zero-Secrets**
+  *Link: [./tracks/settings_updater_release_pipeline_20261025/index.md](./tracks/settings_updater_release_pipeline_20261025/index.md)*
+
+
 
 
 
