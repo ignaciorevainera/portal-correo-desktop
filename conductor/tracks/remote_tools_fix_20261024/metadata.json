@@ -1,0 +1,8 @@
+{
+  "track_id": "remote_tools_fix_20261024",
+  "title": "Corrección y Diagnóstico Inteligente de Conectividad Remota (MSRA, VNC y DNS en Vivo)",
+  "type": "bug",
+  "status": "completed",
+  "created_at": "2026-10-24T12:49:45-03:00",
+  "updated_at": "2026-10-24T13:18:00-03:00"
+}

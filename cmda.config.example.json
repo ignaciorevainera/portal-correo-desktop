@@ -1,0 +1,10 @@
+{
+  "dbServer": "192.0.2.10",
+  "dbDatabase": "Nombre_Base_Datos",
+  "dbUser": "usuario_sql",
+  "dbPassword": "clave_sql_segura",
+  "dbPort": 1433,
+  "vncPassword": "hash_vnc_corporativo",
+  "corporateDomain": "dominio.corporativo.local",
+  "accessKey": "clave_activacion_operador"
+}

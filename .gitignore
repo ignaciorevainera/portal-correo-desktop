@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dist-electron/
+*.log
+.DS_Store
+commit_msg.txt
+
+# Archivos de configuración y secretos corporativos (NUNCA rastrear en Git)
+.env
+.env.*
+!.env.example
+cmda.config.json
+cmda.config.local.json
+*.secure.dat
+*.vnc
