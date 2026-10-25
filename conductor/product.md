@@ -24,6 +24,9 @@
    - Servicio de Wake-on-LAN para encendido remoto de terminales mediante difusión de paquetes mágicos.
    - Sincronización forzada de inventario y políticas con el appliance Quest KACE (`runkbot 4 0`).
    - Matriz de interoperabilidad y mejoras unificadas basadas en ingeniería inversa de aplicativos legacy (HMDA v1/v1.1/v2.0, CMDA-2).
+6. **Productividad Global y Escáner Visual de Subred:**
+   - Invocación global inmediata mediante atajo de sistema (`Ctrl + Espacio`) que restaura la ventana desde segundo plano, analiza el portapapeles y auto-completa/dispara la búsqueda si contiene una IP o Hostname válido.
+   - Escáner visual de subred asíncrono y no bloqueante que barre el segmento `/24` de la terminal activa, resolviendo hostnames por DNS inverso y desplegando los equipos en tiempo real en un panel deslizable (Drawer) con accesos de 1-clic a VNC y ficha técnica.
 
 ## Target Audience
 Operadores de soporte técnico, administradores de sistemas y analistas de monitoreo e inventario de estaciones de trabajo.
