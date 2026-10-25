@@ -13,3 +13,6 @@ cmda.config.json
 cmda.config.local.json
 *.secure.dat
 *.vnc
+
+# Artefactos empaquetados de electron-builder (binarios generados)
+release/
