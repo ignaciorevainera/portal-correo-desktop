@@ -11,18 +11,18 @@
 - [x] Task: Refactorización y verificación de cobertura de Fase 1
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (ff599c0)
 
-## Phase 2: Supresión Total de Auto-Scroll y Foco en Ping y Terminal (TDD)
+## Phase 2: Supresión Total de Auto-Scroll y Foco en Ping y Terminal (TDD) [checkpoint: c8d7b3b]
 - [x] Task: Escribir pruebas unitarias (Red Phase) para eliminación de scrollIntoView (5495d40)
   - [x] Escribir tests en `src/test/LivePingConsole.test.tsx` verificando que la recepción de logs de ping no invoca `scrollIntoView`.
   - [x] Verificar que acciones de limpiar o iniciar ping no generan desplazamiento.
   - [x] Confirmar que los tests fallen antes de remover la lógica.
-- [~] Task: Eliminar llamadas a scrollIntoView y asegurar ausencia de saltos de foco (Green Phase)
-  - [ ] Remover `useEffect` de auto-scroll con `scrollIntoView` en `LivePingConsole.tsx`.
-  - [ ] Verificar que `App.tsx` mantenga el auto-ping al seleccionar PC sin forzar foco ni scroll a la consola.
-  - [ ] Asegurar que el contenedor de logs mantenga scroll puramente manual por el usuario.
-  - [ ] Hacer pasar todos los tests de la fase.
-- [ ] Task: Refactorización y verificación de cobertura de Fase 2
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Eliminar llamadas a scrollIntoView y asegurar ausencia de saltos de foco (Green Phase) (c8d7b3b)
+  - [x] Remover `useEffect` de auto-scroll con `scrollIntoView` en `LivePingConsole.tsx`.
+  - [x] Verificar que `App.tsx` mantenga el auto-ping al seleccionar PC sin forzar foco ni scroll a la consola.
+  - [x] Asegurar que el contenedor de logs mantenga scroll puramente manual por el usuario.
+  - [x] Hacer pasar todos los tests de la fase.
+- [x] Task: Refactorización y verificación de cobertura de Fase 2
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (c8d7b3b)
 
 ## Phase 3: Verificación Integral y Suite Completa
 - [ ] Task: Ejecutar suite completa de tests y verificar calidad de código
