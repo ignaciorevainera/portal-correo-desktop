@@ -12,11 +12,6 @@
 
 ---
 
-- [x] **Track: Corrección y Diagnóstico Inteligente de Conectividad Remota (MSRA, VNC y DNS en Vivo)**
-  *Link: [./tracks/remote_tools_fix_20261024/index.md](./tracks/remote_tools_fix_20261024/index.md)*
-
----
-
 - [x] **Track: Blindaje de Seguridad, Sanitización Zero-Secrets y Control de Acceso Corporativo (Gatekeeper)**
   *Link: [./tracks/security_hardening_20261024/index.md](./tracks/security_hardening_20261024/index.md)*
 
