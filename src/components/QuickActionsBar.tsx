@@ -29,6 +29,9 @@ export interface ActionFeedbackState {
 }
 
 export interface QuickActionsBarProps {
+  onOpenSubnetScanner?: () => void;
+  onRefreshUptime?: () => void;
+  isRefreshingUptime?: boolean;
   terminal: TerminalData;
   isPinging: boolean;
   actionFeedback?: ActionFeedbackState | null;
@@ -44,6 +47,9 @@ export interface QuickActionsBarProps {
 }
 
 export function QuickActionsBar({
+  onOpenSubnetScanner,
+  onRefreshUptime,
+  isRefreshingUptime = false,
   terminal,
   isPinging,
   actionFeedback,
@@ -352,19 +358,48 @@ export function QuickActionsBar({
               </div>
             )}
           </div>
+          {/* Botón de Escanear Subred */}
+          {onOpenSubnetScanner && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onOpenSubnetScanner}
+              aria-label="Escanear Subred"
+              title="Escanear toda la subred de esta terminal"
+              className="h-8 px-2.5 text-xs font-medium gap-1.5 cursor-pointer bg-muted/60 hover:bg-muted border-border text-foreground shrink-0"
+            >
+              <Network className="h-3.5 w-3.5 text-primary" />
+              <span>Escanear Subred</span>
+            </Button>
+          )}
         </div>
 
-        {/* Columna 3: Tarjeta de Uptime */}
-        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-muted/60 border border-border text-xs h-8">
-          <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium">
+        {/* Columna 3: Tarjeta de Uptime con Refresco */}
+        <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-muted/60 border border-border text-xs h-8">
+          <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium shrink-0">
             <Clock className="h-3.5 w-3.5 text-muted-foreground" /> Uptime
           </span>
           <span
-            className="font-mono font-semibold text-foreground truncate max-w-30 text-[11px]"
+            className="font-mono font-semibold text-foreground truncate max-w-28 text-[11px]"
             title={terminal.uptimeText}
           >
             {terminal.uptimeText}
           </span>
+          {onRefreshUptime && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              onClick={onRefreshUptime}
+              disabled={isRefreshingUptime}
+              aria-label="Refrescar Uptime"
+              title="Refrescar tiempo de actividad"
+              className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+            >
+              <RotateCcw className={`h-3 w-3 ${isRefreshingUptime ? 'animate-spin text-primary' : ''}`} />
+            </Button>
+          )}
         </div>
       </div>
     </div>

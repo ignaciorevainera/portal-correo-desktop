@@ -185,6 +185,24 @@ export default function App(): React.JSX.Element {
     });
   };
 
+    const handleRefreshUptime = async () => {
+    if (!selectedPc || isRefreshingUptime) return;
+    setIsRefreshingUptime(true);
+    try {
+      const res = await searchTerminalUnified(selectedPc);
+      if (res.data) {
+        setTerminal(res.data);
+        toast.success("Tiempo de actividad actualizado", {
+          description: `Uptime: ${res.data.uptimeText}`,
+        });
+      }
+    } catch {
+      toast.error("Error al actualizar uptime");
+    } finally {
+      setIsRefreshingUptime(false);
+    }
+  };
+
   const handleTogglePing = () => {
     if (isPinging) {
       setIsPinging(false);
@@ -387,6 +405,9 @@ export default function App(): React.JSX.Element {
               onTogglePing={handleTogglePing}
               onLaunchPingInfinite={handleLaunchPingInfinite}
               onRunDiagnostic={handleRunDiagnostic}
+              onOpenSubnetScanner={() => setIsSubnetDrawerOpen(true)}
+              onRefreshUptime={handleRefreshUptime}
+              isRefreshingUptime={isRefreshingUptime}
             />
           </section>
         )}
@@ -451,10 +472,7 @@ export default function App(): React.JSX.Element {
           ) : (
             <>
               {/* 1° Card Unificada: Especificaciones Técnicas, Hardware, Red y Directorio Activo */}
-              <TerminalTechnicalCard
-                terminal={terminal}
-                onOpenSubnetScanner={() => setIsSubnetDrawerOpen(true)}
-              />
+              <TerminalTechnicalCard terminal={terminal} />
 
               {/* 2° Consola Interna de Diagnóstico: Estilo Terminal Windows con Historial */}
               <LivePingConsole
