@@ -31,6 +31,7 @@
 - **VNC Launcher:** Ejecución de `vncviewer.exe` con configuración dinámica y paso seguro de credenciales mediante `child_process.spawn`.
 - **Windows Remote Assistance:** Lanzamiento directo mediante `cmd.exe /c start "" msra.exe /offerRA <host>`.
 - **Network Ping:** Monitor continuo de latencia ejecutado asíncronamente vía proceso hijo hacia la terminal consultada.
+- **Native Network Diagnostics (Nbtstat / Tracert / ARP):** Ejecución de subprocesos Win32 nativos con sanitización estricta (`sanitizeHostOrIp`), detención atómica concurrente y streaming hacia consola interna unificada.
 - **KACE & Wake-on-LAN Bridge:** Módulo `electron/kaceBridge.cjs` para invocación validada de Wake-on-LAN (`kwol.exe` o socket UDP) y sincronización forzada de inventario corporativo (`runkbot.exe 4 0`).
 
 ## 5. Testing & Tooling
