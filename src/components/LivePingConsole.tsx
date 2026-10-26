@@ -5,7 +5,6 @@ import {
   subscribeToDiagnosticCommand,
 } from "../services/electronClient";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 export interface DiagnosticCommandEvent {
   id: string;
@@ -49,10 +48,18 @@ export function LivePingConsole({
   onStopCommand,
 }: LivePingConsoleProps): React.JSX.Element {
   const [logs, setLogs] = useState<string[]>([]);
-  const [copied, setCopied] = useState(false);
+  const [copiedAll, setCopiedAll] = useState(false);
+  const [copiedLast, setCopiedLast] = useState(false);
   const onPingCompleteRef = useRef(onPingComplete);
   onPingCompleteRef.current = onPingComplete;
-  const terminalEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-desplazamiento exclusivo dentro del contenedor de la terminal ante nuevas líneas
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [logs]);
 
   // Ping subscription (backward-compatible)
   useEffect(() => {
@@ -128,11 +135,40 @@ export function LivePingConsole({
     try {
       if (navigator?.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setCopiedAll(true);
+        setTimeout(() => setCopiedAll(false), 2000);
       }
     } catch (err) {
       console.warn("Error al copiar logs:", err);
+    }
+  };
+
+  const getLastOutputBlock = (): string => {
+    if (logs.length === 0) return "";
+    let lastCmdIdx = -1;
+    for (let i = logs.length - 1; i >= 0; i--) {
+      if (logs[i].startsWith("[") && logs[i].includes(">")) {
+        lastCmdIdx = i;
+        break;
+      }
+    }
+    if (lastCmdIdx === -1) {
+      return logs.join("\n");
+    }
+    return logs.slice(lastCmdIdx).join("\n");
+  };
+
+  const handleCopyLastBlock = async (): Promise<void> => {
+    const text = getLastOutputBlock();
+    if (!text) return;
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        setCopiedLast(true);
+        setTimeout(() => setCopiedLast(false), 2000);
+      }
+    } catch (err) {
+      console.warn("Error al copiar último bloque:", err);
     }
   };
 
@@ -158,7 +194,7 @@ export function LivePingConsole({
           </span>
         </div>
 
-        {/* Controles: Detener (solo cuando activo), Limpiar, Copiar Logs */}
+        {/* Controles: Detener (solo cuando activo), Limpiar, Copiar Último Bloque y Copiar Todos los Logs */}
         <div className="flex items-center gap-1.5">
           {isAnyRunning && (
             <Button
@@ -187,28 +223,52 @@ export function LivePingConsole({
             <span>Limpiar</span>
           </Button>
 
+          {/* Copiar Último Bloque */}
           <Button
             type="button"
-            variant={copied ? "secondary" : "outline"}
+            variant={copiedLast ? "secondary" : "outline"}
+            size="xs"
+            onClick={handleCopyLastBlock}
+            disabled={logs.length === 0}
+            aria-label="Copiar último bloque de logs"
+            title="Copiar únicamente el último comando y su respuesta al portapapeles"
+            className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+          >
+            {copiedLast ? (
+              <Check className="h-3 w-3 text-emerald-500" />
+            ) : (
+              <Copy className="h-3 w-3 text-muted-foreground" />
+            )}
+            <span>{copiedLast ? "Bloque copiado" : "Copiar Último"}</span>
+          </Button>
+
+          {/* Copiar Todos los Logs */}
+          <Button
+            type="button"
+            variant={copiedAll ? "secondary" : "outline"}
             size="xs"
             onClick={handleCopyLogs}
             disabled={logs.length === 0}
             aria-label="Copiar logs de ping"
             title="Copiar logs completos al portapapeles"
-            className="h-7 min-w-26.25 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+            className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
           >
-            {copied ? (
+            {copiedAll ? (
               <Check className="h-3 w-3 text-emerald-500" />
             ) : (
               <Copy className="h-3 w-3 text-muted-foreground" />
             )}
-            <span>{copied ? "Logs copiados" : "Copiar Logs"}</span>
+            <span>{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
           </Button>
         </div>
       </div>
 
-      {/* Pantalla Contigua estilo Windows Terminal: bg-[#0C0C0C], altura generosa h-64, sin contenedor intermedio */}
-      <div className="h-64 overflow-y-auto overflow-x-auto p-3.5 bg-[#0C0C0C] font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] select-text scrollbar-thin">
+      {/* Pantalla Contigua estilo Windows Terminal: bg-[#0C0C0C], altura generosa h-64, auto-scroll interno por línea */}
+      <div
+        ref={scrollContainerRef}
+        data-testid="terminal-scroll-container"
+        className="h-64 overflow-y-auto overflow-x-auto p-3.5 bg-[#0C0C0C] font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] select-text scrollbar-thin"
+      >
         {logs.length === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
             Selecciona una acción (Ping, Ping -t, Nbtstat, Tracert, ARP) en la

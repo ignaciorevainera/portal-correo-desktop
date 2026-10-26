@@ -8,7 +8,7 @@ describe('LivePingConsole Component', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders target IP and controls: Detener (when active), Limpiar, and Copiar Logs without Iniciar button', () => {
+  it('renders target IP and controls: Detener (when active), Limpiar, Copiar Último, and Copiar Logs without Iniciar button', () => {
     const { rerender } = render(
       <LivePingConsole
         ip="192.0.2.100"
@@ -21,6 +21,7 @@ describe('LivePingConsole Component', () => {
     // Redundant Iniciar button must NOT exist when idle
     expect(screen.queryByRole('button', { name: /^iniciar$/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /copiar último/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
 
     // When running, Detener button is present
@@ -131,6 +132,103 @@ describe('LivePingConsole Component', () => {
     fireEvent.click(clearBtn);
 
     expect(screen.queryByText(/Respuesta 1/i)).not.toBeInTheDocument();
+  });
+
+  it('copies only the last command output block when clicking "Copiar Último"', async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextMock,
+      },
+    });
+
+    let dataHandler: ((t: string) => void) | null = null;
+    vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
+      dataHandler = onData;
+      return () => {};
+    });
+
+    const { rerender } = render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        pingMode="standard"
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    // Command 1 output
+    act(() => {
+      dataHandler?.('Respuesta comando 1: bytes=32');
+    });
+
+    // End command 1, start command 2
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={false}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        pingMode="standard"
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    // Command 2 output
+    act(() => {
+      dataHandler?.('Respuesta comando 2: bytes=32 tiempo=10ms');
+    });
+
+    const copyLastBtn = screen.getByRole('button', { name: /copiar último bloque/i });
+    fireEvent.click(copyLastBtn);
+
+    await waitFor(() => {
+      expect(writeTextMock).toHaveBeenCalled();
+    });
+
+    const lastCopiedText = writeTextMock.mock.calls[0][0];
+    expect(lastCopiedText).toContain('Respuesta comando 2');
+    expect(lastCopiedText).not.toContain('Respuesta comando 1');
+    expect(screen.getByText(/bloque copiado/i)).toBeInTheDocument();
+  });
+
+  it('auto-scrolls strictly inside the terminal element when new lines arrive', () => {
+    let dataHandler: ((t: string) => void) | null = null;
+    vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
+      dataHandler = onData;
+      return () => {};
+    });
+
+    const { container } = render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    const scrollBox = container.querySelector('[data-testid="terminal-scroll-container"]') as HTMLDivElement;
+    expect(scrollBox).not.toBeNull();
+
+    // Mock scrollHeight
+    Object.defineProperty(scrollBox, 'scrollHeight', {
+      value: 1200,
+      configurable: true,
+      writable: true,
+    });
+
+    act(() => {
+      dataHandler?.('Línea 1 en ejecución...');
+    });
+
+    // Internal scrollTop must equal scrollHeight
+    expect(scrollBox.scrollTop).toBe(1200);
   });
 
   it('calls onPingComplete when the ping process finishes (onDone callback)', () => {

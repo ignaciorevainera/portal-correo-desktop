@@ -38,6 +38,7 @@ import { TerminalData } from "./types/terminal";
 import { Search, SearchX, RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
+import { Kbd } from "@/components/ui/kbd";
 import { toast } from "sonner";
 
 export default function App(): React.JSX.Element {
@@ -186,7 +187,7 @@ export default function App(): React.JSX.Element {
     });
   };
 
-    const handleRefreshUptime = async () => {
+  const handleRefreshUptime = async () => {
     if (!selectedPc || isRefreshingUptime) return;
     setIsRefreshingUptime(true);
     try {
@@ -463,10 +464,8 @@ export default function App(): React.JSX.Element {
                 </h3>
                 <p className="text-xs text-muted-foreground max-w-sm">
                   Ingresá el Hostname o IP en la barra superior (presioná{" "}
-                  <kbd className="font-mono font-semibold px-1 py-0.5 rounded bg-muted text-[10px] border border-border">
-                    Ctrl+F
-                  </kbd>
-                  ) para consultar el inventario técnico y monitoreo en vivo.
+                  <Kbd>Ctrl</Kbd>+<Kbd>F</Kbd>) para consultar el inventario
+                  técnico y monitoreo en vivo.
                 </p>
               </div>
             </div>
