@@ -27,6 +27,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('cmda:ping-end', listener);
     return () => ipcRenderer.removeListener('cmda:ping-end', listener);
   },
+  startCommand: (payload) => ipcRenderer.send('cmda:cmd-start', payload),
+  stopCommand: () => ipcRenderer.invoke('cmda:cmd-stop'),
+  onCommandData: (callback) => {
+    const listener = (_event, data) => callback(data);
+    ipcRenderer.on('cmda:cmd-data', listener);
+    return () => ipcRenderer.removeListener('cmda:cmd-data', listener);
+  },
+  onCommandEnd: (callback) => {
+    const listener = (_event, code) => callback(code);
+    ipcRenderer.on('cmda:cmd-end', listener);
+    return () => ipcRenderer.removeListener('cmda:cmd-end', listener);
+  },
   onTriggerAutofocusSearch: (callback) => {
     const listener = (_event, payload) => callback(payload);
     ipcRenderer.on('cmda:trigger-autofocus-search', listener);

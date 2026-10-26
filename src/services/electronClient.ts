@@ -283,6 +283,82 @@ export async function openExternalUrl(url: string): Promise<void> {
   }
 }
 
+export type DiagnosticCommandType = 'ping' | 'nbtstat' | 'tracert' | 'arp';
+
+export async function stopDiagnosticCommand(): Promise<void> {
+  const api = getElectronAPI();
+  if (api && api.stopCommand) {
+    try {
+      await api.stopCommand();
+    } catch {}
+  }
+}
+
+export function subscribeToDiagnosticCommand(
+  command: DiagnosticCommandType,
+  target: string,
+  onData: (text: string) => void,
+  onEnd: (code: number) => void,
+  options?: any
+): () => void {
+  const api = getElectronAPI();
+  if (api && api.startCommand && api.onCommandData && api.onCommandEnd) {
+    const unsubData = api.onCommandData(onData);
+    const unsubEnd = api.onCommandEnd(onEnd);
+    api.startCommand({ command, target, options });
+    return () => {
+      unsubData();
+      unsubEnd();
+      api.stopCommand?.();
+    };
+  }
+
+  // Web Browser fallback simulation
+  let timer: any = null;
+  let step = 0;
+
+  if (command === 'nbtstat') {
+    onData(`\nNetBIOS Remote Machine Name Table\n---------------------------------------------\n`);
+    timer = setTimeout(() => {
+      onData(`   PC-DEMO-001    <00>  UNIQUE      Registered\n   CORP           <00>  GROUP       Registered\n   PC-DEMO-001    <20>  UNIQUE      Registered\n   CORP\\OPERADOR1 <03>  UNIQUE      Registered\n\n   MAC Address = 00-1A-2B-3C-4D-5E (Simulado)\n`);
+      onEnd(0);
+    }, 500);
+  } else if (command === 'tracert') {
+    onData(`\nTraza a ${target} sobre caminos de 6 saltos como máximo:\n\n`);
+    const hops = [
+      `  1     1 ms    <1 ms    <1 ms  192.0.2.1\n`,
+      `  2     4 ms     3 ms     3 ms  192.0.2.254\n`,
+      `  3    12 ms    11 ms    12 ms  ${target}\n`,
+    ];
+    timer = setInterval(() => {
+      if (step < hops.length) {
+        onData(hops[step]);
+        step++;
+      } else {
+        clearInterval(timer);
+        onData(`\nTraza completa (simulado).\n`);
+        onEnd(0);
+      }
+    }, 400);
+  } else if (command === 'arp') {
+    onData(`\nInterfaz: 192.0.2.100 --- 0x10\n  Dirección de Internet          Dirección física      Tipo\n`);
+    timer = setTimeout(() => {
+      onData(`  ${target}                     00-1a-2b-3c-4d-5e     dinámico (Simulado)\n`);
+      onEnd(0);
+    }, 400);
+  } else {
+    // Ping fallback
+    return subscribeToPing(target, onData, onEnd, Boolean(options?.continuous));
+  }
+
+  return () => {
+    if (timer) {
+      clearTimeout(timer);
+      clearInterval(timer);
+    }
+  };
+}
+
 export function subscribeToPing(
   target: string,
   onData: (text: string) => void,

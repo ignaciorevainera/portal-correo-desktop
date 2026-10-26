@@ -404,6 +404,60 @@ ipcMain.handle('cmda:ping-stop', () => {
   return false;
 });
 
+// Diagnostic Commands IPC Handlers (ping, nbtstat, tracert, arp)
+let activeDiagnosticProcess = null;
+
+function stopActiveDiagnosticProcess() {
+  if (activeDiagnosticProcess) {
+    try {
+      activeDiagnosticProcess.kill();
+    } catch {}
+    activeDiagnosticProcess = null;
+    return true;
+  }
+  return false;
+}
+
+ipcMain.on('cmda:cmd-start', async (event, payload) => {
+  const { command, target, options } = payload || {};
+  // Detener proceso anterior de ping o diagnóstico si estuviera corriendo
+  if (activePingProcess) {
+    try {
+      activePingProcess.kill();
+    } catch {}
+    activePingProcess = null;
+  }
+  stopActiveDiagnosticProcess();
+
+  const onData = (data) => {
+    if (!event.sender.isDestroyed()) {
+      event.sender.send('cmda:cmd-data', data);
+    }
+  };
+
+  const onDone = (code) => {
+    activeDiagnosticProcess = null;
+    if (!event.sender.isDestroyed()) {
+      event.sender.send('cmda:cmd-end', code);
+    }
+  };
+
+  if (command === 'nbtstat') {
+    activeDiagnosticProcess = systemTools.executeNbtstat(target, onData, onDone);
+  } else if (command === 'tracert') {
+    activeDiagnosticProcess = systemTools.executeTracert(target, options, onData, onDone);
+  } else if (command === 'arp') {
+    activeDiagnosticProcess = systemTools.executeArp(target, onData, onDone);
+  } else if (command === 'ping') {
+    const pingOptions = options?.continuous ? { continuous: true } : (options?.count || 4);
+    activeDiagnosticProcess = systemTools.executePing(target, pingOptions, onData, onDone);
+  }
+});
+
+ipcMain.handle('cmda:cmd-stop', () => {
+  return stopActiveDiagnosticProcess();
+});
+
 // Subnet Scanner IPC Handlers
 ipcMain.on('cmda:subnet-scan-start', async (event, targetIp) => {
   if (activeSubnetAbortController) {

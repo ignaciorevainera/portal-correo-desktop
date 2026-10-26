@@ -8,6 +8,9 @@ import {
   launchMsraClient,
   probeRemoteStatus,
   launchSmartRemoteClient,
+  subscribeToDiagnosticCommand,
+  stopDiagnosticCommand,
+  DiagnosticCommandType,
 } from './electronClient';
 
 describe('electronClient (Unified bridge with security gate & browser mock fallback)', () => {
@@ -151,5 +154,56 @@ describe('electronClient (Unified bridge with security gate & browser mock fallb
     expect(res.success).toBe(false);
     expect(res.methodUsed).toBe('none');
     expect(res.message).toContain('Process launch error');
+  });
+
+  describe('Diagnostic Commands IPC Bridge (nbtstat, tracert, arp)', () => {
+    it('executes diagnostic command in browser fallback simulation mode', async () => {
+      delete (global as any).window.electronAPI;
+      const onData = vi.fn();
+      const onEnd = vi.fn();
+
+      const unsub = subscribeToDiagnosticCommand('nbtstat', '192.0.2.101', onData, onEnd);
+      expect(typeof unsub).toBe('function');
+      unsub();
+    });
+
+    it('delegates diagnostic command to window.electronAPI when present', () => {
+      const startCmdMock = vi.fn();
+      const stopCmdMock = vi.fn();
+      const onCmdDataMock = vi.fn().mockReturnValue(() => {});
+      const onCmdEndMock = vi.fn().mockReturnValue(() => {});
+
+      (global as any).window.electronAPI = {
+        startCommand: startCmdMock,
+        stopCommand: stopCmdMock,
+        onCommandData: onCmdDataMock,
+        onCommandEnd: onCmdEndMock,
+      };
+
+      const onData = vi.fn();
+      const onEnd = vi.fn();
+
+      const unsub = subscribeToDiagnosticCommand('tracert', '192.0.2.102', onData, onEnd, { maxHops: 6 });
+      expect(startCmdMock).toHaveBeenCalledWith({
+        command: 'tracert',
+        target: '192.0.2.102',
+        options: { maxHops: 6 },
+      });
+      expect(onCmdDataMock).toHaveBeenCalledWith(onData);
+      expect(onCmdEndMock).toHaveBeenCalledWith(onEnd);
+
+      unsub();
+      expect(stopCmdMock).toHaveBeenCalled();
+    });
+
+    it('calls stopCommand via stopDiagnosticCommand helper', async () => {
+      const stopCmdMock = vi.fn().mockResolvedValue(true);
+      (global as any).window.electronAPI = {
+        stopCommand: stopCmdMock,
+      };
+
+      await stopDiagnosticCommand();
+      expect(stopCmdMock).toHaveBeenCalled();
+    });
   });
 });
