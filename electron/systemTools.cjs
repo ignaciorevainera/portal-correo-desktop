@@ -319,6 +319,52 @@ function launchMsra(targetIpOrHost) {
   }
 }
 
+// Tabla de mapeo para caracteres comunes de la página de códigos CP850 (OEM español de Windows)
+const CP850_TABLE = {
+  0x82: 'é',
+  0x85: 'à',
+  0x8a: 'è',
+  0x8d: 'ì',
+  0x9a: 'Ü',
+  0xa0: 'á',
+  0xa1: 'í',
+  0xa2: 'ó',
+  0xa3: 'ú',
+  0xa4: 'ñ',
+  0xa5: 'Ñ',
+  0xa6: 'ª',
+  0xa7: 'º',
+  0xa8: '¿',
+  0xad: '¡',
+  0xe1: 'ß',
+};
+
+/**
+ * Decodifica un Buffer de salida de subproceso Win32 manejando páginas OEM (CP850 / Windows-1252)
+ * @param {Buffer | string} chunk
+ * @returns {string}
+ */
+function decodeSubprocessOutput(chunk) {
+  if (!chunk) return '';
+  if (typeof chunk === 'string') return sanitizePingOutput(chunk);
+
+  const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+  let text = '';
+  for (let i = 0; i < buf.length; i++) {
+    const b = buf[i];
+    if (CP850_TABLE[b]) {
+      text += CP850_TABLE[b];
+    } else if (b < 128) {
+      text += String.fromCharCode(b);
+    } else {
+      // Fallback para otros bytes no mapeados
+      text += String.fromCharCode(b);
+    }
+  }
+
+  return sanitizePingOutput(text);
+}
+
 function sanitizePingOutput(rawText) {
   if (!rawText || typeof rawText !== 'string') return '';
   return rawText
@@ -339,13 +385,13 @@ function executeGenericCommand(cmd, toolName, onData, onDone) {
 
     if (proc.stdout) {
       proc.stdout.on('data', (data) => {
-        if (onData) onData(sanitizePingOutput(data.toString()));
+        if (onData) onData(decodeSubprocessOutput(data));
       });
     }
 
     if (proc.stderr) {
       proc.stderr.on('data', (data) => {
-        if (onData) onData(sanitizePingOutput(data.toString()));
+        if (onData) onData(decodeSubprocessOutput(data));
       });
     }
 
@@ -431,4 +477,5 @@ module.exports = {
   executeTracert,
   executeArp,
   sanitizePingOutput,
+  decodeSubprocessOutput,
 };
