@@ -79,7 +79,7 @@ describe('AlertsPanel & ResetUptimePanel UI refinements', () => {
     const { container } = render(<ResetUptimePanel terminal={mockTerminal} />);
 
     const heading = screen.getByRole('heading', { level: 2 });
-    expect(heading.textContent).toContain('Reseteo de Cuentas & Historial de Uptime');
+    expect(heading.textContent).toContain('Reseteo de Cuentas AD');
     expect(heading.querySelector('svg')).toBeNull();
 
     // Icons in inner titles are consistent (e.g. h-4 w-4)

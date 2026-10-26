@@ -43,7 +43,7 @@ describe('Alerts and Reset Panels', () => {
     const term = getAllTerminals()[0]; // PC-DEMO-001
     render(<ResetUptimePanel terminal={term} />);
 
-    expect(screen.getByText(/12 day\(s\)/i)).toBeInTheDocument();
+    // Uptime ahora reside exclusivamente en QuickActionsBar
     expect(screen.getByText(/Desbloqueo de clave/i)).toBeInTheDocument();
   });
 });
