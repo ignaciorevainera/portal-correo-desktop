@@ -170,7 +170,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /conexión remota inteligente/i })).toBeInTheDocument();
-      expect(screen.getByText(/Ficha Técnica, Red y Sistema/i)).toBeInTheDocument();
+      // Technical card title removed in 3f9768b
       expect(screen.getByRole('button', { name: /iniciar ping/i })).toBeInTheDocument();
       expect(screen.getByText(/Alertas de Terminal/i)).toBeInTheDocument();
       expect(screen.getByText(/Reseteo de Cuentas & Historial de Uptime/i)).toBeInTheDocument();

@@ -32,7 +32,7 @@ describe('Phase 1 Tests: Draggable Brand Region and Unified TerminalTechnicalCar
     render(<TerminalTechnicalCard terminal={terminal} />);
 
     // Header without icons
-    expect(screen.getByText(/ficha técnica, red y sistema/i)).toBeInTheDocument();
+    // Title removed in previous commit
 
     // Contains Hardware items
     expect(screen.getByText(terminal.os)).toBeInTheDocument();
