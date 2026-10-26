@@ -12,10 +12,11 @@ import {
   Play,
   MonitorPlay,
   Settings,
+  History,
+  X,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { InfoModal } from "./InfoModal";
-import { getAllTerminals } from "../services/terminalService";
 import {
   minimizeWindow,
   hideToTray,
@@ -38,6 +39,7 @@ interface TopbarProps {
 }
 
 const PORTAL_MDA_URL = "https://mda.correo.local/inventario-terminales";
+const RECENT_SEARCHES_KEY = "cmda_recent_searches";
 
 export function Topbar({
   onSelectTerminal,
@@ -51,7 +53,48 @@ export function Topbar({
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Cargar historial de las últimas 5 terminales desde localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setRecentSearches(parsed.slice(0, 5));
+        }
+      }
+    } catch {
+      // Ignorar error al acceder a localStorage
+    }
+  }, []);
+
+  const saveRecentSearch = (pc: string) => {
+    if (!pc || !pc.trim()) return;
+    const cleanPc = pc.trim().toUpperCase();
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((item) => item.toUpperCase() !== cleanPc);
+      const next = [cleanPc, ...filtered].slice(0, 5);
+      try {
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const removeRecentSearch = (e: React.MouseEvent, pc: string) => {
+    e.stopPropagation();
+    setRecentSearches((prev) => {
+      const next = prev.filter((item) => item !== pc);
+      try {
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   useEffect(() => {
     const handleAutofocusSearch = (e: any) => {
@@ -77,15 +120,13 @@ export function Topbar({
         handleAutofocusSearch,
       );
   }, []);
-  const terminals = getAllTerminals();
 
-  const filtered = query.trim()
-    ? terminals.filter(
-        (t) =>
-          t.pc.toLowerCase().includes(query.toLowerCase()) ||
-          t.ip.includes(query.trim()),
-      )
-    : [];
+  // Coincidencias basadas en el historial de búsquedas reales (hasta 5)
+  const filteredMatches = query.trim()
+    ? recentSearches
+        .filter((item) => item.toLowerCase().includes(query.trim().toLowerCase()))
+        .slice(0, 5)
+    : recentSearches.slice(0, 5);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
@@ -107,7 +148,24 @@ export function Topbar({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Cerrar dropdown al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleSelect = (pc: string): void => {
+    saveRecentSearch(pc);
     onSelectTerminal(pc);
     setQuery("");
     setIsOpen(false);
@@ -178,39 +236,41 @@ export function Topbar({
             </div>
           </div>
 
-          {/* Menú de resultados de búsqueda */}
-          {isOpen && filtered.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg overflow-hidden z-50 animate-fade-in">
-              <div className="px-3 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border bg-muted/40 flex justify-between">
-                <span>Coincidencias ({filtered.length})</span>
+          {/* Menú de resultados de búsqueda: Historial de las últimas terminales y coincidencias */}
+          {isOpen && filteredMatches.length > 0 && (
+            <div
+              ref={dropdownRef}
+              className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg overflow-hidden z-50 animate-fade-in"
+            >
+              <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border bg-muted/40 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                  <History className="h-3 w-3" />
+                  {query.trim()
+                    ? `Coincidencias (${filteredMatches.length})`
+                    : "Terminales recientes (últimas 5)"}
+                </span>
                 <span className="text-[9px] text-muted-foreground lowercase">
                   enter o clic
                 </span>
               </div>
               <ul className="max-h-60 overflow-y-auto divide-y divide-border/40">
-                {filtered.map((term) => (
+                {filteredMatches.map((pcName) => (
                   <li
-                    key={term.pc}
-                    className="flex items-center justify-between hover:bg-accent/10 px-2 py-1.5 transition-colors"
+                    key={pcName}
+                    className="flex items-center justify-between hover:bg-accent/10 px-2.5 py-1.5 transition-colors group"
                   >
                     <button
                       type="button"
-                      onClick={() => handleSelect(term.pc)}
-                      className="flex-1 text-left flex items-center gap-2 cursor-pointer"
+                      onClick={() => handleSelect(pcName)}
+                      className="flex-1 text-left flex items-center gap-2 cursor-pointer py-0.5"
                     >
-                      <Monitor className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <Monitor className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                       <span className="font-mono text-xs font-semibold text-foreground">
-                        {term.pc}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        ({term.os})
-                      </span>
-                      <span className="font-mono text-[10px] text-muted-foreground bg-muted px-1 rounded ml-auto mr-2">
-                        {term.ip}
+                        {pcName}
                       </span>
                     </button>
 
-                    {/* Acciones directas en 1 clic */}
+                    {/* Acciones directas en 1 clic y botón para quitar del historial */}
                     <div className="flex items-center gap-1 shrink-0">
                       <Button
                         type="button"
@@ -218,11 +278,11 @@ export function Topbar({
                         size="icon-xs"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectTerminal(term.pc);
-                          onDirectVnc?.(term.pc);
+                          handleSelect(pcName);
+                          onDirectVnc?.(pcName);
                         }}
-                        aria-label={`Conectar VNC a ${term.pc}`}
-                        title={`Lanzar VNC Viewer a ${term.pc}`}
+                        aria-label={`Conectar VNC a ${pcName}`}
+                        title={`Lanzar VNC Viewer a ${pcName}`}
                         className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
                       >
                         <MonitorPlay className="h-3 w-3" />
@@ -233,14 +293,25 @@ export function Topbar({
                         size="icon-xs"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectTerminal(term.pc);
-                          onDirectPing?.(term.pc);
+                          handleSelect(pcName);
+                          onDirectPing?.(pcName);
                         }}
-                        aria-label={`Ping a ${term.pc}`}
-                        title={`Lanzar Ping a ${term.pc}`}
+                        aria-label={`Ping a ${pcName}`}
+                        title={`Lanzar Ping a ${pcName}`}
                         className="bg-muted hover:bg-accent/20 text-foreground cursor-pointer"
                       >
                         <Play className="h-3 w-3 text-emerald-500" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={(e) => removeRecentSearch(e, pcName)}
+                        aria-label={`Quitar ${pcName} del historial`}
+                        title="Quitar del historial"
+                        className="h-5 w-5 text-muted-foreground hover:text-destructive cursor-pointer opacity-60 hover:opacity-100"
+                      >
+                        <X className="h-3 w-3" />
                       </Button>
                     </div>
                   </li>

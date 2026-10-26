@@ -74,12 +74,17 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     expect(traySpy).toHaveBeenCalledTimes(1);
   });
 
-  it("provides direct 1-click VNC and Ping actions on search suggestions", () => {
+  it("provides direct 1-click VNC and Ping actions on search suggestions from recent history", () => {
+    localStorage.setItem(
+      "cmda_recent_searches",
+      JSON.stringify(["WS-DEMO-002", "WS-DEMO-003"]),
+    );
+
     const handleSelect = vi.fn();
     const handleDirectVnc = vi.fn();
     const handleDirectPing = vi.fn();
 
-    render(
+    const { unmount } = render(
       <ThemeProvider>
         <Topbar
           onSelectTerminal={handleSelect}
@@ -99,16 +104,30 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     const vncQuickBtn = screen.getByRole("button", {
       name: /conectar vnc a ws-demo-002/i,
     });
-    const pingQuickBtn = screen.getByRole("button", {
-      name: /ping a ws-demo-002/i,
-    });
-
     expect(vncQuickBtn).toBeInTheDocument();
-    expect(pingQuickBtn).toBeInTheDocument();
-
     fireEvent.click(vncQuickBtn);
     expect(handleDirectVnc).toHaveBeenCalledWith("WS-DEMO-002");
 
+    unmount();
+
+    // Volver a renderizar para verificar acción Ping
+    render(
+      <ThemeProvider>
+        <Topbar
+          onSelectTerminal={handleSelect}
+          onDirectVnc={handleDirectVnc}
+          onDirectPing={handleDirectPing}
+          selectedPc=""
+        />
+      </ThemeProvider>,
+    );
+    const input2 = screen.getByPlaceholderText(/buscar terminal o ip/i);
+    fireEvent.change(input2, { target: { value: "WS-DEMO" } });
+
+    const pingQuickBtn = screen.getByRole("button", {
+      name: /ping a ws-demo-002/i,
+    });
+    expect(pingQuickBtn).toBeInTheDocument();
     fireEvent.click(pingQuickBtn);
     expect(handleDirectPing).toHaveBeenCalledWith("WS-DEMO-002");
   });
