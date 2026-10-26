@@ -17,10 +17,10 @@
 - [x] Task: Update unit tests in `src/components/QuickActionsBar.test.tsx` (or new test file) dd76afb
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) dd76afb
 
-## Phase 4: Subnet Scanner Drawer Full Overlay Restyling
-- [ ] Task: Update `src/components/SubnetScannerDrawer.tsx` to standard full-height drawer (`fixed inset-0 z-50` with backdrop)
-- [ ] Task: Update tests asserting the full-screen overlay drawer behavior
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 4: Subnet Scanner Drawer Full Overlay Restyling [checkpoint: 3b60d7f]
+- [x] Task: Update `src/components/SubnetScannerDrawer.tsx` to standard full-height drawer (`fixed inset-0 z-50` with backdrop) 3b60d7f
+- [x] Task: Update tests asserting the full-screen overlay drawer behavior 3b60d7f
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) 3b60d7f
 
 ## Phase 5: Account Reset Panel Table Refactor
 - [ ] Task: Refactor `src/components/ResetUptimePanel.tsx` to remove the uptime card, compact the request form, and display reset history in a table styled after `AlertsPanel`
