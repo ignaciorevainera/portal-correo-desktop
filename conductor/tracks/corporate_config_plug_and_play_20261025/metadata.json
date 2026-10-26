@@ -1,0 +1,9 @@
+{
+  "id": "corporate_config_plug_and_play_20261025",
+  "name": "corporate_config_plug_and_play_20261025",
+  "title": "Importación de Configuración Corporativa en Ajustes, Autodescubrimiento en Arranque y Empaquetado Interno Plug & Play",
+  "description": "Implementa la importación y persistencia de configuración corporativa en %APPDATA%, autodescubrimiento al iniciar y pipeline de empaquetado interno seguro sin comprometer Zero-Secrets en Git.",
+  "type": "feature",
+  "status": "planned",
+  "createdAt": "2026-10-25T22:33:00-03:00"
+}

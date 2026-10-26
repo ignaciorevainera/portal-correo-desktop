@@ -70,9 +70,7 @@
 
 - [x] **Track: CTA de Ajustes en Navbar, In-App Updater con Descarga en Segundo Plano y Pipeline de Releases Zero-Secrets**
   *Link: [./tracks/settings_updater_release_pipeline_20261025/index.md](./tracks/settings_updater_release_pipeline_20261025/index.md)*
+---
 
-
-
-
-
-
+- [ ] **Track: Importación de Configuración Corporativa en Ajustes, Autodescubrimiento en Arranque y Empaquetado Interno Plug & Play**
+  *Link: [./tracks/corporate_config_plug_and_play_20261025/index.md](./tracks/corporate_config_plug_and_play_20261025/index.md)*
