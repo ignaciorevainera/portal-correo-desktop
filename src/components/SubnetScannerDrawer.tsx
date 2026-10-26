@@ -82,13 +82,13 @@ export function SubnetScannerDrawer({
   return (
     <aside
       aria-label="Escáner de Subred"
-      className="fixed inset-y-0 right-0 w-80 md:w-96 bg-card/95 border-l border-border shadow-2xl z-40 flex flex-col backdrop-blur animate-in slide-in-from-right duration-200 select-none"
+      className="fixed top-14 bottom-0 right-0 w-80 md:w-96 bg-card/95 border-l border-border shadow-2xl z-20 flex flex-col backdrop-blur animate-in slide-in-from-right duration-200 select-none"
     >
       {/* Header */}
-      <div className="h-14 border-b border-border px-4 flex items-center justify-between shrink-0 bg-muted/30">
+      <div className="h-12 border-b border-border px-3.5 flex items-center justify-between shrink-0 bg-muted/40">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-md bg-primary/10 text-primary">
-            <Network className="h-4 w-4" />
+          <div className="p-1 rounded-md bg-primary/10 text-primary">
+            <Network className="h-3.5 w-3.5" />
           </div>
           <div>
             <h3 className="text-xs font-bold text-foreground tracking-tight">Escáner de Subred</h3>
@@ -97,55 +97,50 @@ export function SubnetScannerDrawer({
         </div>
         <Button
           variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          size="icon-xs"
           onClick={onClose}
-          aria-label="Cerrar escáner"
+          aria-label="Cerrar panel de escáner"
+          className="h-6 w-6 text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
         </Button>
       </div>
 
-      {/* Progress & Stats Bar */}
-      <div className="px-4 py-2.5 border-b border-border/60 bg-muted/15 space-y-2">
-        <div className="flex items-center justify-between text-xs font-mono">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
+      {/* Progress Bar & Status */}
+      <div className="p-3 border-b border-border/80 bg-muted/20 space-y-2">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-[11px] font-medium text-foreground flex items-center gap-1.5">
             {isScanning ? (
               <>
-                <Loader2 className="h-3 w-3 animate-spin text-primary" />
-                <span>Barriendo segmento...</span>
+                <Loader2 className="h-3 w-3 text-primary animate-spin" />
+                Escaneando hosts...
               </>
             ) : isAborted ? (
-              <span className="text-amber-500">Escaneo detenido</span>
+              <span className="text-amber-500 font-medium">Escaneo cancelado</span>
             ) : (
-              <span className="text-emerald-500 flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" /> Finalizado
+              <span className="text-emerald-500 font-medium flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" /> Escaneo finalizado
               </span>
             )}
           </span>
-          <span className="font-bold text-foreground">{percentage}%</span>
+          <span className="font-mono text-[11px] text-muted-foreground font-semibold">
+            {progress.scanned} / {progress.total} ({percentage}%)
+          </span>
         </div>
 
-        {/* Progress Bar */}
-        <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+        {/* Progress track */}
+        <div className="w-full bg-muted/80 rounded-full h-1.5 overflow-hidden">
           <div
-            className="h-full bg-primary transition-all duration-150"
+            className={`h-full transition-all duration-300 rounded-full ${
+              isScanning ? 'bg-primary' : isAborted ? 'bg-amber-500' : 'bg-emerald-500'
+            }`}
             style={{ width: `${percentage}%` }}
           />
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>{progress.scanned} de {progress.total} IPs sondeadas</span>
-          <Badge variant="outline" className="text-[10px] h-5 bg-background font-mono">
-            {hosts.length} {hosts.length === 1 ? 'equipo activo' : 'equipos activos'}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Search Filter Inside Drawer */}
-      <div className="p-3 border-b border-border/40">
-        <div className="relative flex items-center">
-          <Search className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+        {/* Search Filter Inside Drawer */}
+        <div className="relative pt-1">
+          <Search className="absolute left-2.5 top-3.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
           <input
             type="text"
             value={filterQuery}
@@ -182,14 +177,10 @@ export function SubnetScannerDrawer({
           filteredHosts.map((host) => (
             <div
               key={host.ip}
-              className="p-2.5 rounded-lg border border-border/80 bg-card hover:bg-accent/10 transition-colors flex items-center justify-between gap-2 group"
+              onClick={() => onSelectTerminal(host.hostname)}
+              className="p-2.5 rounded-lg border border-border/80 bg-card hover:bg-accent/15 hover:border-border transition-colors flex items-center justify-between gap-2 group cursor-pointer"
             >
-              <div
-                className="flex-1 min-w-0 cursor-pointer"
-                onClick={() => {
-                  onSelectTerminal(host.hostname);
-                }}
-              >
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                   <span className="text-xs font-bold text-foreground font-mono truncate">
@@ -205,11 +196,11 @@ export function SubnetScannerDrawer({
               </div>
 
               {/* Quick Actions */}
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 px-2 text-[10px] font-medium"
+                  className="h-7 px-2 text-[10px] font-medium cursor-pointer"
                   onClick={() => onSelectTerminal(host.hostname)}
                   title="Consultar ficha de terminal"
                 >
@@ -218,7 +209,7 @@ export function SubnetScannerDrawer({
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="h-7 px-2 text-[10px] font-medium"
+                  className="h-7 px-2 text-[10px] font-medium cursor-pointer"
                   onClick={() => onLaunchVnc(host.ip)}
                   title="Conectar por VNC Viewer directo"
                 >
@@ -237,7 +228,7 @@ export function SubnetScannerDrawer({
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 text-[10px] text-destructive hover:text-destructive"
+            className="h-6 text-[10px] text-destructive hover:text-destructive cursor-pointer"
             onClick={onClose}
           >
             <StopCircle className="h-3 w-3 mr-1" /> Detener

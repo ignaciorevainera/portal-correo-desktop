@@ -10,17 +10,16 @@ import {
   UserCheck,
   Copy,
   Check,
+  Network,
 } from "lucide-react";
 import {
   Card,
   CardHeader,
-  CardTitle,
   CardAction,
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Network } from "lucide-react";
 
 export function TerminalTechnicalCard({
   terminal,
@@ -32,6 +31,7 @@ export function TerminalTechnicalCard({
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopy = async (key: string, text: string) => {
+    if (!text || text.trim() === "") return;
     try {
       await navigator.clipboard.writeText(text);
       setCopiedKey(key);
@@ -46,13 +46,13 @@ export function TerminalTechnicalCard({
           {onOpenSubnetScanner && (
             <Button
               type="button"
-              variant="default"
+              variant="outline"
               size="sm"
               onClick={onOpenSubnetScanner}
-              className="h-6 text-[10px] px-2 font-mono gap-1 text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
+              className="h-6 text-[10px] px-2.5 font-sans font-medium gap-1.5 text-foreground bg-muted/80 hover:bg-muted border-border hover:border-border cursor-pointer shadow-2xs"
               title="Escanear toda la subred de esta terminal"
             >
-              <Network className="h-3 w-3" />
+              <Network className="h-3 w-3 text-primary" />
               <span>Escanear Subred</span>
             </Button>
           )}
@@ -62,12 +62,14 @@ export function TerminalTechnicalCard({
           >
             En Línea
           </Badge>
-          <Badge
-            variant="outline"
-            className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted text-muted-foreground border-border font-medium h-5"
-          >
-            {terminal.architecture}
-          </Badge>
+          {terminal.architecture && terminal.architecture.trim().length > 0 && (
+            <Badge
+              variant="outline"
+              className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted text-muted-foreground border-border font-medium h-5"
+            >
+              {terminal.architecture}
+            </Badge>
+          )}
         </CardAction>
       </CardHeader>
 
@@ -85,24 +87,26 @@ export function TerminalTechnicalCard({
                 <span className="text-muted-foreground text-[11px] font-medium">
                   Dirección IPv4
                 </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => handleCopy("ip", terminal.ip)}
-                  aria-label="Copiar Dirección IPv4"
-                  title="Copiar IP al portapapeles"
-                  className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  {copiedKey === "ip" ? (
-                    <Check className="h-2.5 w-2.5 text-emerald-500" />
-                  ) : (
-                    <Copy className="h-2.5 w-2.5" />
-                  )}
-                </Button>
+                {terminal.ip && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => handleCopy("ip", terminal.ip)}
+                    aria-label="Copiar Dirección IPv4"
+                    title="Copiar IP al portapapeles"
+                    className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {copiedKey === "ip" ? (
+                      <Check className="h-2.5 w-2.5 text-emerald-500" />
+                    ) : (
+                      <Copy className="h-2.5 w-2.5" />
+                    )}
+                  </Button>
+                )}
               </div>
               <p className="font-mono font-bold text-foreground text-xs">
-                {terminal.ip}
+                {terminal.ip || "No asignada"}
               </p>
             </div>
 
@@ -112,24 +116,32 @@ export function TerminalTechnicalCard({
                 <span className="text-muted-foreground text-[11px] font-medium">
                   Dirección MAC
                 </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => handleCopy("mac", terminal.mac)}
-                  aria-label="Copiar Dirección MAC"
-                  title="Copiar MAC al portapapeles"
-                  className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  {copiedKey === "mac" ? (
-                    <Check className="h-2.5 w-2.5 text-emerald-500" />
-                  ) : (
-                    <Copy className="h-2.5 w-2.5" />
-                  )}
-                </Button>
+                {terminal.mac && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => handleCopy("mac", terminal.mac)}
+                    aria-label="Copiar Dirección MAC"
+                    title="Copiar MAC al portapapeles"
+                    className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {copiedKey === "mac" ? (
+                      <Check className="h-2.5 w-2.5 text-emerald-500" />
+                    ) : (
+                      <Copy className="h-2.5 w-2.5" />
+                    )}
+                  </Button>
+                )}
               </div>
-              <p className="font-mono text-xs font-semibold text-foreground truncate">
-                {terminal.mac}
+              <p
+                className={`text-xs truncate ${
+                  terminal.mac
+                    ? "font-mono font-semibold text-foreground"
+                    : "text-muted-foreground italic"
+                }`}
+              >
+                {terminal.mac || "No especificada"}
               </p>
             </div>
           </div>
@@ -145,14 +157,16 @@ export function TerminalTechnicalCard({
                 <Layers className="h-3 w-3 text-muted-foreground" /> Sistema
               </span>
               <p className="font-semibold text-foreground text-xs">
-                {terminal.os}
+                {terminal.os || "No detectado"}
               </p>
-              <p
-                className="font-mono text-[10px] text-muted-foreground truncate"
-                title={terminal.servicePack}
-              >
-                Build: {terminal.servicePack}
-              </p>
+              {terminal.servicePack ? (
+                <p
+                  className="font-mono text-[10px] text-muted-foreground truncate"
+                  title={terminal.servicePack}
+                >
+                  Build: {terminal.servicePack}
+                </p>
+              ) : null}
             </div>
 
             <div className="space-y-0.5">
@@ -161,7 +175,7 @@ export function TerminalTechnicalCard({
                 Relevamiento
               </span>
               <p className="font-mono text-xs text-foreground">
-                {terminal.surveyDate}
+                {terminal.surveyDate || "Sin registro"}
               </p>
             </div>
           </div>
@@ -177,27 +191,33 @@ export function TerminalTechnicalCard({
                 <span className="text-muted-foreground text-[11px] font-medium">
                   Procesador / CPU
                 </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => handleCopy("cpu", terminal.cpuModel)}
-                  aria-label="Copiar Modelo y CPU"
-                  title="Copiar CPU al portapapeles"
-                  className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  {copiedKey === "cpu" ? (
-                    <Check className="h-2.5 w-2.5 text-emerald-500" />
-                  ) : (
-                    <Copy className="h-2.5 w-2.5" />
-                  )}
-                </Button>
+                {terminal.cpuModel && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => handleCopy("cpu", terminal.cpuModel)}
+                    aria-label="Copiar Modelo y CPU"
+                    title="Copiar CPU al portapapeles"
+                    className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {copiedKey === "cpu" ? (
+                      <Check className="h-2.5 w-2.5 text-emerald-500" />
+                    ) : (
+                      <Copy className="h-2.5 w-2.5" />
+                    )}
+                  </Button>
+                )}
               </div>
               <p
-                className="font-semibold text-foreground text-xs truncate"
-                title={terminal.cpuModel}
+                className={`text-xs truncate ${
+                  terminal.cpuModel
+                    ? "font-semibold text-foreground"
+                    : "text-muted-foreground italic"
+                }`}
+                title={terminal.cpuModel || "No reportado"}
               >
-                {terminal.cpuModel}
+                {terminal.cpuModel || "No reportado"}
               </p>
             </div>
 
@@ -206,8 +226,14 @@ export function TerminalTechnicalCard({
                 <HardDrive className="h-3 w-3 text-muted-foreground" /> Memoria
                 RAM
               </span>
-              <p className="font-mono text-xs font-semibold text-foreground">
-                {terminal.ram}
+              <p
+                className={`text-xs ${
+                  terminal.ram
+                    ? "font-mono font-semibold text-foreground"
+                    : "text-muted-foreground italic"
+                }`}
+              >
+                {terminal.ram || "No especificada"}
               </p>
             </div>
           </div>
@@ -224,27 +250,33 @@ export function TerminalTechnicalCard({
                   <UserCheck className="h-3 w-3 text-muted-foreground" />{" "}
                   Usuario NT
                 </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => handleCopy("user", terminal.userNt)}
-                  aria-label="Copiar Usuario NT"
-                  title="Copiar Usuario NT al portapapeles"
-                  className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  {copiedKey === "user" ? (
-                    <Check className="h-2.5 w-2.5 text-emerald-500" />
-                  ) : (
-                    <Copy className="h-2.5 w-2.5" />
-                  )}
-                </Button>
+                {terminal.userNt && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => handleCopy("user", terminal.userNt)}
+                    aria-label="Copiar Usuario NT"
+                    title="Copiar Usuario NT al portapapeles"
+                    className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {copiedKey === "user" ? (
+                      <Check className="h-2.5 w-2.5 text-emerald-500" />
+                    ) : (
+                      <Copy className="h-2.5 w-2.5" />
+                    )}
+                  </Button>
+                )}
               </div>
               <p
-                className="font-mono text-xs font-semibold text-foreground truncate"
-                title={terminal.userNt}
+                className={`text-xs truncate ${
+                  terminal.userNt
+                    ? "font-mono font-semibold text-foreground"
+                    : "text-muted-foreground italic"
+                }`}
+                title={terminal.userNt || "Sin sesión"}
               >
-                {terminal.userNt}
+                {terminal.userNt || "Sin sesión"}
               </p>
             </div>
 
@@ -253,10 +285,14 @@ export function TerminalTechnicalCard({
                 <Building className="h-3 w-3 text-muted-foreground" /> Ubicación
               </span>
               <p
-                className="text-xs text-foreground truncate font-medium"
-                title={terminal.location}
+                className={`text-xs truncate ${
+                  terminal.location
+                    ? "font-medium text-foreground"
+                    : "text-muted-foreground italic"
+                }`}
+                title={terminal.location || "No asignada"}
               >
-                {terminal.location}
+                {terminal.location || "No asignada"}
               </p>
             </div>
           </div>
@@ -268,12 +304,14 @@ export function TerminalTechnicalCard({
             <span className="flex items-center gap-1">
               <Shield className="h-3 w-3 text-emerald-500" /> Antivirus:{" "}
               <strong className="text-foreground">
-                {terminal.antivirusVersion}
+                {terminal.antivirusVersion || "No informado"}
               </strong>
             </span>
             <span className="flex items-center gap-1">
               <Globe className="h-3 w-3 text-blue-500" /> Navegador:{" "}
-              <strong className="text-foreground">{terminal.ieVersion}</strong>
+              <strong className="text-foreground">
+                {terminal.ieVersion || "No informado"}
+              </strong>
             </span>
           </div>
           {copiedKey && (
