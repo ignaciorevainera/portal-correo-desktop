@@ -1,15 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Square, Trash2, Copy, Check, Activity } from 'lucide-react';
-import { subscribeToPing } from '../services/electronClient';
+import { Square, Trash2, Copy, Check, Activity } from 'lucide-react';
+import { subscribeToPing, subscribeToDiagnosticCommand } from '../services/electronClient';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+
+export interface DiagnosticCommandEvent {
+  id: string;
+  command: 'ping' | 'nbtstat' | 'tracert' | 'arp';
+  target: string;
+  argsText: string;
+  timestamp: string;
+  options?: any;
+}
 
 interface LivePingConsoleProps {
   ip: string;
   isPinging: boolean;
   pingMode?: 'standard' | 'infinite';
+  activeCommand?: DiagnosticCommandEvent | null;
   onTogglePing: () => void;
   onPingComplete?: () => void;
+  onStopCommand?: () => void;
 }
 
 function sanitizePingText(text: string): string {
@@ -29,34 +40,37 @@ export function LivePingConsole({
   ip,
   isPinging,
   pingMode = 'standard',
+  activeCommand,
   onTogglePing,
   onPingComplete,
+  onStopCommand,
 }: LivePingConsoleProps): React.JSX.Element {
   const [logs, setLogs] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const onPingCompleteRef = useRef(onPingComplete);
   onPingCompleteRef.current = onPingComplete;
+  const terminalEndRef = useRef<HTMLDivElement>(null);
 
+  // Ping subscription (backward-compatible)
   useEffect(() => {
     if (!isPinging || !ip) return;
 
     const isInfinite = pingMode === 'infinite';
-    // Reemplaza los logs anteriores al iniciar un nuevo ping
-    setLogs([
-      `[${new Date().toLocaleTimeString()}] Ejecutando ping ${isInfinite ? 'continuo (-t)' : 'estándar (4 paquetes)'} a ${ip}...`,
-    ]);
+    // Append instead of wiping
+    const header = `[${new Date().toLocaleTimeString()}] > ping ${isInfinite ? '-t' : '-n 4'} ${ip}`;
+    setLogs((prev) => [...prev, header]);
 
     const unsubscribe = subscribeToPing(
       ip,
       (text: string) => {
         const sanitized = sanitizePingText(text);
         const lines = sanitized.split(/\r?\n/).filter(Boolean);
-        setLogs((prev) => [...prev, ...lines].slice(-200));
+        setLogs((prev) => [...prev, ...lines].slice(-400));
       },
       (code: number) => {
         setLogs((prev) => [
           ...prev,
-          `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).`,
+          `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`,
         ]);
         onPingCompleteRef.current?.();
       },
@@ -67,6 +81,34 @@ export function LivePingConsole({
       unsubscribe();
     };
   }, [isPinging, ip, pingMode]);
+
+  // Generic diagnostic command subscription (nbtstat, tracert, arp)
+  useEffect(() => {
+    if (!activeCommand || !activeCommand.command || activeCommand.command === 'ping') return;
+
+    const header = `[${activeCommand.timestamp || new Date().toLocaleTimeString()}] > ${activeCommand.argsText || `${activeCommand.command} ${activeCommand.target}`}`;
+    setLogs((prev) => [...prev, header]);
+
+    const unsubscribe = subscribeToDiagnosticCommand(
+      activeCommand.command,
+      activeCommand.target,
+      (text: string) => {
+        const lines = text.split(/\r?\n/).filter(Boolean);
+        setLogs((prev) => [...prev, ...lines].slice(-400));
+      },
+      (code: number) => {
+        setLogs((prev) => [
+          ...prev,
+          `[${new Date().toLocaleTimeString()}] Proceso ${activeCommand.command} finalizado (código: ${code}).\n`,
+        ]);
+      },
+      activeCommand.options
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [activeCommand]);
 
   const handleClear = (): void => {
     setLogs([]);
@@ -86,14 +128,31 @@ export function LivePingConsole({
     }
   };
 
+  const isAnyRunning = isPinging || (Boolean(activeCommand) && activeCommand?.command !== 'ping');
+
+  const handleStop = () => {
+    if (isPinging) {
+      onTogglePing();
+    } else if (onStopCommand) {
+      onStopCommand();
+    }
+  };
+
   return (
     <div className="rounded-lg border border-border bg-card shadow-xs overflow-hidden">
-      {/* Barra de Controles Superior: Sin título textual, solo IP/Badge y los 3 CTAs */}
+      {/* Barra de Controles Superior: Sin botón Iniciar redundante */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
         <div className="flex items-center gap-2">
           <Activity className="h-3.5 w-3.5 text-primary shrink-0" />
           <span className="font-mono text-xs font-bold text-foreground">{ip}</span>
-          {pingMode === 'infinite' ? (
+          {activeCommand && activeCommand.command !== 'ping' ? (
+            <Badge
+              variant="outline"
+              className="px-1.5 py-0.2 rounded bg-primary/10 text-primary border-primary/25 text-[10px] font-mono font-bold uppercase h-5"
+            >
+              {activeCommand.command}
+            </Badge>
+          ) : pingMode === 'infinite' ? (
             <Badge
               variant="outline"
               className="px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] uppercase font-bold h-5"
@@ -110,19 +169,21 @@ export function LivePingConsole({
           )}
         </div>
 
-        {/* Los 3 CTAs: Iniciar/Detener, Limpiar, Copiar Logs */}
+        {/* Controles: Detener (solo cuando activo), Limpiar, Copiar Logs */}
         <div className="flex items-center gap-1.5">
-          <Button
-            type="button"
-            variant={isPinging ? 'destructive' : 'default'}
-            size="xs"
-            onClick={onTogglePing}
-            aria-label={isPinging ? 'Detener ping en vivo' : 'Iniciar ping'}
-            className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer"
-          >
-            {isPinging ? <Square className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-            <span>{isPinging ? 'Detener' : 'Iniciar'}</span>
-          </Button>
+          {isAnyRunning && (
+            <Button
+              type="button"
+              variant="destructive"
+              size="xs"
+              onClick={handleStop}
+              aria-label="Detener ping en vivo"
+              className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer"
+            >
+              <Square className="h-3 w-3" />
+              <span>Detener</span>
+            </Button>
+          )}
 
           <Button
             type="button"
@@ -161,14 +222,16 @@ export function LivePingConsole({
       <div className="h-64 overflow-y-auto overflow-x-auto p-3.5 bg-[#0C0C0C] font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] select-text scrollbar-thin">
         {logs.length === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
-            Presiona &quot;Iniciar&quot;, &quot;Ping&quot; o &quot;Ping -t&quot; para monitorear la latencia de red en tiempo real.
+            Selecciona una acción (Ping, Ping -t, Nbtstat, Tracert, ARP) en la barra superior para iniciar diagnóstico.
           </div>
         ) : (
           logs.map((line, idx) => (
             <div
               key={idx}
               className={`whitespace-pre font-mono ${
-                line.includes('Iniciando') || line.includes('Ejecutando')
+                line.startsWith('[') && line.includes('>')
+                  ? 'text-cyan-400 font-bold'
+                  : line.includes('Iniciando') || line.includes('Ejecutando')
                   ? 'text-amber-400 font-semibold'
                   : line.includes('finalizado')
                   ? 'text-emerald-400 font-semibold'

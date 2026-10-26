@@ -8,8 +8,8 @@ describe('LivePingConsole Component', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders target IP and controls: Iniciar/Detener, Limpiar, and Copiar Logs', () => {
-    render(
+  it('renders target IP and controls: Detener (when active), Limpiar, and Copiar Logs without Iniciar button', () => {
+    const { rerender } = render(
       <LivePingConsole
         ip="192.0.2.100"
         isPinging={false}
@@ -18,12 +18,23 @@ describe('LivePingConsole Component', () => {
     );
 
     expect(screen.getByText('192.0.2.100')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /iniciar/i })).toBeInTheDocument();
+    // Redundant Iniciar button must NOT exist when idle
+    expect(screen.queryByRole('button', { name: /^iniciar$/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /copiar logs de ping/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
+
+    // When running, Detener button is present
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        onTogglePing={vi.fn()}
+      />
+    );
+    expect(screen.getByRole('button', { name: /detener/i })).toBeInTheDocument();
   });
 
-  it('replaces logs on new ping start and subscribes to ping output', () => {
+  it('appends multiple command executions sequentially without wiping previous history', () => {
     let capturedCallback: ((text: string) => void) | null = null;
     vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
       capturedCallback = onData;
@@ -33,12 +44,27 @@ describe('LivePingConsole Component', () => {
     const { rerender } = render(
       <LivePingConsole
         ip="192.0.2.100"
+        isPinging={true}
+        pingMode="standard"
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    act(() => {
+      capturedCallback?.('Respuesta desde 192.0.2.100: bytes=32 tiempo=1ms');
+    });
+
+    expect(screen.getByText(/Respuesta desde 192.0.2.100: bytes=32 tiempo=1ms/i)).toBeInTheDocument();
+
+    // Trigger another command / ping session
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.100"
         isPinging={false}
         onTogglePing={vi.fn()}
       />
     );
 
-    // Start ping
     rerender(
       <LivePingConsole
         ip="192.0.2.100"
@@ -48,14 +74,13 @@ describe('LivePingConsole Component', () => {
       />
     );
 
-    expect(screen.getByText(/ejecutando ping/i)).toBeInTheDocument();
-
-    // Emit live data
     act(() => {
-      capturedCallback?.('Respuesta desde 192.0.2.100: bytes=32 tiempo=1ms TTL=128');
+      capturedCallback?.('Respuesta continua desde 192.0.2.100: bytes=32 tiempo=5ms');
     });
 
-    expect(screen.getByText(/Respuesta desde 192.0.2.100/i)).toBeInTheDocument();
+    // Both previous and new command logs must be present in history!
+    expect(screen.getByText(/Respuesta desde 192.0.2.100: bytes=32 tiempo=1ms/i)).toBeInTheDocument();
+    expect(screen.getByText(/Respuesta continua desde 192.0.2.100: bytes=32 tiempo=5ms/i)).toBeInTheDocument();
   });
 
   it('allows stopping active ping, clearing logs and copying complete logs with feedback', async () => {
@@ -177,8 +202,8 @@ describe('LivePingConsole Component', () => {
     // Section title is omitted (no "Consola de Ping en Vivo:")
     expect(screen.queryByText(/Consola de Ping en Vivo:/i)).toBeNull();
 
-    // The 3 CTAs are present
-    expect(screen.getByRole('button', { name: /iniciar/i })).toBeInTheDocument();
+    // Redundant Iniciar is removed; Limpiar and Copiar Logs remain
+    expect(screen.queryByRole('button', { name: /^iniciar$/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
 
