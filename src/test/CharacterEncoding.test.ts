@@ -24,7 +24,7 @@ describe('Character Encoding & Subprocess Output Sanitization', () => {
   });
 
   it('handles strings with replacement characters from broken decodes', () => {
-    const corruptText = 'Estad\ufffdsticas de ping para 10.220.66.231:\n    M\ufffdnimo = 14ms, M\ufffdximo = 14ms';
+    const corruptText = 'Estad\ufffdsticas de ping para 192.0.2.101:\n    M\ufffdnimo = 14ms, M\ufffdximo = 14ms';
     const cleaned = systemTools.sanitizePingOutput(corruptText);
     expect(cleaned).toContain('Estadísticas');
     expect(cleaned).toContain('Mínimo');

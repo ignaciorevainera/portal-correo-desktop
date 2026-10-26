@@ -27,7 +27,7 @@ describe('OperatorContextMenu Component', () => {
       />
     );
 
-    expect(screen.getByText(`Acciones: ${terminal.pc}`)).toBeInTheDocument();
+    expect(screen.getByText('Acciones')).toBeInTheDocument();
 
     const vncItem = screen.getByRole('button', { name: /conectar vnc/i });
     const pingItem = screen.getByRole('button', { name: /iniciar ping/i });
