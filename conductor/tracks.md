@@ -74,3 +74,9 @@
 
 - [x] **Track: Importación de Configuración Corporativa en Ajustes, Autodescubrimiento en Arranque y Empaquetado Interno Plug & Play**
   *Link: [./tracks/corporate_config_plug_and_play_20261025/index.md](./tracks/corporate_config_plug_and_play_20261025/index.md)*
+
+---
+
+- [ ] **Track: Consola General de Diagnóstico de Red e Historial Unificado con Comandos Nativos (Nbtstat, Tracert, ARP)**
+  *Link: [./tracks/network_diagnostics_console_20261025/index.md](./tracks/network_diagnostics_console_20261025/index.md)*
+
