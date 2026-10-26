@@ -11,11 +11,11 @@
 - [x] Task: Update/add unit tests for `Topbar` and `TerminalTechnicalCard` cec0920
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) cec0920
 
-## Phase 3: QuickActionsBar Actions & Uptime Refresh
-- [ ] Task: Add "Escanear Subred" button to `src/components/QuickActionsBar.tsx`
-- [ ] Task: Add refresh uptime button (`RotateCcw`) and handler in `src/components/QuickActionsBar.tsx` and wire in `src/App.tsx`
-- [ ] Task: Update unit tests in `src/components/QuickActionsBar.test.tsx` (or new test file)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 3: QuickActionsBar Actions & Uptime Refresh [checkpoint: dd76afb]
+- [x] Task: Add "Escanear Subred" button to `src/components/QuickActionsBar.tsx` dd76afb
+- [x] Task: Add refresh uptime button (`RotateCcw`) and handler in `src/components/QuickActionsBar.tsx` and wire in `src/App.tsx` dd76afb
+- [x] Task: Update unit tests in `src/components/QuickActionsBar.test.tsx` (or new test file) dd76afb
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) dd76afb
 
 ## Phase 4: Subnet Scanner Drawer Full Overlay Restyling
 - [ ] Task: Update `src/components/SubnetScannerDrawer.tsx` to standard full-height drawer (`fixed inset-0 z-50` with backdrop)
