@@ -282,7 +282,7 @@ describe('systemTools orchestration & security sanitization', () => {
     it('executes tracert and streams data chunks', async () => {
       const onData = vi.fn();
       const onDone = vi.fn();
-      const proc = executeTracert('192.0.2.102', { maxHops: 6 }, onData, onDone);
+      const proc = executeTracert('192.0.2.102', 6, onData, onDone);
       expect(proc).toBeDefined();
       if (proc && proc.kill) proc.kill();
     });

@@ -131,7 +131,7 @@ export function Topbar({
         <div className="flex items-center gap-2.5 shrink-0 cursor-default select-none">
           <div className="p-1.5 rounded-md bg-primary/10 text-primary pointer-events-none">
             <img
-              src="/correo-argentino-logo.svg"
+              src="/icon.png"
               alt="Correo Argentino"
               className="h-5 w-5 object-contain"
             />
@@ -349,3 +349,4 @@ export function Topbar({
     </>
   );
 }
+

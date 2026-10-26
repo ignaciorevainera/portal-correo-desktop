@@ -53,13 +53,17 @@ autoDiscoverCorporateConfig();
 app.isQuiting = false;
 
 function getAppIconPath() {
-  const customIco = path.join(__dirname, '../public/correo-argentino-logo.ico');
-  if (fs.existsSync(customIco)) {
-    return customIco;
+  const winIco = path.join(__dirname, '../public/windows/icon.ico');
+  if (fs.existsSync(winIco)) {
+    return winIco;
   }
-  const fallbackIco = path.join(__dirname, '../public/favicon.ico');
-  if (fs.existsSync(fallbackIco)) {
-    return fallbackIco;
+  const rootFavicon = path.join(__dirname, '../public/favicon.ico');
+  if (fs.existsSync(rootFavicon)) {
+    return rootFavicon;
+  }
+  const rootPng = path.join(__dirname, '../public/icon.png');
+  if (fs.existsSync(rootPng)) {
+    return rootPng;
   }
   return null;
 }
