@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { TerminalData } from '../types/terminal';
+import React, { useEffect, useRef } from "react";
+import { TerminalData } from "../types/terminal";
 import {
   MonitorPlay,
   Activity,
@@ -7,10 +7,10 @@ import {
   Copy,
   ExternalLink,
   Search,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Kbd } from '@/components/ui/kbd';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Kbd } from "@/components/ui/kbd";
 
 interface OperatorContextMenuProps {
   x: number;
@@ -46,14 +46,14 @@ export function OperatorContextMenu({
       }
     };
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
 
-    window.addEventListener('mousedown', handleOutsideClick);
-    window.addEventListener('keydown', handleEsc);
+    window.addEventListener("mousedown", handleOutsideClick);
+    window.addEventListener("keydown", handleEsc);
     return () => {
-      window.removeEventListener('mousedown', handleOutsideClick);
-      window.removeEventListener('keydown', handleEsc);
+      window.removeEventListener("mousedown", handleOutsideClick);
+      window.removeEventListener("keydown", handleEsc);
     };
   }, [onClose]);
 
@@ -76,8 +76,7 @@ export function OperatorContextMenu({
     >
       {terminal && (
         <div className="px-2.5 py-1.5 border-b border-border/60 text-[11px] font-bold text-muted-foreground flex items-center justify-between">
-          <span className="truncate">Acciones: {terminal.pc}</span>
-          <span className="font-mono text-[10px] text-primary">{terminal.ip}</span>
+          <span className="truncate">Acciones</span>
         </div>
       )}
 
@@ -107,12 +106,14 @@ export function OperatorContextMenu({
             onTogglePing();
             onClose();
           }}
-          aria-label={isPinging ? 'Detener Ping' : 'Iniciar Ping'}
+          aria-label={isPinging ? "Detener Ping" : "Iniciar Ping"}
           className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
         >
           <span className="flex items-center gap-2">
-            <Activity className={`h-3.5 w-3.5 ${isPinging ? 'text-destructive' : 'text-emerald-500'}`} />
-            {isPinging ? 'Detener Ping' : 'Iniciar Ping'}
+            <Activity
+              className={`h-3.5 w-3.5 ${isPinging ? "text-destructive" : "text-emerald-500"}`}
+            />
+            {isPinging ? "Detener Ping" : "Iniciar Ping"}
           </span>
           <Kbd>F3</Kbd>
         </Button>
@@ -147,7 +148,7 @@ export function OperatorContextMenu({
               aria-label="Copiar IP"
               className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
             >
-              <Copy className="h-3.5 w-3.5 text-muted-foreground" /> Copiar IP ({terminal.ip})
+              <Copy className="h-3.5 w-3.5 text-muted-foreground" /> Copiar IP
             </Button>
 
             <Button
@@ -158,7 +159,8 @@ export function OperatorContextMenu({
               aria-label="Copiar Hostname"
               className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
             >
-              <Copy className="h-3.5 w-3.5 text-muted-foreground" /> Copiar Hostname ({terminal.pc})
+              <Copy className="h-3.5 w-3.5 text-muted-foreground" /> Copiar
+              Hostname
             </Button>
           </div>
         </>
@@ -193,7 +195,8 @@ export function OperatorContextMenu({
             className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
           >
             <span className="flex items-center gap-2">
-              <Search className="h-3.5 w-3.5 text-muted-foreground" /> Buscar Terminal
+              <Search className="h-3.5 w-3.5 text-muted-foreground" /> Buscar
+              Terminal
             </span>
             <Kbd>Ctrl+F</Kbd>
           </Button>
