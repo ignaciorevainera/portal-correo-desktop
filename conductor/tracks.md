@@ -80,3 +80,10 @@
 - [x] **Track: Consola General de Diagnóstico de Red e Historial Unificado con Comandos Nativos (Nbtstat, Tracert, ARP)**
   *Link: [./tracks/network_diagnostics_console_20261025/index.md](./tracks/network_diagnostics_console_20261025/index.md)*
 
+---
+
+- [ ] **Track: UI Polish, Subnet Drawer, Character Encoding & Uptime Refactor**
+  *Link: [./tracks/ui_polish_subnet_encoding_uptime_20261026/index.md](./tracks/ui_polish_subnet_encoding_uptime_20261026/index.md)*
+
+
+
