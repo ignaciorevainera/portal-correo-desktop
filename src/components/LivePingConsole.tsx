@@ -195,8 +195,8 @@ export function LivePingConsole({
       {/* Barra de Controles Superior: Sin botón Iniciar redundante */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
         <div className="flex items-center gap-2">
-          <Activity className="h-3.5 w-3.5 text-primary shrink-0" />
-          <span className="font-mono text-xs font-bold text-foreground">
+          <Activity className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+          <span className="font-mono text-xs font-bold text-foreground dark:text-zinc-100">
             {ip}
           </span>
         </div>

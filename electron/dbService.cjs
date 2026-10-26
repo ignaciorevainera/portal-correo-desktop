@@ -165,12 +165,27 @@ async function getTerminalInfo(query) {
     // optional reset history
   }
 
+  // 5. Cmda_trae_historial_UptimeXterminal_T
+  let uptimeText = '';
+  try {
+    const uptimeReq = p.request();
+    uptimeReq.input('terminal', sql.VarChar(100), targetPc);
+    const uptimeRes = await uptimeReq.execute('Cmda_trae_historial_UptimeXterminal_T');
+    if (uptimeRes.recordset && uptimeRes.recordset.length > 0) {
+      const uRow = uptimeRes.recordset[0];
+      uptimeText = uRow.Uptime || uRow.uptime || uRow.TiempoActivo || uRow.Fecha || '';
+    }
+  } catch {
+    // optional uptime history
+  }
+
   return {
     ...mainData,
     location,
     costCenter,
     alerts,
     resetHistory,
+    uptimeText: uptimeText || mainData.uptimeText || '',
   };
 }
 

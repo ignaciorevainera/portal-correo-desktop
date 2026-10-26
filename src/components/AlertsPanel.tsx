@@ -74,16 +74,16 @@ export function AlertsPanel({
 
       {showAddForm && (
         <Card size="sm" className="rounded-lg border-border bg-card shadow-xs animate-fade-in">
-          <CardHeader className="pb-1">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary">
+          <CardHeader className="pb-1.5 border-b border-border/40">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
               Registrar Nueva Alerta
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-2">
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="space-y-1">
-                  <Label htmlFor="alert-title-input" className="text-muted-foreground font-medium">
+          <CardContent className="pt-3 pb-3">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                <div className="space-y-1.5">
+                  <Label htmlFor="alert-title-input" className="text-foreground dark:text-zinc-200 font-medium text-xs block">
                     Título de la Alerta
                   </Label>
                   <Input
@@ -92,12 +92,12 @@ export function AlertsPanel({
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Título breve del incidente..."
-                    className="h-8 text-xs bg-muted/60"
+                    className="h-9 text-xs bg-muted/60 px-3"
                     required
                   />
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="alert-operator-input" className="text-muted-foreground font-medium">
+                <div className="space-y-1.5">
+                  <Label htmlFor="alert-operator-input" className="text-foreground dark:text-zinc-200 font-medium text-xs block">
                     Operador Responsable
                   </Label>
                   <Input
@@ -105,13 +105,13 @@ export function AlertsPanel({
                     type="text"
                     value={operator}
                     onChange={(e) => setOperator(e.target.value)}
-                    className="h-8 text-xs bg-muted/60 font-mono"
+                    className="h-9 text-xs bg-muted/60 font-mono px-3"
                     required
                   />
                 </div>
               </div>
-              <div className="space-y-1 text-xs">
-                <Label htmlFor="alert-desc-textarea" className="text-muted-foreground font-medium">
+              <div className="space-y-1.5 text-xs">
+                <Label htmlFor="alert-desc-textarea" className="text-foreground dark:text-zinc-200 font-medium text-xs block">
                   Descripción Detallada
                 </Label>
                 <Textarea
@@ -119,8 +119,8 @@ export function AlertsPanel({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Detalles sobre la falla de hardware, software o cuentas..."
-                  rows={2}
-                  className="bg-muted/60 resize-none text-xs"
+                  rows={3}
+                  className="bg-muted/60 resize-none text-xs p-2.5 leading-relaxed"
                   required
                 />
               </div>

@@ -222,7 +222,7 @@ export function QuickActionsBar({
                   <HelpCircle className="h-3.5 w-3.5 text-blue-500" />
                   <span>Forzar Asistencia MSRA</span>
                 </span>
-                <Kbd>F4</Kbd>
+                <Kbd>F3</Kbd>
               </Button>
 
               {/* Botón Re-verificar */}
@@ -252,7 +252,7 @@ export function QuickActionsBar({
             size="sm"
             onClick={onTogglePing}
             aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
-            title="Iniciar Ping estándar (4 paquetes) (Atajo F3)"
+            title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
             className={`flex-[2] text-xs font-semibold cursor-pointer ${
               isPinging
                 ? "animate-pulse"
@@ -261,11 +261,11 @@ export function QuickActionsBar({
           >
             <Activity
               className={`h-3.5 w-3.5 ${
-                isPinging ? "animate-pulse" : "text-emerald-500"
+                isPinging ? "animate-pulse" : "text-emerald-600 dark:text-emerald-400 font-bold"
               }`}
             />
             <span>{isPinging ? "Detener" : "Ping"}</span>
-            <Kbd className="hidden md:inline-block ml-0.5">F3</Kbd>
+            <Kbd className="hidden md:inline-block ml-0.5">F4</Kbd>
           </Button>
 
           <Button
@@ -358,7 +358,7 @@ export function QuickActionsBar({
               </div>
             )}
           </div>
-          {/* Bot�n de Escanear Subred */}
+          {/* Bot�n de Escanear Subred */}
           {onOpenSubnetScanner && (
             <Button
               type="button"
@@ -369,7 +369,7 @@ export function QuickActionsBar({
               title="Escanear toda la subred de esta terminal"
               className="h-8 px-2.5 text-xs font-medium gap-1.5 cursor-pointer bg-muted/60 hover:bg-muted border-border text-foreground shrink-0"
             >
-              <Network className="h-3.5 w-3.5 text-primary" />
+              <Network className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
               <span>Escanear Subred</span>
             </Button>
           )}

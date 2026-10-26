@@ -157,10 +157,24 @@ export function Topbar({
               onKeyDown={handleKeyDownInput}
               onFocus={() => query.trim() && setIsOpen(true)}
               placeholder="Buscar terminal o IP"
-              className="w-full h-10 pl-9 pr-16 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-sm"
+              className="w-full h-10 pl-9 pr-28 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-sm"
             />
-            <div className="absolute right-2 pointer-events-none text-[10px]">
-              <Kbd>Ctrl</Kbd>+<Kbd>F</Kbd>
+            <div className="absolute right-1.5 flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={() => query.trim() && handleSelect(query.trim())}
+                disabled={!query.trim()}
+                aria-label="Buscar terminal"
+                title="Buscar terminal (o Enter)"
+                className="h-7 px-2 text-xs font-sans text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium cursor-pointer disabled:opacity-30"
+              >
+                <span className="hidden sm:inline">Buscar</span>
+              </Button>
+              <div className="pointer-events-none text-[10px] hidden md:block">
+                <Kbd>Ctrl</Kbd>+<Kbd>F</Kbd>
+              </div>
             </div>
           </div>
 
@@ -282,7 +296,7 @@ export function Topbar({
               onClick={handleOpenPortalMda}
               aria-label="Abrir Portal MDA"
               title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
-              className="text-xs font-semibold gap-1.5 cursor-pointer text-primary hover:text-primary"
+              className="text-xs font-semibold gap-1.5 cursor-pointer text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
             >
               <ExternalLink className="h-4 w-4" />
               <span>Portal MDA</span>

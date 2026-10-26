@@ -1,13 +1,8 @@
 import React, { useState } from "react";
 import { TerminalData } from "../types/terminal";
 import {
-  Layers,
-  HardDrive,
   Shield,
   Globe,
-  Calendar,
-  Building,
-  UserCheck,
   Copy,
   Check,
 } from "lucide-react";
@@ -40,6 +35,35 @@ export function TerminalTechnicalCard({
           <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
             Conectividad & Red
           </span>
+
+          {/* Hostname */}
+          <div className="space-y-0.5">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground text-[11px] font-medium">
+                Hostname / PC
+              </span>
+              {terminal.pc && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => handleCopy("pc", terminal.pc)}
+                  aria-label="Copiar Hostname"
+                  title="Copiar Hostname al portapapeles"
+                  className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  {copiedKey === "pc" ? (
+                    <Check className="h-2.5 w-2.5 text-emerald-500" />
+                  ) : (
+                    <Copy className="h-2.5 w-2.5" />
+                  )}
+                </Button>
+              )}
+            </div>
+            <p className="font-mono font-bold text-foreground text-xs truncate" title={terminal.pc}>
+              {terminal.pc || "No identificado"}
+            </p>
+          </div>
 
           {/* IPv4 */}
           <div className="space-y-0.5">
@@ -113,8 +137,8 @@ export function TerminalTechnicalCard({
           </span>
 
           <div className="space-y-0.5">
-            <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
-              <Layers className="h-3 w-3 text-muted-foreground" /> Sistema
+            <span className="text-muted-foreground text-[11px] font-medium">
+              Sistema
             </span>
             <p className="font-semibold text-foreground text-xs">
               {terminal.os || "No detectado"}
@@ -130,9 +154,8 @@ export function TerminalTechnicalCard({
           </div>
 
           <div className="space-y-0.5">
-            <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
-              <Calendar className="h-3 w-3 text-muted-foreground" /> Último
-              Relevamiento
+            <span className="text-muted-foreground text-[11px] font-medium">
+              Último Relevamiento
             </span>
             <p className="font-mono text-xs text-foreground">
               {terminal.surveyDate || "Sin registro"}
@@ -182,9 +205,8 @@ export function TerminalTechnicalCard({
           </div>
 
           <div className="space-y-0.5">
-            <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
-              <HardDrive className="h-3 w-3 text-muted-foreground" /> Memoria
-              RAM
+            <span className="text-muted-foreground text-[11px] font-medium">
+              Memoria RAM
             </span>
             <p
               className={`text-xs ${
@@ -206,8 +228,7 @@ export function TerminalTechnicalCard({
 
           <div className="space-y-0.5">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
-                <UserCheck className="h-3 w-3 text-muted-foreground" />{" "}
+              <span className="text-muted-foreground text-[11px] font-medium">
                 Usuario NT
               </span>
               {terminal.userNt && (
@@ -241,8 +262,8 @@ export function TerminalTechnicalCard({
           </div>
 
           <div className="space-y-0.5">
-            <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
-              <Building className="h-3 w-3 text-muted-foreground" /> Ubicación
+            <span className="text-muted-foreground text-[11px] font-medium">
+              Ubicación
             </span>
             <p
               className={`text-xs truncate ${
@@ -250,9 +271,9 @@ export function TerminalTechnicalCard({
                   ? "font-medium text-foreground"
                   : "text-muted-foreground italic"
               }`}
-              title={terminal.location || "No asignada"}
+              title={terminal.location || "Sede no especificada"}
             >
-              {terminal.location || "No asignada"}
+              {terminal.location || "Sede no especificada"}
             </p>
           </div>
         </Card>

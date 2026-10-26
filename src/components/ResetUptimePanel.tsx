@@ -43,28 +43,29 @@ export function ResetUptimePanel({
             Solicitar Reseteo de Cuenta AD
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-xs pt-1.5">
-          <div className="space-y-1">
+        <CardContent className="space-y-3 text-xs pt-2">
+          <div className="space-y-1.5">
             <Label
               htmlFor="reset-reason-input"
-              className="text-muted-foreground font-medium text-[11px]"
+              className="text-foreground dark:text-zinc-200 font-medium text-xs block"
             >
               Motivo del Reseteo
             </Label>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2.5">
               <Input
                 id="reset-reason-input"
                 type="text"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="h-8 text-xs bg-muted/60 flex-1"
+                placeholder="Ingrese el motivo del reseteo..."
+                className="h-9 text-xs bg-muted/60 flex-1 px-3"
               />
               <Button
                 type="button"
                 variant="default"
                 size="sm"
                 onClick={handleRequestReset}
-                className="h-8 px-3 font-semibold text-xs cursor-pointer shrink-0"
+                className="h-9 px-4 font-semibold text-xs cursor-pointer shrink-0"
               >
                 Enviar
               </Button>
@@ -87,9 +88,9 @@ export function ResetUptimePanel({
 
       {/* Historial de Reseteos en Tabla Idéntica a Alertas */}
       <Card size="sm" className="rounded-lg border-border bg-card shadow-xs">
-        <CardHeader className="pb-1 border-b border-border/50">
+        <CardHeader className="pb-1.5 border-b border-border/50">
           <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-            <History className="h-4 w-4 text-primary shrink-0" /> Historial de Reseteos Previos
+            <History className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" /> Historial de Reseteos Previos
           </CardTitle>
         </CardHeader>
 

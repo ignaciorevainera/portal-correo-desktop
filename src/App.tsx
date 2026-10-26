@@ -229,10 +229,10 @@ export default function App(): React.JSX.Element {
         handleLaunchSmartRemote();
       } else if (e.key === "F3") {
         e.preventDefault();
-        handleTogglePing();
+        handleLaunchMsra();
       } else if (e.key === "F4") {
         e.preventDefault();
-        handleLaunchMsra();
+        handleTogglePing();
       }
     };
     window.addEventListener("keydown", handleGlobalShortcuts);
