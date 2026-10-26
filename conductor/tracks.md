@@ -77,6 +77,6 @@
 
 ---
 
-- [ ] **Track: Consola General de Diagnóstico de Red e Historial Unificado con Comandos Nativos (Nbtstat, Tracert, ARP)**
+- [~] **Track: Consola General de Diagnóstico de Red e Historial Unificado con Comandos Nativos (Nbtstat, Tracert, ARP)**
   *Link: [./tracks/network_diagnostics_console_20261025/index.md](./tracks/network_diagnostics_console_20261025/index.md)*
 
