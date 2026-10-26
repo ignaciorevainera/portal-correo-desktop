@@ -430,14 +430,14 @@ export default function App(): React.JSX.Element {
           )}
         >
           {isLoading ? (
-            <div className="flex-1 w-full min-h-[320px] flex flex-col items-center justify-center text-center p-6 space-y-3">
+            <div className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-6 space-y-3">
               <Loader2 className="h-7 w-7 text-primary animate-spin" />
               <p className="text-xs text-muted-foreground font-mono">
                 Consultando base de datos técnica...
               </p>
             </div>
           ) : notFoundTerm ? (
-            <div className="flex-1 w-full min-h-[320px] flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-card/30 space-y-3">
+            <div className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-card/30 space-y-3">
               <div className="p-3 rounded-full bg-muted/70 text-muted-foreground">
                 <SearchX className="h-8 w-8 text-amber-500/80 dark:text-amber-400/80" />
               </div>
@@ -467,7 +467,7 @@ export default function App(): React.JSX.Element {
               </Button>
             </div>
           ) : !terminal ? (
-            <div className="flex-1 w-full min-h-[320px] flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-card/30 space-y-3">
+            <div className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-card/30 space-y-3">
               <div className="p-3 rounded-full bg-muted/70 text-muted-foreground">
                 <Search className="h-8 w-8 text-primary/70" />
               </div>

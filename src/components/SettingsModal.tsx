@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,9 +6,9 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   checkAppUpdates,
   startDownloadUpdate,
@@ -21,7 +21,7 @@ import {
   UpdateCheckResult,
   UpdateDownloadProgress,
   BackendStatus,
-} from '@/services/electronClient';
+} from "@/services/electronClient";
 import {
   Settings,
   RefreshCw,
@@ -36,8 +36,8 @@ import {
   Database,
   Upload,
   Trash2,
-} from 'lucide-react';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { toast } from "sonner";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -49,51 +49,66 @@ interface SettingsModalProps {
 export function SettingsModal({
   isOpen,
   onClose,
-  currentVersion = '1.0.0',
+  currentVersion = "1.0.0",
   backendConnected = false,
 }: SettingsModalProps): React.JSX.Element {
   const [isChecking, setIsChecking] = useState(false);
-  const [updateResult, setUpdateResult] = useState<UpdateCheckResult | null>(null);
+  const [updateResult, setUpdateResult] = useState<UpdateCheckResult | null>(
+    null,
+  );
   const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState<UpdateDownloadProgress | null>(null);
-  const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
+  const [downloadProgress, setDownloadProgress] =
+    useState<UpdateDownloadProgress | null>(null);
+  const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(
+    null,
+  );
 
   // Corporate Config State
-  const [corpConfig, setCorpConfig] = useState<CorporateConfigSummary | null>(null);
+  const [corpConfig, setCorpConfig] = useState<CorporateConfigSummary | null>(
+    null,
+  );
   const [isTestingConn, setIsTestingConn] = useState(false);
-  const [connTestResult, setConnTestResult] = useState<BackendStatus | null>(null);
+  const [connTestResult, setConnTestResult] = useState<BackendStatus | null>(
+    null,
+  );
 
   // User Preferences
   const [minimizeToTray, setMinimizeToTray] = useState<boolean>(() => {
-    const saved = localStorage.getItem('cmda_pref_tray');
-    return saved !== null ? saved === 'true' : true;
+    const saved = localStorage.getItem("cmda_pref_tray");
+    return saved !== null ? saved === "true" : true;
   });
 
-  const [globalHotkeyEnabled, setGlobalHotkeyEnabled] = useState<boolean>(() => {
-    const saved = localStorage.getItem('cmda_pref_hotkey');
-    return saved !== null ? saved === 'true' : true;
-  });
+  const [globalHotkeyEnabled, setGlobalHotkeyEnabled] = useState<boolean>(
+    () => {
+      const saved = localStorage.getItem("cmda_pref_hotkey");
+      return saved !== null ? saved === "true" : true;
+    },
+  );
 
-  const [defaultPingMode, setDefaultPingMode] = useState<'standard' | 'infinite'>(() => {
-    const saved = localStorage.getItem('cmda_pref_ping_mode');
-    return (saved as 'standard' | 'infinite') || 'standard';
+  const [defaultPingMode, setDefaultPingMode] = useState<
+    "standard" | "infinite"
+  >(() => {
+    const saved = localStorage.getItem("cmda_pref_ping_mode");
+    return (saved as "standard" | "infinite") || "standard";
   });
 
   useEffect(() => {
-    localStorage.setItem('cmda_pref_tray', String(minimizeToTray));
+    localStorage.setItem("cmda_pref_tray", String(minimizeToTray));
   }, [minimizeToTray]);
 
   useEffect(() => {
-    localStorage.setItem('cmda_pref_hotkey', String(globalHotkeyEnabled));
+    localStorage.setItem("cmda_pref_hotkey", String(globalHotkeyEnabled));
   }, [globalHotkeyEnabled]);
 
   useEffect(() => {
-    localStorage.setItem('cmda_pref_ping_mode', defaultPingMode);
+    localStorage.setItem("cmda_pref_ping_mode", defaultPingMode);
   }, [defaultPingMode]);
 
   useEffect(() => {
     if (isOpen) {
-      getCorporateConfig().then(setCorpConfig).catch(() => {});
+      getCorporateConfig()
+        .then(setCorpConfig)
+        .catch(() => {});
     }
   }, [isOpen]);
 
@@ -110,8 +125,10 @@ export function SettingsModal({
   };
 
   const handleStartDownload = () => {
-    if (!updateResult?.downloadUrl && !updateResult?.portableDownloadUrl) return;
-    const url = updateResult.downloadUrl || updateResult.portableDownloadUrl || '';
+    if (!updateResult?.downloadUrl && !updateResult?.portableDownloadUrl)
+      return;
+    const url =
+      updateResult.downloadUrl || updateResult.portableDownloadUrl || "";
     setIsDownloading(true);
 
     startDownloadUpdate(
@@ -122,7 +139,7 @@ export function SettingsModal({
       (filePath) => {
         setIsDownloading(false);
         setDownloadedFilePath(filePath);
-      }
+      },
     );
   };
 
@@ -137,7 +154,9 @@ export function SettingsModal({
       if (res.success && res.config) {
         setCorpConfig(res.config);
         setConnTestResult(res.status || null);
-        toast.success('Configuración corporativa importada y guardada con éxito.');
+        toast.success(
+          "Configuración corporativa importada y guardada con éxito.",
+        );
       } else if (res.error) {
         toast.error(`Error al importar: ${res.error}`);
       }
@@ -152,9 +171,11 @@ export function SettingsModal({
       const status = await testSqlConnection();
       setConnTestResult(status);
       if (status.connected) {
-        toast.success('Conexión con SQL Server establecida exitosamente.');
+        toast.success("Conexión con SQL Server establecida exitosamente.");
       } else {
-        toast.error(`No se pudo conectar: ${status.error || 'Host o credenciales inaccesibles'}`);
+        toast.error(
+          `No se pudo conectar: ${status.error || "Host o credenciales inaccesibles"}`,
+        );
       }
     } finally {
       setIsTestingConn(false);
@@ -164,9 +185,17 @@ export function SettingsModal({
   const handleClearConfig = async () => {
     try {
       await clearCorporateConfig();
-      setCorpConfig({ isConfigured: false, dbServer: '', dbDatabase: '', dbUser: '', dbPort: 1433 });
+      setCorpConfig({
+        isConfigured: false,
+        dbServer: "",
+        dbDatabase: "",
+        dbUser: "",
+        dbPort: 1433,
+      });
       setConnTestResult(null);
-      toast.info('Configuración eliminada. La aplicación funcionará en modo Local / Offline.');
+      toast.info(
+        "Configuración eliminada. La aplicación funcionará en modo Local / Offline.",
+      );
     } catch (err: any) {
       toast.error(`Error al eliminar configuración: ${err.message}`);
     }
@@ -174,7 +203,7 @@ export function SettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[620px] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-card text-card-foreground border-border shadow-2xl">
+      <DialogContent className="sm:max-w-155 max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-card text-card-foreground border-border shadow-2xl">
         <DialogHeader className="p-4 bg-muted/40 border-b border-border shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -185,14 +214,8 @@ export function SettingsModal({
                 <DialogTitle className="text-base font-bold text-foreground">
                   Ajustes y Configuración
                 </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground">
-                  Preferencias operativas, base de datos y actualizaciones del sistema
-                </DialogDescription>
               </div>
             </div>
-            <Badge variant="outline" className="font-mono text-[11px] bg-muted/60">
-              v{currentVersion}
-            </Badge>
           </div>
         </DialogHeader>
 
@@ -224,8 +247,12 @@ export function SettingsModal({
                   disabled={isChecking}
                   className="text-xs font-semibold cursor-pointer gap-1.5 h-8"
                 >
-                  <RefreshCw className={`h-3.5 w-3.5 ${isChecking ? 'animate-spin' : ''}`} />
-                  <span>{isChecking ? 'Buscando...' : 'Buscar actualizaciones'}</span>
+                  <RefreshCw
+                    className={`h-3.5 w-3.5 ${isChecking ? "animate-spin" : ""}`}
+                  />
+                  <span>
+                    {isChecking ? "Buscando..." : "Buscar actualizaciones"}
+                  </span>
                 </Button>
               </div>
             </div>
@@ -234,9 +261,12 @@ export function SettingsModal({
               <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-start gap-2.5 text-xs">
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
                 <div>
-                  <div className="font-semibold">Estás utilizando la última versión disponible</div>
+                  <div className="font-semibold">
+                    Estás utilizando la última versión disponible
+                  </div>
                   <div className="text-[11px] opacity-80">
-                    No hay actualizaciones pendientes para Portal Correo Desktop.
+                    No hay actualizaciones pendientes para Portal Correo
+                    Desktop.
                   </div>
                 </div>
               </div>
@@ -249,7 +279,10 @@ export function SettingsModal({
                     <Sparkles className="h-4 w-4" />
                     <span>¡Nueva versión disponible!</span>
                   </div>
-                  <Badge variant="default" className="text-xs font-mono font-bold">
+                  <Badge
+                    variant="default"
+                    className="text-xs font-mono font-bold"
+                  >
                     v{updateResult.latestVersion}
                   </Badge>
                 </div>
@@ -275,10 +308,17 @@ export function SettingsModal({
                 {isDownloading && downloadProgress && (
                   <div className="space-y-1.5 pt-1">
                     <div className="flex justify-between text-xs text-muted-foreground font-mono">
-                      <span>Descargando en segundo plano: {downloadProgress.percent}%</span>
                       <span>
-                        {(downloadProgress.receivedBytes / 1024 / 1024).toFixed(1)} MB /{' '}
-                        {(downloadProgress.totalBytes / 1024 / 1024).toFixed(1)} MB
+                        Descargando en segundo plano: {downloadProgress.percent}
+                        %
+                      </span>
+                      <span>
+                        {(downloadProgress.receivedBytes / 1024 / 1024).toFixed(
+                          1,
+                        )}{" "}
+                        MB /{" "}
+                        {(downloadProgress.totalBytes / 1024 / 1024).toFixed(1)}{" "}
+                        MB
                       </span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
@@ -306,7 +346,8 @@ export function SettingsModal({
                       <span>Reiniciar e instalar ahora</span>
                     </Button>
                     <p className="text-[11px] text-muted-foreground text-center">
-                      Si preferís no reiniciar ahora, la actualización se aplicará automáticamente en el próximo arranque.
+                      Si preferís no reiniciar ahora, la actualización se
+                      aplicará automáticamente en el próximo arranque.
                     </p>
                   </div>
                 )}
@@ -327,30 +368,57 @@ export function SettingsModal({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Database className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-bold text-foreground">Estado de Conexión SQL</span>
+                  <span className="text-xs font-bold text-foreground">
+                    Estado de Conexión SQL
+                  </span>
                 </div>
                 <Badge
-                  variant={backendConnected || (corpConfig?.isConfigured && connTestResult?.connected) ? 'default' : 'secondary'}
+                  variant={
+                    backendConnected ||
+                    (corpConfig?.isConfigured && connTestResult?.connected)
+                      ? "default"
+                      : "secondary"
+                  }
                   className="text-[11px] font-mono"
                 >
-                  {backendConnected || (corpConfig?.isConfigured && connTestResult?.connected) ? 'SQL Online' : 'Modo Offline / Local'}
+                  {backendConnected ||
+                  (corpConfig?.isConfigured && connTestResult?.connected)
+                    ? "SQL Online"
+                    : "Modo Offline / Local"}
                 </Badge>
               </div>
 
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>
-                  La configuración corporativa permite acceder al inventario histórico de terminales de Correo Argentino.
+                  La configuración corporativa permite acceder al inventario
+                  histórico de terminales de Correo Argentino.
                 </p>
                 {corpConfig?.isConfigured ? (
                   <div className="mt-2 p-2.5 rounded-md bg-background/60 border border-border/60 font-mono text-[11px] space-y-1">
-                    <div><span className="text-muted-foreground">Servidor:</span> <strong>{corpConfig.dbServer}</strong></div>
-                    <div><span className="text-muted-foreground">Base de Datos:</span> {corpConfig.dbDatabase || 'Por defecto'}</div>
-                    <div><span className="text-muted-foreground">Usuario:</span> {corpConfig.dbUser}</div>
-                    <div><span className="text-muted-foreground">Puerto:</span> {corpConfig.dbPort || 1433}</div>
+                    <div>
+                      <span className="text-muted-foreground">Servidor:</span>{" "}
+                      <strong>{corpConfig.dbServer}</strong>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">
+                        Base de Datos:
+                      </span>{" "}
+                      {corpConfig.dbDatabase || "Por defecto"}
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Usuario:</span>{" "}
+                      {corpConfig.dbUser}
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Puerto:</span>{" "}
+                      {corpConfig.dbPort || 1433}
+                    </div>
                   </div>
                 ) : (
                   <div className="p-2.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px]">
-                    No hay archivo de configuración corporativo importado. Podés seguir usando las herramientas de red (Ping, VNC, MSRA, DNS, Escáner) normalmente.
+                    No hay archivo de configuración corporativo importado. Podés
+                    seguir usando las herramientas de red (Ping, VNC, MSRA, DNS,
+                    Escáner) normalmente.
                   </div>
                 )}
               </div>
@@ -376,8 +444,12 @@ export function SettingsModal({
                       disabled={isTestingConn}
                       className="text-xs font-semibold gap-1.5 h-8 cursor-pointer"
                     >
-                      <RefreshCw className={`h-3.5 w-3.5 ${isTestingConn ? 'animate-spin' : ''}`} />
-                      <span>{isTestingConn ? 'Probando...' : 'Probar conexión'}</span>
+                      <RefreshCw
+                        className={`h-3.5 w-3.5 ${isTestingConn ? "animate-spin" : ""}`}
+                      />
+                      <span>
+                        {isTestingConn ? "Probando..." : "Probar conexión"}
+                      </span>
                     </Button>
 
                     <Button
@@ -418,9 +490,12 @@ export function SettingsModal({
                   className="mt-0.5 rounded border-border text-primary focus:ring-primary h-4 w-4"
                 />
                 <div>
-                  <span className="font-medium text-foreground">Minimizar a la bandeja al cerrar</span>
+                  <span className="font-medium text-foreground">
+                    Minimizar a la bandeja al cerrar
+                  </span>
                   <p className="text-[11px] text-muted-foreground">
-                    Mantiene la aplicación en segundo plano en el área de notificación de Windows para reapertura instantánea.
+                    Mantiene la aplicación en segundo plano en el área de
+                    notificación de Windows para reapertura instantánea.
                   </p>
                 </div>
               </label>
@@ -439,9 +514,12 @@ export function SettingsModal({
                   className="mt-0.5 rounded border-border text-primary focus:ring-primary h-4 w-4"
                 />
                 <div>
-                  <span className="font-medium text-foreground">Atajo Global Ctrl + Espacio</span>
+                  <span className="font-medium text-foreground">
+                    Atajo Global Ctrl + Espacio
+                  </span>
                   <p className="text-[11px] text-muted-foreground">
-                    Trae el aplicativo al frente y enfoca el buscador pegando automáticamente el texto seleccionado del portapapeles.
+                    Trae el aplicativo al frente y enfoca el buscador pegando
+                    automáticamente el texto seleccionado del portapapeles.
                   </p>
                 </div>
               </label>
@@ -459,8 +537,10 @@ export function SettingsModal({
                 <Button
                   type="button"
                   size="sm"
-                  variant={defaultPingMode === 'standard' ? 'default' : 'outline'}
-                  onClick={() => setDefaultPingMode('standard')}
+                  variant={
+                    defaultPingMode === "standard" ? "default" : "outline"
+                  }
+                  onClick={() => setDefaultPingMode("standard")}
                   className="text-xs font-semibold h-8 cursor-pointer"
                 >
                   Estándar (4 paquetes)
@@ -468,8 +548,10 @@ export function SettingsModal({
                 <Button
                   type="button"
                   size="sm"
-                  variant={defaultPingMode === 'infinite' ? 'default' : 'outline'}
-                  onClick={() => setDefaultPingMode('infinite')}
+                  variant={
+                    defaultPingMode === "infinite" ? "default" : "outline"
+                  }
+                  onClick={() => setDefaultPingMode("infinite")}
                   className="text-xs font-semibold h-8 cursor-pointer"
                 >
                   Continuo (-t)
@@ -493,23 +575,40 @@ export function SettingsModal({
               </div>
 
               <div className="flex items-center justify-between text-xs py-1 border-b border-border/50">
-                <span className="text-muted-foreground">Base de Datos SQL:</span>
-                <Badge variant={backendConnected ? 'default' : 'secondary'} className="text-[11px]">
-                  {backendConnected ? 'Conectado a Red Corporativa' : 'Modo Seguro / Offline (Mocks)'}
+                <span className="text-muted-foreground">
+                  Base de Datos SQL:
+                </span>
+                <Badge
+                  variant={backendConnected ? "default" : "secondary"}
+                  className="text-[11px]"
+                >
+                  {backendConnected
+                    ? "Conectado a Red Corporativa"
+                    : "Modo Seguro / Offline (Mocks)"}
                 </Badge>
               </div>
 
               <div className="flex items-center justify-between text-xs py-1 border-b border-border/50">
-                <span className="text-muted-foreground">Política Zero-Secrets:</span>
-                <Badge variant="outline" className="text-[11px] text-emerald-400 border-emerald-500/30">
+                <span className="text-muted-foreground">
+                  Política Zero-Secrets:
+                </span>
+                <Badge
+                  variant="outline"
+                  className="text-[11px] text-emerald-400 border-emerald-500/30"
+                >
                   Activa (Cero credenciales en código)
                 </Badge>
               </div>
 
               <div className="flex items-center justify-between text-xs py-1">
-                <span className="text-muted-foreground">Entorno de Ejecución:</span>
+                <span className="text-muted-foreground">
+                  Entorno de Ejecución:
+                </span>
                 <span className="font-mono text-[11px] text-foreground">
-                  Electron {typeof process !== 'undefined' ? process.versions?.electron || 'Desktop' : 'Desktop'}
+                  Electron{" "}
+                  {typeof process !== "undefined"
+                    ? process.versions?.electron || "Desktop"
+                    : "Desktop"}
                 </span>
               </div>
             </div>
@@ -517,7 +616,13 @@ export function SettingsModal({
         </div>
 
         <DialogFooter className="p-3 bg-muted/30 border-t border-border flex justify-end shrink-0">
-          <Button type="button" variant="outline" size="sm" onClick={onClose} className="text-xs h-8 cursor-pointer">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            className="text-xs h-8 cursor-pointer"
+          >
             Cerrar
           </Button>
         </DialogFooter>
