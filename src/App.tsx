@@ -6,7 +6,10 @@ import {
   QuickActionsBar,
   ActionFeedbackState,
 } from "./components/QuickActionsBar";
-import { LivePingConsole, DiagnosticCommandEvent } from "./components/LivePingConsole";
+import {
+  LivePingConsole,
+  DiagnosticCommandEvent,
+} from "./components/LivePingConsole";
 import { AlertsPanel } from "./components/AlertsPanel";
 import { ResetUptimePanel } from "./components/ResetUptimePanel";
 import { OperatorContextMenu } from "./components/OperatorContextMenu";
@@ -44,7 +47,8 @@ export default function App(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPinging, setIsPinging] = useState(false);
   const [pingMode, setPingMode] = useState<"standard" | "infinite">("standard");
-  const [activeDiagnostic, setActiveDiagnostic] = useState<DiagnosticCommandEvent | null>(null);
+  const [activeDiagnostic, setActiveDiagnostic] =
+    useState<DiagnosticCommandEvent | null>(null);
   const [status, setStatus] = useState<BackendStatus>({
     connected: false,
     mode: "mock",
@@ -162,12 +166,12 @@ export default function App(): React.JSX.Element {
     let argsText = `${cmd} ${terminal.ip}`;
     let options: any = undefined;
 
-    if (cmd === 'nbtstat') {
+    if (cmd === "nbtstat") {
       argsText = `nbtstat -A ${terminal.ip}`;
-    } else if (cmd === 'tracert') {
+    } else if (cmd === "tracert") {
       argsText = `tracert -d -h 6 ${terminal.ip}`;
       options = { maxHops: 6 };
-    } else if (cmd === 'arp') {
+    } else if (cmd === "arp") {
       argsText = `arp -a ${terminal.ip}`;
     }
 
@@ -491,7 +495,7 @@ export default function App(): React.JSX.Element {
             onTogglePing={handleTogglePing}
             onLaunchMsra={() => handleLaunchMsra()}
             onOpenPortalMda={() =>
-              openExternalUrl("https://mda.corporativo.internal/inventario-terminales")
+              openExternalUrl("https://mda.correo.local/inventario-terminales")
             }
           />
         )}

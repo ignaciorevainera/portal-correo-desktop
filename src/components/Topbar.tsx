@@ -36,7 +36,7 @@ interface TopbarProps {
   onOpenSettings?: () => void;
 }
 
-const PORTAL_MDA_URL = "https://mda.corporativo.internal/inventario-terminales";
+const PORTAL_MDA_URL = "https://mda.correo.local/inventario-terminales";
 
 export function Topbar({
   onSelectTerminal,
@@ -349,4 +349,3 @@ export function Topbar({
     </>
   );
 }
-

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   minimizeWindow,
   maximizeWindow,
@@ -6,16 +6,16 @@ import {
   hideToTray,
   openExternalUrl,
   stopPing,
-} from '../services/electronClient';
+} from "../services/electronClient";
 
-describe('Window Controls & External Link Contracts', () => {
+describe("Window Controls & External Link Contracts", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     delete (window as any).electronAPI;
   });
 
-  describe('In Electron environment (with window.electronAPI)', () => {
-    it('calls electronAPI.minimizeWindow', async () => {
+  describe("In Electron environment (with window.electronAPI)", () => {
+    it("calls electronAPI.minimizeWindow", async () => {
       const minimizeMock = vi.fn().mockResolvedValue(true);
       (window as any).electronAPI = {
         minimizeWindow: minimizeMock,
@@ -25,7 +25,7 @@ describe('Window Controls & External Link Contracts', () => {
       expect(minimizeMock).toHaveBeenCalledTimes(1);
     });
 
-    it('calls electronAPI.hideToTray when clicking turn off button', async () => {
+    it("calls electronAPI.hideToTray when clicking turn off button", async () => {
       const hideMock = vi.fn().mockResolvedValue(true);
       (window as any).electronAPI = {
         hideToTray: hideMock,
@@ -35,7 +35,7 @@ describe('Window Controls & External Link Contracts', () => {
       expect(hideMock).toHaveBeenCalledTimes(1);
     });
 
-    it('calls electronAPI.stopPing to terminate ongoing ping process', async () => {
+    it("calls electronAPI.stopPing to terminate ongoing ping process", async () => {
       const stopPingMock = vi.fn().mockResolvedValue(true);
       (window as any).electronAPI = {
         stopPing: stopPingMock,
@@ -45,7 +45,7 @@ describe('Window Controls & External Link Contracts', () => {
       expect(stopPingMock).toHaveBeenCalledTimes(1);
     });
 
-    it('calls electronAPI.maximizeWindow and toggles state', async () => {
+    it("calls electronAPI.maximizeWindow and toggles state", async () => {
       const maximizeMock = vi.fn().mockResolvedValue(true);
       (window as any).electronAPI = {
         maximizeWindow: maximizeMock,
@@ -55,7 +55,7 @@ describe('Window Controls & External Link Contracts', () => {
       expect(maximizeMock).toHaveBeenCalledTimes(1);
     });
 
-    it('calls electronAPI.closeWindow', async () => {
+    it("calls electronAPI.closeWindow", async () => {
       const closeMock = vi.fn().mockResolvedValue(true);
       (window as any).electronAPI = {
         closeWindow: closeMock,
@@ -65,30 +65,36 @@ describe('Window Controls & External Link Contracts', () => {
       expect(closeMock).toHaveBeenCalledTimes(1);
     });
 
-    it('calls electronAPI.openExternal with destination URL', async () => {
+    it("calls electronAPI.openExternal with destination URL", async () => {
       const openExternalMock = vi.fn().mockResolvedValue(true);
       (window as any).electronAPI = {
         openExternal: openExternalMock,
       };
 
-      const url = 'https://mda.corporativo.internal/inventario-terminales';
+      const url = "https://mda.correo.local/inventario-terminales";
       await openExternalUrl(url);
       expect(openExternalMock).toHaveBeenCalledWith(url);
     });
   });
 
-  describe('In Browser / fallback environment (without window.electronAPI)', () => {
-    it('gracefully handles minimizeWindow and closeWindow without throwing', async () => {
+  describe("In Browser / fallback environment (without window.electronAPI)", () => {
+    it("gracefully handles minimizeWindow and closeWindow without throwing", async () => {
       await expect(minimizeWindow()).resolves.not.toThrow();
       await expect(closeWindow()).resolves.not.toThrow();
     });
 
-    it('calls window.open as fallback for openExternalUrl', async () => {
-      const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
-      const url = 'https://mda.corporativo.internal/inventario-terminales';
+    it("calls window.open as fallback for openExternalUrl", async () => {
+      const windowOpenSpy = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
+      const url = "https://mda.correo.local/inventario-terminales";
 
       await openExternalUrl(url);
-      expect(windowOpenSpy).toHaveBeenCalledWith(url, '_blank', 'noopener,noreferrer');
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        url,
+        "_blank",
+        "noopener,noreferrer",
+      );
     });
   });
 });
