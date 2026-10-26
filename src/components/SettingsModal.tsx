@@ -5,10 +5,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import {
   checkAppUpdates,
   startDownloadUpdate,
@@ -27,7 +27,6 @@ import {
   RefreshCw,
   Download,
   CheckCircle2,
-  AlertCircle,
   HardDrive,
   Keyboard,
   Activity,
@@ -37,8 +36,6 @@ import {
   Database,
   Upload,
   Trash2,
-  ShieldCheck,
-  Check,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -55,7 +52,6 @@ export function SettingsModal({
   currentVersion = '1.0.0',
   backendConnected = false,
 }: SettingsModalProps): React.JSX.Element {
-  const [activeTab, setActiveTab] = useState<'updates' | 'connection' | 'preferences' | 'diagnostics'>('updates');
   const [isChecking, setIsChecking] = useState(false);
   const [updateResult, setUpdateResult] = useState<UpdateCheckResult | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -178,8 +174,8 @@ export function SettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[560px] bg-card text-card-foreground border-border p-0 gap-0 overflow-hidden shadow-2xl">
-        <DialogHeader className="p-4 bg-muted/40 border-b border-border">
+      <DialogContent className="sm:max-w-[620px] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-card text-card-foreground border-border shadow-2xl">
+        <DialogHeader className="p-4 bg-muted/40 border-b border-border shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-primary/10 text-primary">
@@ -190,7 +186,7 @@ export function SettingsModal({
                   Ajustes y Configuración
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground">
-                  Preferencias operativas y actualizaciones del sistema
+                  Preferencias operativas, base de datos y actualizaciones del sistema
                 </DialogDescription>
               </div>
             </div>
@@ -198,373 +194,333 @@ export function SettingsModal({
               v{currentVersion}
             </Badge>
           </div>
-
-          {/* Selector de Pestañas */}
-          <div className="flex items-center gap-1 mt-4 pt-1" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'updates'}
-              onClick={() => setActiveTab('updates')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                activeTab === 'updates'
-                  ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              Actualizaciones
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'connection'}
-              onClick={() => setActiveTab('connection')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                activeTab === 'connection'
-                  ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <Database className="h-3.5 w-3.5" />
-              Conexión
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'preferences'}
-              onClick={() => setActiveTab('preferences')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                activeTab === 'preferences'
-                  ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <Sliders className="h-3.5 w-3.5" />
-              Preferencias
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'diagnostics'}
-              onClick={() => setActiveTab('diagnostics')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                activeTab === 'diagnostics'
-                  ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <Server className="h-3.5 w-3.5" />
-              Diagnóstico
-            </button>
-          </div>
         </DialogHeader>
 
-        <div className="p-5 space-y-4 max-h-[460px] overflow-y-auto">
-          {/* TAB 1: ACTUALIZACIONES */}
-          {activeTab === 'updates' && (
-            <div className="space-y-4">
-              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <div className="text-xs font-medium text-foreground">
-                      Versión actual: v{currentVersion}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground">
-                      Canal de versiones estables de GitHub Releases
-                    </div>
+        {/* Vista única con scroll vertical interno para todos los ajustes */}
+        <div className="p-5 space-y-6 overflow-y-auto flex-1">
+          {/* SECCIÓN 1: ACTUALIZACIONES DEL SISTEMA */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-border/60 pb-2">
+              <RefreshCw className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                Actualizaciones del Sistema
+              </h3>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-medium text-foreground">
+                    Versión actual: v{currentVersion}
                   </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Canal de versiones estables de GitHub Releases
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleCheckUpdates}
+                  disabled={isChecking}
+                  className="text-xs font-semibold cursor-pointer gap-1.5 h-8"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${isChecking ? 'animate-spin' : ''}`} />
+                  <span>{isChecking ? 'Buscando...' : 'Buscar actualizaciones'}</span>
+                </Button>
+              </div>
+            </div>
+
+            {updateResult && !updateResult.hasUpdate && (
+              <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-start gap-2.5 text-xs">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                <div>
+                  <div className="font-semibold">Estás utilizando la última versión disponible</div>
+                  <div className="text-[11px] opacity-80">
+                    No hay actualizaciones pendientes para Portal Correo Desktop.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {updateResult && updateResult.hasUpdate && (
+              <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-primary text-xs font-bold">
+                    <Sparkles className="h-4 w-4" />
+                    <span>¡Nueva versión disponible!</span>
+                  </div>
+                  <Badge variant="default" className="text-xs font-mono font-bold">
+                    v{updateResult.latestVersion}
+                  </Badge>
+                </div>
+
+                {updateResult.releaseNotes && (
+                  <div className="text-xs text-muted-foreground bg-background/60 p-2.5 rounded-md border border-border/60 max-h-32 overflow-y-auto whitespace-pre-wrap font-sans">
+                    {updateResult.releaseNotes}
+                  </div>
+                )}
+
+                {!isDownloading && !downloadedFilePath && (
                   <Button
                     type="button"
                     size="sm"
-                    onClick={handleCheckUpdates}
-                    disabled={isChecking}
-                    className="text-xs font-semibold cursor-pointer gap-1.5 h-8"
+                    onClick={handleStartDownload}
+                    className="w-full text-xs font-semibold gap-1.5 h-9 cursor-pointer"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isChecking ? 'animate-spin' : ''}`} />
-                    <span>{isChecking ? 'Buscando...' : 'Buscar actualizaciones'}</span>
+                    <Download className="h-4 w-4" />
+                    <span>Descargar e instalar en segundo plano</span>
                   </Button>
-                </div>
-              </div>
+                )}
 
-              {updateResult && !updateResult.hasUpdate && (
-                <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-start gap-2.5 text-xs">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                  <div>
-                    <div className="font-semibold">Estás utilizando la última versión disponible</div>
-                    <div className="text-[11px] opacity-80">
-                      No hay actualizaciones pendientes para Portal Correo Desktop.
+                {isDownloading && downloadProgress && (
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex justify-between text-xs text-muted-foreground font-mono">
+                      <span>Descargando en segundo plano: {downloadProgress.percent}%</span>
+                      <span>
+                        {(downloadProgress.receivedBytes / 1024 / 1024).toFixed(1)} MB /{' '}
+                        {(downloadProgress.totalBytes / 1024 / 1024).toFixed(1)} MB
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${downloadProgress.percent}%` }}
+                      />
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {updateResult && updateResult.hasUpdate && (
-                <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-primary text-xs font-bold">
-                      <Sparkles className="h-4 w-4" />
-                      <span>¡Nueva versión disponible!</span>
+                {downloadedFilePath && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center gap-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      <span>Actualización lista para instalar</span>
                     </div>
-                    <Badge variant="default" className="text-xs font-mono font-bold">
-                      v{updateResult.latestVersion}
-                    </Badge>
-                  </div>
-
-                  {updateResult.releaseNotes && (
-                    <div className="text-xs text-muted-foreground bg-background/60 p-2.5 rounded-md border border-border/60 max-h-32 overflow-y-auto whitespace-pre-wrap font-sans">
-                      {updateResult.releaseNotes}
-                    </div>
-                  )}
-
-                  {!isDownloading && !downloadedFilePath && (
                     <Button
                       type="button"
                       size="sm"
-                      onClick={handleStartDownload}
-                      className="w-full text-xs font-semibold gap-1.5 h-9 cursor-pointer"
+                      onClick={handleInstallNow}
+                      className="w-full text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-9 cursor-pointer"
                     >
-                      <Download className="h-4 w-4" />
-                      <span>Descargar e instalar en segundo plano</span>
+                      <RefreshCw className="h-4 w-4" />
+                      <span>Reiniciar e instalar ahora</span>
                     </Button>
-                  )}
-
-                  {isDownloading && downloadProgress && (
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex justify-between text-xs text-muted-foreground font-mono">
-                        <span>Descargando en segundo plano: {downloadProgress.percent}%</span>
-                        <span>
-                          {(downloadProgress.receivedBytes / 1024 / 1024).toFixed(1)} MB /{' '}
-                          {(downloadProgress.totalBytes / 1024 / 1024).toFixed(1)} MB
-                        </span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-primary h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${downloadProgress.percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {downloadedFilePath && (
-                    <div className="space-y-2 pt-1">
-                      <div className="flex items-center gap-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                        <CheckCircle2 className="h-4 w-4 shrink-0" />
-                        <span>Actualización lista para instalar</span>
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={handleInstallNow}
-                        className="w-full text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-9 cursor-pointer"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                        <span>Reiniciar e instalar ahora</span>
-                      </Button>
-                      <p className="text-[11px] text-muted-foreground text-center">
-                        Si preferís no reiniciar ahora, la actualización se aplicará automáticamente en el próximo arranque.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 2: CONEXIÓN CORPORATIVA */}
-          {activeTab === 'connection' && (
-            <div className="space-y-4">
-              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Database className="h-4 w-4 text-primary" />
-                    <span className="text-xs font-bold text-foreground">Estado de Conexión SQL</span>
+                    <p className="text-[11px] text-muted-foreground text-center">
+                      Si preferís no reiniciar ahora, la actualización se aplicará automáticamente en el próximo arranque.
+                    </p>
                   </div>
-                  <Badge
-                    variant={backendConnected || (corpConfig?.isConfigured && connTestResult?.connected) ? 'default' : 'secondary'}
-                    className="text-[11px] font-mono"
-                  >
-                    {backendConnected || (corpConfig?.isConfigured && connTestResult?.connected) ? 'SQL Online' : 'Modo Offline / Local'}
-                  </Badge>
-                </div>
+                )}
+              </div>
+            )}
+          </section>
 
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <p>
-                    La configuración corporativa permite acceder al inventario histórico de terminales de Correo Argentino.
+          {/* SECCIÓN 2: CONEXIÓN CORPORATIVA SQL SERVER */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-border/60 pb-2">
+              <Database className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                Conexión Corporativa SQL Server
+              </h3>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-bold text-foreground">Estado de Conexión SQL</span>
+                </div>
+                <Badge
+                  variant={backendConnected || (corpConfig?.isConfigured && connTestResult?.connected) ? 'default' : 'secondary'}
+                  className="text-[11px] font-mono"
+                >
+                  {backendConnected || (corpConfig?.isConfigured && connTestResult?.connected) ? 'SQL Online' : 'Modo Offline / Local'}
+                </Badge>
+              </div>
+
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>
+                  La configuración corporativa permite acceder al inventario histórico de terminales de Correo Argentino.
+                </p>
+                {corpConfig?.isConfigured ? (
+                  <div className="mt-2 p-2.5 rounded-md bg-background/60 border border-border/60 font-mono text-[11px] space-y-1">
+                    <div><span className="text-muted-foreground">Servidor:</span> <strong>{corpConfig.dbServer}</strong></div>
+                    <div><span className="text-muted-foreground">Base de Datos:</span> {corpConfig.dbDatabase || 'Por defecto'}</div>
+                    <div><span className="text-muted-foreground">Usuario:</span> {corpConfig.dbUser}</div>
+                    <div><span className="text-muted-foreground">Puerto:</span> {corpConfig.dbPort || 1433}</div>
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px]">
+                    No hay archivo de configuración corporativo importado. Podés seguir usando las herramientas de red (Ping, VNC, MSRA, DNS, Escáner) normalmente.
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleImportConfigFile}
+                  className="text-xs font-semibold gap-1.5 h-8 cursor-pointer"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  <span>Importar archivo de configuración (.json / .env)</span>
+                </Button>
+
+                {corpConfig?.isConfigured && (
+                  <>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={handleTestConnection}
+                      disabled={isTestingConn}
+                      className="text-xs font-semibold gap-1.5 h-8 cursor-pointer"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${isTestingConn ? 'animate-spin' : ''}`} />
+                      <span>{isTestingConn ? 'Probando...' : 'Probar conexión'}</span>
+                    </Button>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleClearConfig}
+                      className="text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1.5 h-8 cursor-pointer ml-auto"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      <span>Eliminar configuración</span>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* SECCIÓN 3: PREFERENCIAS DE LA APLICACIÓN */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-border/60 pb-2">
+              <Sliders className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                Preferencias de la Aplicación
+              </h3>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+              <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <HardDrive className="h-3.5 w-3.5 text-primary" />
+                <span>Comportamiento de Ventana y Bandeja</span>
+              </div>
+              <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={minimizeToTray}
+                  onChange={(e) => setMinimizeToTray(e.target.checked)}
+                  className="mt-0.5 rounded border-border text-primary focus:ring-primary h-4 w-4"
+                />
+                <div>
+                  <span className="font-medium text-foreground">Minimizar a la bandeja al cerrar</span>
+                  <p className="text-[11px] text-muted-foreground">
+                    Mantiene la aplicación en segundo plano en el área de notificación de Windows para reapertura instantánea.
                   </p>
-                  {corpConfig?.isConfigured ? (
-                    <div className="mt-2 p-2.5 rounded-md bg-background/60 border border-border/60 font-mono text-[11px] space-y-1">
-                      <div><span className="text-muted-foreground">Servidor:</span> <strong>{corpConfig.dbServer}</strong></div>
-                      <div><span className="text-muted-foreground">Base de Datos:</span> {corpConfig.dbDatabase || 'Por defecto'}</div>
-                      <div><span className="text-muted-foreground">Usuario:</span> {corpConfig.dbUser}</div>
-                      <div><span className="text-muted-foreground">Puerto:</span> {corpConfig.dbPort || 1433}</div>
-                    </div>
-                  ) : (
-                    <div className="p-2.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px]">
-                      No hay archivo de configuración corporativo importado. Podés seguir usando las herramientas de red (Ping, VNC, MSRA, DNS, Escáner) normalmente.
-                    </div>
-                  )}
                 </div>
+              </label>
+            </div>
 
-                <div className="flex items-center gap-2 pt-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleImportConfigFile}
-                    className="text-xs font-semibold gap-1.5 h-8 cursor-pointer"
-                  >
-                    <Upload className="h-3.5 w-3.5" />
-                    <span>Importar archivo de configuración (.json / .env)</span>
-                  </Button>
-
-                  {corpConfig?.isConfigured && (
-                    <>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={handleTestConnection}
-                        disabled={isTestingConn}
-                        className="text-xs font-semibold gap-1.5 h-8 cursor-pointer"
-                      >
-                        <RefreshCw className={`h-3.5 w-3.5 ${isTestingConn ? 'animate-spin' : ''}`} />
-                        <span>{isTestingConn ? 'Probando...' : 'Probar conexión'}</span>
-                      </Button>
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleClearConfig}
-                        className="text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1.5 h-8 cursor-pointer ml-auto"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        <span>Eliminar configuración</span>
-                      </Button>
-                    </>
-                  )}
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+              <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Keyboard className="h-3.5 w-3.5 text-primary" />
+                <span>Atajo Global de Teclado</span>
+              </div>
+              <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={globalHotkeyEnabled}
+                  onChange={(e) => setGlobalHotkeyEnabled(e.target.checked)}
+                  className="mt-0.5 rounded border-border text-primary focus:ring-primary h-4 w-4"
+                />
+                <div>
+                  <span className="font-medium text-foreground">Atajo Global Ctrl + Espacio</span>
+                  <p className="text-[11px] text-muted-foreground">
+                    Trae el aplicativo al frente y enfoca el buscador pegando automáticamente el texto seleccionado del portapapeles.
+                  </p>
                 </div>
+              </label>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">
+              <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Activity className="h-3.5 w-3.5 text-primary" />
+                <span>Modo de Ping Predeterminado</span>
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Tipo de ping enviado automáticamente al cargar una terminal
+              </div>
+              <div className="flex items-center gap-2 pt-1">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={defaultPingMode === 'standard' ? 'default' : 'outline'}
+                  onClick={() => setDefaultPingMode('standard')}
+                  className="text-xs font-semibold h-8 cursor-pointer"
+                >
+                  Estándar (4 paquetes)
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={defaultPingMode === 'infinite' ? 'default' : 'outline'}
+                  onClick={() => setDefaultPingMode('infinite')}
+                  className="text-xs font-semibold h-8 cursor-pointer"
+                >
+                  Continuo (-t)
+                </Button>
               </div>
             </div>
-          )}
+          </section>
 
-          {/* TAB 3: PREFERENCIAS */}
-          {activeTab === 'preferences' && (
-            <div className="space-y-4">
-              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
-                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <HardDrive className="h-3.5 w-3.5 text-primary" />
-                  <span>Comportamiento de Ventana y Bandeja</span>
-                </div>
-                <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={minimizeToTray}
-                    onChange={(e) => setMinimizeToTray(e.target.checked)}
-                    className="mt-0.5 rounded border-border text-primary focus:ring-primary h-4 w-4"
-                  />
-                  <div>
-                    <span className="font-medium text-foreground">Minimizar a la bandeja al cerrar</span>
-                    <p className="text-[11px] text-muted-foreground">
-                      Mantiene la aplicación en segundo plano en el área de notificación de Windows para reapertura instantánea.
-                    </p>
-                  </div>
-                </label>
+          {/* SECCIÓN 4: DIAGNÓSTICO Y ENTORNO */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-border/60 pb-2">
+              <Server className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                Diagnóstico y Entorno
+              </h3>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border bg-muted/20 space-y-3">
+              <div className="text-xs font-bold text-foreground">
+                Estado de Infraestructura y Conexión
               </div>
 
-              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
-                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Keyboard className="h-3.5 w-3.5 text-primary" />
-                  <span>Atajo Global de Teclado</span>
-                </div>
-                <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={globalHotkeyEnabled}
-                    onChange={(e) => setGlobalHotkeyEnabled(e.target.checked)}
-                    className="mt-0.5 rounded border-border text-primary focus:ring-primary h-4 w-4"
-                  />
-                  <div>
-                    <span className="font-medium text-foreground">Atajo Global Ctrl + Espacio</span>
-                    <p className="text-[11px] text-muted-foreground">
-                      Trae el aplicativo al frente y enfoca el buscador pegando automáticamente el texto seleccionado del portapapeles.
-                    </p>
-                  </div>
-                </label>
+              <div className="flex items-center justify-between text-xs py-1 border-b border-border/50">
+                <span className="text-muted-foreground">Base de Datos SQL:</span>
+                <Badge variant={backendConnected ? 'default' : 'secondary'} className="text-[11px]">
+                  {backendConnected ? 'Conectado a Red Corporativa' : 'Modo Seguro / Offline (Mocks)'}
+                </Badge>
               </div>
 
-              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">
-                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Activity className="h-3.5 w-3.5 text-primary" />
-                  <span>Modo de Ping Predeterminado</span>
-                </div>
-                <div className="text-[11px] text-muted-foreground">
-                  Tipo de ping enviado automáticamente al cargar una terminal
-                </div>
-                <div className="flex items-center gap-2 pt-1">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={defaultPingMode === 'standard' ? 'default' : 'outline'}
-                    onClick={() => setDefaultPingMode('standard')}
-                    className="text-xs font-semibold h-8 cursor-pointer"
-                  >
-                    Estándar (4 paquetes)
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={defaultPingMode === 'infinite' ? 'default' : 'outline'}
-                    onClick={() => setDefaultPingMode('infinite')}
-                    className="text-xs font-semibold h-8 cursor-pointer"
-                  >
-                    Continuo (-t)
-                  </Button>
-                </div>
+              <div className="flex items-center justify-between text-xs py-1 border-b border-border/50">
+                <span className="text-muted-foreground">Política Zero-Secrets:</span>
+                <Badge variant="outline" className="text-[11px] text-emerald-400 border-emerald-500/30">
+                  Activa (Cero credenciales en código)
+                </Badge>
+              </div>
+
+              <div className="flex items-center justify-between text-xs py-1">
+                <span className="text-muted-foreground">Entorno de Ejecución:</span>
+                <span className="font-mono text-[11px] text-foreground">
+                  Electron {typeof process !== 'undefined' ? process.versions?.electron || 'Desktop' : 'Desktop'}
+                </span>
               </div>
             </div>
-          )}
-
-          {/* TAB 4: DIAGNÓSTICO */}
-          {activeTab === 'diagnostics' && (
-            <div className="space-y-3">
-              <div className="p-3.5 rounded-xl border border-border bg-muted/20 space-y-3">
-                <div className="text-xs font-bold text-foreground">
-                  Estado de Infraestructura y Conexión
-                </div>
-
-                <div className="flex items-center justify-between text-xs py-1 border-b border-border/50">
-                  <span className="text-muted-foreground">Base de Datos SQL:</span>
-                  <Badge variant={backendConnected ? 'default' : 'secondary'} className="text-[11px]">
-                    {backendConnected ? 'Conectado a Red Corporativa' : 'Modo Seguro / Offline (Mocks)'}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between text-xs py-1 border-b border-border/50">
-                  <span className="text-muted-foreground">Política Zero-Secrets:</span>
-                  <Badge variant="outline" className="text-[11px] text-emerald-400 border-emerald-500/30">
-                    Activa (Cero credenciales en código)
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between text-xs py-1">
-                  <span className="text-muted-foreground">Entorno de Ejecución:</span>
-                  <span className="font-mono text-[11px] text-foreground">
-                    Electron {typeof process !== 'undefined' ? process.versions?.electron || 'Desktop' : 'Desktop'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
+          </section>
         </div>
 
-        <Separator />
-        <div className="p-3 bg-muted/30 flex justify-end">
+        <DialogFooter className="p-3 bg-muted/30 border-t border-border flex justify-end shrink-0">
           <Button type="button" variant="outline" size="sm" onClick={onClose} className="text-xs h-8 cursor-pointer">
             Cerrar
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

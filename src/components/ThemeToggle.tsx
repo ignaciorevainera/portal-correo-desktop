@@ -10,10 +10,10 @@ export function ThemeToggle(): React.JSX.Element {
     <Button
       type="button"
       variant="ghost"
-      size="icon"
+      size="default"
       onClick={toggleTheme}
       aria-label="Cambiar tema de interfaz"
-      className="h-10 w-10 text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
+      className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
       title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
     >
       {theme === 'dark' ? (

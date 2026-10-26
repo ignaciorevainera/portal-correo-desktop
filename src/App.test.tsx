@@ -173,7 +173,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
       // Technical card title removed in 3f9768b
       expect(screen.getByRole('button', { name: /iniciar ping/i })).toBeInTheDocument();
       expect(screen.getByText(/Alertas de Terminal/i)).toBeInTheDocument();
-      expect(screen.getByText(/Reseteo de Cuentas & Historial de Uptime/i)).toBeInTheDocument();
+      expect(screen.getByText(/Reseteo de Cuentas/i)).toBeInTheDocument();
     }, { timeout: 3000 });
 
     // Verify Sidebar is completely absent

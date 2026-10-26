@@ -113,7 +113,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     expect(handleDirectPing).toHaveBeenCalledWith("WS-DEMO-002");
   });
 
-  it("renders topbar with expanded h-14 dimensions, h-10 input and high contrast Portal MDA CTA", () => {
+  it("renders topbar with expanded h-14 dimensions, h-10 input and grouped action buttons", () => {
     const { container } = render(
       <ThemeProvider>
         <Topbar onSelectTerminal={vi.fn()} selectedPc="PC-DEMO-001" />
@@ -127,7 +127,10 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     expect(input.className).toContain("h-10");
 
     const portalBtn = screen.getByRole("button", { name: /portal mda/i });
-    expect(portalBtn.className).toContain("h-10");
+    expect(portalBtn).toBeInTheDocument();
+
+    const buttonGroup = container.querySelector('[data-slot="button-group"]');
+    expect(buttonGroup).toBeInTheDocument();
   });
 });
 

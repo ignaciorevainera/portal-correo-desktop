@@ -10,7 +10,7 @@ describe('SettingsModal Component', () => {
     localStorage.clear();
   });
 
-  it('renders settings dialog when open with tabs and system version', () => {
+  it('renders settings dialog when open with single-scroll sections and system version', () => {
     render(
       <SettingsModal
         isOpen={true}
@@ -21,9 +21,10 @@ describe('SettingsModal Component', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText(/ajustes y configuración/i)).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /actualizaciones/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /preferencias/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /diagnóstico/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /actualizaciones del sistema/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /conexión corporativa sql server/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /preferencias de la aplicación/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /diagnóstico y entorno/i })).toBeInTheDocument();
     expect(screen.getByText(/versión actual: v1.0.0/i)).toBeInTheDocument();
   });
 
@@ -110,7 +111,7 @@ describe('SettingsModal Component', () => {
     });
   });
 
-  it('renders preferences tab and toggles local preferences', () => {
+  it('renders preferences section and toggles local preferences', () => {
     render(
       <SettingsModal
         isOpen={true}
@@ -118,8 +119,6 @@ describe('SettingsModal Component', () => {
         currentVersion="1.0.0"
       />
     );
-
-    fireEvent.click(screen.getByRole('tab', { name: /preferencias/i }));
 
     expect(screen.getByText(/minimizar a la bandeja al cerrar/i)).toBeInTheDocument();
     expect(screen.getByText(/atajo global ctrl \+ espacio/i)).toBeInTheDocument();
@@ -131,10 +130,10 @@ describe('SettingsModal Component', () => {
     expect(trayCheckbox).not.toBeChecked();
   });
 
-  it('renders corporate connection tab and allows importing, testing, and clearing configuration', async () => {
+  it('renders corporate connection section and allows importing, testing, and clearing configuration', async () => {
     vi.spyOn(electronClient, 'getCorporateConfig').mockResolvedValue({
       isConfigured: true,
-      dbServer: 'sql.correo.internal',
+      dbServer: 'sql.example.corp',
       dbDatabase: 'PortalDB',
       dbUser: 'operador_corp',
       dbPort: 1433,
@@ -144,19 +143,19 @@ describe('SettingsModal Component', () => {
       success: true,
       config: {
         isConfigured: true,
-        dbServer: 'imported.correo.internal',
+        dbServer: 'imported.example.corp',
         dbDatabase: 'ImportedDB',
         dbUser: 'operador_imported',
         dbPort: 1433,
       },
-      status: { connected: true, mode: 'sql', server: 'imported.correo.internal' },
+      status: { connected: true, mode: 'sql', server: 'imported.example.corp' },
     });
 
     const clearSpy = vi.spyOn(electronClient, 'clearCorporateConfig').mockResolvedValue({ success: true });
     const testSqlSpy = vi.spyOn(electronClient, 'testSqlConnection').mockResolvedValue({
       connected: true,
       mode: 'sql',
-      server: 'sql.correo.internal',
+      server: 'sql.example.corp',
     });
 
     render(
@@ -167,12 +166,8 @@ describe('SettingsModal Component', () => {
       />
     );
 
-    const connTab = screen.getByRole('tab', { name: /conexión/i });
-    expect(connTab).toBeInTheDocument();
-    fireEvent.click(connTab);
-
     await waitFor(() => {
-      expect(screen.getByText(/sql.correo.internal/i)).toBeInTheDocument();
+      expect(screen.getByText(/sql.example.corp/i)).toBeInTheDocument();
     });
 
     const importBtn = screen.getByRole('button', { name: /importar archivo/i });

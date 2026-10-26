@@ -159,9 +159,9 @@ export function Topbar({
               placeholder="Buscar terminal o IP"
               className="w-full h-10 pl-9 pr-16 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-sm"
             />
-            <Kbd className="absolute right-2 pointer-events-none text-[10px]">
-              Ctrl+F
-            </Kbd>
+            <div className="absolute right-2 pointer-events-none text-[10px]">
+              <Kbd>Ctrl</Kbd>+<Kbd>F</Kbd>
+            </div>
           </div>
 
           {/* Menú de resultados de búsqueda */}
@@ -268,72 +268,79 @@ export function Topbar({
             </Badge>
           )}
 
-          {/* Botón Portal MDA */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleOpenPortalMda}
-            aria-label="Abrir Portal MDA"
-            title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
-            className="h-10 px-3 bg-primary/15 hover:bg-primary/25 text-primary border-primary/30 dark:bg-primary/20 dark:hover:bg-primary/30 dark:text-primary-foreground font-semibold text-xs cursor-pointer shadow-xs gap-1.5"
+          {/* Grupo de botones compacto para acciones de Topbar */}
+          <div
+            role="group"
+            data-slot="button-group"
+            className="inline-flex items-center rounded-md border border-border/60 bg-muted/20 p-0.5 -space-x-px"
           >
-            <ExternalLink className="h-4 w-4" />
-            <span>Portal MDA</span>
-          </Button>
-
-          {/* Settings Modal Trigger */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => onOpenSettings?.()}
-            aria-label="Abrir ajustes y configuración"
-            title="Configuración y Actualizaciones (Atajo F10)"
-            className="h-10 w-10 text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
-
-          {/* Info Modal Trigger */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsInfoOpen(true)}
-            aria-label="Abrir información del sistema"
-            title="Información y características del aplicativo"
-            className="h-10 w-10 text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
-          >
-            <HelpCircle className="h-4 w-4" />
-          </Button>
-
-          <ThemeToggle />
-
-          {/* Separador vertical de ventana */}
-          <Separator orientation="vertical" className="h-6 mx-0.5" />
-
-          {/* Botones de Ventana (Minimizar a barra de tareas y Apagado a Bandeja del Sistema) */}
-          <div className="flex items-center gap-1">
+            {/* Botón Portal MDA */}
             <Button
               type="button"
               variant="ghost"
-              size="icon"
+              size="default"
+              onClick={handleOpenPortalMda}
+              aria-label="Abrir Portal MDA"
+              title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
+              className="text-xs font-semibold gap-1.5 cursor-pointer text-primary hover:text-primary"
+            >
+              <ExternalLink className="h-4 w-4" />
+              <span>Portal MDA</span>
+            </Button>
+
+            {/* Settings Modal Trigger */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="default"
+              onClick={() => onOpenSettings?.()}
+              aria-label="Abrir ajustes y configuración"
+              title="Configuración y Actualizaciones (Atajo F10)"
+              className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+
+            {/* Info Modal Trigger */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="default"
+              onClick={() => setIsInfoOpen(true)}
+              aria-label="Abrir información del sistema"
+              title="Información y características del aplicativo"
+              className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </Button>
+
+            <ThemeToggle />
+
+            {/* Separador vertical de ventana dentro del buttongroup */}
+            <Separator orientation="vertical" className="h-5 mx-1" />
+
+            {/* Minimizar ventana */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="default"
               onClick={minimizeWindow}
               aria-label="Minimizar ventana"
               title="Minimizar a barra de tareas"
-              className="h-10 w-10 text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
+              className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
             >
               <Minus className="h-4 w-4" />
             </Button>
+
+            {/* Apagado / Minimizar a bandeja del sistema */}
             <Button
               type="button"
               variant="ghost"
-              size="icon"
+              size="default"
               onClick={hideToTray}
               aria-label="Minimizar a bandeja del sistema"
               title="Ocultar en bandeja del sistema (Turn Off)"
-              className="h-10 w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer rounded-md"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer px-2"
             >
               <Power className="h-4 w-4" />
             </Button>
