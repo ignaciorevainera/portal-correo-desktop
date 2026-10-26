@@ -90,7 +90,7 @@ describe('SettingsModal Component', () => {
       expect(screen.getByText(/soporte para escaneo visual de subred/i)).toBeInTheDocument();
     });
 
-    const updateNowBtn = screen.getByRole('button', { name: /descargar actualización/i });
+    const updateNowBtn = screen.getByRole('button', { name: /descargar e instalar en segundo plano/i });
     expect(updateNowBtn).toBeInTheDocument();
     fireEvent.click(updateNowBtn);
 
@@ -123,11 +123,71 @@ describe('SettingsModal Component', () => {
 
     expect(screen.getByText(/minimizar a la bandeja al cerrar/i)).toBeInTheDocument();
     expect(screen.getByText(/atajo global ctrl \+ espacio/i)).toBeInTheDocument();
-    expect(screen.getByText(/ping inicial predeterminado/i)).toBeInTheDocument();
+    expect(screen.getByText(/modo de ping predeterminado/i)).toBeInTheDocument();
 
     const trayCheckbox = screen.getByLabelText(/minimizar a la bandeja al cerrar/i);
     expect(trayCheckbox).toBeChecked();
     fireEvent.click(trayCheckbox);
     expect(trayCheckbox).not.toBeChecked();
+  });
+
+  it('renders corporate connection tab and allows importing, testing, and clearing configuration', async () => {
+    vi.spyOn(electronClient, 'getCorporateConfig').mockResolvedValue({
+      isConfigured: true,
+      dbServer: 'sql.correo.internal',
+      dbDatabase: 'PortalDB',
+      dbUser: 'operador_corp',
+      dbPort: 1433,
+    });
+
+    const importSpy = vi.spyOn(electronClient, 'importCorporateConfigDialog').mockResolvedValue({
+      success: true,
+      config: {
+        isConfigured: true,
+        dbServer: 'imported.correo.internal',
+        dbDatabase: 'ImportedDB',
+        dbUser: 'operador_imported',
+        dbPort: 1433,
+      },
+      status: { connected: true, mode: 'sql', server: 'imported.correo.internal' },
+    });
+
+    const clearSpy = vi.spyOn(electronClient, 'clearCorporateConfig').mockResolvedValue({ success: true });
+    const testSqlSpy = vi.spyOn(electronClient, 'testSqlConnection').mockResolvedValue({
+      connected: true,
+      mode: 'sql',
+      server: 'sql.correo.internal',
+    });
+
+    render(
+      <SettingsModal
+        isOpen={true}
+        onClose={vi.fn()}
+        currentVersion="1.0.0"
+      />
+    );
+
+    const connTab = screen.getByRole('tab', { name: /conexión/i });
+    expect(connTab).toBeInTheDocument();
+    fireEvent.click(connTab);
+
+    await waitFor(() => {
+      expect(screen.getByText(/sql.correo.internal/i)).toBeInTheDocument();
+    });
+
+    const importBtn = screen.getByRole('button', { name: /importar archivo/i });
+    expect(importBtn).toBeInTheDocument();
+    fireEvent.click(importBtn);
+    expect(importSpy).toHaveBeenCalledTimes(1);
+
+    const testBtn = screen.getByRole('button', { name: /probar conexión/i });
+    expect(testBtn).toBeInTheDocument();
+    fireEvent.click(testBtn);
+    expect(testSqlSpy).toHaveBeenCalledTimes(1);
+
+    const clearBtn = screen.getByRole('button', { name: /eliminar configuración/i });
+    expect(clearBtn).toBeInTheDocument();
+    fireEvent.click(clearBtn);
+    expect(clearSpy).toHaveBeenCalledTimes(1);
   });
 });

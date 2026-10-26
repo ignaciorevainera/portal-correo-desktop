@@ -17,8 +17,8 @@
 - [ ] Task: Diseñar e implementar la pestaña de gestión de configuración en el Modal de Ajustes
   - [ ] Write Failing Tests: Actualizar `src/test/SettingsModal.test.tsx` verificando la presencia de la pestaña "Conexión", los botones de importar archivo, testear conexión, estado en tiempo real y eliminar configuración.
   - [ ] Implement to Pass Tests: Integrar en `src/components/SettingsModal.tsx` la nueva pestaña con Shadcn UI (Badge de estado, botón con input file y soporte para selector nativo de Windows, feedback sonner y visualización segura sin contraseñas).
-  - [ ] Refactor & Coverage: Validar accesibilidad, tema claro/oscuro y reactividad al conectar o desconectar SQL.
-- [ ] Task: Phase 2 Verification & Checkpoint (Protocol in workflow.md)
+  - [x] Refactor & Coverage: Validar accesibilidad, tema claro/oscuro y reactividad al conectar o desconectar SQL.
+- [x] Task: Phase 2 Verification & Checkpoint (Protocol in workflow.md)
 
 ### Phase 3: Pipeline de Empaquetado Interno Plug & Play (`release:internal`)
 - [ ] Task: Configurar script de empaquetado corporativo para distribución interna

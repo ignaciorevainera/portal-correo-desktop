@@ -13,8 +13,14 @@ import {
   checkAppUpdates,
   startDownloadUpdate,
   installUpdateNow,
+  getCorporateConfig,
+  importCorporateConfigDialog,
+  clearCorporateConfig,
+  testSqlConnection,
+  CorporateConfigSummary,
   UpdateCheckResult,
   UpdateDownloadProgress,
+  BackendStatus,
 } from '@/services/electronClient';
 import {
   Settings,
@@ -28,7 +34,13 @@ import {
   Sliders,
   Server,
   Sparkles,
+  Database,
+  Upload,
+  Trash2,
+  ShieldCheck,
+  Check,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -43,12 +55,17 @@ export function SettingsModal({
   currentVersion = '1.0.0',
   backendConnected = false,
 }: SettingsModalProps): React.JSX.Element {
-  const [activeTab, setActiveTab] = useState<'updates' | 'preferences' | 'diagnostics'>('updates');
+  const [activeTab, setActiveTab] = useState<'updates' | 'connection' | 'preferences' | 'diagnostics'>('updates');
   const [isChecking, setIsChecking] = useState(false);
   const [updateResult, setUpdateResult] = useState<UpdateCheckResult | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<UpdateDownloadProgress | null>(null);
   const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
+
+  // Corporate Config State
+  const [corpConfig, setCorpConfig] = useState<CorporateConfigSummary | null>(null);
+  const [isTestingConn, setIsTestingConn] = useState(false);
+  const [connTestResult, setConnTestResult] = useState<BackendStatus | null>(null);
 
   // User Preferences
   const [minimizeToTray, setMinimizeToTray] = useState<boolean>(() => {
@@ -77,6 +94,12 @@ export function SettingsModal({
   useEffect(() => {
     localStorage.setItem('cmda_pref_ping_mode', defaultPingMode);
   }, [defaultPingMode]);
+
+  useEffect(() => {
+    if (isOpen) {
+      getCorporateConfig().then(setCorpConfig).catch(() => {});
+    }
+  }, [isOpen]);
 
   const handleCheckUpdates = async () => {
     setIsChecking(true);
@@ -109,6 +132,48 @@ export function SettingsModal({
 
   const handleInstallNow = async () => {
     await installUpdateNow();
+  };
+
+  const handleImportConfigFile = async () => {
+    try {
+      const res = await importCorporateConfigDialog();
+      if (res.canceled) return;
+      if (res.success && res.config) {
+        setCorpConfig(res.config);
+        setConnTestResult(res.status || null);
+        toast.success('Configuración corporativa importada y guardada con éxito.');
+      } else if (res.error) {
+        toast.error(`Error al importar: ${res.error}`);
+      }
+    } catch (err: any) {
+      toast.error(`Fallo de importación: ${err.message}`);
+    }
+  };
+
+  const handleTestConnection = async () => {
+    setIsTestingConn(true);
+    try {
+      const status = await testSqlConnection();
+      setConnTestResult(status);
+      if (status.connected) {
+        toast.success('Conexión con SQL Server establecida exitosamente.');
+      } else {
+        toast.error(`No se pudo conectar: ${status.error || 'Host o credenciales inaccesibles'}`);
+      }
+    } finally {
+      setIsTestingConn(false);
+    }
+  };
+
+  const handleClearConfig = async () => {
+    try {
+      await clearCorporateConfig();
+      setCorpConfig({ isConfigured: false, dbServer: '', dbDatabase: '', dbUser: '', dbPort: 1433 });
+      setConnTestResult(null);
+      toast.info('Configuración eliminada. La aplicación funcionará en modo Local / Offline.');
+    } catch (err: any) {
+      toast.error(`Error al eliminar configuración: ${err.message}`);
+    }
   };
 
   return (
@@ -149,6 +214,20 @@ export function SettingsModal({
             >
               <RefreshCw className="h-3.5 w-3.5" />
               Actualizaciones
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'connection'}
+              onClick={() => setActiveTab('connection')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeTab === 'connection'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`}
+            >
+              <Database className="h-3.5 w-3.5" />
+              Conexión
             </button>
             <button
               type="button"
@@ -199,118 +278,93 @@ export function SettingsModal({
                     type="button"
                     size="sm"
                     onClick={handleCheckUpdates}
-                    disabled={isChecking || isDownloading}
-                    className="h-8 text-xs font-semibold gap-1.5"
+                    disabled={isChecking}
+                    className="text-xs font-semibold cursor-pointer gap-1.5 h-8"
                   >
                     <RefreshCw className={`h-3.5 w-3.5 ${isChecking ? 'animate-spin' : ''}`} />
-                    {isChecking ? 'Buscando...' : 'Buscar actualizaciones'}
+                    <span>{isChecking ? 'Buscando...' : 'Buscar actualizaciones'}</span>
                   </Button>
                 </div>
               </div>
 
-              {/* Estado: Al día */}
-              {updateResult && !updateResult.hasUpdate && !updateResult.error && (
-                <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <div className="text-xs font-bold text-emerald-400">
-                      Estás utilizando la última versión disponible
-                    </div>
-                    <div className="text-[11px] text-muted-foreground">
-                      No hay actualizaciones pendientes para tu instalación.
+              {updateResult && !updateResult.hasUpdate && (
+                <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-start gap-2.5 text-xs">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <div>
+                    <div className="font-semibold">Estás utilizando la última versión disponible</div>
+                    <div className="text-[11px] opacity-80">
+                      No hay actualizaciones pendientes para Portal Correo Desktop.
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Estado: Error de red/chequeo */}
-              {updateResult?.error && (
-                <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/10 flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <div className="text-xs font-bold text-amber-400">
-                      Aviso de comprobación
-                    </div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {updateResult.error}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Estado: Nueva versión disponible */}
-              {updateResult?.hasUpdate && (
+              {updateResult && updateResult.hasUpdate && (
                 <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-bold text-primary">
-                        ¡Nueva versión disponible!
-                      </span>
+                    <div className="flex items-center gap-1.5 text-primary text-xs font-bold">
+                      <Sparkles className="h-4 w-4" />
+                      <span>¡Nueva versión disponible!</span>
                     </div>
-                    <Badge variant="default" className="text-xs font-mono">
+                    <Badge variant="default" className="text-xs font-mono font-bold">
                       v{updateResult.latestVersion}
                     </Badge>
                   </div>
 
                   {updateResult.releaseNotes && (
-                    <div className="text-[11px] p-2.5 rounded-lg bg-background/80 border border-border text-foreground font-sans whitespace-pre-line leading-relaxed max-h-32 overflow-y-auto">
+                    <div className="text-xs text-muted-foreground bg-background/60 p-2.5 rounded-md border border-border/60 max-h-32 overflow-y-auto whitespace-pre-wrap font-sans">
                       {updateResult.releaseNotes}
                     </div>
                   )}
 
-                  {/* Acciones de Descarga e Instalación */}
                   {!isDownloading && !downloadedFilePath && (
                     <Button
                       type="button"
                       size="sm"
                       onClick={handleStartDownload}
-                      className="w-full text-xs font-semibold gap-2 h-9"
+                      className="w-full text-xs font-semibold gap-1.5 h-9 cursor-pointer"
                     >
                       <Download className="h-4 w-4" />
-                      Descargar actualización
+                      <span>Descargar e instalar en segundo plano</span>
                     </Button>
                   )}
 
-                  {isDownloading && (
-                    <div className="space-y-2 pt-1">
-                      <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-                        <span>Descargando en segundo plano: {downloadProgress?.percent || 0}%</span>
-                        <span className="text-[11px] text-muted-foreground font-mono">
-                          {downloadProgress
-                            ? `${(downloadProgress.receivedBytes / 1048576).toFixed(1)}MB / ${(
-                                downloadProgress.totalBytes / 1048576
-                              ).toFixed(1)}MB`
-                            : 'Iniciando...'}
+                  {isDownloading && downloadProgress && (
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex justify-between text-xs text-muted-foreground font-mono">
+                        <span>Descargando en segundo plano: {downloadProgress.percent}%</span>
+                        <span>
+                          {(downloadProgress.receivedBytes / 1024 / 1024).toFixed(1)} MB /{' '}
+                          {(downloadProgress.totalBytes / 1024 / 1024).toFixed(1)} MB
                         </span>
                       </div>
-                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden border border-border">
+                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                         <div
-                          className="bg-primary h-full transition-all duration-300"
-                          style={{ width: `${downloadProgress?.percent || 5}%` }}
+                          className="bg-primary h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${downloadProgress.percent}%` }}
                         />
                       </div>
                     </div>
                   )}
 
                   {downloadedFilePath && (
-                    <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 space-y-2">
-                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                        Actualización lista para instalar
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        La actualización fue descargada. Se instalará al cerrar la aplicación o puedes reiniciar ahora.
+                    <div className="space-y-2 pt-1">
+                      <div className="flex items-center gap-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="h-4 w-4 shrink-0" />
+                        <span>Actualización lista para instalar</span>
                       </div>
                       <Button
                         type="button"
                         size="sm"
                         onClick={handleInstallNow}
-                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold gap-2 h-9"
+                        className="w-full text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-9 cursor-pointer"
                       >
                         <RefreshCw className="h-4 w-4" />
-                        Reiniciar e instalar ahora
+                        <span>Reiniciar e instalar ahora</span>
                       </Button>
+                      <p className="text-[11px] text-muted-foreground text-center">
+                        Si preferís no reiniciar ahora, la actualización se aplicará automáticamente en el próximo arranque.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -318,66 +372,132 @@ export function SettingsModal({
             </div>
           )}
 
-          {/* TAB 2: PREFERENCIAS OPERATIVAS */}
+          {/* TAB 2: CONEXIÓN CORPORATIVA */}
+          {activeTab === 'connection' && (
+            <div className="space-y-4">
+              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-bold text-foreground">Estado de Conexión SQL</span>
+                  </div>
+                  <Badge
+                    variant={backendConnected || (corpConfig?.isConfigured && connTestResult?.connected) ? 'default' : 'secondary'}
+                    className="text-[11px] font-mono"
+                  >
+                    {backendConnected || (corpConfig?.isConfigured && connTestResult?.connected) ? 'SQL Online' : 'Modo Offline / Local'}
+                  </Badge>
+                </div>
+
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>
+                    La configuración corporativa permite acceder al inventario histórico de terminales de Correo Argentino.
+                  </p>
+                  {corpConfig?.isConfigured ? (
+                    <div className="mt-2 p-2.5 rounded-md bg-background/60 border border-border/60 font-mono text-[11px] space-y-1">
+                      <div><span className="text-muted-foreground">Servidor:</span> <strong>{corpConfig.dbServer}</strong></div>
+                      <div><span className="text-muted-foreground">Base de Datos:</span> {corpConfig.dbDatabase || 'Por defecto'}</div>
+                      <div><span className="text-muted-foreground">Usuario:</span> {corpConfig.dbUser}</div>
+                      <div><span className="text-muted-foreground">Puerto:</span> {corpConfig.dbPort || 1433}</div>
+                    </div>
+                  ) : (
+                    <div className="p-2.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px]">
+                      No hay archivo de configuración corporativo importado. Podés seguir usando las herramientas de red (Ping, VNC, MSRA, DNS, Escáner) normalmente.
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleImportConfigFile}
+                    className="text-xs font-semibold gap-1.5 h-8 cursor-pointer"
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    <span>Importar archivo de configuración (.json / .env)</span>
+                  </Button>
+
+                  {corpConfig?.isConfigured && (
+                    <>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={handleTestConnection}
+                        disabled={isTestingConn}
+                        className="text-xs font-semibold gap-1.5 h-8 cursor-pointer"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${isTestingConn ? 'animate-spin' : ''}`} />
+                        <span>{isTestingConn ? 'Probando...' : 'Probar conexión'}</span>
+                      </Button>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleClearConfig}
+                        className="text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1.5 h-8 cursor-pointer ml-auto"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Eliminar configuración</span>
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: PREFERENCIAS */}
           {activeTab === 'preferences' && (
             <div className="space-y-4">
-              {/* Minimizar a bandeja */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-muted/20">
-                <div className="flex items-start gap-3">
-                  <HardDrive className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div className="space-y-0.5">
-                    <label
-                      htmlFor="pref-tray"
-                      className="text-xs font-semibold text-foreground cursor-pointer"
-                    >
-                      Minimizar a la bandeja al cerrar
-                    </label>
-                    <div className="text-[11px] text-muted-foreground">
-                      Al presionar la 'X', la app se mantiene oculta en la barra de tareas
-                    </div>
-                  </div>
+              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <HardDrive className="h-3.5 w-3.5 text-primary" />
+                  <span>Comportamiento de Ventana y Bandeja</span>
                 </div>
-                <input
-                  id="pref-tray"
-                  type="checkbox"
-                  checked={minimizeToTray}
-                  onChange={(e) => setMinimizeToTray(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-                />
+                <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={minimizeToTray}
+                    onChange={(e) => setMinimizeToTray(e.target.checked)}
+                    className="mt-0.5 rounded border-border text-primary focus:ring-primary h-4 w-4"
+                  />
+                  <div>
+                    <span className="font-medium text-foreground">Minimizar a la bandeja al cerrar</span>
+                    <p className="text-[11px] text-muted-foreground">
+                      Mantiene la aplicación en segundo plano en el área de notificación de Windows para reapertura instantánea.
+                    </p>
+                  </div>
+                </label>
               </div>
 
-              {/* Atajo global */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-muted/20">
-                <div className="flex items-start gap-3">
-                  <Keyboard className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div className="space-y-0.5">
-                    <label
-                      htmlFor="pref-hotkey"
-                      className="text-xs font-semibold text-foreground cursor-pointer"
-                    >
-                      Atajo global Ctrl + Espacio
-                    </label>
-                    <div className="text-[11px] text-muted-foreground">
-                      Restaura la app y busca automáticamente la IP o PC en el portapapeles
-                    </div>
-                  </div>
+              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Keyboard className="h-3.5 w-3.5 text-primary" />
+                  <span>Atajo Global de Teclado</span>
                 </div>
-                <input
-                  id="pref-hotkey"
-                  type="checkbox"
-                  checked={globalHotkeyEnabled}
-                  onChange={(e) => setGlobalHotkeyEnabled(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-                />
+                <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={globalHotkeyEnabled}
+                    onChange={(e) => setGlobalHotkeyEnabled(e.target.checked)}
+                    className="mt-0.5 rounded border-border text-primary focus:ring-primary h-4 w-4"
+                  />
+                  <div>
+                    <span className="font-medium text-foreground">Atajo Global Ctrl + Espacio</span>
+                    <p className="text-[11px] text-muted-foreground">
+                      Trae el aplicativo al frente y enfoca el buscador pegando automáticamente el texto seleccionado del portapapeles.
+                    </p>
+                  </div>
+                </label>
               </div>
 
-              {/* Modo de Ping predeterminado */}
-              <div className="p-3.5 rounded-xl border border-border bg-muted/20 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs font-semibold text-foreground">
-                    Ping inicial predeterminado
-                  </span>
+              <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">
+                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Activity className="h-3.5 w-3.5 text-primary" />
+                  <span>Modo de Ping Predeterminado</span>
                 </div>
                 <div className="text-[11px] text-muted-foreground">
                   Tipo de ping enviado automáticamente al cargar una terminal
@@ -388,7 +508,7 @@ export function SettingsModal({
                     size="sm"
                     variant={defaultPingMode === 'standard' ? 'default' : 'outline'}
                     onClick={() => setDefaultPingMode('standard')}
-                    className="text-xs font-semibold h-8"
+                    className="text-xs font-semibold h-8 cursor-pointer"
                   >
                     Estándar (4 paquetes)
                   </Button>
@@ -397,7 +517,7 @@ export function SettingsModal({
                     size="sm"
                     variant={defaultPingMode === 'infinite' ? 'default' : 'outline'}
                     onClick={() => setDefaultPingMode('infinite')}
-                    className="text-xs font-semibold h-8"
+                    className="text-xs font-semibold h-8 cursor-pointer"
                   >
                     Continuo (-t)
                   </Button>
@@ -406,7 +526,7 @@ export function SettingsModal({
             </div>
           )}
 
-          {/* TAB 3: DIAGNÓSTICO */}
+          {/* TAB 4: DIAGNÓSTICO */}
           {activeTab === 'diagnostics' && (
             <div className="space-y-3">
               <div className="p-3.5 rounded-xl border border-border bg-muted/20 space-y-3">
@@ -441,7 +561,7 @@ export function SettingsModal({
 
         <Separator />
         <div className="p-3 bg-muted/30 flex justify-end">
-          <Button type="button" variant="outline" size="sm" onClick={onClose} className="text-xs h-8">
+          <Button type="button" variant="outline" size="sm" onClick={onClose} className="text-xs h-8 cursor-pointer">
             Cerrar
           </Button>
         </div>
