@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "electron:dev": "concurrently -k \"vite\" \"electron .\"",
     "release:check": "vitest run src/test/securityAudit.test.ts && npm run build",
-    "release:build": "npm run release:check && electron-builder --win"
+    "release:build": "npm run release:check && electron-builder --win",
+    "release:internal": "node scripts/build-internal.cjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

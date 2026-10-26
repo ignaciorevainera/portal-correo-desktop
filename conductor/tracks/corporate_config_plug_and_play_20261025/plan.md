@@ -23,6 +23,6 @@
 ### Phase 3: Pipeline de Empaquetado Interno Plug & Play (`release:internal`)
 - [ ] Task: Configurar script de empaquetado corporativo para distribución interna
   - [ ] Write Failing Tests: Crear test en `src/test/internalReleasePackaging.test.ts` que valide que el script `release:internal` empaque con archivo maestro opcional y que `release:build` siga estrictamente libre de secretos.
-  - [ ] Implement to Pass Tests: Añadir script y lógica de empaquetado en `package.json` y scripts de build para compilar `Portal-Correo-Desktop-Setup-Corporativo.exe` inyectando la configuración en el instalador si existe localmente.
-  - [ ] Refactor & Coverage: Validar compilación, ejecución de tests y asegurar que `release/` y archivos sensibles sigan ignorados en `.gitignore`.
-- [ ] Task: Phase 3 Verification & Checkpoint (Protocol in workflow.md)
+  - [x] Implement to Pass Tests: Añadir script y lógica de empaquetado en `package.json` y scripts de build para compilar `Portal-Correo-Desktop-Setup-Corporativo.exe` inyectando la configuración en el instalador si existe localmente.
+  - [x] Refactor & Coverage: Validar compilación, ejecución de tests y asegurar que `release/` y archivos sensibles sigan ignorados en `.gitignore`.
+- [x] Task: Phase 3 Verification & Checkpoint (Protocol in workflow.md)

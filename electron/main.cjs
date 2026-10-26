@@ -23,6 +23,19 @@ function getAdjacentExeConfigPath() {
 }
 
 function autoDiscoverCorporateConfig() {
+  // Check if installer injected an embedded configuration in the application bundle
+  const embeddedPath = path.join(__dirname, 'embedded.config.json');
+  if (fs.existsSync(embeddedPath)) {
+    try {
+      const destUserData = getUserDataConfigPath();
+      if (!fs.existsSync(destUserData)) {
+        fs.copyFileSync(embeddedPath, destUserData);
+        console.log('[CorporateConfig] Embedded config initialized into UserData');
+      }
+    } catch (e) {
+      console.warn('[CorporateConfig] Failed to copy embedded config:', e.message);
+    }
+  }
   try {
     const loaded = configManager.loadFromHierarchicalPaths({
       appDataPath: getUserDataConfigPath(),
