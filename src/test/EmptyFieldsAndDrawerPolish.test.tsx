@@ -41,8 +41,7 @@ describe('TerminalTechnicalCard & SubnetScannerDrawer UI Polish', () => {
     expect(screen.getAllByText(/no especificada/i).length).toBeGreaterThanOrEqual(1);
 
     // El botón de escanear subred usa clase de botón shadcn con buen contraste
-    const scanBtn = screen.getByRole('button', { name: /escanear subred/i });
-    expect(scanBtn).toBeInTheDocument();
+    // Escanear subred se reubico en QuickActionsBar
   });
 
   it('renders SubnetScannerDrawer below the topbar with top-14 / inset-y-0 adjustment and pointer cursor on host items', () => {

@@ -14,9 +14,7 @@ import {
 } from "lucide-react";
 import {
   Card,
-  CardHeader,
-  CardAction,
-  CardContent,
+    CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,39 +39,7 @@ export function TerminalTechnicalCard({
 
   return (
     <Card size="sm" className="rounded-lg border-border bg-card shadow-xs">
-      <CardHeader className="border-b border-border/60 pb-2">
-        <CardAction className="flex items-center gap-1.5">
-          {onOpenSubnetScanner && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onOpenSubnetScanner}
-              className="h-6 text-[10px] px-2.5 font-sans font-medium gap-1.5 text-foreground bg-muted/80 hover:bg-muted border-border hover:border-border cursor-pointer shadow-2xs"
-              title="Escanear toda la subred de esta terminal"
-            >
-              <Network className="h-3 w-3 text-primary" />
-              <span>Escanear Subred</span>
-            </Button>
-          )}
-          <Badge
-            variant="outline"
-            className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25 font-bold h-5"
-          >
-            En Línea
-          </Badge>
-          {terminal.architecture && terminal.architecture.trim().length > 0 && (
-            <Badge
-              variant="outline"
-              className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted text-muted-foreground border-border font-medium h-5"
-            >
-              {terminal.architecture}
-            </Badge>
-          )}
-        </CardAction>
-      </CardHeader>
-
-      <CardContent className="pt-2">
+      <CardContent className="p-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           {/* Bloque 1: Conectividad de Red */}
           <div className="p-2.5 rounded-md bg-muted/40 border border-border/60 space-y-2">
