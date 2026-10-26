@@ -240,6 +240,9 @@ export default function App(): React.JSX.Element {
   }, [terminal, isPinging]);
 
   const handleSelectTerminal = (pc: string): void => {
+    if (pc && pc.trim() === selectedPc?.trim() && terminal) {
+      return;
+    }
     setSelectedPc(pc);
     setActionFeedback(null);
     setRemoteProbe(null);

@@ -11,6 +11,7 @@ const { checkForUpdates, downloadUpdateFile } = require('./updaterService.cjs');
 
 let tray = null;
 let activePingProcess = null;
+let currentPingSessionId = 0;
 let activeSubnetAbortController = null;
 let downloadedInstallerPath = null;
 
@@ -370,6 +371,8 @@ ipcMain.handle('cmda:launch-remote-smart', async (_event, target) => {
 });
 
 ipcMain.on('cmda:ping-start', async (event, target, continuous) => {
+  currentPingSessionId++;
+  const thisSessionId = currentPingSessionId;
 
   if (activePingProcess) {
     try {
@@ -380,24 +383,29 @@ ipcMain.on('cmda:ping-start', async (event, target, continuous) => {
 
   const pingOptions = continuous ? { continuous: true } : 4;
 
-  activePingProcess = systemTools.executePing(
+  const proc = systemTools.executePing(
     target,
     pingOptions,
     (data) => {
+      if (thisSessionId !== currentPingSessionId) return;
       if (!event.sender.isDestroyed()) {
         event.sender.send('cmda:ping-data', data);
       }
     },
     (code) => {
+      if (thisSessionId !== currentPingSessionId) return;
       activePingProcess = null;
       if (!event.sender.isDestroyed()) {
         event.sender.send('cmda:ping-end', code);
       }
     }
   );
+
+  activePingProcess = proc;
 });
 
 ipcMain.handle('cmda:ping-stop', () => {
+  currentPingSessionId++;
   if (activePingProcess) {
     try {
       activePingProcess.kill();
@@ -424,6 +432,7 @@ function stopActiveDiagnosticProcess() {
 
 ipcMain.on('cmda:cmd-start', async (event, payload) => {
   const { command, target, options } = payload || {};
+  currentPingSessionId++;
   // Detener proceso anterior de ping o diagnóstico si estuviera corriendo
   if (activePingProcess) {
     try {

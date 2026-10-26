@@ -82,7 +82,9 @@ export function LivePingConsole({
       (code: number) => {
         setLogs((prev) => [
           ...prev,
-          `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`,
+          code === null
+            ? `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`
+            : `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`,
         ]);
         onPingCompleteRef.current?.();
       },
