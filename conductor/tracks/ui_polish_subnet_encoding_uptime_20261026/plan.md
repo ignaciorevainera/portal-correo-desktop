@@ -5,11 +5,11 @@
 - [x] Task: Implement robust binary buffer decoding in `electron/systemTools.cjs` to handle CP850 bytes (`Estadísticas`, `Mínimo`, `Máximo`, `milisegundos`) a1cdb54
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) d0ce9b1
 
-## Phase 2: Topbar Branding & Technical Card Space Optimization
-- [ ] Task: Ensure `src/assets/icon.png` is placed and import it directly into `src/components/Topbar.tsx`
-- [ ] Task: Remove `<CardHeader>` and redundant online/architecture badges from `src/components/TerminalTechnicalCard.tsx`
-- [ ] Task: Update/add unit tests for `Topbar` and `TerminalTechnicalCard`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 2: Topbar Branding & Technical Card Space Optimization [checkpoint: cec0920]
+- [x] Task: Ensure `src/assets/icon.png` is placed and import it directly into `src/components/Topbar.tsx` cec0920
+- [x] Task: Remove `<CardHeader>` and redundant online/architecture badges from `src/components/TerminalTechnicalCard.tsx` cec0920
+- [x] Task: Update/add unit tests for `Topbar` and `TerminalTechnicalCard` cec0920
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) cec0920
 
 ## Phase 3: QuickActionsBar Actions & Uptime Refresh
 - [ ] Task: Add "Escanear Subred" button to `src/components/QuickActionsBar.tsx`
