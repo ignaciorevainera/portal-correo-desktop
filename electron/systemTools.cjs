@@ -56,9 +56,9 @@ function getMsraCommand(targetIpOrHost) {
 
 /**
  * @param {string} targetIpOrHost
- * @param {number | { count?: number; continuous?: boolean }} [options=1]
+ * @param {number | { count?: number; continuous?: boolean }} [options=4]
  */
-function getPingArgs(targetIpOrHost, options = 1) {
+function getPingArgs(targetIpOrHost, options = 4) {
   const clean = sanitizeHostOrIp(targetIpOrHost);
   if (typeof options === 'object' && options !== null && options.continuous) {
     return {
@@ -319,8 +319,9 @@ function launchMsra(targetIpOrHost) {
   }
 }
 
-// Tabla de mapeo para caracteres comunes de la página de códigos CP850 (OEM español de Windows)
+// Tabla de mapeo para caracteres comunes de la página de códigos CP850 y Windows-1252 (OEM y ANSI español de Windows)
 const CP850_TABLE = {
+  // CP850
   0x82: 'é',
   0x85: 'à',
   0x8a: 'è',
@@ -337,6 +338,20 @@ const CP850_TABLE = {
   0xa8: '¿',
   0xad: '¡',
   0xe1: 'ß',
+  // Windows-1252
+  0xe0: 'à',
+  0xe8: 'è',
+  0xec: 'ì',
+  0xf2: 'ò',
+  0xf9: 'ù',
+  0xe9: 'é',
+  0xed: 'í',
+  0xf3: 'ó',
+  0xfa: 'ú',
+  0xf1: 'ñ',
+  0xd1: 'Ñ',
+  0xdc: 'Ü',
+  0xbf: '¿',
 };
 
 /**
@@ -382,25 +397,43 @@ function sanitizePingOutput(rawText) {
 function executeGenericCommand(cmd, toolName, onData, onDone) {
   try {
     const proc = spawn(cmd.exe, cmd.args);
+    let stdoutBuffer = '';
+
+    const flushBuffer = () => {
+      if (stdoutBuffer) {
+        if (onData) onData(stdoutBuffer);
+        stdoutBuffer = '';
+      }
+    };
 
     if (proc.stdout) {
       proc.stdout.on('data', (data) => {
-        if (onData) onData(decodeSubprocessOutput(data));
+        const decoded = decodeSubprocessOutput(data);
+        stdoutBuffer += decoded;
+        const lastNewline = stdoutBuffer.lastIndexOf('\n');
+        if (lastNewline !== -1) {
+          const toEmit = stdoutBuffer.slice(0, lastNewline + 1);
+          stdoutBuffer = stdoutBuffer.slice(lastNewline + 1);
+          if (onData) onData(toEmit);
+        }
       });
     }
 
     if (proc.stderr) {
       proc.stderr.on('data', (data) => {
-        if (onData) onData(decodeSubprocessOutput(data));
+        const decoded = decodeSubprocessOutput(data);
+        if (onData) onData(decoded);
       });
     }
 
     proc.on('error', (err) => {
+      flushBuffer();
       if (onData) onData(`Error de subproceso ${toolName}: ${err.message}\n`);
       if (onDone) onDone(1);
     });
 
     proc.on('close', (code) => {
+      flushBuffer();
       if (onDone) onDone(code);
     });
 

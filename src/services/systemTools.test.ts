@@ -78,6 +78,12 @@ describe('systemTools orchestration & security sanitization', () => {
       expect(cmd.args).toEqual(['-n', '4', '192.0.2.101']);
     });
 
+    it('defaults to 4 packets when options is omitted', () => {
+      const cmd = getPingArgs('192.0.2.101');
+      expect(cmd.exe).toBe('ping');
+      expect(cmd.args).toEqual(['-n', '4', '192.0.2.101']);
+    });
+
     it('constructs ping args for continuous infinite ping (-t)', () => {
       const cmd = getPingArgs('192.0.2.101', { continuous: true } as any);
       expect(cmd.exe).toBe('ping');

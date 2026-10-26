@@ -40,6 +40,7 @@ import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { Kbd } from "@/components/ui/kbd";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function App(): React.JSX.Element {
   const [selectedPc, setSelectedPc] = useState<string>("");
@@ -109,10 +110,10 @@ export default function App(): React.JSX.Element {
       setNotFoundTerm(null);
       setRemoteProbe(null);
       setActiveDiagnostic(null);
+      setIsPinging(false);
       return;
     }
     setIsLoading(true);
-    setIsPinging(false);
     setActiveDiagnostic(null);
     setNotFoundTerm(null);
 
@@ -122,6 +123,7 @@ export default function App(): React.JSX.Element {
         if (!res.data) {
           setNotFoundTerm(selectedPc);
           setRemoteProbe(null);
+          setIsPinging(false);
         }
         setIsLoading(false);
         if (mainRef.current) {
@@ -133,6 +135,7 @@ export default function App(): React.JSX.Element {
           handleProbeRemote(res.data.ip);
         } else {
           setRemoteProbe(null);
+          setIsPinging(false);
         }
       })
       .catch(() => {
@@ -140,6 +143,7 @@ export default function App(): React.JSX.Element {
         setNotFoundTerm(selectedPc);
         setIsLoading(false);
         setRemoteProbe(null);
+        setIsPinging(false);
       });
   }, [selectedPc]);
 
@@ -237,7 +241,6 @@ export default function App(): React.JSX.Element {
 
   const handleSelectTerminal = (pc: string): void => {
     setSelectedPc(pc);
-    setIsPinging(false);
     setActionFeedback(null);
     setRemoteProbe(null);
     setIsProbingRemote(false);
@@ -367,7 +370,8 @@ export default function App(): React.JSX.Element {
 
   const handleDirectPing = (pc: string) => {
     setSelectedPc(pc);
-    handleStartPing("standard");
+    setPingMode("standard");
+    setIsPinging(true);
   };
 
   return (
@@ -415,7 +419,13 @@ export default function App(): React.JSX.Element {
         )}
 
         {/* Layout Unificado: El desplazamiento / scroll vertical es exclusivo sobre este contenedor <main> */}
-        <main ref={mainRef} className="flex-1 p-3.5 overflow-y-auto space-y-4 flex flex-col">
+        <main
+          ref={mainRef}
+          className={cn(
+            "flex-1 p-3.5 overflow-y-auto space-y-4",
+            !terminal || isLoading ? "flex flex-col" : "block",
+          )}
+        >
           {isLoading ? (
             <div className="flex-1 w-full min-h-[320px] flex flex-col items-center justify-center text-center p-6 space-y-3">
               <Loader2 className="h-7 w-7 text-primary animate-spin" />

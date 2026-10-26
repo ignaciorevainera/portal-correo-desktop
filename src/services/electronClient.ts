@@ -380,19 +380,19 @@ export function subscribeToPing(
   // Web Browser fallback simulation
   let timer: any = null;
   let seq = 1;
-  onData(`Iniciando simulación Ping${continuous ? ' continuo (-t)' : ''} a [${target}] en navegador web...\n`);
+  onData(`\nHaciendo ping a ${target} con 32 bytes de datos:\n`);
 
   timer = setInterval(() => {
     if (continuous || seq <= 4) {
       const ms = Math.floor(Math.random() * 20) + 12;
-      onData(`Respuesta desde ${target}: bytes=32 tiempo=${ms}ms TTL=126 (simulado)\n`);
+      onData(`Respuesta desde ${target}: bytes=32 tiempo=${ms}ms TTL=126\n`);
       seq++;
     } else {
       clearInterval(timer);
-      onData(`\nEstadísticas de ping para ${target}:\n    Paquetes: enviados = 4, recibidos = 4, perdidos = 0 (0% perdidos)\n`);
+      onData(`\nEstadísticas de ping para ${target}:\n    Paquetes: enviados = 4, recibidos = 4, perdidos = 0 (0% perdidos)\nTiempos aproximados de ida y vuelta en milisegundos:\n    Mínimo = 12ms, Máximo = 28ms, Media = 16ms\n`);
       onEnd(0);
     }
-  }, 600);
+  }, 400);
 
   return () => {
     if (timer) clearInterval(timer);

@@ -75,7 +75,9 @@ export function LivePingConsole({
       (text: string) => {
         const sanitized = sanitizePingText(text);
         const lines = sanitized.split(/\r?\n/).filter(Boolean);
-        setLogs((prev) => [...prev, ...lines].slice(-400));
+        if (lines.length > 0) {
+          setLogs((prev) => [...prev, ...lines].slice(-400));
+        }
       },
       (code: number) => {
         setLogs((prev) => [
@@ -108,8 +110,11 @@ export function LivePingConsole({
       activeCommand.command,
       activeCommand.target,
       (text: string) => {
-        const lines = text.split(/\r?\n/).filter(Boolean);
-        setLogs((prev) => [...prev, ...lines].slice(-400));
+        const sanitized = sanitizePingText(text);
+        const lines = sanitized.split(/\r?\n/).filter(Boolean);
+        if (lines.length > 0) {
+          setLogs((prev) => [...prev, ...lines].slice(-400));
+        }
       },
       (code: number) => {
         setLogs((prev) => [
@@ -184,7 +189,7 @@ export function LivePingConsole({
   };
 
   return (
-    <div className="rounded-lg border border-border bg-card shadow-xs overflow-hidden">
+    <div className="w-full shrink-0 rounded-lg border border-border bg-card shadow-xs overflow-hidden">
       {/* Barra de Controles Superior: Sin botón Iniciar redundante */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
         <div className="flex items-center gap-2">
@@ -267,7 +272,7 @@ export function LivePingConsole({
       <div
         ref={scrollContainerRef}
         data-testid="terminal-scroll-container"
-        className="h-64 overflow-y-auto overflow-x-auto p-3.5 bg-[#0C0C0C] font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] select-text scrollbar-thin"
+        className="h-64 min-h-[16rem] overflow-y-auto overflow-x-auto p-3.5 bg-[#0C0C0C] font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] select-text scrollbar-thin"
       >
         {logs.length === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
