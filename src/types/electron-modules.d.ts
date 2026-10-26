@@ -59,7 +59,26 @@ declare module '../../electron/systemTools.cjs' {
   export function launchMsra(targetIpOrHost: string): { success: boolean; processId?: number; message?: string };
   export function executePing(
     targetIpOrHost: string,
-    count?: number,
+    count?: number | { count?: number; continuous?: boolean },
+    onData?: (data: string) => void,
+    onDone?: (code: number) => void
+  ): any;
+  export function getNbtstatArgs(targetIpOrHost: string): { exe: string; args: string[] };
+  export function getTracertArgs(targetIpOrHost: string, maxHops?: number): { exe: string; args: string[] };
+  export function getArpArgs(targetIpOrHost: string): { exe: string; args: string[] };
+  export function executeNbtstat(
+    targetIpOrHost: string,
+    onData?: (data: string) => void,
+    onDone?: (code: number) => void
+  ): any;
+  export function executeTracert(
+    targetIpOrHost: string,
+    options?: { maxHops?: number } | number,
+    onData?: (data: string) => void,
+    onDone?: (code: number) => void
+  ): any;
+  export function executeArp(
+    targetIpOrHost: string,
     onData?: (data: string) => void,
     onDone?: (code: number) => void
   ): any;

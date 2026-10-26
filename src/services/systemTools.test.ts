@@ -11,6 +11,12 @@ import {
   probeRemotePorts,
   launchVncSmart,
   launchRemoteSmart,
+  getNbtstatArgs,
+  getTracertArgs,
+  getArpArgs,
+  executeNbtstat,
+  executeTracert,
+  executeArp,
 } from '../../electron/systemTools.cjs';
 
 describe('systemTools orchestration & security sanitization', () => {
@@ -228,6 +234,65 @@ describe('systemTools orchestration & security sanitization', () => {
       });
       expect(res.success).toBe(true);
       expect(res.portUsed).toBe(5900);
+    });
+  });
+
+  describe('Native Network Diagnostics Argument Builders', () => {
+    it('builds nbtstat command args with sanitized target', () => {
+      const cmd = getNbtstatArgs('192.0.2.101');
+      expect(cmd.exe).toBe('nbtstat');
+      expect(cmd.args).toEqual(['-A', '192.0.2.101']);
+    });
+
+    it('rejects invalid hostnames in getNbtstatArgs', () => {
+      expect(() => getNbtstatArgs('192.0.2.1; calc.exe')).toThrow('Host inválido');
+    });
+
+    it('builds tracert command args with -d and -h 6', () => {
+      const cmd = getTracertArgs('192.0.2.102');
+      expect(cmd.exe).toBe('tracert');
+      expect(cmd.args).toEqual(['-d', '-h', '6', '192.0.2.102']);
+    });
+
+    it('supports custom max hops in getTracertArgs', () => {
+      const cmd = getTracertArgs('192.0.2.102', 10);
+      expect(cmd.args).toEqual(['-d', '-h', '10', '192.0.2.102']);
+    });
+
+    it('builds arp command args with -a', () => {
+      const cmd = getArpArgs('192.0.2.103');
+      expect(cmd.exe).toBe('arp');
+      expect(cmd.args).toEqual(['-a', '192.0.2.103']);
+    });
+
+    it('rejects invalid host in getArpArgs', () => {
+      expect(() => getArpArgs('192.0.2.1 & whoami')).toThrow('Host inválido');
+    });
+  });
+
+  describe('Native Network Diagnostics Execution Functions', () => {
+    it('executes nbtstat and streams data chunks', async () => {
+      const onData = vi.fn();
+      const onDone = vi.fn();
+      const proc = executeNbtstat('192.0.2.101', onData, onDone);
+      expect(proc).toBeDefined();
+      if (proc && proc.kill) proc.kill();
+    });
+
+    it('executes tracert and streams data chunks', async () => {
+      const onData = vi.fn();
+      const onDone = vi.fn();
+      const proc = executeTracert('192.0.2.102', { maxHops: 6 }, onData, onDone);
+      expect(proc).toBeDefined();
+      if (proc && proc.kill) proc.kill();
+    });
+
+    it('executes arp and streams data chunks', async () => {
+      const onData = vi.fn();
+      const onDone = vi.fn();
+      const proc = executeArp('192.0.2.103', onData, onDone);
+      expect(proc).toBeDefined();
+      if (proc && proc.kill) proc.kill();
     });
   });
 });

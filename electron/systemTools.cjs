@@ -73,6 +73,31 @@ function getPingArgs(targetIpOrHost, options = 1) {
   };
 }
 
+function getNbtstatArgs(targetIpOrHost) {
+  const clean = sanitizeHostOrIp(targetIpOrHost);
+  return {
+    exe: 'nbtstat',
+    args: ['-A', clean],
+  };
+}
+
+function getTracertArgs(targetIpOrHost, maxHops = 6) {
+  const clean = sanitizeHostOrIp(targetIpOrHost);
+  const hops = typeof maxHops === 'number' ? maxHops : (maxHops && maxHops.maxHops) || 6;
+  return {
+    exe: 'tracert',
+    args: ['-d', '-h', String(hops), clean],
+  };
+}
+
+function getArpArgs(targetIpOrHost) {
+  const clean = sanitizeHostOrIp(targetIpOrHost);
+  return {
+    exe: 'arp',
+    args: ['-a', clean],
+  };
+}
+
 function getVncViewerPath() {
   const appPath = path.resolve(__dirname, '..');
   const possiblePaths = [
@@ -308,9 +333,8 @@ function sanitizePingOutput(rawText) {
     .replace(/aproximad[\ufffd\?]?s/gi, 'aproximados');
 }
 
-function executePing(targetIpOrHost, count = 4, onData, onDone) {
+function executeGenericCommand(cmd, toolName, onData, onDone) {
   try {
-    const cmd = getPingArgs(targetIpOrHost, count);
     const proc = spawn(cmd.exe, cmd.args);
 
     if (proc.stdout) {
@@ -326,7 +350,7 @@ function executePing(targetIpOrHost, count = 4, onData, onDone) {
     }
 
     proc.on('error', (err) => {
-      if (onData) onData(`Error de subproceso ping: ${err.message}\n`);
+      if (onData) onData(`Error de subproceso ${toolName}: ${err.message}\n`);
       if (onDone) onDone(1);
     });
 
@@ -336,7 +360,51 @@ function executePing(targetIpOrHost, count = 4, onData, onDone) {
 
     return proc;
   } catch (err) {
+    if (onData) onData(`Error al iniciar ${toolName}: ${err.message}\n`);
+    if (onDone) onDone(1);
+    return null;
+  }
+}
+
+function executePing(targetIpOrHost, count = 4, onData, onDone) {
+  try {
+    const cmd = getPingArgs(targetIpOrHost, count);
+    return executeGenericCommand(cmd, 'ping', onData, onDone);
+  } catch (err) {
     if (onData) onData(`Error al iniciar ping: ${err.message}\n`);
+    if (onDone) onDone(1);
+    return null;
+  }
+}
+
+function executeNbtstat(targetIpOrHost, onData, onDone) {
+  try {
+    const cmd = getNbtstatArgs(targetIpOrHost);
+    return executeGenericCommand(cmd, 'nbtstat', onData, onDone);
+  } catch (err) {
+    if (onData) onData(`Error al iniciar nbtstat: ${err.message}\n`);
+    if (onDone) onDone(1);
+    return null;
+  }
+}
+
+function executeTracert(targetIpOrHost, options = 6, onData, onDone) {
+  try {
+    const cmd = getTracertArgs(targetIpOrHost, options);
+    return executeGenericCommand(cmd, 'tracert', onData, onDone);
+  } catch (err) {
+    if (onData) onData(`Error al iniciar tracert: ${err.message}\n`);
+    if (onDone) onDone(1);
+    return null;
+  }
+}
+
+function executeArp(targetIpOrHost, onData, onDone) {
+  try {
+    const cmd = getArpArgs(targetIpOrHost);
+    return executeGenericCommand(cmd, 'arp', onData, onDone);
+  } catch (err) {
+    if (onData) onData(`Error al iniciar arp: ${err.message}\n`);
     if (onDone) onDone(1);
     return null;
   }
@@ -348,6 +416,9 @@ module.exports = {
   getVncCommand,
   getMsraCommand,
   getPingArgs,
+  getNbtstatArgs,
+  getTracertArgs,
+  getArpArgs,
   getVncViewerPath,
   probeTcpPort,
   probeRemotePorts,
@@ -356,5 +427,8 @@ module.exports = {
   launchRemoteSmart,
   launchMsra,
   executePing,
+  executeNbtstat,
+  executeTracert,
+  executeArp,
   sanitizePingOutput,
 };
