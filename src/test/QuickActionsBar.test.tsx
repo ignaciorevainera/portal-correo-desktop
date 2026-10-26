@@ -271,4 +271,35 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
       expect(onReProbe).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('Diagnostic Tools Dropdown (Nbtstat, Tracert, ARP)', () => {
+    it('renders Diagnóstico dropdown button and triggers onRunDiagnostic with chosen command', () => {
+      const onRunDiagnostic = vi.fn();
+
+      render(
+        <QuickActionsBar
+          terminal={terminal}
+          isPinging={false}
+          onLaunchVnc={vi.fn()}
+          onLaunchMsra={vi.fn()}
+          onTogglePing={vi.fn()}
+          onRunDiagnostic={onRunDiagnostic}
+        />
+      );
+
+      const diagTrigger = screen.getByRole('button', { name: /menú de diagnóstico de red/i });
+      expect(diagTrigger).toBeInTheDocument();
+
+      // Open diagnostic menu
+      fireEvent.click(diagTrigger);
+
+      expect(screen.getByRole('button', { name: /ejecutar nbtstat/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /ejecutar tracert/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /ejecutar arp/i })).toBeInTheDocument();
+
+      // Click Tracert
+      fireEvent.click(screen.getByRole('button', { name: /ejecutar tracert/i }));
+      expect(onRunDiagnostic).toHaveBeenCalledWith('tracert');
+    });
+  });
 });

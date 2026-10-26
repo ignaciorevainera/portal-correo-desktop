@@ -9,12 +9,15 @@ import {
   ChevronDown,
   AlertCircle,
   RotateCcw,
+  Network,
+  Route,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Kbd } from "@/components/ui/kbd";
 import { toast } from "sonner";
-import { RemoteProbeResult } from "../services/electronClient";
+import { RemoteProbeResult, DiagnosticCommandType } from "../services/electronClient";
 
 export interface ActionFeedbackState {
   type: "success" | "error" | "warning" | "info";
@@ -37,6 +40,7 @@ export interface QuickActionsBarProps {
   isProbingRemote?: boolean;
   onLaunchSmartRemote?: () => void;
   onReProbeRemote?: () => void;
+  onRunDiagnostic?: (cmd: DiagnosticCommandType) => void;
 }
 
 export function QuickActionsBar({
@@ -51,23 +55,29 @@ export function QuickActionsBar({
   isProbingRemote = false,
   onLaunchSmartRemote,
   onReProbeRemote,
+  onRunDiagnostic,
 }: QuickActionsBarProps): React.JSX.Element {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDiagOpen, setIsDiagOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const diagRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
+      if (diagRef.current && !diagRef.current.contains(event.target as Node)) {
+        setIsDiagOpen(false);
+      }
     }
-    if (isDropdownOpen) {
+    if (isDropdownOpen || isDiagOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isDropdownOpen]);
+  }, [isDropdownOpen, isDiagOpen]);
 
   const handleAction = (label: string, callback: () => void): void => {
     callback();
@@ -228,7 +238,7 @@ export function QuickActionsBar({
           )}
         </div>
 
-        {/* Columna 2: Grupo Ping 2:1 (Ping 4 paquetes + Ping -t continuo) */}
+        {/* Columna 2: Grupo Ping 2:1 + Menú Diagnóstico */}
         <div className="flex items-center gap-1">
           <Button
             type="button"
@@ -263,6 +273,85 @@ export function QuickActionsBar({
           >
             <span className="font-mono text-[11px] font-bold">-t</span>
           </Button>
+
+          {/* Menú Desplegable Diagnóstico de Red */}
+          <div ref={diagRef} className="relative">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDiagOpen((prev) => !prev)}
+              aria-label="Menú de diagnóstico de red"
+              title="Diagnóstico nativo (Nbtstat, Tracert, ARP)"
+              className="px-2 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer flex items-center gap-1"
+            >
+              <Network className="h-3.5 w-3.5 text-cyan-500" />
+              <span className="hidden xl:inline text-[11px]">Diag</span>
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            </Button>
+
+            {isDiagOpen && (
+              <div className="absolute right-0 top-full mt-1.5 z-50 w-56 rounded-md border border-border bg-popover p-1.5 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 flex flex-col gap-1">
+                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/50">
+                  Herramientas de Red Nativas
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsDiagOpen(false);
+                    onRunDiagnostic?.('nbtstat');
+                  }}
+                  aria-label="Ejecutar Nbtstat"
+                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                >
+                  <span className="flex items-center gap-2">
+                    <Layers className="h-3.5 w-3.5 text-amber-500" />
+                    <span className="font-mono text-[11px]">nbtstat -A</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">(NetBIOS)</span>
+                  </span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsDiagOpen(false);
+                    onRunDiagnostic?.('tracert');
+                  }}
+                  aria-label="Ejecutar Tracert"
+                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                >
+                  <span className="flex items-center gap-2">
+                    <Route className="h-3.5 w-3.5 text-emerald-500" />
+                    <span className="font-mono text-[11px]">tracert -d</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">(6 saltos)</span>
+                  </span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsDiagOpen(false);
+                    onRunDiagnostic?.('arp');
+                  }}
+                  aria-label="Ejecutar ARP"
+                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                >
+                  <span className="flex items-center gap-2">
+                    <Network className="h-3.5 w-3.5 text-cyan-500" />
+                    <span className="font-mono text-[11px]">arp -a</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">(Física)</span>
+                  </span>
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Columna 3: Tarjeta de Uptime */}
