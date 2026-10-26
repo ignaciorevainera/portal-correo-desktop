@@ -1,19 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ThemeProvider } from './context/ThemeContext';
-import { Topbar } from './components/Topbar';
-import { TerminalTechnicalCard } from './components/TerminalTechnicalCard';
-import { QuickActionsBar, ActionFeedbackState } from './components/QuickActionsBar';
-import { LivePingConsole } from './components/LivePingConsole';
-import { AlertsPanel } from './components/AlertsPanel';
-import { ResetUptimePanel } from './components/ResetUptimePanel';
-import { OperatorContextMenu } from './components/OperatorContextMenu';
-import { SubnetScannerDrawer } from './components/SubnetScannerDrawer';
-import { SettingsModal } from './components/SettingsModal';
+import React, { useState, useEffect, useRef } from "react";
+import { ThemeProvider } from "./context/ThemeContext";
+import { Topbar } from "./components/Topbar";
+import { TerminalTechnicalCard } from "./components/TerminalTechnicalCard";
+import {
+  QuickActionsBar,
+  ActionFeedbackState,
+} from "./components/QuickActionsBar";
+import { LivePingConsole, DiagnosticCommandEvent } from "./components/LivePingConsole";
+import { AlertsPanel } from "./components/AlertsPanel";
+import { ResetUptimePanel } from "./components/ResetUptimePanel";
+import { OperatorContextMenu } from "./components/OperatorContextMenu";
+import { SubnetScannerDrawer } from "./components/SubnetScannerDrawer";
+import { SettingsModal } from "./components/SettingsModal";
 import {
   getAllTerminals,
   addAlertToTerminal,
   closeAlertOnTerminal,
-} from './services/terminalService';
+} from "./services/terminalService";
 import {
   checkBackendStatus,
   searchTerminalUnified,
@@ -25,25 +28,37 @@ import {
   openExternalUrl,
   BackendStatus,
   subscribeToAutofocusSearch,
-} from './services/electronClient';
-import { TerminalData } from './types/terminal';
-import { Search, SearchX, RotateCcw, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Toaster } from '@/components/ui/sonner';
-import { toast } from 'sonner';
+  stopDiagnosticCommand,
+  DiagnosticCommandType,
+} from "./services/electronClient";
+import { TerminalData } from "./types/terminal";
+import { Search, SearchX, RotateCcw, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 export default function App(): React.JSX.Element {
-  const [selectedPc, setSelectedPc] = useState<string>('');
+  const [selectedPc, setSelectedPc] = useState<string>("");
   const [terminal, setTerminal] = useState<TerminalData | null>(null);
   const [notFoundTerm, setNotFoundTerm] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPinging, setIsPinging] = useState(false);
-  const [pingMode, setPingMode] = useState<'standard' | 'infinite'>('standard');
-  const [status, setStatus] = useState<BackendStatus>({ connected: false, mode: 'mock' });
-  const [actionFeedback, setActionFeedback] = useState<ActionFeedbackState | null>(null);
-  const [remoteProbe, setRemoteProbe] = useState<RemoteProbeResult | null>(null);
+  const [pingMode, setPingMode] = useState<"standard" | "infinite">("standard");
+  const [activeDiagnostic, setActiveDiagnostic] = useState<DiagnosticCommandEvent | null>(null);
+  const [status, setStatus] = useState<BackendStatus>({
+    connected: false,
+    mode: "mock",
+  });
+  const [actionFeedback, setActionFeedback] =
+    useState<ActionFeedbackState | null>(null);
+  const [remoteProbe, setRemoteProbe] = useState<RemoteProbeResult | null>(
+    null,
+  );
   const [isProbingRemote, setIsProbingRemote] = useState<boolean>(false);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [isSubnetDrawerOpen, setIsSubnetDrawerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
@@ -51,11 +66,15 @@ export default function App(): React.JSX.Element {
   const allTerminals = getAllTerminals();
 
   useEffect(() => {
-    checkBackendStatus().then(setStatus).catch(() => {});
+    checkBackendStatus()
+      .then(setStatus)
+      .catch(() => {});
 
     // Listen to Global Hotkey Autofocus Search (Ctrl+Space from background)
     const unsubHotkey = subscribeToAutofocusSearch((payload) => {
-      window.dispatchEvent(new CustomEvent('cmda:app-autofocus-search', { detail: payload }));
+      window.dispatchEvent(
+        new CustomEvent("cmda:app-autofocus-search", { detail: payload }),
+      );
       if (payload.autoSearch && payload.query) {
         handleSelectTerminal(payload.query);
       }
@@ -83,10 +102,12 @@ export default function App(): React.JSX.Element {
       setTerminal(null);
       setNotFoundTerm(null);
       setRemoteProbe(null);
+      setActiveDiagnostic(null);
       return;
     }
     setIsLoading(true);
     setIsPinging(false);
+    setActiveDiagnostic(null);
     setNotFoundTerm(null);
 
     searchTerminalUnified(selectedPc)
@@ -101,7 +122,7 @@ export default function App(): React.JSX.Element {
           mainRef.current.scrollTop = 0;
         }
         if (res.data?.ip) {
-          setPingMode('standard');
+          setPingMode("standard");
           setIsPinging(true);
           handleProbeRemote(res.data.ip);
         } else {
@@ -117,48 +138,77 @@ export default function App(): React.JSX.Element {
   }, [selectedPc]);
 
   const handleClearSearch = (): void => {
-    setSelectedPc('');
+    setSelectedPc("");
     setTerminal(null);
     setNotFoundTerm(null);
     setIsPinging(false);
+    setActiveDiagnostic(null);
     setActionFeedback(null);
     setRemoteProbe(null);
     setIsProbingRemote(false);
   };
 
-  const handleStartPing = (mode: 'standard' | 'infinite' = 'standard') => {
+  const handleStartPing = (mode: "standard" | "infinite" = "standard") => {
+    setActiveDiagnostic(null);
     setPingMode(mode);
     setIsPinging(true);
+  };
+
+  const handleRunDiagnostic = (cmd: DiagnosticCommandType) => {
+    if (!terminal?.ip) return;
+    setIsPinging(false);
+    stopDiagnosticCommand().catch(() => {});
+
+    let argsText = `${cmd} ${terminal.ip}`;
+    let options: any = undefined;
+
+    if (cmd === 'nbtstat') {
+      argsText = `nbtstat -A ${terminal.ip}`;
+    } else if (cmd === 'tracert') {
+      argsText = `tracert -d -h 6 ${terminal.ip}`;
+      options = { maxHops: 6 };
+    } else if (cmd === 'arp') {
+      argsText = `arp -a ${terminal.ip}`;
+    }
+
+    setActiveDiagnostic({
+      id: `diag-${Date.now()}`,
+      command: cmd,
+      target: terminal.ip,
+      argsText,
+      timestamp: new Date().toLocaleTimeString(),
+      options,
+    });
   };
 
   const handleTogglePing = () => {
     if (isPinging) {
       setIsPinging(false);
     } else {
-      handleStartPing('standard');
+      handleStartPing("standard");
     }
   };
 
   const handleLaunchPingInfinite = () => {
-    handleStartPing('infinite');
+    handleStartPing("infinite");
   };
 
   // Global Keyboard Shortcuts (F2 Smart Remote, F3 Ping, F4 MSRA)
   useEffect(() => {
     const handleGlobalShortcuts = (e: KeyboardEvent) => {
-      if (e.key === 'F2') {
+      if (e.key === "F2") {
         e.preventDefault();
         handleLaunchSmartRemote();
-      } else if (e.key === 'F3') {
+      } else if (e.key === "F3") {
         e.preventDefault();
         handleTogglePing();
-      } else if (e.key === 'F4') {
+      } else if (e.key === "F4") {
         e.preventDefault();
         handleLaunchMsra();
       }
     };
-    window.addEventListener('keydown', handleGlobalShortcuts);
-    return () => window.removeEventListener('keydown', handleGlobalShortcuts);
+    window.addEventListener("keydown", handleGlobalShortcuts);
+    return () => window.removeEventListener("keydown", handleGlobalShortcuts);
   }, [terminal, isPinging]);
 
   const handleSelectTerminal = (pc: string): void => {
@@ -169,19 +219,27 @@ export default function App(): React.JSX.Element {
     setIsProbingRemote(false);
   };
 
-  const handleAddAlert = (alert: { title: string; description: string; operator: string }): void => {
+  const handleAddAlert = (alert: {
+    title: string;
+    description: string;
+    operator: string;
+  }): void => {
     if (!terminal) return;
     try {
       const created = addAlertToTerminal(terminal.pc, alert);
-      setTerminal((prev) => (prev ? { ...prev, alerts: [created, ...prev.alerts] } : null));
+      setTerminal((prev) =>
+        prev ? { ...prev, alerts: [created, ...prev.alerts] } : null,
+      );
     } catch {
       const newAlert = {
         id: `alt-${Date.now()}`,
         ...alert,
-        date: new Date().toLocaleString('es-AR'),
+        date: new Date().toLocaleString("es-AR"),
         active: true,
       };
-      setTerminal((prev) => (prev ? { ...prev, alerts: [newAlert, ...prev.alerts] } : null));
+      setTerminal((prev) =>
+        prev ? { ...prev, alerts: [newAlert, ...prev.alerts] } : null,
+      );
     }
   };
 
@@ -194,14 +252,21 @@ export default function App(): React.JSX.Element {
         ...prev,
         alerts: prev.alerts.map((a) =>
           a.id === alertId
-            ? { ...a, active: false, resolutionText: resolution, resolutionDate: new Date().toLocaleString('es-AR') }
-            : a
+            ? {
+                ...a,
+                active: false,
+                resolutionText: resolution,
+                resolutionDate: new Date().toLocaleString("es-AR"),
+              }
+            : a,
         ),
       };
     });
   };
 
-  const handleLaunchSmartRemote = async (targetOverride?: string): Promise<void> => {
+  const handleLaunchSmartRemote = async (
+    targetOverride?: string,
+  ): Promise<void> => {
     const target = targetOverride || terminal?.ip || terminal?.pc;
     if (!target) return;
 
@@ -211,10 +276,16 @@ export default function App(): React.JSX.Element {
     }
 
     if (res.success) {
-      if (res.methodUsed === 'vnc') {
-        toast.success(res.message || `VNC Viewer iniciado correctamente hacia ${target}${res.portUsed ? `:${res.portUsed}` : ''}`);
-      } else if (res.methodUsed === 'msra') {
-        toast.info(res.message || `VNC cerrado. Asistencia Remota (MSRA) iniciada para ${target}`);
+      if (res.methodUsed === "vnc") {
+        toast.success(
+          res.message ||
+            `VNC Viewer iniciado correctamente hacia ${target}${res.portUsed ? `:${res.portUsed}` : ""}`,
+        );
+      } else if (res.methodUsed === "msra") {
+        toast.info(
+          res.message ||
+            `VNC cerrado. Asistencia Remota (MSRA) iniciada para ${target}`,
+        );
       } else {
         toast.success(res.message || `Conexión remota exitosa hacia ${target}`);
       }
@@ -230,19 +301,29 @@ export default function App(): React.JSX.Element {
     const res = await launchVncClient(target);
 
     if (res.vncClosed) {
-      toast.error(res.message || `Puertos VNC (5901/5900) cerrados en ${target}.`, {
-        description: res.msraAvailable ? 'Asistencia Remota (MSRA) está disponible como alternativa.' : undefined,
-        action: res.msraAvailable
-          ? {
-              label: 'Conectar por MSRA',
-              onClick: () => handleLaunchMsra(target),
-            }
-          : undefined,
-      });
+      toast.error(
+        res.message || `Puertos VNC (5901/5900) cerrados en ${target}.`,
+        {
+          description: res.msraAvailable
+            ? "Asistencia Remota (MSRA) está disponible como alternativa."
+            : undefined,
+          action: res.msraAvailable
+            ? {
+                label: "Conectar por MSRA",
+                onClick: () => handleLaunchMsra(target),
+              }
+            : undefined,
+        },
+      );
     } else if (res.success) {
-      toast.success(res.message || `VNC Viewer iniciado correctamente hacia ${target}${res.portUsed ? `:${res.portUsed}` : ''}`);
+      toast.success(
+        res.message ||
+          `VNC Viewer iniciado correctamente hacia ${target}${res.portUsed ? `:${res.portUsed}` : ""}`,
+      );
     } else {
-      toast.error(res.message || `Error al intentar conectar por VNC a ${target}`);
+      toast.error(
+        res.message || `Error al intentar conectar por VNC a ${target}`,
+      );
     }
   };
 
@@ -254,13 +335,15 @@ export default function App(): React.JSX.Element {
     if (res.success) {
       toast.success(res.message || `Asistencia Remota iniciada para ${target}`);
     } else {
-      toast.error(res.message || `Error al iniciar Asistencia Remota para ${target}`);
+      toast.error(
+        res.message || `Error al iniciar Asistencia Remota para ${target}`,
+      );
     }
   };
 
   const handleDirectPing = (pc: string) => {
     setSelectedPc(pc);
-    handleStartPing('standard');
+    handleStartPing("standard");
   };
 
   return (
@@ -292,11 +375,14 @@ export default function App(): React.JSX.Element {
               remoteProbe={remoteProbe}
               isProbingRemote={isProbingRemote}
               onLaunchSmartRemote={() => handleLaunchSmartRemote()}
-              onReProbeRemote={() => terminal.ip && handleProbeRemote(terminal.ip)}
+              onReProbeRemote={() =>
+                terminal.ip && handleProbeRemote(terminal.ip)
+              }
               onLaunchVnc={() => handleLaunchVnc()}
               onLaunchMsra={() => handleLaunchMsra()}
               onTogglePing={handleTogglePing}
               onLaunchPingInfinite={handleLaunchPingInfinite}
+              onRunDiagnostic={handleRunDiagnostic}
             />
           </section>
         )}
@@ -317,10 +403,16 @@ export default function App(): React.JSX.Element {
               </div>
               <div className="space-y-1 max-w-md">
                 <h3 className="text-sm font-semibold font-heading text-foreground">
-                  No se encontró la terminal &ldquo;<span className="font-mono font-bold text-foreground">{notFoundTerm}</span>&rdquo;
+                  No se encontró la terminal &ldquo;
+                  <span className="font-mono font-bold text-foreground">
+                    {notFoundTerm}
+                  </span>
+                  &rdquo;
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  No existe un registro técnico para este equipo o dirección IP en la base corporativa. Verificá la ortografía del Hostname o el alcance de red.
+                  No existe un registro técnico para este equipo o dirección IP
+                  en la base corporativa. Verificá la ortografía del Hostname o
+                  el alcance de red.
                 </p>
               </div>
               <Button
@@ -344,7 +436,11 @@ export default function App(): React.JSX.Element {
                   Buscar una terminal para comenzar
                 </h3>
                 <p className="text-xs text-muted-foreground max-w-sm">
-                  Ingresá el Hostname o IP en la barra superior (presioná <kbd className="font-mono font-semibold px-1 py-0.5 rounded bg-muted text-[10px] border border-border">Ctrl+F</kbd>) para consultar el inventario técnico y monitoreo en vivo.
+                  Ingresá el Hostname o IP en la barra superior (presioná{" "}
+                  <kbd className="font-mono font-semibold px-1 py-0.5 rounded bg-muted text-[10px] border border-border">
+                    Ctrl+F
+                  </kbd>
+                  ) para consultar el inventario técnico y monitoreo en vivo.
                 </p>
               </div>
             </div>
@@ -356,13 +452,18 @@ export default function App(): React.JSX.Element {
                 onOpenSubnetScanner={() => setIsSubnetDrawerOpen(true)}
               />
 
-              {/* 2° Consola Interna de Ping: Estilo Terminal Windows, sin auto-scroll forzado */}
+              {/* 2° Consola Interna de Diagnóstico: Estilo Terminal Windows con Historial */}
               <LivePingConsole
                 ip={terminal.ip}
                 isPinging={isPinging}
                 pingMode={pingMode}
+                activeCommand={activeDiagnostic}
                 onTogglePing={handleTogglePing}
                 onPingComplete={() => setIsPinging(false)}
+                onStopCommand={() => {
+                  setActiveDiagnostic(null);
+                  stopDiagnosticCommand().catch(() => {});
+                }}
               />
 
               {/* 3° Reseteo AD e Historial de Uptime */}
@@ -389,7 +490,9 @@ export default function App(): React.JSX.Element {
             onLaunchVnc={() => handleLaunchVnc()}
             onTogglePing={handleTogglePing}
             onLaunchMsra={() => handleLaunchMsra()}
-            onOpenPortalMda={() => openExternalUrl('https://mda.corporativo.internal/inventario-terminales')}
+            onOpenPortalMda={() =>
+              openExternalUrl("https://mda.corporativo.internal/inventario-terminales")
+            }
           />
         )}
 
