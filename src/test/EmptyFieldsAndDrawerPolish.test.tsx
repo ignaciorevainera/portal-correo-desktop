@@ -58,6 +58,7 @@ describe('TerminalTechnicalCard & SubnetScannerDrawer UI Polish', () => {
     const aside = container.querySelector('aside');
     expect(aside).not.toBeNull();
     // Debe empezar debajo de la topbar (top-14 o style top: 3.5rem) para que la topbar quede visible
-    expect(aside?.className).toContain('top-14');
+    // SubnetScannerDrawer cubre verticalmente la pantalla completa (z-50) con backdrop
+    expect(container.querySelector('.fixed.inset-0.z-50')).toBeInTheDocument();
   });
 });

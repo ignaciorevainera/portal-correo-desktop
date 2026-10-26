@@ -80,10 +80,18 @@ export function SubnetScannerDrawer({
   );
 
   return (
-    <aside
-      aria-label="EscÃ¡ner de Subred"
-      className="fixed top-14 bottom-0 right-0 w-80 md:w-96 bg-card/95 border-l border-border shadow-2xl z-20 flex flex-col backdrop-blur animate-in slide-in-from-right duration-200 select-none"
-    >
+    <div className="fixed inset-0 z-50 flex justify-end select-none">
+      {/* Backdrop overlay */}
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      {/* Drawer Panel */}
+      <aside
+        aria-label="Escáner de Subred"
+        className="relative z-10 w-80 md:w-96 h-full bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+      >
       {/* Header */}
       <div className="h-12 border-b border-border px-3.5 flex items-center justify-between shrink-0 bg-muted/40">
         <div className="flex items-center gap-2">
@@ -235,6 +243,7 @@ export function SubnetScannerDrawer({
           </Button>
         )}
       </div>
-    </aside>
+      </aside>
+    </div>
   );
 }
