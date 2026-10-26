@@ -72,5 +72,5 @@
   *Link: [./tracks/settings_updater_release_pipeline_20261025/index.md](./tracks/settings_updater_release_pipeline_20261025/index.md)*
 ---
 
-- [~] **Track: Importación de Configuración Corporativa en Ajustes, Autodescubrimiento en Arranque y Empaquetado Interno Plug & Play**
+- [x] **Track: Importación de Configuración Corporativa en Ajustes, Autodescubrimiento en Arranque y Empaquetado Interno Plug & Play**
   *Link: [./tracks/corporate_config_plug_and_play_20261025/index.md](./tracks/corporate_config_plug_and_play_20261025/index.md)*
