@@ -53,7 +53,7 @@ export function AlertsPanel({
       <div className="flex items-center justify-between border-b border-border pb-2.5">
         <div>
           <h2 className="text-base font-semibold font-heading text-foreground">
-            Alertas de Terminal ({terminal.pc})
+            Alertas de Terminal
           </h2>
           <p className="text-xs text-muted-foreground">
             Historial de incidencias técnicas, observaciones operativas y seguimiento.

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { TerminalData } from '../types/terminal';
+import React, { useState } from "react";
+import { TerminalData } from "../types/terminal";
 import {
   Layers,
   HardDrive,
@@ -10,11 +10,17 @@ import {
   UserCheck,
   Copy,
   Check,
-} from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardAction, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Network } from 'lucide-react';
+} from "lucide-react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardAction,
+  CardContent,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Network } from "lucide-react";
 
 export function TerminalTechnicalCard({
   terminal,
@@ -36,19 +42,11 @@ export function TerminalTechnicalCard({
   return (
     <Card size="sm" className="rounded-lg border-border bg-card shadow-xs">
       <CardHeader className="border-b border-border/60 pb-2">
-        <div>
-          <CardTitle className="text-xs font-bold font-heading uppercase tracking-wider text-muted-foreground">
-            Ficha Técnica, Red y Sistema
-          </CardTitle>
-          <p className="text-[11px] text-muted-foreground">
-            Especificaciones consolidadas de hardware, red corporativa y Active Directory.
-          </p>
-        </div>
         <CardAction className="flex items-center gap-1.5">
           {onOpenSubnetScanner && (
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={onOpenSubnetScanner}
               className="h-6 text-[10px] px-2 font-mono gap-1 text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
@@ -84,47 +82,55 @@ export function TerminalTechnicalCard({
             {/* IPv4 */}
             <div className="space-y-0.5">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-[11px] font-medium">Dirección IPv4</span>
+                <span className="text-muted-foreground text-[11px] font-medium">
+                  Dirección IPv4
+                </span>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  onClick={() => handleCopy('ip', terminal.ip)}
+                  onClick={() => handleCopy("ip", terminal.ip)}
                   aria-label="Copiar Dirección IPv4"
                   title="Copiar IP al portapapeles"
                   className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  {copiedKey === 'ip' ? (
+                  {copiedKey === "ip" ? (
                     <Check className="h-2.5 w-2.5 text-emerald-500" />
                   ) : (
                     <Copy className="h-2.5 w-2.5" />
                   )}
                 </Button>
               </div>
-              <p className="font-mono font-bold text-foreground text-xs">{terminal.ip}</p>
+              <p className="font-mono font-bold text-foreground text-xs">
+                {terminal.ip}
+              </p>
             </div>
 
             {/* MAC */}
             <div className="space-y-0.5">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-[11px] font-medium">Dirección MAC</span>
+                <span className="text-muted-foreground text-[11px] font-medium">
+                  Dirección MAC
+                </span>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  onClick={() => handleCopy('mac', terminal.mac)}
+                  onClick={() => handleCopy("mac", terminal.mac)}
                   aria-label="Copiar Dirección MAC"
                   title="Copiar MAC al portapapeles"
                   className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  {copiedKey === 'mac' ? (
+                  {copiedKey === "mac" ? (
                     <Check className="h-2.5 w-2.5 text-emerald-500" />
                   ) : (
                     <Copy className="h-2.5 w-2.5" />
                   )}
                 </Button>
               </div>
-              <p className="font-mono text-xs font-semibold text-foreground truncate">{terminal.mac}</p>
+              <p className="font-mono text-xs font-semibold text-foreground truncate">
+                {terminal.mac}
+              </p>
             </div>
           </div>
 
@@ -138,17 +144,25 @@ export function TerminalTechnicalCard({
               <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
                 <Layers className="h-3 w-3 text-muted-foreground" /> Sistema
               </span>
-              <p className="font-semibold text-foreground text-xs">{terminal.os}</p>
-              <p className="font-mono text-[10px] text-muted-foreground truncate" title={terminal.servicePack}>
+              <p className="font-semibold text-foreground text-xs">
+                {terminal.os}
+              </p>
+              <p
+                className="font-mono text-[10px] text-muted-foreground truncate"
+                title={terminal.servicePack}
+              >
                 Build: {terminal.servicePack}
               </p>
             </div>
 
             <div className="space-y-0.5">
               <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
-                <Calendar className="h-3 w-3 text-muted-foreground" /> Último Relevamiento
+                <Calendar className="h-3 w-3 text-muted-foreground" /> Último
+                Relevamiento
               </span>
-              <p className="font-mono text-xs text-foreground">{terminal.surveyDate}</p>
+              <p className="font-mono text-xs text-foreground">
+                {terminal.surveyDate}
+              </p>
             </div>
           </div>
 
@@ -160,33 +174,41 @@ export function TerminalTechnicalCard({
 
             <div className="space-y-0.5">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-[11px] font-medium">Procesador / CPU</span>
+                <span className="text-muted-foreground text-[11px] font-medium">
+                  Procesador / CPU
+                </span>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  onClick={() => handleCopy('cpu', terminal.cpuModel)}
+                  onClick={() => handleCopy("cpu", terminal.cpuModel)}
                   aria-label="Copiar Modelo y CPU"
                   title="Copiar CPU al portapapeles"
                   className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  {copiedKey === 'cpu' ? (
+                  {copiedKey === "cpu" ? (
                     <Check className="h-2.5 w-2.5 text-emerald-500" />
                   ) : (
                     <Copy className="h-2.5 w-2.5" />
                   )}
                 </Button>
               </div>
-              <p className="font-semibold text-foreground text-xs truncate" title={terminal.cpuModel}>
+              <p
+                className="font-semibold text-foreground text-xs truncate"
+                title={terminal.cpuModel}
+              >
                 {terminal.cpuModel}
               </p>
             </div>
 
             <div className="space-y-0.5">
               <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
-                <HardDrive className="h-3 w-3 text-muted-foreground" /> Memoria RAM
+                <HardDrive className="h-3 w-3 text-muted-foreground" /> Memoria
+                RAM
               </span>
-              <p className="font-mono text-xs font-semibold text-foreground">{terminal.ram}</p>
+              <p className="font-mono text-xs font-semibold text-foreground">
+                {terminal.ram}
+              </p>
             </div>
           </div>
 
@@ -199,25 +221,29 @@ export function TerminalTechnicalCard({
             <div className="space-y-0.5">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
-                  <UserCheck className="h-3 w-3 text-muted-foreground" /> Usuario NT
+                  <UserCheck className="h-3 w-3 text-muted-foreground" />{" "}
+                  Usuario NT
                 </span>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  onClick={() => handleCopy('user', terminal.userNt)}
+                  onClick={() => handleCopy("user", terminal.userNt)}
                   aria-label="Copiar Usuario NT"
                   title="Copiar Usuario NT al portapapeles"
                   className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  {copiedKey === 'user' ? (
+                  {copiedKey === "user" ? (
                     <Check className="h-2.5 w-2.5 text-emerald-500" />
                   ) : (
                     <Copy className="h-2.5 w-2.5" />
                   )}
                 </Button>
               </div>
-              <p className="font-mono text-xs font-semibold text-foreground truncate" title={terminal.userNt}>
+              <p
+                className="font-mono text-xs font-semibold text-foreground truncate"
+                title={terminal.userNt}
+              >
                 {terminal.userNt}
               </p>
             </div>
@@ -226,7 +252,10 @@ export function TerminalTechnicalCard({
               <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
                 <Building className="h-3 w-3 text-muted-foreground" /> Ubicación
               </span>
-              <p className="text-xs text-foreground truncate font-medium" title={terminal.location}>
+              <p
+                className="text-xs text-foreground truncate font-medium"
+                title={terminal.location}
+              >
                 {terminal.location}
               </p>
             </div>
@@ -237,10 +266,14 @@ export function TerminalTechnicalCard({
         <div className="mt-2.5 pt-2 border-t border-border/50 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
-              <Shield className="h-3 w-3 text-emerald-500" /> Antivirus: <strong className="text-foreground">{terminal.antivirusVersion}</strong>
+              <Shield className="h-3 w-3 text-emerald-500" /> Antivirus:{" "}
+              <strong className="text-foreground">
+                {terminal.antivirusVersion}
+              </strong>
             </span>
             <span className="flex items-center gap-1">
-              <Globe className="h-3 w-3 text-blue-500" /> Navegador: <strong className="text-foreground">{terminal.ieVersion}</strong>
+              <Globe className="h-3 w-3 text-blue-500" /> Navegador:{" "}
+              <strong className="text-foreground">{terminal.ieVersion}</strong>
             </span>
           </div>
           {copiedKey && (

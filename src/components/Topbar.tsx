@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   Search,
   Monitor,
@@ -11,43 +11,43 @@ import {
   Play,
   MonitorPlay,
   Settings,
-} from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
-import { InfoModal } from './InfoModal';
-import { getAllTerminals } from '../services/terminalService';
+} from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
+import { InfoModal } from "./InfoModal";
+import { getAllTerminals } from "../services/terminalService";
 import {
   minimizeWindow,
   hideToTray,
   openExternalUrl,
-} from '../services/electronClient';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Kbd } from '@/components/ui/kbd';
+} from "../services/electronClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Kbd } from "@/components/ui/kbd";
 
 interface TopbarProps {
   onSelectTerminal: (pc: string) => void;
   onDirectVnc?: (pc: string) => void;
   onDirectPing?: (pc: string) => void;
   selectedPc?: string;
-  backendMode?: 'sql' | 'mock';
+  backendMode?: "sql" | "mock";
   serverName?: string;
   onOpenSettings?: () => void;
 }
 
-const PORTAL_MDA_URL = 'https://mda.corporativo.internal/inventario-terminales';
+const PORTAL_MDA_URL = "https://mda.corporativo.internal/inventario-terminales";
 
 export function Topbar({
   onSelectTerminal,
   onDirectVnc,
   onDirectPing,
   selectedPc,
-  backendMode = 'mock',
+  backendMode = "mock",
   serverName,
   onOpenSettings,
 }: TopbarProps): React.JSX.Element {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -69,8 +69,12 @@ export function Topbar({
         }
       }
     };
-    window.addEventListener('cmda:app-autofocus-search', handleAutofocusSearch);
-    return () => window.removeEventListener('cmda:app-autofocus-search', handleAutofocusSearch);
+    window.addEventListener("cmda:app-autofocus-search", handleAutofocusSearch);
+    return () =>
+      window.removeEventListener(
+        "cmda:app-autofocus-search",
+        handleAutofocusSearch,
+      );
   }, []);
   const terminals = getAllTerminals();
 
@@ -78,38 +82,40 @@ export function Topbar({
     ? terminals.filter(
         (t) =>
           t.pc.toLowerCase().includes(query.toLowerCase()) ||
-          t.ip.includes(query.trim())
+          t.ip.includes(query.trim()),
       )
     : [];
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
         e.preventDefault();
         inputRef.current?.focus();
         inputRef.current?.select();
       }
-      if (e.key === 'F10') {
+      if (e.key === "F10") {
         e.preventDefault();
         onOpenSettings?.();
       }
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setIsOpen(false);
         setIsInfoOpen(false);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const handleSelect = (pc: string): void => {
     onSelectTerminal(pc);
-    setQuery('');
+    setQuery("");
     setIsOpen(false);
   };
 
-  const handleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Enter' && query.trim()) {
+  const handleKeyDownInput = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ): void => {
+    if (e.key === "Enter" && query.trim()) {
       handleSelect(query.trim());
     }
   };
@@ -124,7 +130,11 @@ export function Topbar({
         {/* Identidad / Brand (Arrastrable junto al header para mover la ventana con el mouse) */}
         <div className="flex items-center gap-2.5 shrink-0 cursor-default select-none">
           <div className="p-1.5 rounded-md bg-primary/10 text-primary pointer-events-none">
-            <img src="/correo-argentino-logo.svg" alt="Correo Argentino" className="h-5 w-5 object-contain" />
+            <img
+              src="/correo-argentino-logo.svg"
+              alt="Correo Argentino"
+              className="h-5 w-5 object-contain"
+            />
           </div>
           <h1 className="text-sm font-bold font-heading tracking-tight text-foreground whitespace-nowrap pointer-events-none">
             Portal Correo Desktop
@@ -145,7 +155,7 @@ export function Topbar({
               }}
               onKeyDown={handleKeyDownInput}
               onFocus={() => query.trim() && setIsOpen(true)}
-              placeholder="Buscar terminal o IP (Ctrl+F)..."
+              placeholder="Buscar terminal o IP"
               className="w-full h-10 pl-9 pr-16 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-sm"
             />
             <Kbd className="absolute right-2 pointer-events-none text-[10px]">
@@ -158,19 +168,28 @@ export function Topbar({
             <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg overflow-hidden z-50 animate-fade-in">
               <div className="px-3 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border bg-muted/40 flex justify-between">
                 <span>Coincidencias ({filtered.length})</span>
-                <span className="text-[9px] text-muted-foreground lowercase">enter o clic</span>
+                <span className="text-[9px] text-muted-foreground lowercase">
+                  enter o clic
+                </span>
               </div>
               <ul className="max-h-60 overflow-y-auto divide-y divide-border/40">
                 {filtered.map((term) => (
-                  <li key={term.pc} className="flex items-center justify-between hover:bg-accent/10 px-2 py-1.5 transition-colors">
+                  <li
+                    key={term.pc}
+                    className="flex items-center justify-between hover:bg-accent/10 px-2 py-1.5 transition-colors"
+                  >
                     <button
                       type="button"
                       onClick={() => handleSelect(term.pc)}
                       className="flex-1 text-left flex items-center gap-2 cursor-pointer"
                     >
                       <Monitor className="h-3.5 w-3.5 text-primary shrink-0" />
-                      <span className="font-mono text-xs font-semibold text-foreground">{term.pc}</span>
-                      <span className="text-[10px] text-muted-foreground">({term.os})</span>
+                      <span className="font-mono text-xs font-semibold text-foreground">
+                        {term.pc}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        ({term.os})
+                      </span>
                       <span className="font-mono text-[10px] text-muted-foreground bg-muted px-1 rounded ml-auto mr-2">
                         {term.ip}
                       </span>
@@ -222,11 +241,17 @@ export function Topbar({
           <Badge
             variant="outline"
             className="hidden lg:flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-muted text-foreground border-border h-8"
-            title={serverName || 'Modo actual'}
+            title={serverName || "Modo actual"}
           >
-            <Database className={`h-3.5 w-3.5 ${backendMode === 'sql' ? 'text-emerald-500' : 'text-amber-500'}`} />
-            <span className={`h-2 w-2 rounded-full ${backendMode === 'sql' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-            <span>{backendMode === 'sql' ? 'SQL Online' : 'Offline / Mock'}</span>
+            <Database
+              className={`h-3.5 w-3.5 ${backendMode === "sql" ? "text-emerald-500" : "text-amber-500"}`}
+            />
+            <span
+              className={`h-2 w-2 rounded-full ${backendMode === "sql" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`}
+            />
+            <span>
+              {backendMode === "sql" ? "SQL Online" : "Offline / Mock"}
+            </span>
           </Badge>
 
           {/* Terminal seleccionada */}
@@ -236,7 +261,9 @@ export function Topbar({
               className="hidden md:flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-muted text-foreground border-border h-8"
             >
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span><strong>{selectedPc}</strong></span>
+              <span>
+                <strong>{selectedPc}</strong>
+              </span>
             </Badge>
           )}
 
@@ -314,8 +341,11 @@ export function Topbar({
       </header>
 
       {/* Info Modal Component */}
-      <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} appVersion="v1.0.0" />
+      <InfoModal
+        isOpen={isInfoOpen}
+        onClose={() => setIsInfoOpen(false)}
+        appVersion="v1.0.0"
+      />
     </>
   );
 }
-
