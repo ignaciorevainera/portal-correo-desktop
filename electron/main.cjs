@@ -1,7 +1,8 @@
-const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, globalShortcut, clipboard } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, globalShortcut, clipboard, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const dbService = require('./dbService.cjs');
+const configManager = require('./configManager.cjs');
 const systemTools = require('./systemTools.cjs');
 const dnsResolver = require('./dnsResolver.cjs');
 const { parseClipboardQuery } = require('./clipboardParser.cjs');
@@ -12,6 +13,30 @@ let tray = null;
 let activePingProcess = null;
 let activeSubnetAbortController = null;
 let downloadedInstallerPath = null;
+
+function getUserDataConfigPath() {
+  return path.join(app.getPath('userData'), 'cmda.config.json');
+}
+
+function getAdjacentExeConfigPath() {
+  return path.join(path.dirname(process.execPath), 'cmda.config.json');
+}
+
+function autoDiscoverCorporateConfig() {
+  try {
+    const loaded = configManager.loadFromHierarchicalPaths({
+      appDataPath: getUserDataConfigPath(),
+      exeDirPath: getAdjacentExeConfigPath(),
+    });
+    if (loaded && loaded.dbServer) {
+      console.log('[CorporateConfig] Autodiscovered config successfully');
+    }
+  } catch (err) {
+    console.warn('[CorporateConfig] Autodiscovery error:', err.message);
+  }
+}
+autoDiscoverCorporateConfig();
+
 app.isQuiting = false;
 
 function getAppIconPath() {
@@ -179,6 +204,82 @@ ipcMain.handle('cmda:security-status', async () => {
 
 ipcMain.handle('cmda:security-unlock', async () => {
   return { authorized: true, reason: 'AUTHORIZED', message: 'Acceso directo habilitado' };
+});
+
+
+ipcMain.handle('cmda:get-corporate-config', async () => {
+  const cfg = configManager.getConfig();
+  return {
+    isConfigured: Boolean(cfg.dbServer && cfg.dbUser),
+    dbServer: cfg.dbServer,
+    dbDatabase: cfg.dbDatabase,
+    dbUser: cfg.dbUser,
+    dbPort: cfg.dbPort,
+    corporateDomain: cfg.corporateDomain,
+  };
+});
+
+ipcMain.handle('cmda:import-config-dialog', async () => {
+  const result = await dialog.showOpenDialog({
+    title: 'Seleccionar archivo de configuración corporativa',
+    filters: [
+      { name: 'Archivos de configuración (.json, .env)', extensions: ['json', 'env'] },
+      { name: 'Todos los archivos', extensions: ['*'] },
+    ],
+    properties: ['openFile'],
+  });
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return { canceled: true };
+  }
+
+  const selectedPath = result.filePaths[0];
+  try {
+    const importRes = configManager.importConfigFile(selectedPath, getUserDataConfigPath());
+    dbService.resetPool();
+    const status = await dbService.checkStatus();
+    return { success: true, config: importRes.config, status };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cmda:import-config-content', async (_event, contentStr) => {
+  try {
+    let parsed;
+    if (contentStr.includes('=') && !contentStr.trim().startsWith('{')) {
+      parsed = configManager.parseDotEnvContent(contentStr);
+    } else {
+      parsed = JSON.parse(contentStr);
+    }
+    const targetPath = getUserDataConfigPath();
+    const targetDir = path.dirname(targetPath);
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+    fs.writeFileSync(targetPath, JSON.stringify(parsed, null, 2), 'utf8');
+    configManager.setConfig(parsed);
+    dbService.resetPool();
+    const status = await dbService.checkStatus();
+    return { success: true, status };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cmda:clear-corporate-config', async () => {
+  try {
+    configManager.clearPersistedConfig(getUserDataConfigPath());
+    dbService.resetPool();
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cmda:test-sql-connection', async () => {
+  dbService.resetPool();
+  return await dbService.checkStatus();
 });
 
 ipcMain.handle('cmda:status', async () => {

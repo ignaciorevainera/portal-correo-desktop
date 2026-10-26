@@ -11,7 +11,7 @@
   - [ ] Write Failing Tests: Crear `src/test/corporateConfigDiscovery.test.ts` verificando la resolución jerárquica de archivos (`%APPDATA%`, `process.execPath`, `.env`), importación de JSON/ENV, prueba de conexión y borrado de configuración.
   - [ ] Implement to Pass Tests: Actualizar `electron/configManager.cjs` y `electron/main.cjs` con soporte para resolver la carpeta de datos de usuario de Electron (`app.getPath('userData')`), handlers IPC `cmda:import-config-file`, `cmda:test-sql-connection`, `cmda:clear-config` y actualización dinámica del pool de SQL Server.
   - [ ] Refactor & Coverage: Actualizar `electronClient.ts` y tipos correspondientes. Ejecutar tests unitarios de configuración.
-- [ ] Task: Phase 1 Verification & Checkpoint (Protocol in workflow.md)
+- [x] Task: Phase 1 Verification & Checkpoint (Protocol in workflow.md)
 
 ### Phase 2: Pestaña "Conexión Corporativa" en `SettingsModal.tsx`
 - [ ] Task: Diseñar e implementar la pestaña de gestión de configuración en el Modal de Ajustes

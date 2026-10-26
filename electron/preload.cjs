@@ -63,4 +63,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('cmda:update-downloaded', listener);
   },
   installUpdateNow: () => ipcRenderer.invoke('cmda:install-update-now'),
+  // Corporate Config channels
+  getCorporateConfig: () => ipcRenderer.invoke('cmda:get-corporate-config'),
+  importConfigDialog: () => ipcRenderer.invoke('cmda:import-config-dialog'),
+  importConfigContent: (content) => ipcRenderer.invoke('cmda:import-config-content', content),
+  clearCorporateConfig: () => ipcRenderer.invoke('cmda:clear-corporate-config'),
+  testSqlConnection: () => ipcRenderer.invoke('cmda:test-sql-connection'),
 });
