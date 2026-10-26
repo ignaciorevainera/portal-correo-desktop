@@ -22,7 +22,7 @@
 - [x] Task: Update tests asserting the full-screen overlay drawer behavior 3b60d7f
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) 3b60d7f
 
-## Phase 5: Account Reset Panel Table Refactor
-- [ ] Task: Refactor `src/components/ResetUptimePanel.tsx` to remove the uptime card, compact the request form, and display reset history in a table styled after `AlertsPanel`
-- [ ] Task: Create/update unit tests for `ResetUptimePanel` table and empty state
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 5: Account Reset Panel Table Refactor [checkpoint: da1cf92]
+- [x] Task: Refactor `src/components/ResetUptimePanel.tsx` to remove the uptime card, compact the request form, and display reset history in a table styled after `AlertsPanel` da1cf92
+- [x] Task: Create/update unit tests for `ResetUptimePanel` table and empty state da1cf92
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) da1cf92
