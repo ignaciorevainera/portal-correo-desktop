@@ -49,6 +49,7 @@ export default function App(): React.JSX.Element {
   const [pingMode, setPingMode] = useState<"standard" | "infinite">("standard");
   const [activeDiagnostic, setActiveDiagnostic] =
     useState<DiagnosticCommandEvent | null>(null);
+  const [isRefreshingUptime, setIsRefreshingUptime] = useState(false);
   const [status, setStatus] = useState<BackendStatus>({
     connected: false,
     mode: "mock",

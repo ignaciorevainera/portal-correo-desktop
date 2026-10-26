@@ -5,11 +5,11 @@ import { TerminalData } from '../types/terminal';
 
 describe('QuickActionsBar Polish: Subnet Scanner & Uptime Refresh', () => {
   const terminal: TerminalData = {
-    id: 'test-1',
     pc: 'PC-TEST-001',
     ip: '192.0.2.100',
     mac: '00:11:22:33:44:55',
     os: 'Windows 10',
+    servicePack: '21H2',
     architecture: 'x64',
     surveyDate: '2026-10-26',
     cpuModel: 'Intel Core i5',

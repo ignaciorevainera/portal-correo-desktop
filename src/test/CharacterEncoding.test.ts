@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-// @ts-expect-error - CJS module in electron dir
 import systemTools from '../../electron/systemTools.cjs';
 
 describe('Character Encoding & Subprocess Output Sanitization', () => {
