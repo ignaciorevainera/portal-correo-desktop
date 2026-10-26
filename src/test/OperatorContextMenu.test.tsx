@@ -6,7 +6,7 @@ import { getAllTerminals } from '../services/terminalService';
 describe('OperatorContextMenu Component', () => {
   const terminal = getAllTerminals()[0];
 
-  it('renders context menu at given position with operator shortcuts and actions', () => {
+  it('renders context menu at given position with operator shortcuts and actions when terminal is selected', () => {
     const onClose = vi.fn();
     const onLaunchVnc = vi.fn();
     const onTogglePing = vi.fn();
@@ -48,6 +48,40 @@ describe('OperatorContextMenu Component', () => {
 
     fireEvent.click(portalItem);
     expect(onOpenPortalMda).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders ONLY Portal MDA when no terminal is located/selected (empty state)', () => {
+    const onOpenPortalMda = vi.fn();
+    const onClose = vi.fn();
+
+    render(
+      <OperatorContextMenu
+        x={120}
+        y={150}
+        terminal={null}
+        isPinging={false}
+        onClose={onClose}
+        onLaunchVnc={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onOpenPortalMda={onOpenPortalMda}
+      />
+    );
+
+    // Debe mostrar únicamente el acceso a Portal MDA
+    const portalItem = screen.getByRole('button', { name: /abrir portal mda/i });
+    expect(portalItem).toBeInTheDocument();
+
+    // No debe mostrar opciones de conexión remota, ping ni copiado
+    expect(screen.queryByRole('button', { name: /conectar vnc/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /ping/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /asistencia msra/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /copiar/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Acciones')).not.toBeInTheDocument();
+
+    fireEvent.click(portalItem);
+    expect(onOpenPortalMda).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalled();
   });
 
   it('allows copying IP and Hostname directly from context menu', async () => {
