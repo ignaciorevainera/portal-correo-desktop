@@ -97,7 +97,8 @@ describe("Shadcn Preset b5XRZYXrNg & UI Primitives", () => {
       "textarea",
     );
     expect(screen.getByRole("alert")).toHaveAttribute("data-slot", "alert");
-    expect(screen.getByText("Ctrl+F")).toHaveAttribute("data-slot", "kbd");
+    expect(screen.getByText("Ctrl")).toHaveAttribute("data-slot", "kbd");
+    expect(screen.getByText("F")).toHaveAttribute("data-slot", "kbd");
     expect(screen.getByRole("button", { name: "Acción" })).toHaveAttribute(
       "data-slot",
       "button",
