@@ -205,5 +205,22 @@ describe('electronClient (Unified bridge with security gate & browser mock fallb
       await stopDiagnosticCommand();
       expect(stopCmdMock).toHaveBeenCalled();
     });
+
+    it('simulates net user output in the browser fallback', () => {
+      vi.useFakeTimers();
+      delete (global as any).window.electronAPI;
+
+      const onData = vi.fn();
+      const onEnd = vi.fn();
+
+      subscribeToDiagnosticCommand('netuser', 'jperez', onData, onEnd);
+      vi.advanceTimersByTime(600);
+
+      const output = onData.mock.calls.flat().join('');
+      expect(output).toContain('grupos globales');
+      expect(onEnd).toHaveBeenCalledWith(0);
+
+      vi.useRealTimers();
+    });
   });
 });

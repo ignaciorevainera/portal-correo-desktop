@@ -283,7 +283,7 @@ export async function openExternalUrl(url: string): Promise<void> {
   }
 }
 
-export type DiagnosticCommandType = 'ping' | 'nbtstat' | 'tracert' | 'arp';
+export type DiagnosticCommandType = 'ping' | 'nbtstat' | 'tracert' | 'arp' | 'netuser';
 
 export async function stopDiagnosticCommand(): Promise<void> {
   const api = getElectronAPI();
@@ -346,6 +346,18 @@ export function subscribeToDiagnosticCommand(
       onData(`  ${target}                     00-1a-2b-3c-4d-5e     dinámico (Simulado)\n`);
       onEnd(0);
     }, 400);
+  } else if (command === 'netuser') {
+    onData(
+      `\nInformación de la cuenta para ${target}\n\n` +
+        `Nombre de usuario: ${target}\n` +
+        `Nombre completo:\n` +
+        `Cuenta activa: Sí\n\n` +
+        `Miembro de grupos globales  *GRUPO-SOPORTE  *GRUPO-OPERADORES\n` +
+        `El comando se completó correctamente.\n`,
+    );
+    timer = setTimeout(() => {
+      onEnd(0);
+    }, 500);
   } else {
     // Ping fallback
     return subscribeToPing(target, onData, onEnd, Boolean(options?.continuous));
@@ -418,7 +430,8 @@ export function subscribeToAutofocusSearch(
 
 export interface SubnetDiscoveredHost {
   ip: string;
-  hostname: string;
+  /** null when no source (inventory, DNS, NetBIOS, ping -a) resolves a name */
+  hostname: string | null;
   alive: boolean;
   latency: number | null;
 }

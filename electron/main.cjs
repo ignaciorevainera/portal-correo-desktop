@@ -7,7 +7,44 @@ const systemTools = require('./systemTools.cjs');
 const dnsResolver = require('./dnsResolver.cjs');
 const { parseClipboardQuery } = require('./clipboardParser.cjs');
 const { generateSubnetRange, scanSubnetBatch } = require('./subnetScanner.cjs');
+const hostnameResolver = require('./hostnameResolver.cjs');
 const { checkForUpdates, downloadUpdateFile } = require('./updaterService.cjs');
+
+// ---------------------------------------------------------------------------
+// Modo de renderizado (GPU vs. software)
+// ---------------------------------------------------------------------------
+// En muchos equipos corporativos (escritorios virtuales, sesiones RDP, VMs sin
+// GPU dedicada o GPU bloqueada por política/EDR) Chromium no logra lanzar su
+// proceso GPU y Electron aborta al arrancar con:
+//   ERROR:gpu_process_host.cc GPU process launch failed: error_code=18
+//   FATAL:gpu_data_manager_impl_private.cc GPU process isn't usable. Goodbye.
+// Esta aplicación es un panel/formulario, por lo que no necesita aceleración por
+// hardware: se usa renderizado por software por defecto. En un equipo con GPU
+// funcional se puede reactivar con la variable de entorno CMDA_ENABLE_GPU=1.
+const gpuEnabled = /^(1|true|yes|on)$/i.test(String(process.env.CMDA_ENABLE_GPU || '').trim());
+
+if (!gpuEnabled) {
+  app.disableHardwareAcceleration();
+  app.commandLine.appendSwitch('disable-gpu');
+  app.commandLine.appendSwitch('disable-gpu-compositing');
+  // Sin este switch el proceso GPU se sigue intentando lanzar en sandbox y en
+  // equipos corporativos falla igualmente (error_code=18) aunque la aceleración
+  // esté deshabilitada.
+  app.commandLine.appendSwitch('disable-gpu-sandbox');
+  console.log('[GPU] Aceleración por hardware deshabilitada (renderizado por software)');
+}
+
+// Modo compatibilidad: para equipos donde el antivirus/EDR corporativo bloquea
+// la creación de procesos hijos de Chromium y Electron aborta con
+// "Renderer process launch-failed" o "GPU process launch failed".
+// Se activa solo de forma explícita: CMDA_COMPAT_MODE=1
+const compatMode = /^(1|true|yes|on)$/i.test(String(process.env.CMDA_COMPAT_MODE || '').trim());
+
+if (compatMode) {
+  app.commandLine.appendSwitch('no-sandbox');
+  app.commandLine.appendSwitch('disable-features', 'RendererCodeIntegrity');
+  console.warn('[Compat] Modo compatibilidad activo (sandbox y Renderer Code Integrity deshabilitados)');
+}
 
 let tray = null;
 let activePingProcess = null;
@@ -169,13 +206,18 @@ function createWindow() {
 
   const isDev = !app.isPackaged || process.env.NODE_ENV === 'development';
   const devUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
+  const distIndex = path.join(__dirname, '../dist/index.html');
+  const logLoadError = (target) => (err) => {
+    console.error(`[Load] No se pudo cargar ${target}: ${err && err.message ? err.message : err}`);
+  };
+
   if (isDev) {
     win.loadURL(devUrl).catch(() => {
-      win.loadFile(path.join(__dirname, '../dist/index.html'));
+      win.loadFile(distIndex).catch(logLoadError(distIndex));
     });
   } else {
-    win.loadFile(path.join(__dirname, '../dist/index.html')).catch(() => {
-      win.loadURL(devUrl);
+    win.loadFile(distIndex).catch(() => {
+      win.loadURL(devUrl).catch(logLoadError(devUrl));
     });
   }
 
@@ -461,6 +503,8 @@ ipcMain.on('cmda:cmd-start', async (event, payload) => {
     activeDiagnosticProcess = systemTools.executeTracert(target, options, onData, onDone);
   } else if (command === 'arp') {
     activeDiagnosticProcess = systemTools.executeArp(target, onData, onDone);
+  } else if (command === 'netuser') {
+    activeDiagnosticProcess = systemTools.executeNetUser(target, onData, onDone);
   } else if (command === 'ping') {
     const pingOptions = options?.continuous ? { continuous: true } : (options?.count || 4);
     activeDiagnosticProcess = systemTools.executePing(target, pingOptions, onData, onDone);
@@ -486,6 +530,26 @@ ipcMain.on('cmda:subnet-scan-start', async (event, targetIp) => {
     const result = await scanSubnetBatch(range, {
       concurrency: 16,
       signal,
+      dnsResolver: (ip) =>
+        hostnameResolver.resolveHostname(ip, [
+          async (target) => {
+            try {
+              return await dbService.resolvePcFromIp(target);
+            } catch {
+              return null;
+            }
+          },
+          async (target) => {
+            try {
+              const rev = await dnsResolver.resolveNetworkTarget(target);
+              return rev && rev.hostname !== target ? rev.hostname : null;
+            } catch {
+              return null;
+            }
+          },
+          (target) => hostnameResolver.resolveViaNetbios(target, { timeoutMs: 900 }),
+          (target) => hostnameResolver.resolveViaPingA(target, { timeoutMs: 900 }),
+        ]),
       onHostFound: (host) => {
         if (!event.sender.isDestroyed()) {
           event.sender.send('cmda:subnet-host-found', host);
