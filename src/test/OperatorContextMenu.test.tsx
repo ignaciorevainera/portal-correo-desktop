@@ -114,4 +114,45 @@ describe('OperatorContextMenu Component', () => {
     fireEvent.click(copyHostBtn);
     expect(writeTextMock).toHaveBeenCalledWith(terminal.pc);
   });
+
+  it('shows the account action only for valid NT users', () => {
+    const onQueryAccount = vi.fn();
+
+    const { rerender } = render(
+      <OperatorContextMenu
+        x={10}
+        y={10}
+        terminal={{ ...terminal, userNt: 'jperez' }}
+        isPinging={false}
+        onClose={vi.fn()}
+        onLaunchVnc={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onOpenPortalMda={vi.fn()}
+        onQueryAccount={onQueryAccount}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /ver cuenta ad/i }));
+    expect(onQueryAccount).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <OperatorContextMenu
+        x={10}
+        y={10}
+        terminal={{ ...terminal, userNt: 'operador.demo01' }}
+        isPinging={false}
+        onClose={vi.fn()}
+        onLaunchVnc={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onOpenPortalMda={vi.fn()}
+        onQueryAccount={onQueryAccount}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', { name: /ver cuenta ad/i }),
+    ).not.toBeInTheDocument();
+  });
 });

@@ -38,4 +38,45 @@ describe("TerminalIdentity", () => {
       "No especificado",
     );
   });
+
+  it("renders the account button for valid users and calls the handler", () => {
+    const onQueryAccount = vi.fn();
+    render(
+      <TerminalIdentity
+        terminal={{ ...terminal, userNt: "jperez" }}
+        onQueryAccount={onQueryAccount}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Consultar cuenta AD" }),
+    );
+    expect(onQueryAccount).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables the account button when the NT user has invalid characters", () => {
+    render(
+      <TerminalIdentity
+        terminal={{ ...terminal, userNt: "operador.demo01" }}
+        onQueryAccount={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Consultar cuenta AD" }),
+    ).toBeDisabled();
+  });
+
+  it("does not render the account button without a user", () => {
+    render(
+      <TerminalIdentity
+        terminal={{ ...terminal, userNt: "" }}
+        onQueryAccount={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: "Consultar cuenta AD" }),
+    ).not.toBeInTheDocument();
+  });
 });

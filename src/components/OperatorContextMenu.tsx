@@ -7,10 +7,12 @@ import {
   Copy,
   ExternalLink,
   Search,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Kbd } from "@/components/ui/kbd";
+import { splitUsernames } from "@/lib/usernames";
 
 interface OperatorContextMenuProps {
   x: number;
@@ -23,6 +25,7 @@ interface OperatorContextMenuProps {
   onLaunchMsra: () => void;
   onOpenPortalMda: () => void;
   onFocusSearch?: () => void;
+  onQueryAccount?: () => void;
 }
 
 export function OperatorContextMenu({
@@ -36,6 +39,7 @@ export function OperatorContextMenu({
   onLaunchMsra,
   onOpenPortalMda,
   onFocusSearch,
+  onQueryAccount,
 }: OperatorContextMenuProps): React.JSX.Element {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -160,6 +164,22 @@ export function OperatorContextMenu({
               <Copy className="h-3.5 w-3.5 text-muted-foreground" /> Copiar
               Hostname
             </Button>
+
+            {splitUsernames(terminal.userNt).length > 0 && onQueryAccount && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  onQueryAccount();
+                  onClose();
+                }}
+                aria-label="Ver cuenta AD"
+                className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
+              >
+                <Users className="h-3.5 w-3.5 text-muted-foreground" /> Ver cuenta AD
+              </Button>
+            )}
           </div>
 
           <Separator className="my-1" />

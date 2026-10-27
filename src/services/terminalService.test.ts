@@ -23,7 +23,7 @@ describe('terminalService Synthetic Mock Repository', () => {
     const term = findTerminalByQuery('192.0.2.103');
     expect(term).toBeDefined();
     expect(term?.pc).toBe('TERM-DEMO-003');
-    expect(term?.userNt).toBe('operador.demo04');
+    expect(term?.userNt).toBe('operadordemo04');
   });
 
   it('finds terminal by partial hostname or IP query', () => {
