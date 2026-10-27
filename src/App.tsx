@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
 import { Topbar } from "./components/Topbar";
-import { TerminalTechnicalCard } from "./components/TerminalTechnicalCard";
+import { TerminalIdentity } from "./components/TerminalIdentity";
+import { TerminalDetailsGrid } from "./components/TerminalDetailsGrid";
+import { ActivityPanel } from "./components/ActivityPanel";
 import {
   QuickActionsBar,
   ActionFeedbackState,
@@ -10,8 +12,6 @@ import {
   LivePingConsole,
   DiagnosticCommandEvent,
 } from "./components/LivePingConsole";
-import { AlertsPanel } from "./components/AlertsPanel";
-import { ResetUptimePanel } from "./components/ResetUptimePanel";
 import { OperatorContextMenu } from "./components/OperatorContextMenu";
 import { SubnetScannerDrawer } from "./components/SubnetScannerDrawer";
 import { SettingsModal } from "./components/SettingsModal";
@@ -41,6 +41,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Kbd } from "@/components/ui/kbd";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { RESET_QUEUE_MESSAGE } from "@/lib/constants";
 
 export default function App(): React.JSX.Element {
   const [selectedPc, setSelectedPc] = useState<string>("");
@@ -294,6 +295,10 @@ export default function App(): React.JSX.Element {
     });
   };
 
+  const handleRequestReset = (reason: string): void => {
+    toast.success(RESET_QUEUE_MESSAGE, { description: reason });
+  };
+
   const handleLaunchSmartRemote = async (
     targetOverride?: string,
   ): Promise<void> => {
@@ -381,10 +386,14 @@ export default function App(): React.JSX.Element {
     <ThemeProvider>
       <div
         onContextMenu={(e) => {
+          const target = e.target as HTMLElement | null;
+          if (target?.closest("input, textarea, [contenteditable='true']")) {
+            return;
+          }
           e.preventDefault();
           setContextMenu({ x: e.clientX, y: e.clientY });
         }}
-        className="h-screen w-screen overflow-hidden bg-background text-foreground flex flex-col font-sans select-none antialiased"
+        className="h-screen w-screen overflow-hidden bg-background text-foreground flex flex-col font-sans antialiased"
       >
         <Topbar
           onSelectTerminal={handleSelectTerminal}
@@ -484,10 +493,10 @@ export default function App(): React.JSX.Element {
             </div>
           ) : (
             <>
-              {/* 1° Card Unificada: Especificaciones Técnicas, Hardware, Red y Directorio Activo */}
-              <TerminalTechnicalCard terminal={terminal} />
+              {/* 1° Identidad: hostname, IP, sede y usuario */}
+              <TerminalIdentity terminal={terminal} />
 
-              {/* 2° Consola Interna de Diagnóstico: Estilo Terminal Windows con Historial */}
+              {/* 2° Consola interna: ping automático y comandos de la quick bar */}
               <LivePingConsole
                 ip={terminal.ip}
                 isPinging={isPinging}
@@ -501,14 +510,15 @@ export default function App(): React.JSX.Element {
                 }}
               />
 
-              {/* 3° Reseteo AD e Historial de Uptime */}
-              <ResetUptimePanel terminal={terminal} />
+              {/* 3° Datos restantes del equipo en grilla */}
+              <TerminalDetailsGrid terminal={terminal} />
 
-              {/* 4° Alertas de Terminal (al final): Formato tabla compacta de una fila por alerta */}
-              <AlertsPanel
+              {/* 4° Alertas y reseteos unificados, ordenados por fecha */}
+              <ActivityPanel
                 terminal={terminal}
                 onAddAlert={handleAddAlert}
                 onCloseAlert={handleCloseAlert}
+                onRequestReset={handleRequestReset}
               />
             </>
           )}
