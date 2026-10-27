@@ -101,9 +101,9 @@ La regex vive duplicada a propósito en `electron/systemTools.cjs` (CommonJS) y 
 
 1. `TerminalIdentity` calcula `splitUsernames(terminal.userNt)`.
 2. Sin usuarios válidos: botón deshabilitado con `title="El usuario NT contiene caracteres no permitidos o está vacío"`.
-3. Un usuario válido: `onQueryAccount()` → `handleRunNetUser(user)`.
-4. Varios: `onQueryAccount()` → abre `NetUserChooserDialog`; al confirmar, `handleRunNetUser(user)`.
-5. `handleRunNetUser(user)` construye:
+3. Un usuario válido: `onQueryAccount()` → `runNetUser(user)`.
+4. Varios: `onQueryAccount()` → abre `NetUserChooserDialog`; al confirmar, `runNetUser(user)`.
+5. `runNetUser(user)` construye:
 
 ```ts
 {
