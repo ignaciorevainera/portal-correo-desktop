@@ -127,6 +127,17 @@ const pairs = [
   { t: "dark", fg: "foreground", bg: "background", kind: "text", label: "Texto base" },
   { t: "dark", fg: "muted-foreground", bg: "card", kind: "text", label: "Labels sobre card" },
   { t: "dark", fg: "primary-foreground", bg: "primary", kind: "text", label: "CTA primaria" },
+  { t: "dark", fg: "primary", bg: "card", kind: "text", label: "Texto primary sobre card" },
+  { t: "dark", fg: "primary", bg: "background", kind: "text", label: "Texto primary sobre fondo" },
+  {
+    t: "dark",
+    fg: "primary",
+    bg: "primary",
+    bgAlpha: 0.1,
+    bgOver: "card",
+    kind: "text",
+    label: "Primary sobre tinte primary/10",
+  },
   {
     t: "dark",
     fg: "destructive",
