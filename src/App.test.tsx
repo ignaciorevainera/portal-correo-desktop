@@ -143,7 +143,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
           ram: '8.192 MB',
           antivirusVersion: 'Endpoint Protection 12.0',
           ieVersion: '11.0.19041.1',
-          userNt: 'operador.demo01',
+          userNt: 'operadordemo01',
           architecture: 'x64-based PC',
           surveyDate: '01/01/2026',
           uptimeText: '12 day(s), 4 hour(s), 18 minute(s)',

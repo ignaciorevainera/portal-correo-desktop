@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
 import { Topbar } from "./components/Topbar";
 import { TerminalIdentity } from "./components/TerminalIdentity";
 import { TerminalDetailsGrid } from "./components/TerminalDetailsGrid";
 import { ActivityPanel } from "./components/ActivityPanel";
+import { NetUserChooserDialog } from "./components/NetUserChooserDialog";
 import {
   QuickActionsBar,
   ActionFeedbackState,
@@ -42,6 +43,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { RESET_QUEUE_MESSAGE } from "@/lib/constants";
+import { isIpAddress, isValidUsername, splitUsernames } from "@/lib/usernames";
 
 export default function App(): React.JSX.Element {
   const [selectedPc, setSelectedPc] = useState<string>("");
@@ -52,6 +54,8 @@ export default function App(): React.JSX.Element {
   const [pingMode, setPingMode] = useState<"standard" | "infinite">("standard");
   const [activeDiagnostic, setActiveDiagnostic] =
     useState<DiagnosticCommandEvent | null>(null);
+  const [isAccountChooserOpen, setIsAccountChooserOpen] = useState(false);
+  const [accountQuery, setAccountQuery] = useState<string | null>(null);
   const [isRefreshingUptime, setIsRefreshingUptime] = useState(false);
   const [status, setStatus] = useState<BackendStatus>({
     connected: false,
@@ -72,6 +76,10 @@ export default function App(): React.JSX.Element {
   const mainRef = useRef<HTMLElement>(null);
 
   const allTerminals = getAllTerminals();
+  const accountUsers = useMemo(
+    () => splitUsernames(terminal?.userNt),
+    [terminal?.userNt],
+  );
 
   useEffect(() => {
     checkBackendStatus()
@@ -157,6 +165,8 @@ export default function App(): React.JSX.Element {
     setActionFeedback(null);
     setRemoteProbe(null);
     setIsProbingRemote(false);
+    setAccountQuery(null);
+    setIsAccountChooserOpen(false);
   };
 
   const handleStartPing = (mode: "standard" | "infinite" = "standard") => {
@@ -248,6 +258,8 @@ export default function App(): React.JSX.Element {
     setActionFeedback(null);
     setRemoteProbe(null);
     setIsProbingRemote(false);
+    setAccountQuery(null);
+    setIsAccountChooserOpen(false);
   };
 
   const handleAddAlert = (alert: {
@@ -297,6 +309,45 @@ export default function App(): React.JSX.Element {
 
   const handleRequestReset = (reason: string): void => {
     toast.success(RESET_QUEUE_MESSAGE, { description: reason });
+  };
+
+  const runNetUser = (user: string): void => {
+    const cleanUser = user.trim();
+    if (!isValidUsername(cleanUser)) return;
+    setIsPinging(false);
+    stopDiagnosticCommand().catch(() => {});
+    setActiveDiagnostic({
+      id: `diag-${Date.now()}`,
+      command: "netuser",
+      target: cleanUser,
+      argsText: `net user ${cleanUser} /domain`,
+      timestamp: new Date().toLocaleTimeString(),
+    });
+  };
+
+  const handleQueryAccount = (): void => {
+    if (accountUsers.length === 1) {
+      runNetUser(accountUsers[0]);
+    } else if (accountUsers.length > 1) {
+      setIsAccountChooserOpen(true);
+    }
+  };
+
+  const handleOpenAccount = (user: string): void => {
+    const cleanUser = user.trim();
+    if (!isValidUsername(cleanUser)) return;
+    setAccountQuery(cleanUser);
+    runNetUser(cleanUser);
+  };
+
+  const handleStopAccount = (): void => {
+    stopDiagnosticCommand().catch(() => {});
+    setActiveDiagnostic(null);
+  };
+
+  const handleCloseAccount = (): void => {
+    handleStopAccount();
+    setAccountQuery(null);
   };
 
   const handleLaunchSmartRemote = async (
@@ -445,6 +496,28 @@ export default function App(): React.JSX.Element {
                 Consultando base de datos técnica...
               </p>
             </div>
+          ) : !terminal && accountQuery ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCloseAccount}
+                >
+                  Volver
+                </Button>
+              </div>
+              <LivePingConsole
+                mode="account"
+                targetLabel={accountQuery}
+                ip=""
+                isPinging={false}
+                activeCommand={activeDiagnostic}
+                onTogglePing={() => {}}
+                onStopCommand={handleStopAccount}
+              />
+            </div>
           ) : notFoundTerm ? (
             <div className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-card/30 space-y-3">
               <div className="p-3 rounded-full bg-muted/70 text-muted-foreground">
@@ -464,6 +537,17 @@ export default function App(): React.JSX.Element {
                   el alcance de red.
                 </p>
               </div>
+              {!isIpAddress(notFoundTerm) && isValidUsername(notFoundTerm) && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => handleOpenAccount(notFoundTerm)}
+                  className="text-xs gap-1.5 h-7 px-3"
+                >
+                  Consultar «{notFoundTerm}» como cuenta AD
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="xs"
@@ -494,7 +578,10 @@ export default function App(): React.JSX.Element {
           ) : (
             <>
               {/* 1° Identidad: hostname, IP, sede y usuario */}
-              <TerminalIdentity terminal={terminal} />
+              <TerminalIdentity
+                terminal={terminal}
+                onQueryAccount={handleQueryAccount}
+              />
 
               {/* 2° Consola interna: ping automático y comandos de la quick bar */}
               <LivePingConsole
@@ -538,6 +625,7 @@ export default function App(): React.JSX.Element {
             onOpenPortalMda={() =>
               openExternalUrl("https://mda.correo.local/inventario-terminales")
             }
+            onQueryAccount={handleQueryAccount}
           />
         )}
 
@@ -563,6 +651,17 @@ export default function App(): React.JSX.Element {
           onClose={() => setIsSettingsOpen(false)}
           currentVersion="1.0.0"
           backendConnected={status.connected}
+        />
+
+        <NetUserChooserDialog
+          open={isAccountChooserOpen}
+          users={accountUsers}
+          initialUser={accountUsers[0]}
+          onOpenChange={setIsAccountChooserOpen}
+          onSubmit={(user) => {
+            setIsAccountChooserOpen(false);
+            runNetUser(user);
+          }}
         />
 
         {/* Notificaciones animadas Sonner Toaster oficiales de Shadcn */}

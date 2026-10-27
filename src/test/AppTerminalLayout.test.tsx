@@ -13,7 +13,7 @@ const terminal = {
   ram: "16.384 MB",
   antivirusVersion: "Endpoint Protection 14.3",
   ieVersion: "N/A (Edge)",
-  userNt: "soporte.central",
+  userNt: "soportecentral",
   architecture: "x64-based PC",
   surveyDate: "25/10/2026",
   uptimeText: "3 day(s), 2 hour(s)",
