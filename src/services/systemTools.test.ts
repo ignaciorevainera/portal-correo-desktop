@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import net from 'net';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import configManager from '../../electron/configManager.cjs';
@@ -17,6 +18,9 @@ import {
   executeNbtstat,
   executeTracert,
   executeArp,
+  sanitizeDomainUser,
+  getNetUserArgs,
+  executeNetUser,
 } from '../../electron/systemTools.cjs';
 
 describe('systemTools orchestration & security sanitization', () => {
@@ -299,6 +303,54 @@ describe('systemTools orchestration & security sanitization', () => {
       const proc = executeArp('192.0.2.103', onData, onDone);
       expect(proc).toBeDefined();
       if (proc && proc.kill) proc.kill();
+    });
+  });
+
+  describe('net user /domain', () => {
+    it('accepts only alphanumeric users', () => {
+      expect(sanitizeDomainUser('jperez')).toBe('jperez');
+      expect(sanitizeDomainUser('OPERADOR01')).toBe('OPERADOR01');
+
+      expect(() => sanitizeDomainUser('operador.demo01')).toThrow('Usuario inválido');
+      expect(() => sanitizeDomainUser('juan-perez')).toThrow('Usuario inválido');
+      expect(() => sanitizeDomainUser('CORREO\\jperez')).toThrow('Usuario inválido');
+      expect(() => sanitizeDomainUser('')).toThrow('Usuario inválido');
+    });
+
+    it('builds net.exe with the exact argument list', () => {
+      expect(getNetUserArgs('jperez')).toEqual({
+        exe: 'net.exe',
+        args: ['user', 'jperez', '/domain'],
+      });
+    });
+
+    it('kills the process and reports a domain timeout', () => {
+      vi.useFakeTimers();
+
+      const child = new EventEmitter() as EventEmitter & {
+        stdout: EventEmitter;
+        stderr: EventEmitter;
+        kill: ReturnType<typeof vi.fn>;
+      };
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      child.kill = vi.fn();
+
+      const onData = vi.fn();
+      const onDone = vi.fn();
+
+      executeNetUser('jperez', onData, onDone, {
+        spawnImpl: () => child,
+        timeoutMs: 12000,
+      });
+
+      vi.advanceTimersByTime(12000);
+
+      expect(child.kill).toHaveBeenCalledTimes(1);
+      expect(onDone).toHaveBeenCalledWith(1);
+      expect(onData.mock.calls.flat().join('')).toContain('VPN');
+
+      vi.useRealTimers();
     });
   });
 });

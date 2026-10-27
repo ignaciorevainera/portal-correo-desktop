@@ -394,17 +394,67 @@ function sanitizePingOutput(rawText) {
     .replace(/aproximad[\ufffd\?]?s/gi, 'aproximados');
 }
 
-function executeGenericCommand(cmd, toolName, onData, onDone) {
+const NET_USER_TIMEOUT_MS = 12000;
+const USERNAME_PATTERN = /^[A-Za-z0-9]{1,64}$/;
+
+function sanitizeDomainUser(raw) {
+  if (typeof raw !== 'string') throw new Error('Usuario inválido');
+  const user = raw.trim();
+  if (!USERNAME_PATTERN.test(user)) {
+    throw new Error(
+      'Usuario inválido: usá solo letras y números, sin dominio ni símbolos'
+    );
+  }
+  return user;
+}
+
+function getNetUserArgs(rawUser) {
+  return {
+    exe: 'net.exe',
+    args: ['user', sanitizeDomainUser(rawUser), '/domain'],
+  };
+}
+
+function executeGenericCommand(cmd, toolName, onData, onDone, options = {}) {
+  const { spawnImpl = spawn, timeoutMs = 0, timeoutMessage = '' } = options;
   try {
-    const proc = spawn(cmd.exe, cmd.args);
+    const proc = spawnImpl(cmd.exe, cmd.args, { windowsHide: true });
     let stdoutBuffer = '';
+    let settled = false;
+    let timeoutId = null;
+
+    const emit = (text) => {
+      if (text && onData) onData(text);
+    };
 
     const flushBuffer = () => {
       if (stdoutBuffer) {
-        if (onData) onData(stdoutBuffer);
+        emit(stdoutBuffer);
         stdoutBuffer = '';
       }
     };
+
+    const finish = (code) => {
+      if (settled) return;
+      settled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      flushBuffer();
+      if (onDone) onDone(code);
+    };
+
+    if (timeoutMs > 0) {
+      timeoutId = setTimeout(() => {
+        if (settled) return;
+        emit(
+          timeoutMessage ||
+            `\n[timeout] El comando ${toolName} no respondió a tiempo.\n`
+        );
+        finish(1);
+        try {
+          proc.kill();
+        } catch {}
+      }, timeoutMs);
+    }
 
     if (proc.stdout) {
       proc.stdout.on('data', (data) => {
@@ -414,27 +464,24 @@ function executeGenericCommand(cmd, toolName, onData, onDone) {
         if (lastNewline !== -1) {
           const toEmit = stdoutBuffer.slice(0, lastNewline + 1);
           stdoutBuffer = stdoutBuffer.slice(lastNewline + 1);
-          if (onData) onData(toEmit);
+          emit(toEmit);
         }
       });
     }
 
     if (proc.stderr) {
       proc.stderr.on('data', (data) => {
-        const decoded = decodeSubprocessOutput(data);
-        if (onData) onData(decoded);
+        emit(decodeSubprocessOutput(data));
       });
     }
 
     proc.on('error', (err) => {
-      flushBuffer();
-      if (onData) onData(`Error de subproceso ${toolName}: ${err.message}\n`);
-      if (onDone) onDone(1);
+      emit(`Error de subproceso ${toolName}: ${err.message}\n`);
+      finish(1);
     });
 
     proc.on('close', (code) => {
-      flushBuffer();
-      if (onDone) onDone(code);
+      finish(code);
     });
 
     return proc;
@@ -489,6 +536,23 @@ function executeArp(targetIpOrHost, onData, onDone) {
   }
 }
 
+function executeNetUser(rawUser, onData, onDone, options = {}) {
+  try {
+    const cmd = getNetUserArgs(rawUser);
+    return executeGenericCommand(cmd, 'net user', onData, onDone, {
+      spawnImpl: options.spawnImpl,
+      timeoutMs: options.timeoutMs ?? NET_USER_TIMEOUT_MS,
+      timeoutMessage:
+        options.timeoutMessage ??
+        '\n[timeout] El dominio no respondió en 12 s. Verificá VPN o conexión al DC.\n',
+    });
+  } catch (err) {
+    if (onData) onData(`Error: ${err.message}\n`);
+    if (onDone) onDone(1);
+    return null;
+  }
+}
+
 module.exports = {
   sanitizeHostOrIp,
   buildVncConfigFile,
@@ -509,6 +573,10 @@ module.exports = {
   executeNbtstat,
   executeTracert,
   executeArp,
+  executeNetUser,
+  sanitizeDomainUser,
+  getNetUserArgs,
+  NET_USER_TIMEOUT_MS,
   sanitizePingOutput,
   decodeSubprocessOutput,
 };
