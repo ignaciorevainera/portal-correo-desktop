@@ -13,7 +13,9 @@ Permitir que el operador consulte, desde la app, la información de una cuenta d
 La consulta se dispara en dos contextos:
 
 1. **Con terminal encontrada:** botón junto al Usuario NT y opción en el menú contextual, habilitados solo si hay al menos un usuario válido.
-2. **Sin terminal:** desde el estado “No se encontró”, ofreciendo consultar el texto buscado como cuenta AD.
+2. **Sin terminal:** desde el estado “No se encontró”, ofreciendo consultar el texto buscado como cuenta AD. La salida se muestra reutilizando la consola integrada en modo cuenta AD, no un modal.
+
+En ambos casos la salida se ve en la misma consola estilo CMD (`LivePingConsole`); cambia solo el encabezado y el lugar donde se renderiza.
 
 Fuera de alcance: buscar terminales por nombre de usuario. Requiere un SP o consulta nueva (`CMDA_Trae_Info_DE_PC_PARAmesa_T` recibe solo `pc`, `electron/dbService.cjs:99-102`) y se tratará en otra iteración.
 
@@ -28,7 +30,9 @@ Fuera de alcance: buscar terminales por nombre de usuario. Requiere un SP o cons
 | Ejecución | `spawn('net.exe', ['user', usuario, '/domain'])`, sin `cmd.exe` ni shell. |
 | Timeout | 12 s; al vencer, `kill()` y mensaje accionable. |
 | Con terminal | La salida va a la consola de diagnóstico existente. |
-| Sin terminal | La salida va a `NetUserResultDialog` (modal), misma ejecución y mismo canal. |
+| Sin terminal | Se reutiliza `LivePingConsole` en modo cuenta AD; no hay modal de resultado. |
+| Encabezado de consola | `ip` en modo terminal; `Cuenta AD · <usuario>` en modo cuenta. |
+| Cierre sin terminal | Botón “Volver”: detiene el proceso y vuelve al estado “No se encontró”. |
 | Un solo usuario | El botón ejecuta directo, sin diálogo. |
 | Varios usuarios | `NetUserChooserDialog` para elegir o editar. |
 | Menú contextual | Ítem “Ver cuenta AD” solo si hay al menos un usuario válido. |
@@ -87,12 +91,11 @@ La regex vive duplicada a propósito en `electron/systemTools.cjs` (CommonJS) y 
 
 - `src/services/electronClient.ts`: `DiagnosticCommandType` pasa a `'ping' | 'nbtstat' | 'tracert' | 'arp' | 'netuser'`. Se agrega simulación de navegador con salida de ejemplo que incluye “Miembro de grupos globales”.
 - `src/lib/usernames.ts` (nuevo): `USERNAME_PATTERN`, `isValidUsername(value)`, `splitUsernames(raw)` (separa por `|`, recorta y filtra válidos).
-- `src/components/LivePingConsole.tsx`: el efecto genérico ya procesa cualquier comando distinto de `ping`; solo se amplía el tipo. Se agrega resaltado del bloque de grupos globales.
+- `src/components/LivePingConsole.tsx`: se amplía el tipo de comando, se agregan `mode` y `targetLabel`, y se resalta el bloque de grupos globales.
 - `src/components/NetUserChooserDialog.tsx` (nuevo).
-- `src/components/NetUserResultDialog.tsx` (nuevo).
 - `src/components/TerminalIdentity.tsx`: botón de 24 px junto al Usuario NT.
 - `src/components/OperatorContextMenu.tsx`: ítem condicionado.
-- `src/App.tsx`: estados y handlers.
+- `src/App.tsx`: estados y handlers, incluida la vista de cuenta sin terminal.
 
 ### 3.3 Flujo con terminal
 
@@ -119,8 +122,11 @@ y lo asigna a `activeDiagnostic` (detiene ping y diagnóstico previo, igual que 
 
 1. `searchTerminalUnified` no devuelve datos y `notFoundTerm` queda seteado.
 2. Si `notFoundTerm` no es IP y `isValidUsername(notFoundTerm)`, el bloque “No se encontró” muestra la acción secundaria: `Consultar «<texto>» como cuenta AD`.
-3. Al hacer clic, `App` setea `accountResultUser` y abre `NetUserResultDialog`.
-4. El diálogo se suscribe a `subscribeToDiagnosticCommand('netuser', user, …)` al abrir, muestra el streaming y detiene el proceso al cerrarse.
+3. Al hacer clic, `App` setea `accountQuery = user` y `activeDiagnostic` con el comando `netuser` (y `isPinging = false`).
+4. `<main>` deja de mostrar el bloque “No se encontró” y renderiza la vista de cuenta: botón “Volver” alineado a la derecha y debajo `<LivePingConsole mode="account" targetLabel={user} … />`; el encabezado de la consola identifica la cuenta.
+5. La consola se suscribe por el mismo `activeCommand` que usa con terminal: encabezado de comando, streaming, Detener, Limpiar y Copiar.
+6. “Volver” detiene el proceso, limpia `activeDiagnostic` y `accountQuery`, y devuelve al estado “No se encontró” con el texto original.
+7. Si el operador busca otra cosa o limpia la búsqueda, la vista de cuenta se descarta igual.
 
 ---
 
@@ -153,22 +159,21 @@ interface NetUserChooserDialogProps {
 - Al abrir, resetea al `initialUser` o al primer usuario.
 - Cancelar cierra sin ejecutar.
 
-### 4.3 `NetUserResultDialog`
+### 4.3 `LivePingConsole` en modo cuenta
+
+Se reutiliza el componente existente. Props nuevas:
 
 ```ts
-interface NetUserResultDialogProps {
-  open: boolean;
-  user: string;
-  onOpenChange: (open: boolean) => void;
-}
+mode?: "terminal" | "account"; // default "terminal"
+targetLabel?: string;          // usuario en modo cuenta; en terminal se usa ip
 ```
 
-- Al abrir: limpia logs, estado `running`, se suscribe al comando.
-- Muestra encabezado `Cuenta AD · <usuario>` y salida en monoespaciado con scroll.
-- Acciones: Copiar (portapapeles), Detener (mientras corre), Cerrar.
-- Al cerrar o desmontar: cancela la suscripción (que ejecuta `stopCommand`).
-- Si el proceso termina con código distinto de 0, muestra una línea de estado con la sugerencia de revisar existencia, dominio y permisos.
-- No parsea la salida; muestra el texto crudo.
+- **Modo terminal:** encabezado con el `ip`, comportamiento actual sin cambios.
+- **Modo cuenta:** encabezado `Cuenta AD · <targetLabel>` con ícono `UserRound`; sin ping ni controles de ping.
+- En ambos modos se mantienen Limpiar, Copiar Último, Copiar Logs, Detener y el scroll interno.
+- `DiagnosticCommandEvent.command` incluye `'netuser'`.
+- El bloque de grupos se resalta cuando una línea coincide con `/grupos globales|global group memberships/i`; las líneas siguientes que empiezan con `*` se mantienen resaltadas hasta una línea vacía.
+- El texto de consola vacía se adapta al modo: en cuenta, “Consultá una cuenta para ver la salida de net user”.
 
 ### 4.4 `OperatorContextMenu`
 
@@ -176,11 +181,33 @@ interface NetUserResultDialogProps {
 - Ítem “Ver cuenta AD” con ícono `Users`, visible solo si `splitUsernames(terminal.userNt).length > 0`.
 - Al hacer clic, cierra el menú y ejecuta el mismo handler que la identidad.
 
-### 4.5 `LivePingConsole`
+### 4.5 `App`: vista de cuenta sin terminal
 
-- `DiagnosticCommandEvent.command` incluye `'netuser'`.
-- El bloque de grupos se resalta cuando una línea coincide con `/grupos globales|global group memberships/i`; las líneas siguientes que empiezan con `*` se mantienen resaltadas hasta una línea vacía.
-- El resto de la salida se muestra igual que los demás comandos.
+- Estado `accountQuery: string | null`.
+- `handleOpenAccount(user)`: valida, setea `accountQuery`, arma el `DiagnosticCommandEvent` de `netuser`, `isPinging = false` y limpia diagnósticos previos.
+- `handleStopAccount()`: detiene el proceso y limpia `activeDiagnostic`, pero mantiene `accountQuery` y la salida visible para leerla o copiarla.
+- `handleCloseAccount()`: detiene el proceso, limpia `activeDiagnostic` y `accountQuery`; vuelve al bloque “No se encontró”.
+- En `<main>`, si no hay terminal y `accountQuery` existe, renderiza:
+
+```tsx
+<div className="space-y-2">
+  <div className="flex items-center justify-end">
+    <Button variant="outline" size="sm" onClick={handleCloseAccount}>Volver</Button>
+  </div>
+  <LivePingConsole
+    mode="account"
+    targetLabel={accountQuery}
+    ip=""
+    isPinging={false}
+    activeCommand={activeDiagnostic}
+    onTogglePing={() => {}}
+    onStopCommand={handleStopAccount}
+  />
+</div>
+```
+
+- La acción “Consultar «texto» como cuenta AD” solo aparece si `notFoundTerm` no es IP y `isValidUsername(notFoundTerm)`.
+- Si se limpia la búsqueda o se busca otra terminal, `accountQuery` se resetea.
 
 ---
 
@@ -223,11 +250,10 @@ interface NetUserResultDialogProps {
 ### 7.3 Componentes
 
 - `NetUserChooserDialog`: lista usuarios, permite editar, deshabilita inválidos y emite el elegido.
-- `NetUserResultDialog`: arranca al abrir, renderiza streaming, copia y detiene al cerrar.
 - `TerminalIdentity`: botón visible/deshabilitado según usuarios válidos; un usuario ejecuta, varios abre chooser.
 - `OperatorContextMenu`: ítem presente solo con usuario válido.
-- `LivePingConsole`: encabezado y resalte de grupos para `netuser`.
-- `App`: “No se encontró” con `jperez` ofrece la acción; con IP o con símbolos no; al confirmar abre el diálogo y llama `startCommand` con `{ command: 'netuser', target: 'jperez' }`.
+- `LivePingConsole`: modo terminal sin cambios; modo cuenta con encabezado `Cuenta AD · usuario`, salida y resalte de grupos; texto vacío adaptado.
+- `App`: “No se encontró” con `jperez` ofrece la acción; con IP o con símbolos no; al confirmar renderiza la consola en modo cuenta y llama `startCommand` con `{ command: 'netuser', target: 'jperez' }`; “Detener” corta el proceso sin cerrar la vista; “Volver” detiene y restaura el estado anterior.
 
 ### 7.4 Fixtures
 
@@ -242,7 +268,7 @@ Actualizar a alfanumérico:
 2. Terminal con dos usuarios: abre chooser y ejecuta el elegido.
 3. Terminal sin usuario: botón deshabilitado, sin ítem en el menú contextual.
 4. Usuario con punto en la ficha: botón deshabilitado con motivo.
-5. Buscar `jperez` (sin terminal): aparece la acción, abre el diálogo, muestra salida, copia y cierra deteniendo el proceso.
+5. Buscar `jperez` (sin terminal): aparece la acción, se abre la consola en modo cuenta, muestra salida, copia y “Volver” detiene el proceso.
 6. Buscar una IP o un texto con guion: no aparece la acción.
 7. Sin VPN: timeout a los 12 s con mensaje.
 8. Usuario inexistente: salida de Windows y nota.
@@ -257,7 +283,7 @@ Actualizar a alfanumérico:
 4. Sin usuario válido, no hay botón habilitado ni ítem de menú.
 5. El clic derecho muestra “Ver cuenta AD” solo cuando corresponde.
 6. El estado “No se encontró” ofrece consultar como cuenta AD solo para texto no-IP y alfanumérico.
-7. El diálogo sin terminal muestra la salida cruda, copia y detiene al cerrar.
+7. La consola sin terminal muestra la salida cruda, copia y “Volver” detiene el proceso.
 8. Un timeout de 12 s no deja procesos colgados.
 9. `Topbar.tsx` y `QuickActionsBar.tsx` no se modifican.
 10. La suite completa y el build pasan.
@@ -266,7 +292,7 @@ Actualizar a alfanumérico:
 
 ## 9. Archivos afectados
 
-**Nuevos:** `src/lib/usernames.ts`, `src/components/NetUserChooserDialog.tsx`, `src/components/NetUserResultDialog.tsx` y sus tests.
+**Nuevos:** `src/lib/usernames.ts`, `src/components/NetUserChooserDialog.tsx` y sus tests.
 
 **Modificados:** `electron/systemTools.cjs`, `electron/main.cjs`, `src/services/electronClient.ts`, `src/components/LivePingConsole.tsx`, `src/components/TerminalIdentity.tsx`, `src/components/OperatorContextMenu.tsx`, `src/App.tsx`, `src/services/terminalService.ts` (fixtures), tests de `App`, `AppInitialState`, `ActivityPanel`, `TerminalIdentity`, `OperatorContextMenu`, `LivePingConsole`, `systemTools`, `electronClient`.
 
@@ -276,5 +302,5 @@ Actualizar a alfanumérico:
 
 - **Cuentas reales con punto o guion:** la regla estricta las rechaza. Si aparecen en producción, se relaja en `USERNAME_PATTERN` y `usernames.ts` en un solo cambio.
 - **Latencia del DC:** el timeout de 12 s puede cortar consultas lentas por VPN; el mensaje indica el motivo.
-- **Dos superficies de salida:** consola con terminal y modal sin terminal. Comparten comando y formato, pero duplican el render de logs.
+- **Reutilización de la consola:** el modo cuenta comparte logs, copiado y detención con el modo terminal; el riesgo es que el encabezado o el texto vacío queden específicos de ping si no se parametrizan.
 - **Grupos anidados:** el resultado puede interpretarse como “no pertenece” cuando en realidad pertenece a un grupo anidado; queda documentado.
