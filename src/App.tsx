@@ -516,6 +516,7 @@ export default function App(): React.JSX.Element {
                 activeCommand={activeDiagnostic}
                 onTogglePing={() => {}}
                 onStopCommand={handleStopAccount}
+                onDiagnosticComplete={() => setActiveDiagnostic(null)}
               />
             </div>
           ) : notFoundTerm ? (
@@ -540,7 +541,7 @@ export default function App(): React.JSX.Element {
               {!isIpAddress(notFoundTerm) && isValidUsername(notFoundTerm) && (
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="default"
                   size="xs"
                   onClick={() => handleOpenAccount(notFoundTerm)}
                   className="text-xs gap-1.5 h-7 px-3"
@@ -595,6 +596,7 @@ export default function App(): React.JSX.Element {
                   setActiveDiagnostic(null);
                   stopDiagnosticCommand().catch(() => {});
                 }}
+                onDiagnosticComplete={() => setActiveDiagnostic(null)}
               />
 
               {/* 3° Datos restantes del equipo en grilla */}

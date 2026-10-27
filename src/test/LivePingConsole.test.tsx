@@ -356,10 +356,13 @@ describe('LivePingConsole Component', () => {
 
   it('renders account mode header and highlights global groups', () => {
     let push: ((text: string) => void) | null = null;
+    let finish: ((code: number) => void) | null = null;
+    const onDiagnosticComplete = vi.fn();
 
     vi.spyOn(electronClient, 'subscribeToDiagnosticCommand').mockImplementation(
-      (_command, _target, onData) => {
+      (_command, _target, onData, onEnd) => {
         push = onData;
+        finish = onEnd;
         return () => {};
       },
     );
@@ -378,6 +381,7 @@ describe('LivePingConsole Component', () => {
           timestamp: '10:00:00',
         }}
         onTogglePing={vi.fn()}
+        onDiagnosticComplete={onDiagnosticComplete}
       />,
     );
 
@@ -390,5 +394,11 @@ describe('LivePingConsole Component', () => {
     expect(
       screen.getByText(/Miembro de grupos globales/),
     ).toHaveClass('text-cyan-300');
+
+    act(() => {
+      finish?.(0);
+    });
+
+    expect(onDiagnosticComplete).toHaveBeenCalledTimes(1);
   });
 });

@@ -23,6 +23,7 @@ interface LivePingConsoleProps {
   onTogglePing: () => void;
   onPingComplete?: () => void;
   onStopCommand?: () => void;
+  onDiagnosticComplete?: () => void;
   mode?: "terminal" | "account";
   targetLabel?: string;
 }
@@ -48,6 +49,7 @@ export function LivePingConsole({
   onTogglePing,
   onPingComplete,
   onStopCommand,
+  onDiagnosticComplete,
   mode = "terminal",
   targetLabel,
 }: LivePingConsoleProps): React.JSX.Element {
@@ -56,6 +58,8 @@ export function LivePingConsole({
   const [copiedLast, setCopiedLast] = useState(false);
   const onPingCompleteRef = useRef(onPingComplete);
   onPingCompleteRef.current = onPingComplete;
+  const onDiagnosticCompleteRef = useRef(onDiagnosticComplete);
+  onDiagnosticCompleteRef.current = onDiagnosticComplete;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-desplazamiento exclusivo dentro del contenedor de la terminal ante nuevas líneas
@@ -135,6 +139,7 @@ export function LivePingConsole({
           }
           return next;
         });
+        onDiagnosticCompleteRef.current?.();
       },
       activeCommand.options,
     );

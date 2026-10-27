@@ -1,5 +1,11 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../App";
 
@@ -26,6 +32,7 @@ const terminal = {
 function mockApi(searchResult: unknown) {
   const startCommand = vi.fn();
   const stopCommand = vi.fn();
+  let commandEnd: ((code: number) => void) | null = null;
 
   (window as any).electronAPI = {
     checkStatus: vi
@@ -39,10 +46,17 @@ function mockApi(searchResult: unknown) {
     startCommand,
     stopCommand,
     onCommandData: vi.fn().mockReturnValue(() => {}),
-    onCommandEnd: vi.fn().mockReturnValue(() => {}),
+    onCommandEnd: vi.fn((callback: (code: number) => void) => {
+      commandEnd = callback;
+      return () => {};
+    }),
   };
 
-  return { startCommand, stopCommand };
+  return {
+    startCommand,
+    stopCommand,
+    emitCommandEnd: (code = 0) => commandEnd?.(code),
+  };
 }
 
 async function search(query: string) {
@@ -112,6 +126,7 @@ describe("Net user flow", () => {
     const action = await screen.findByRole("button", {
       name: /consultar «jperez» como cuenta ad/i,
     });
+    expect(action).toHaveClass("bg-primary");
     fireEvent.click(action);
 
     expect(await screen.findByText(/Cuenta AD · jperez/)).toBeInTheDocument();
@@ -152,5 +167,33 @@ describe("Net user flow", () => {
 
     expect(stopCommand).toHaveBeenCalled();
     expect(screen.queryByText(/Cuenta AD · jperez/)).not.toBeInTheDocument();
+  });
+
+  it("hides Detener when net user completes", async () => {
+    const { emitCommandEnd } = mockApi({ source: "sql", data: null });
+    render(<App />);
+    await search("jperez");
+
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: /consultar «jperez» como cuenta ad/i,
+      }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /detener/i }),
+      ).toBeInTheDocument(),
+    );
+
+    act(() => {
+      emitCommandEnd(0);
+    });
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /detener/i }),
+      ).not.toBeInTheDocument(),
+    );
   });
 });
