@@ -18,7 +18,7 @@ describe('Terminal Inventory & Actions components', () => {
     render(<NetworkAdCard terminal={mockTerm} />);
     expect(screen.getByText(mockTerm.ip)).toBeInTheDocument();
     expect(screen.getByText(mockTerm.mac)).toBeInTheDocument();
-    expect(screen.getByText(/operador\.demo01/i)).toBeInTheDocument();
+    expect(screen.getByText(/operadordemo01/i)).toBeInTheDocument();
   });
 
   it('triggers quick action callbacks when clicking buttons', () => {

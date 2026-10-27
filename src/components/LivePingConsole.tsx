@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 export interface DiagnosticCommandEvent {
   id: string;
-  command: "ping" | "nbtstat" | "tracert" | "arp";
+  command: "ping" | "nbtstat" | "tracert" | "arp" | "netuser";
   target: string;
   argsText: string;
   timestamp: string;
