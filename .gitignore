@@ -16,3 +16,5 @@ cmda.config.local.json
 
 # Artefactos empaquetados de electron-builder (binarios generados)
 release/
+
+.agents/
