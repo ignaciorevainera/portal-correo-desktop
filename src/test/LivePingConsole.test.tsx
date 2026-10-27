@@ -353,4 +353,42 @@ describe('LivePingConsole Component', () => {
 
     expect(scrollMock).not.toHaveBeenCalled();
   });
+
+  it('renders account mode header and highlights global groups', () => {
+    let push: ((text: string) => void) | null = null;
+
+    vi.spyOn(electronClient, 'subscribeToDiagnosticCommand').mockImplementation(
+      (_command, _target, onData) => {
+        push = onData;
+        return () => {};
+      },
+    );
+
+    render(
+      <LivePingConsole
+        mode="account"
+        targetLabel="jperez"
+        ip=""
+        isPinging={false}
+        activeCommand={{
+          id: 'diag-1',
+          command: 'netuser',
+          target: 'jperez',
+          argsText: 'net user jperez /domain',
+          timestamp: '10:00:00',
+        }}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/Cuenta AD · jperez/)).toBeInTheDocument();
+
+    act(() => {
+      push?.('Miembro de grupos globales  *GRUPO-SOPORTE  *GRUPO-OPERADORES\n');
+    });
+
+    expect(
+      screen.getByText(/Miembro de grupos globales/),
+    ).toHaveClass('text-cyan-300');
+  });
 });

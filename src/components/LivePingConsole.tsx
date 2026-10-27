@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Square, Trash2, Copy, Check, Activity } from "lucide-react";
+import { Square, Trash2, Copy, Check, Activity, UserRound } from "lucide-react";
 import {
   subscribeToPing,
   subscribeToDiagnosticCommand,
@@ -23,6 +23,8 @@ interface LivePingConsoleProps {
   onTogglePing: () => void;
   onPingComplete?: () => void;
   onStopCommand?: () => void;
+  mode?: "terminal" | "account";
+  targetLabel?: string;
 }
 
 function sanitizePingText(text: string): string {
@@ -46,6 +48,8 @@ export function LivePingConsole({
   onTogglePing,
   onPingComplete,
   onStopCommand,
+  mode = "terminal",
+  targetLabel,
 }: LivePingConsoleProps): React.JSX.Element {
   const [logs, setLogs] = useState<string[]>([]);
   const [copiedAll, setCopiedAll] = useState(false);
@@ -119,10 +123,18 @@ export function LivePingConsole({
         }
       },
       (code: number) => {
-        setLogs((prev) => [
-          ...prev,
-          `[${new Date().toLocaleTimeString()}] Proceso ${activeCommand.command} finalizado (código: ${code}).\n`,
-        ]);
+        setLogs((prev) => {
+          const next = [
+            ...prev,
+            `[${new Date().toLocaleTimeString()}] Proceso ${activeCommand.command} finalizado (código: ${code}).\n`,
+          ];
+          if (activeCommand.command === "netuser" && code !== 0) {
+            next.push(
+              "[net user] No se pudo consultar la cuenta. Verificá que exista, que sea del dominio actual y que tu cuenta tenga permiso de lectura.\n",
+            );
+          }
+          return next;
+        });
       },
       activeCommand.options,
     );
@@ -190,14 +202,19 @@ export function LivePingConsole({
     }
   };
 
+  const isAccountMode = mode === "account";
+  const HeaderIcon = isAccountMode ? UserRound : Activity;
+  const headerLabel = isAccountMode ? `Cuenta AD · ${targetLabel ?? ""}` : ip;
+  let insideGlobalGroups = false;
+
   return (
     <div className="w-full shrink-0 rounded-lg border border-border bg-card shadow-xs overflow-hidden">
       {/* Barra de Controles Superior: Sin botón Iniciar redundante */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
         <div className="flex items-center gap-2">
-          <Activity className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+          <HeaderIcon className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
           <span className="font-mono text-xs font-bold text-foreground dark:text-zinc-100">
-            {ip}
+            {headerLabel}
           </span>
         </div>
 
@@ -278,15 +295,27 @@ export function LivePingConsole({
       >
         {logs.length === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
-            Selecciona una acción (Ping, Ping -t, Nbtstat, Tracert, ARP) en la
-            barra superior para iniciar diagnóstico.
+            {isAccountMode
+              ? "Consultá una cuenta para ver la salida de net user."
+              : "Selecciona una acción (Ping, Ping -t, Nbtstat, Tracert, ARP) en la barra superior para iniciar diagnóstico."}
           </div>
         ) : (
-          logs.map((line, idx) => (
-            <div
-              key={idx}
-              className={`whitespace-pre font-mono ${
-                line.startsWith("[") && line.includes(">")
+          logs.map((line, idx) => {
+            const isGroupHeader = /grupos globales|global group memberships/i.test(
+              line,
+            );
+            if (isGroupHeader) insideGlobalGroups = true;
+
+            const isGroupItem = insideGlobalGroups && /^\s*\*/.test(line);
+            if (insideGlobalGroups && line.trim() === "") {
+              insideGlobalGroups = false;
+            }
+
+            const tone = isGroupHeader
+              ? "text-cyan-300 font-semibold"
+              : isGroupItem
+                ? "text-cyan-300"
+                : line.startsWith("[") && line.includes(">")
                   ? "text-cyan-400 font-bold"
                   : line.includes("Iniciando") || line.includes("Ejecutando")
                     ? "text-amber-400 font-semibold"
@@ -296,12 +325,14 @@ export function LivePingConsole({
                           line.includes("cerrado") ||
                           line.includes("inaccesible")
                         ? "text-red-400 font-semibold"
-                        : "text-[#E5E5E5]"
-              }`}
-            >
-              {line}
-            </div>
-          ))
+                        : "text-[#E5E5E5]";
+
+            return (
+              <div key={idx} className={`whitespace-pre font-mono ${tone}`}>
+                {line}
+              </div>
+            );
+          })
         )}
       </div>
     </div>
