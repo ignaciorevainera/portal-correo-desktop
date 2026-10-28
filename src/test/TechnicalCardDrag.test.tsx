@@ -12,7 +12,7 @@ describe('Phase 1 Tests: Draggable Brand Region and Terminal Identity', () => {
   it('allows dragging the window from brand and title container without app-no-drag', () => {
     const { container } = render(
       <ThemeProvider>
-        <Topbar onSelectTerminal={vi.fn()} selectedPc="PC-DEMO-001" />
+        <Topbar onSelectTerminal={vi.fn()} />
       </ThemeProvider>
     );
 

@@ -109,7 +109,7 @@ describe("Shadcn Preset b5XRZYXrNg & UI Primitives", () => {
     const mockTerminal = getAllTerminals()[0];
     const { container } = render(
       <ThemeProvider>
-        <Topbar onSelectTerminal={vi.fn()} selectedPc={mockTerminal.pc} />
+        <Topbar onSelectTerminal={vi.fn()} />
         <QuickActionsBar
           terminal={mockTerminal}
           isPinging={false}

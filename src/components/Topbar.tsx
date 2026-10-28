@@ -32,7 +32,6 @@ interface TopbarProps {
   onSelectTerminal: (pc: string) => void;
   onDirectVnc?: (pc: string) => void;
   onDirectPing?: (pc: string) => void;
-  selectedPc?: string;
   backendMode?: "sql" | "mock";
   serverName?: string;
   onOpenSettings?: () => void;
@@ -45,13 +44,13 @@ export function Topbar({
   onSelectTerminal,
   onDirectVnc,
   onDirectPing,
-  selectedPc,
   backendMode = "mock",
   serverName,
   onOpenSettings,
 }: TopbarProps): React.JSX.Element {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -124,7 +123,9 @@ export function Topbar({
   // Coincidencias basadas en el historial de búsquedas reales (hasta 5)
   const filteredMatches = query.trim()
     ? recentSearches
-        .filter((item) => item.toLowerCase().includes(query.trim().toLowerCase()))
+        .filter((item) =>
+          item.toLowerCase().includes(query.trim().toLowerCase()),
+        )
         .slice(0, 5)
     : recentSearches.slice(0, 5);
 
@@ -169,12 +170,39 @@ export function Topbar({
     onSelectTerminal(pc);
     setQuery("");
     setIsOpen(false);
+    setSelectedIndex(-1);
   };
 
   const handleKeyDownInput = (
     e: React.KeyboardEvent<HTMLInputElement>,
   ): void => {
-    if (e.key === "Enter" && query.trim()) {
+    if (isOpen && filteredMatches.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          prev < filteredMatches.length - 1 ? prev + 1 : 0,
+        );
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          prev > 0 ? prev - 1 : filteredMatches.length - 1,
+        );
+        return;
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < filteredMatches.length) {
+          handleSelect(filteredMatches[selectedIndex]);
+          return;
+        }
+        if (query.trim()) {
+          handleSelect(query.trim());
+        }
+        return;
+      }
+    } else if (e.key === "Enter" && query.trim()) {
       handleSelect(query.trim());
     }
   };
@@ -203,7 +231,6 @@ export function Topbar({
         {/* Buscador Rápido Centralizado */}
         <div className="relative flex-1 max-w-md app-no-drag">
           <div className="relative flex items-center">
-            <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
               ref={inputRef}
               type="text"
@@ -211,28 +238,34 @@ export function Topbar({
               onChange={(e) => {
                 setQuery(e.target.value);
                 setIsOpen(true);
+                setSelectedIndex(-1);
               }}
               onKeyDown={handleKeyDownInput}
-              onFocus={() => query.trim() && setIsOpen(true)}
+              onFocus={() => {
+                if (recentSearches.length > 0 || query.trim()) {
+                  setIsOpen(true);
+                  setSelectedIndex(-1);
+                }
+              }}
               placeholder="Buscar terminal o IP"
-              className="w-full h-10 pl-9 pr-28 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-sm"
+              className="w-full h-10 pl-3.5 pr-20 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-sm"
             />
-            <div className="absolute right-1.5 flex items-center gap-1">
+            <div className="absolute right-1.5 flex items-center gap-1.5">
+              <div className="pointer-events-none text-[10px] hidden md:block">
+                <Kbd>Ctrl</Kbd>+<Kbd>F</Kbd>
+              </div>
               <Button
                 type="button"
                 variant="ghost"
-                size="xs"
+                size="icon-xs"
                 onClick={() => query.trim() && handleSelect(query.trim())}
                 disabled={!query.trim()}
                 aria-label="Buscar terminal"
                 title="Buscar terminal (o Enter)"
-                className="h-7 px-2 text-xs font-sans text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium cursor-pointer disabled:opacity-30"
+                className="h-7 w-7 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-muted/80 cursor-pointer disabled:opacity-30 rounded-md shrink-0"
               >
-                <span className="hidden sm:inline">Buscar</span>
+                <Search className="h-4 w-4" />
               </Button>
-              <div className="pointer-events-none text-[10px] hidden md:block">
-                <Kbd>Ctrl</Kbd>+<Kbd>F</Kbd>
-              </div>
             </div>
           </div>
 
@@ -244,78 +277,100 @@ export function Topbar({
             >
               <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border bg-muted/40 flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
-                  <History className="h-3 w-3" />
                   {query.trim()
                     ? `Coincidencias (${filteredMatches.length})`
-                    : "Terminales recientes (últimas 5)"}
+                    : "Terminales recientes"}
                 </span>
-                <span className="text-[9px] text-muted-foreground lowercase">
-                  enter o clic
+                <span className="text-[9px] text-muted-foreground lowercase flex items-center gap-1">
+                  <Kbd className="text-[9px] px-1 py-0 h-4">↓</Kbd>
+                  <Kbd className="text-[9px] px-1 py-0 h-4">↑</Kbd>
+                  <span>navegar</span>
+                  <Kbd className="text-[9px] px-1 py-0 h-4 ml-0.5">↵</Kbd>
                 </span>
               </div>
               <ul className="max-h-60 overflow-y-auto divide-y divide-border/40">
-                {filteredMatches.map((pcName) => (
-                  <li
-                    key={pcName}
-                    className="flex items-center justify-between hover:bg-accent/10 px-2.5 py-1.5 transition-colors group"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleSelect(pcName)}
-                      className="flex-1 text-left flex items-center gap-2 cursor-pointer py-0.5"
+                {filteredMatches.map((pcName, index) => {
+                  const isSelected = index === selectedIndex;
+                  return (
+                    <li
+                      key={pcName}
+                      className={`flex items-center justify-between px-2.5 py-1.5 transition-colors group cursor-pointer ${
+                        isSelected
+                          ? "text-accent-foreground bg:text-inherit dark:bg-muted/80"
+                          : "hover:bg-accent/10"
+                      }`}
+                      onMouseEnter={() => setSelectedIndex(index)}
                     >
-                      <Monitor className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-                      <span className="font-mono text-xs font-semibold text-foreground">
-                        {pcName}
-                      </span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSelect(pcName)}
+                        className="flex-1 text-left flex items-center gap-2 cursor-pointer py-0.5 outline-none"
+                      >
+                        <Monitor
+                          className={`h-3.5 w-3.5 shrink-0 transition-colors ${
+                            isSelected
+                              ? "text-blue-600 dark:text-blue-400"
+                              : "text-muted-foreground group-hover:text-primary"
+                          }`}
+                        />
+                        <span
+                          className={`font-mono text-xs font-semibold ${
+                            isSelected
+                              ? "text-primary font-bold"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {pcName}
+                        </span>
+                      </button>
 
-                    {/* Acciones directas en 1 clic y botón para quitar del historial */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelect(pcName);
-                          onDirectVnc?.(pcName);
-                        }}
-                        aria-label={`Conectar VNC a ${pcName}`}
-                        title={`Lanzar VNC Viewer a ${pcName}`}
-                        className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
-                      >
-                        <MonitorPlay className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelect(pcName);
-                          onDirectPing?.(pcName);
-                        }}
-                        aria-label={`Ping a ${pcName}`}
-                        title={`Lanzar Ping a ${pcName}`}
-                        className="bg-muted hover:bg-accent/20 text-foreground cursor-pointer"
-                      >
-                        <Play className="h-3 w-3 text-emerald-500" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={(e) => removeRecentSearch(e, pcName)}
-                        aria-label={`Quitar ${pcName} del historial`}
-                        title="Quitar del historial"
-                        className="h-5 w-5 text-muted-foreground hover:text-destructive cursor-pointer opacity-60 hover:opacity-100"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </li>
-                ))}
+                      {/* Acciones directas en 1 clic y botón para quitar del historial */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelect(pcName);
+                            onDirectVnc?.(pcName);
+                          }}
+                          aria-label={`Conectar VNC a ${pcName}`}
+                          title={`Lanzar VNC Viewer a ${pcName}`}
+                          className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
+                        >
+                          <MonitorPlay className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelect(pcName);
+                            onDirectPing?.(pcName);
+                          }}
+                          aria-label={`Ping a ${pcName}`}
+                          title={`Lanzar Ping a ${pcName}`}
+                          className="bg-muted hover:bg-accent/20 text-foreground cursor-pointer"
+                        >
+                          <Play className="h-3 w-3 text-emerald-500" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          onClick={(e) => removeRecentSearch(e, pcName)}
+                          aria-label={`Quitar ${pcName} del historial`}
+                          title="Quitar del historial"
+                          className="h-5 w-5 text-muted-foreground hover:text-destructive cursor-pointer opacity-60 hover:opacity-100"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -339,19 +394,6 @@ export function Topbar({
               {backendMode === "sql" ? "SQL Online" : "Offline / Mock"}
             </span>
           </Badge>
-
-          {/* Terminal seleccionada */}
-          {selectedPc && (
-            <Badge
-              variant="outline"
-              className="hidden md:flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-muted text-foreground border-border h-8"
-            >
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span>
-                <strong>{selectedPc}</strong>
-              </span>
-            </Badge>
-          )}
 
           {/* Grupo de botones compacto para acciones de Topbar */}
           <div

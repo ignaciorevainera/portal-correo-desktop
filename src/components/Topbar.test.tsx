@@ -13,7 +13,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     const handleSelect = vi.fn();
     render(
       <ThemeProvider>
-        <Topbar onSelectTerminal={handleSelect} selectedPc="PC-DEMO-001" />
+        <Topbar onSelectTerminal={handleSelect} />
       </ThemeProvider>,
     );
 
@@ -28,7 +28,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
       .mockResolvedValue();
     render(
       <ThemeProvider>
-        <Topbar onSelectTerminal={vi.fn()} selectedPc="PC-DEMO-001" />
+        <Topbar onSelectTerminal={vi.fn()} />
       </ThemeProvider>,
     );
 
@@ -49,7 +49,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
 
     render(
       <ThemeProvider>
-        <Topbar onSelectTerminal={vi.fn()} selectedPc="PC-DEMO-001" />
+        <Topbar onSelectTerminal={vi.fn()} />
       </ThemeProvider>,
     );
 
@@ -90,7 +90,6 @@ describe("Topbar & Compact Unified Titlebar component", () => {
           onSelectTerminal={handleSelect}
           onDirectVnc={handleDirectVnc}
           onDirectPing={handleDirectPing}
-          selectedPc=""
         />
       </ThemeProvider>,
     );
@@ -117,7 +116,6 @@ describe("Topbar & Compact Unified Titlebar component", () => {
           onSelectTerminal={handleSelect}
           onDirectVnc={handleDirectVnc}
           onDirectPing={handleDirectPing}
-          selectedPc=""
         />
       </ThemeProvider>,
     );
@@ -135,7 +133,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
   it("renders topbar with expanded h-14 dimensions, h-10 input and grouped action buttons", () => {
     const { container } = render(
       <ThemeProvider>
-        <Topbar onSelectTerminal={vi.fn()} selectedPc="PC-DEMO-001" />
+        <Topbar onSelectTerminal={vi.fn()} />
       </ThemeProvider>,
     );
 
