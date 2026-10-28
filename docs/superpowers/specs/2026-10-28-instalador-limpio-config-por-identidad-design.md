@@ -130,7 +130,7 @@ La ruta del share **no se hardcodea en el binario** ni en un archivo versionado,
   "configSource": "unc",
   "uncConfigPath": "\\\\<HOST-PILOTO>\\PortalCorreoDesktop$\\portal-correo-desktop.config.json",
   "updateFeed": "https://api.github.com/repos/<org>/<repo-publico>/releases/latest",
-  "updateMirror": "\\\\<HOST-PILOTO>\\PortalCorreoDesktop$\\updates\\"
+  "updateMirror": "\\\\<HOST-PILOTO>\\PortalCorreoDesktop-Publico$\\updates\\"
 }
 ```
 
@@ -138,11 +138,50 @@ Es un archivo de máquina, no de usuario: no está en OneDrive, no se sincroniza
 
 Orden de resolución: `%ProgramData%` → junto al ejecutable (solo desarrollo) → valores por defecto compilados.
 
-### 6.3 Ubicación del archivo de configuración
+### 6.3 Cadena de provisión
 
-`C:\PortalCorreoDesktop-Config\portal-correo-desktop.config.json`, en la raíz del disco.
+La aplicación nunca obtiene la configuración del repositorio. El repositorio solo entrega el ejecutable:
 
-**No debe ubicarse dentro del perfil del usuario, del Escritorio, de Documentos ni de OneDrive.** En organizaciones con Microsoft 365 esas carpetas suelen estar redirigidas a OneDrive (*Known Folder Move*), y el archivo se sincronizaría a la nube, filtrando las credenciales.
+1. El operador descarga el `.exe` del repositorio público o del espejo interno.
+2. El instalador escribe `%ProgramData%\PortalCorreoDesktop\bootstrap.json` con la ruta por defecto, compilada desde un `bootstrap.local.json` no versionado.
+3. La aplicación lee el bootstrap y obtiene la ruta UNC.
+4. Lee el share con la sesión de Windows y obtiene la configuración.
+
+### 6.4 Nomenclatura canónica
+
+| Contexto | Forma | Uso |
+| --- | --- | --- |
+| Nombre visible | `Portal Correo Desktop` | Ventana, instalador, accesos directos |
+| Identificador sin espacios | `PortalCorreoDesktop` | Carpetas y shares |
+| Identificador técnico | `portal-correo-desktop` | Paquete, archivos de configuración, `userData` |
+| Prefijo corto | `PCD_` | Variables de entorno |
+
+| Artefacto | Ruta o nombre |
+| --- | --- |
+| Instalador | `Portal Correo Desktop-Corporativo-<version>.exe` |
+| Bootstrap de máquina | `%ProgramData%\PortalCorreoDesktop\bootstrap.json` |
+| Configuración corporativa | `C:\PortalCorreoDesktop-Config\portal-correo-desktop.config.json` |
+| Share de configuración | `\\<HOST>\PortalCorreoDesktop$\` |
+| Share público | `\\<HOST>\PortalCorreoDesktop-Publico$\` |
+| Temporales VNC | `%TEMP%\pcd_*.vnc` |
+| `userData` | `%APPDATA%\portal-correo-desktop\` |
+
+### 6.5 Ubicación en el host
+
+Dos carpetas con permisos distintos, porque mezclarlas obligaría a dar lectura de los secretos a cualquiera que necesite descargar la aplicación:
+
+```
+C:\PortalCorreoDesktop-Config\        solo el grupo de operadores
+   portal-correo-desktop.config.json
+
+C:\PortalCorreoDesktop-Publico\       lectura para usuarios autenticados
+   Portal Correo Desktop-Corporativo-<version>.exe
+   updates\
+```
+
+**Ninguna de las dos debe ubicarse dentro del perfil del usuario, del Escritorio, de Documentos ni de OneDrive.** En organizaciones con Microsoft 365 esas carpetas suelen estar redirigidas a OneDrive (*Known Folder Move*), y el archivo de configuración se sincronizaría a la nube, filtrando las credenciales.
+
+Los permisos de lectura se otorgan por SID (`*S-1-5-11`), no por nombre de grupo: en un Windows en español el grupo se llama distinto y `Domain Users` no resuelve.
 
 ## 7. Gate
 
