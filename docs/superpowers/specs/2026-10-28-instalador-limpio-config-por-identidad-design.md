@@ -122,15 +122,15 @@ Los consumidores siguen leyendo de `configManager.getConfig()`; el proveedor vue
 La ruta del share **no se hardcodea en el binario** ni en un archivo versionado, por dos motivos: cambia cuando exista el servidor definitivo, y el nombre real del host no puede aparecer en el repositorio (ver §11.1).
 
 ```
-%ProgramData%\PortalCorreoDesktop\bootstrap.json
+%ProgramData%\portal-correo-desktop\bootstrap.json
 ```
 
 ```json
 {
   "configSource": "unc",
-  "uncConfigPath": "\\\\<HOST-PILOTO>\\PortalCorreoDesktop$\\portal-correo-desktop.config.json",
+  "uncConfigPath": "\\\\<HOST-PILOTO>\\portal-correo-desktop-config$\\portal-correo-desktop.config.json",
   "updateFeed": "https://api.github.com/repos/<org>/<repo-publico>/releases/latest",
-  "updateMirror": "\\\\<HOST-PILOTO>\\PortalCorreoDesktop-Publico$\\updates\\"
+  "updateMirror": "\\\\<HOST-PILOTO>\\portal-correo-desktop-public$\\updates\\"
 }
 ```
 
@@ -143,38 +143,42 @@ Orden de resolución: `%ProgramData%` → junto al ejecutable (solo desarrollo) 
 La aplicación nunca obtiene la configuración del repositorio. El repositorio solo entrega el ejecutable:
 
 1. El operador descarga el `.exe` del repositorio público o del espejo interno.
-2. El instalador escribe `%ProgramData%\PortalCorreoDesktop\bootstrap.json` con la ruta por defecto, compilada desde un `bootstrap.local.json` no versionado.
+2. El instalador escribe `%ProgramData%\portal-correo-desktop\bootstrap.json` con la ruta por defecto, compilada desde un `bootstrap.local.json` no versionado.
 3. La aplicación lee el bootstrap y obtiene la ruta UNC.
 4. Lee el share con la sesión de Windows y obtiene la configuración.
 
 ### 6.4 Nomenclatura canónica
 
+**Regla única:** lo que ve el usuario va en PascalCase con espacios; todo lo técnico va en kebab-case minúscula, igual que el repositorio. Las carpetas, los shares, los archivos de configuración, los temporales y `userData` comparten así la misma raíz que el paquete y el repositorio, y ninguna herramienta (Git, CI, scripts) tiene que adivinar mayúsculas.
+
 | Contexto | Forma | Uso |
 | --- | --- | --- |
 | Nombre visible | `Portal Correo Desktop` | Ventana, instalador, accesos directos |
-| Identificador sin espacios | `PortalCorreoDesktop` | Carpetas y shares |
-| Identificador técnico | `portal-correo-desktop` | Paquete, archivos de configuración, `userData` |
+| Identificador técnico | `portal-correo-desktop` | Repositorio, paquete, carpetas, shares, archivos, `userData` |
 | Prefijo corto | `PCD_` | Variables de entorno |
+| Nombre de grupo en AD | `PortalCorreoDesktop-Operadores` | Excepción: sigue la convención de nombres del dominio, no la del producto |
 
 | Artefacto | Ruta o nombre |
 | --- | --- |
 | Instalador | `Portal Correo Desktop-Corporativo-<version>.exe` |
-| Bootstrap de máquina | `%ProgramData%\PortalCorreoDesktop\bootstrap.json` |
-| Configuración corporativa | `C:\PortalCorreoDesktop-Config\portal-correo-desktop.config.json` |
-| Share de configuración | `\\<HOST>\PortalCorreoDesktop$\` |
-| Share público | `\\<HOST>\PortalCorreoDesktop-Publico$\` |
+| Bootstrap de máquina | `%ProgramData%\portal-correo-desktop\bootstrap.json` |
+| Configuración corporativa | `C:\portal-correo-desktop-config\portal-correo-desktop.config.json` |
+| Share de configuración | `\\<HOST>\portal-correo-desktop-config$\` |
+| Share público | `\\<HOST>\portal-correo-desktop-public$\` |
 | Temporales VNC | `%TEMP%\pcd_*.vnc` |
 | `userData` | `%APPDATA%\portal-correo-desktop\` |
+
+La única ruta que no sigue la regla es el directorio de instalación, `C:\Program Files\Portal Correo Desktop\`, porque lo deriva `electron-builder` del nombre visible del producto. Forzarlo a kebab-case obligaría a renombrar el producto, y no vale la pena.
 
 ### 6.5 Ubicación en el host
 
 Dos carpetas con permisos distintos, porque mezclarlas obligaría a dar lectura de los secretos a cualquiera que necesite descargar la aplicación:
 
 ```
-C:\PortalCorreoDesktop-Config\        solo el grupo de operadores
+C:\portal-correo-desktop-config\        solo el grupo de operadores
    portal-correo-desktop.config.json
 
-C:\PortalCorreoDesktop-Publico\       lectura para usuarios autenticados
+C:\portal-correo-desktop-public\        lectura para usuarios autenticados
    Portal Correo Desktop-Corporativo-<version>.exe
    updates\
 ```
@@ -224,7 +228,7 @@ Una sola operación decide: **¿puedo leer la configuración?** La lectura SMB p
 
 1. Instalación sin red. El instalador no descarga nada.
 2. Apertura → `CHECKING`.
-3. Lee `%ProgramData%\PortalCorreoDesktop\bootstrap.json`.
+3. Lee `%ProgramData%\portal-correo-desktop\bootstrap.json`.
 4. Lee la configuración del share con la sesión de Windows: **cero toque del operador**.
 5. Valida esquema → `READY`.
 
@@ -377,7 +381,7 @@ La aplicación deja de hablar con SQL. Permisos por operador y auditoría real.
 | `cmda.config.json` / `.local.json` / `.example.json` | `portal-correo-desktop.config.json` / `.local.json` / `.example.json` |
 | `__CMDA_RUNTIME_CONFIG__` | `__PCD_RUNTIME_CONFIG__` |
 | Canales IPC `cmda:*` | `pcd:*` |
-| Share `CMDA$`, carpeta `C:\CMDA-Config` | `PortalCorreoDesktop$`, `C:\PortalCorreoDesktop-Config` |
+| Share `CMDA$`, carpeta `C:\CMDA-Config` | `portal-correo-desktop-config$`, `C:\portal-correo-desktop-config` |
 | Temporales `cmda_*.vnc` | `pcd_*.vnc` |
 
 `CMDA_ACCESS_KEY` desaparece: el concepto de clave de activación no existe en el diseño nuevo.
