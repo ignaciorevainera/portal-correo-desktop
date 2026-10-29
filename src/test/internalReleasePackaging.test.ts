@@ -21,4 +21,17 @@ describe('Empaquetado sin configuración embebida', () => {
     const archivos = fs.readdirSync(electronDir);
     expect(archivos).not.toContain('embedded.config.json');
   });
+
+  it('incluye el visor VNC y los recursos en el paquete', () => {
+    expect(pkg.build.files).toContain('resources/**/*');
+    expect(pkg.build.files).toContain('public/**/*');
+  });
+
+  it('el build prepara el bootstrap por defecto y los archivos locales están ignorados', () => {
+    expect(pkg.scripts['release:build']).toContain('prepare-bootstrap');
+
+    const gitignore = fs.readFileSync(path.resolve(process.cwd(), '.gitignore'), 'utf8');
+    expect(gitignore).toContain('bootstrap.local.json');
+    expect(gitignore).toContain('electron/bootstrap.default.json');
+  });
 });

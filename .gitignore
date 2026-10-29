@@ -18,3 +18,7 @@ cmda.config.local.json
 release/
 
 .agents/
+
+# Bootstrap generado en build (rutas internas, no secretos)
+bootstrap.local.json
+electron/bootstrap.default.json
