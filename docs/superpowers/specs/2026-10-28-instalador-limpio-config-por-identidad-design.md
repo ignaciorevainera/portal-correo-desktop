@@ -162,7 +162,7 @@ La aplicación nunca obtiene la configuración del repositorio. El repositorio s
 | --- | --- |
 | Instalador | `Portal Correo Desktop-Corporativo-<version>.exe` |
 | Bootstrap de máquina | `%ProgramData%\portal-correo-desktop\bootstrap.json` |
-| Configuración corporativa | `C:\portal-correo-desktop-config\portal-correo-desktop.config.json` |
+| Configuración corporativa | `C:\portal-correo-desktop\config\portal-correo-desktop.config.json` |
 | Share de configuración | `\\<HOST>\portal-correo-desktop-config$\` |
 | Share público | `\\<HOST>\portal-correo-desktop-public$\` |
 | Temporales VNC | `%TEMP%\pcd_*.vnc` |
@@ -172,18 +172,27 @@ La única ruta que no sigue la regla es el directorio de instalación, `C:\Progr
 
 ### 6.5 Ubicación en el host
 
-Dos carpetas con permisos distintos, porque mezclarlas obligaría a dar lectura de los secretos a cualquiera que necesite descargar la aplicación:
+Una sola raíz de ejecución, **fuera del árbol de código**, con dos subcarpetas y permisos distintos:
 
 ```
-C:\portal-correo-desktop-config\        solo el grupo de operadores
-   portal-correo-desktop.config.json
-
-C:\portal-correo-desktop-public\        lectura para usuarios autenticados
-   Portal Correo Desktop-Corporativo-<version>.exe
-   updates\
+C:\portal-correo-desktop\               raíz de ejecución (no es código)
+   config\                              solo el grupo de operadores
+      portal-correo-desktop.config.json
+   public\                              lectura para usuarios autenticados
+      Portal Correo Desktop-Corporativo-<version>.exe
+      updates\
 ```
 
-**Ninguna de las dos debe ubicarse dentro del perfil del usuario, del Escritorio, de Documentos ni de OneDrive.** En organizaciones con Microsoft 365 esas carpetas suelen estar redirigidas a OneDrive (*Known Folder Move*), y el archivo de configuración se sincronizaría a la nube, filtrando las credenciales.
+Los shares apuntan a las subcarpetas, no a la raíz, para que las ACLs queden separadas:
+
+| Share | Ruta física |
+| --- | --- |
+| `portal-correo-desktop-config$` | `C:\portal-correo-desktop\config` |
+| `portal-correo-desktop-public$` | `C:\portal-correo-desktop\public` |
+
+**La configuración no debe vivir dentro del directorio de proyectos ni dentro del repositorio**, aunque sea en una carpeta hermana. En `C:\Projects\...` queda expuesta a scripts de build que recorran el árbol, a copias manuales de la carpeta del proyecto, a `git add .` y a cualquier empaquetado con globs. La separación física es un control de seguridad, no una preferencia de orden.
+
+Tampoco debe ubicarse dentro del perfil del usuario, del Escritorio, de Documentos ni de OneDrive. En organizaciones con Microsoft 365 esas carpetas suelen estar redirigidas a OneDrive (*Known Folder Move*), y el archivo de configuración se sincronizaría a la nube, filtrando las credenciales.
 
 Los permisos de lectura se otorgan por SID (`*S-1-5-11`), no por nombre de grupo: en un Windows en español el grupo se llama distinto y `Domain Users` no resuelve.
 
@@ -381,7 +390,7 @@ La aplicación deja de hablar con SQL. Permisos por operador y auditoría real.
 | `cmda.config.json` / `.local.json` / `.example.json` | `portal-correo-desktop.config.json` / `.local.json` / `.example.json` |
 | `__CMDA_RUNTIME_CONFIG__` | `__PCD_RUNTIME_CONFIG__` |
 | Canales IPC `cmda:*` | `pcd:*` |
-| Share `CMDA$`, carpeta `C:\CMDA-Config` | `portal-correo-desktop-config$`, `C:\portal-correo-desktop-config` |
+| Share `CMDA$`, carpeta `C:\CMDA-Config` | `portal-correo-desktop-config$`, `C:\portal-correo-desktop\config` |
 | Temporales `cmda_*.vnc` | `pcd_*.vnc` |
 
 `CMDA_ACCESS_KEY` desaparece: el concepto de clave de activación no existe en el diseño nuevo.
