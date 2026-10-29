@@ -74,10 +74,11 @@ export function SubnetScannerDrawer({
 
   const percentage = progress.total > 0 ? Math.round((progress.scanned / progress.total) * 100) : 0;
 
-  const filteredHosts = hosts.filter((h) =>
-    h.hostname.toLowerCase().includes(filterQuery.toLowerCase()) ||
-    h.ip.includes(filterQuery.trim())
-  );
+  const filteredHosts = hosts.filter((h) => {
+    const name = h.hostname || h.ip;
+    const query = filterQuery.toLowerCase();
+    return name.toLowerCase().includes(query) || h.ip.includes(filterQuery.trim());
+  });
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end select-none">
@@ -89,7 +90,7 @@ export function SubnetScannerDrawer({
       />
       {/* Drawer Panel */}
       <aside
-        aria-label="Escáner de Subred"
+        aria-label="EscÃ¡ner de Subred"
         className="relative z-10 w-80 md:w-96 h-full bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
       >
       {/* Header */}
@@ -182,21 +183,26 @@ export function SubnetScannerDrawer({
             )}
           </div>
         ) : (
-          filteredHosts.map((host) => (
+          filteredHosts.map((host) => {
+            const hostname = host.hostname ? host.hostname.trim() : null;
+            const displayName = hostname || host.ip;
+            const lookupTarget = hostname || host.ip;
+
+            return (
             <div
               key={host.ip}
-              onClick={() => onSelectTerminal(host.hostname)}
+              onClick={() => onSelectTerminal(lookupTarget)}
               className="p-2.5 rounded-lg border border-border/80 bg-card hover:bg-accent/15 hover:border-border transition-colors flex items-center justify-between gap-2 group cursor-pointer"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                   <span className="text-xs font-bold text-foreground font-mono truncate">
-                    {host.hostname}
+                    {displayName}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono text-muted-foreground">
-                  <span>{host.ip}</span>
+                  {hostname && <span>{host.ip}</span>}
                   {host.latency !== null && (
                     <span className="text-muted-foreground/70">{host.latency}ms</span>
                   )}
@@ -209,7 +215,7 @@ export function SubnetScannerDrawer({
                   size="sm"
                   variant="outline"
                   className="h-7 px-2 text-[10px] font-medium cursor-pointer"
-                  onClick={() => onSelectTerminal(host.hostname)}
+                  onClick={() => onSelectTerminal(lookupTarget)}
                   title="Consultar ficha de terminal"
                 >
                   Consultar
@@ -225,7 +231,8 @@ export function SubnetScannerDrawer({
                 </Button>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 

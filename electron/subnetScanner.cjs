@@ -1,6 +1,8 @@
 /**
  * Subnet Scanner Core for Portal Correo Desktop
- * Fast, non-blocking asynchronous subnet range sweeper with reverse DNS resolution.
+ * Fast, non-blocking asynchronous subnet range sweeper with hostname resolution.
+ * `hostname` is null when no source resolves a real name; the renderer then
+ * shows the IP once instead of duplicating it.
  */
 
 const dns = require('dns').promises;
@@ -109,6 +111,7 @@ async function scanSubnetBatch(ips, options = {}) {
   const total = ips.length;
   let scanned = 0;
   const foundHosts = [];
+  const seenIps = new Set();
 
   for (let i = 0; i < ips.length; i += concurrency) {
     if (signal && signal.aborted) {
@@ -128,6 +131,11 @@ async function scanSubnetBatch(ips, options = {}) {
           }
 
           if (pingRes.alive) {
+            if (seenIps.has(ip)) {
+              return;
+            }
+            seenIps.add(ip);
+
             let hostname = null;
             try {
               hostname = await dnsResolver(ip);
@@ -135,7 +143,7 @@ async function scanSubnetBatch(ips, options = {}) {
 
             const host = {
               ip,
-              hostname: hostname || `HOST-${ip.split('.').pop()}`,
+              hostname: hostname || null,
               alive: true,
               latency: pingRes.latency,
             };

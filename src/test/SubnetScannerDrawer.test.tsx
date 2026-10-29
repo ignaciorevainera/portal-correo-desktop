@@ -62,4 +62,39 @@ describe('SubnetScannerDrawer Component', () => {
 
     spyScanner.mockRestore();
   });
+
+  it('shows the IP once when no hostname can be resolved', () => {
+    const spyScanner = vi.spyOn(electronClient, 'startSubnetScanner').mockImplementation(
+      (_targetIp, onHostFound, onProgress, onDone) => {
+        onProgress({ scanned: 254, total: 254 });
+        onHostFound({
+          ip: '192.0.2.77',
+          hostname: null,
+          alive: true,
+          latency: 9,
+        });
+        onDone({ aborted: false, totalFound: 1 });
+        return vi.fn();
+      }
+    );
+
+    const onSelectMock = vi.fn();
+
+    render(
+      <SubnetScannerDrawer
+        isOpen={true}
+        onClose={vi.fn()}
+        targetIp="192.0.2.50"
+        onSelectTerminal={onSelectMock}
+        onLaunchVnc={vi.fn()}
+      />
+    );
+
+    expect(screen.getAllByText('192.0.2.77')).toHaveLength(1);
+
+    fireEvent.click(screen.getByText('Consultar'));
+    expect(onSelectMock).toHaveBeenCalledWith('192.0.2.77');
+
+    spyScanner.mockRestore();
+  });
 });

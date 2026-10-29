@@ -91,5 +91,38 @@ describe('Subnet Scanner Core (Range & Ping Sweep)', () => {
       expect(result.aborted).toBe(true);
       expect(pingsExecuted).toBeLessThan(5);
     });
+
+    it('should keep hostname null when no resolver finds a name', async () => {
+      const discoveredHosts: SubnetHostResult[] = [];
+
+      await scanSubnetBatch(['192.0.2.30'], {
+        pinger: vi.fn().mockResolvedValue({ alive: true, latency: 8 }),
+        dnsResolver: vi.fn().mockResolvedValue(null),
+        onHostFound: (host: SubnetHostResult) => discoveredHosts.push(host),
+      });
+
+      expect(discoveredHosts).toHaveLength(1);
+      expect(discoveredHosts[0].hostname).toBeNull();
+      expect(discoveredHosts[0].ip).toBe('192.0.2.30');
+    });
+
+    it('should deduplicate hosts so an IP is never emitted or added more than once', async () => {      const mockPinger = vi.fn().mockImplementation((ip: string) => {
+        return Promise.resolve({ alive: true, latency: 10 });
+      });
+
+      const ips = ['192.0.2.10', '192.0.2.10', '192.0.2.10', '192.0.2.20'];
+      const discoveredHosts: SubnetHostResult[] = [];
+
+      const result = await scanSubnetBatch(ips, {
+        concurrency: 4,
+        pinger: mockPinger,
+        dnsResolver: vi.fn().mockResolvedValue('PC-HOST'),
+        onHostFound: (host: SubnetHostResult) => discoveredHosts.push(host),
+      });
+
+      expect(discoveredHosts).toHaveLength(2);
+      expect(result.hosts).toHaveLength(2);
+      expect(discoveredHosts.map(h => h.ip)).toEqual(['192.0.2.10', '192.0.2.20']);
+    });
   });
 });
