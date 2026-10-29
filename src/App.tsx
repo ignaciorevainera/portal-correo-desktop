@@ -16,6 +16,7 @@ import {
 import { OperatorContextMenu } from "./components/OperatorContextMenu";
 import { SubnetScannerDrawer } from "./components/SubnetScannerDrawer";
 import { SettingsModal } from "./components/SettingsModal";
+import { BlockedScreen } from "./components/BlockedScreen";
 import {
   getAllTerminals,
   addAlertToTerminal,
@@ -34,6 +35,9 @@ import {
   subscribeToAutofocusSearch,
   stopDiagnosticCommand,
   DiagnosticCommandType,
+  checkSecurityGateStatus,
+  retrySecurityGate,
+  GateStatus,
 } from "./services/electronClient";
 import { TerminalData } from "./types/terminal";
 import { Search, SearchX, RotateCcw, Loader2 } from "lucide-react";
@@ -73,6 +77,36 @@ export default function App(): React.JSX.Element {
   } | null>(null);
   const [isSubnetDrawerOpen, setIsSubnetDrawerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [gate, setGate] = useState<GateStatus>({
+    status: "READY",
+    code: "AUTHORIZED",
+    message: "",
+    source: "dev",
+    configPath: "",
+  });
+  const [isRetryingGate, setIsRetryingGate] = useState(false);
+
+  useEffect(() => {
+    let cancelado = false;
+    checkSecurityGateStatus()
+      .then((estado) => {
+        if (!cancelado) setGate(estado);
+      })
+      .catch(() => {});
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
+  const handleRetryGate = async () => {
+    setIsRetryingGate(true);
+    try {
+      setGate(await retrySecurityGate());
+    } finally {
+      setIsRetryingGate(false);
+    }
+  };
+
   const mainRef = useRef<HTMLElement>(null);
 
   const allTerminals = getAllTerminals();
@@ -432,6 +466,15 @@ export default function App(): React.JSX.Element {
     setPingMode("standard");
     setIsPinging(true);
   };
+
+  if (gate.status !== "READY") {
+    return (
+      <ThemeProvider>
+        <BlockedScreen gate={gate} onRetry={handleRetryGate} isRetrying={isRetryingGate} />
+        <Toaster />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider>
