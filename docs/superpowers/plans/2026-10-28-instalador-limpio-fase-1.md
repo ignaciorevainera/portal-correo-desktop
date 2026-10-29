@@ -95,6 +95,16 @@ import { describe, it, expect } from 'vitest';
 
 const { redact, formatLine, createLogger } = require('../../electron/logger.cjs');
 
+function sinkEspia() {
+  const lineas: string[] = [];
+  const sink = {
+    log: (l: string) => lineas.push(l),
+    warn: (l: string) => lineas.push(l),
+    error: (l: string) => lineas.push(l),
+  };
+  return { lineas, sink };
+}
+
 describe('logger con redacción de secretos', () => {
   it('redacta claves sensibles en objetos anidados y arrays', () => {
     const out = redact({
@@ -110,9 +120,41 @@ describe('logger con redacción de secretos', () => {
     expect(serializado).not.toContain('abc');
     expect(out.db.host).toBe('sql.interno');
     expect(out.visible).toBe('ok');
+    expect(out.lista[0].token).toBe('[redactado]');
   });
 
-  it('no imprime valores sensibles en la línea formateada pero conserva el contexto', () => {
+  it('redacta accessKey, key, dbPass y clave (tokens separados y camelCase)', () => {
+    const out = redact({
+      accessKey: 'K1',
+      key: 'K2',
+      dbPass: 'K3',
+      clave: 'K4',
+      api_key: 'K5',
+      keyboard: 'no-es-secreto',
+    });
+
+    expect(out.accessKey).toBe('[redactado]');
+    expect(out.key).toBe('[redactado]');
+    expect(out.dbPass).toBe('[redactado]');
+    expect(out.clave).toBe('[redactado]');
+    expect(out.api_key).toBe('[redactado]');
+    expect(out.keyboard).toBe('no-es-secreto');
+  });
+
+  it('limpia secretos embebidos en el mensaje y en strings', () => {
+    const linea = formatLine('info', 'gate', 'conectando pwd=SuperSecreto123 y Bearer abc.def', {
+      conn: 'Server=sql;Password=OtraClave;',
+      url: 'https://user:claveEnUrl@host/path',
+    });
+
+    expect(linea).not.toContain('SuperSecreto123');
+    expect(linea).not.toContain('abc.def');
+    expect(linea).not.toContain('OtraClave');
+    expect(linea).not.toContain('claveEnUrl');
+    expect(linea).toContain('[redactado]');
+  });
+
+  it('no imprime valores sensibles pero conserva el contexto', () => {
     const linea = formatLine('info', 'gate', 'arranque', {
       dbPassword: 'SuperSecreto123',
       configPath: '\\\\host\\share\\portal-correo-desktop.config.json',
@@ -123,20 +165,46 @@ describe('logger con redacción de secretos', () => {
     expect(linea).toContain('portal-correo-desktop.config.json');
   });
 
-  it('respeta el nivel mínimo configurado', () => {
-    const lineas: string[] = [];
-    const sink = {
-      log: (l: string) => lineas.push(l),
-      warn: (l: string) => lineas.push(l),
-      error: (l: string) => lineas.push(l),
-    };
+  it('no lanza con BigInt, Error, Date ni getters que explotan', () => {
+    const conGetter = {};
+    Object.defineProperty(conGetter, 'peligroso', {
+      enumerable: true,
+      get() {
+        throw new Error('getter explosivo');
+      },
+    });
 
+    const linea = formatLine('error', 'gate', 'meta rara', {
+      n: 1n,
+      err: new Error('fallo'),
+      fecha: new Date('2026-01-01T00:00:00.000Z'),
+      conGetter,
+    });
+
+    expect(linea).toContain('1');
+    expect(linea).toContain('fallo');
+    expect(linea).toContain('[getter omitido]');
+  });
+
+  it('respeta el nivel mínimo y enruta cada nivel a su método', () => {
+    const { lineas, sink } = sinkEspia();
     const log = createLogger({ scope: 'test', sink, level: 'warn' });
-    log.info('no aparece');
-    log.error('sí aparece');
 
-    expect(lineas).toHaveLength(1);
+    log.info('no aparece');
+    log.debug('tampoco');
+    log.warn('sí aparece');
+    log.error('también');
+
+    expect(lineas).toHaveLength(2);
     expect(lineas[0]).toContain('sí aparece');
+    expect(lineas[1]).toContain('también');
+  });
+
+  it('child compone el scope', () => {
+    const { lineas, sink } = sinkEspia();
+    const log = createLogger({ scope: 'main', sink, level: 'info' }).child('gate');
+    log.info('mensaje');
+    expect(lineas[0]).toContain('[main:gate]');
   });
 });
 ```
@@ -154,38 +222,115 @@ Expected: FAIL con `Cannot find module '../../electron/logger.cjs'`.
 Create `electron/logger.cjs`:
 
 ```js
-const SENSITIVE_KEY = /(password|passwd|pwd|secret|token|apikey|api_key|credential)/i;
+const SENSITIVE_TOKENS = new Set([
+  'password', 'passwd', 'pwd', 'pass', 'secret', 'token', 'key',
+  'apikey', 'accesskey', 'privatekey', 'credential', 'credentials',
+  'clave', 'contras', 'contrasena',
+]);
+
 const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };
+const ROUTE = { debug: 'log', info: 'log', warn: 'warn', error: 'error' };
+const MAX_LINE_LENGTH = 8192;
+
+function tokenizeKey(key) {
+  return String(key)
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((token) => token.toLowerCase());
+}
+
+function isSensitiveKey(key) {
+  return tokenizeKey(key).some((token) => SENSITIVE_TOKENS.has(token));
+}
+
+function scrubString(value) {
+  let out = String(value);
+  out = out.replace(
+    /((?:password|passwd|pwd|secret|token|api[-_]?key|access[-_]?key|clave)\s*[=:]\s*)([^;\s,}"']+)/gi,
+    '$1[redactado]'
+  );
+  out = out.replace(/(\/\/[^/\s:@]+:)([^@\s]+)(@)/g, '$1[redactado]$3');
+  out = out.replace(/(Bearer\s+)\S+/gi, '$1[redactado]');
+  return out.replace(/\r?\n/g, '\\n');
+}
+
+function normalizeLeaf(value) {
+  if (value instanceof Error) {
+    return { name: value.name, message: value.message, code: value.code };
+  }
+  if (Buffer.isBuffer(value)) return `<Buffer ${value.length} bytes>`;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'bigint') return value.toString();
+  return value;
+}
 
 function redact(value, depth = 0) {
   if (depth > 4) return '[profundidad máxima]';
   if (value === null || value === undefined) return value;
   if (Array.isArray(value)) return value.map((item) => redact(item, depth + 1));
-  if (typeof value === 'object') {
-    const result = {};
-    for (const [key, val] of Object.entries(value)) {
-      result[key] = SENSITIVE_KEY.test(key) ? '[redactado]' : redact(val, depth + 1);
-    }
-    return result;
+  if (typeof value === 'string') return scrubString(value);
+  if (typeof value !== 'object') return normalizeLeaf(value);
+  if (value instanceof Error || Buffer.isBuffer(value) || value instanceof Date) {
+    return normalizeLeaf(value);
   }
-  return value;
+
+  const result = Object.create(null);
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+
+  for (const key of Object.keys(descriptors)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    const descriptor = descriptors[key];
+    if (!('value' in descriptor)) {
+      result[key] = '[getter omitido]';
+      continue;
+    }
+    result[key] = isSensitiveKey(key) ? '[redactado]' : redact(descriptor.value, depth + 1);
+  }
+
+  return result;
 }
 
 function formatLine(level, scope, message, meta) {
-  const base = `[${new Date().toISOString()}] [${String(level).toUpperCase()}] [${scope}] ${message}`;
-  if (!meta || typeof meta !== 'object' || Object.keys(meta).length === 0) return base;
-  return `${base} ${JSON.stringify(redact(meta))}`;
+  const base = `[${new Date().toISOString()}] [${String(level).toUpperCase()}] [${scope}] ${scrubString(message)}`;
+  if (meta === null || meta === undefined) return base;
+
+  const payload = typeof meta === 'object' ? meta : { meta };
+
+  let serialized;
+  try {
+    serialized = JSON.stringify(redact(payload));
+  } catch {
+    serialized = '[meta no serializable]';
+  }
+
+  const line = `${base} ${serialized}`;
+  if (line.length <= MAX_LINE_LENGTH) return line;
+  return `${line.slice(0, MAX_LINE_LENGTH)}…[truncado]`;
 }
 
 function createLogger({ scope = 'app', sink = console, level = 'info' } = {}) {
-  const minLevel = LEVELS[level] ?? LEVELS.info;
+  const minLevel = LEVELS[String(level).toLowerCase()] ?? LEVELS.info;
 
   const write = (lvl, message, meta) => {
     if (LEVELS[lvl] < minLevel) return;
-    const line = formatLine(lvl, scope, message, meta);
-    if (lvl === 'error') sink.error(line);
-    else if (lvl === 'warn') sink.warn(line);
-    else sink.log(line);
+
+    let line;
+    try {
+      line = formatLine(lvl, scope, message, meta);
+    } catch {
+      line = `[${new Date().toISOString()}] [${lvl.toUpperCase()}] [${scope}] [fallo al formatear la entrada]`;
+    }
+
+    const method = ROUTE[lvl];
+    const emit = typeof sink[method] === 'function' ? sink[method] : sink.log;
+    if (typeof emit !== 'function') return;
+
+    try {
+      emit.call(sink, line);
+    } catch {
+      // Un logger nunca debe interrumpir el flujo que está registrando.
+    }
   };
 
   return {
@@ -197,8 +342,19 @@ function createLogger({ scope = 'app', sink = console, level = 'info' } = {}) {
   };
 }
 
-module.exports = { SENSITIVE_KEY, LEVELS, redact, formatLine, createLogger };
+module.exports = {
+  SENSITIVE_TOKENS,
+  LEVELS,
+  tokenizeKey,
+  isSensitiveKey,
+  scrubString,
+  redact,
+  formatLine,
+  createLogger,
+};
 ```
+
+> **Nota de diseño:** la detección es por *tokens* y no por substring. `accessKey` se parte en `access` + `key` y matchea; `keyboard` queda como un token y no se redacta. Un regex de substring con `key` habría enmascarado `keyboard` y cualquier palabra que la contenga.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -206,7 +362,7 @@ module.exports = { SENSITIVE_KEY, LEVELS, redact, formatLine, createLogger };
 npx vitest run src/test/logger.test.ts
 ```
 
-Expected: PASS, 3 tests.
+Expected: PASS, 7 tests.
 
 - [ ] **Step 5: Commit**
 
