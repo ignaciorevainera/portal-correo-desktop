@@ -82,6 +82,8 @@ git checkout -b feat/instalador-limpio-fase-1
 
 ## Task 1: Logger con redacción
 
+> **Fuente canónica:** `electron/logger.cjs` en el commit `f417a90`. El bloque de código de abajo refleja esa versión; si alguna vez divergen, manda el archivo, no el plan.
+
 **Files:**
 - Create: `electron/logger.cjs`
 - Test: `src/test/logger.test.ts`
@@ -123,22 +125,72 @@ describe('logger con redacción de secretos', () => {
     expect(out.lista[0].token).toBe('[redactado]');
   });
 
-  it('redacta accessKey, key, dbPass y clave (tokens separados y camelCase)', () => {
+  it('redacta accessKey, key, dbPass y clave (camelCase y separadores)', () => {
     const out = redact({
       accessKey: 'K1',
       key: 'K2',
       dbPass: 'K3',
       clave: 'K4',
       api_key: 'K5',
+      privateKey: 'K6',
+      ACCESS_KEY: 'K7',
       keyboard: 'no-es-secreto',
     });
 
-    expect(out.accessKey).toBe('[redactado]');
-    expect(out.key).toBe('[redactado]');
-    expect(out.dbPass).toBe('[redactado]');
-    expect(out.clave).toBe('[redactado]');
-    expect(out.api_key).toBe('[redactado]');
+    for (const clave of ['accessKey', 'key', 'dbPass', 'clave', 'api_key', 'privateKey', 'ACCESS_KEY']) {
+      expect(out[clave]).toBe('[redactado]');
+    }
     expect(out.keyboard).toBe('no-es-secreto');
+  });
+
+  it('redacta plurales y variantes en español', () => {
+    const out = redact({
+      apiKeys: 'P1',
+      keys: 'P2',
+      tokens: 'P3',
+      passwords: 'P4',
+      passphrase: 'P5',
+      contraseña: 'P6',
+      authorization: 'P7',
+      'set-cookie': 'P8',
+    });
+
+    for (const clave of ['apiKeys', 'keys', 'tokens', 'passwords', 'passphrase', 'contraseña', 'authorization', 'set-cookie']) {
+      expect(out[clave]).toBe('[redactado]');
+    }
+  });
+
+  it('redacta credenciales que viajan en el mensaje de un Error', () => {
+    const linea = formatLine('error', 'db', 'fallo de conexión', {
+      err: new Error('Login failed: Server=sql;Password=MARKER123;'),
+    });
+
+    expect(linea).not.toContain('MARKER123');
+    expect(linea).toContain('fallo de conexión');
+  });
+
+  it('redacta Authorization Basic, Bearer y cookies', () => {
+    const linea = formatLine('info', 'http', 'petición', {
+      headers: {
+        Authorization: 'Basic dXNlcjpwYXNzd29yZA==',
+        Cookie: 'session=abc123',
+      },
+      mensaje: 'Authorization: Bearer TOKEN123',
+    });
+
+    expect(linea).not.toContain('dXNlcjpwYXNzd29yZA==');
+    expect(linea).not.toContain('abc123');
+    expect(linea).not.toContain('TOKEN123');
+  });
+
+  it('redacta JSON embebido en un string con claves entrecomilladas', () => {
+    const linea = formatLine('info', 'cfg', 'config={"dbPassword":"JSONP6","apiKey":"JSONP7"}', {
+      raw: '{"secret":"JSONP3"}',
+    });
+
+    expect(linea).not.toContain('JSONP3');
+    expect(linea).not.toContain('JSONP6');
+    expect(linea).not.toContain('JSONP7');
   });
 
   it('limpia secretos embebidos en el mensaje y en strings', () => {
@@ -181,9 +233,21 @@ describe('logger con redacción de secretos', () => {
       conGetter,
     });
 
-    expect(linea).toContain('1');
+    expect(linea).toContain('"n":"1"');
     expect(linea).toContain('fallo');
     expect(linea).toContain('[getter omitido]');
+  });
+
+  it('neutraliza un toJSON propio y las funciones', () => {
+    const linea = formatLine('info', 'gate', 'objeto hostil', {
+      id: 1,
+      toJSON() {
+        return { password: 'FILTRADO' };
+      },
+    });
+
+    expect(linea).not.toContain('FILTRADO');
+    expect(linea).toContain('[función omitida]');
   });
 
   it('respeta el nivel mínimo y enruta cada nivel a su método', () => {
@@ -223,45 +287,63 @@ Create `electron/logger.cjs`:
 
 ```js
 const SENSITIVE_TOKENS = new Set([
-  'password', 'passwd', 'pwd', 'pass', 'secret', 'token', 'key',
+  'password', 'passwd', 'pwd', 'pass', 'passphrase', 'secret', 'token', 'key',
   'apikey', 'accesskey', 'privatekey', 'credential', 'credentials',
-  'clave', 'contras', 'contrasena',
+  'clave', 'contras', 'contrasena', 'contraseña',
+  'authorization', 'cookie',
 ]);
 
 const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };
 const ROUTE = { debug: 'log', info: 'log', warn: 'warn', error: 'error' };
 const MAX_LINE_LENGTH = 8192;
 
+const KEY_VALUE_PATTERN = /(?<key>"[^"]+"|'[^']+'|[A-Za-z0-9_.\-[\]]+)\s*(?<sep>[=:])\s*(?:"[^"]*"|'[^']*'|[^;\s,}{]+)/g;
+const AUTH_HEADER_PATTERN = /\b(authorization|proxy-authorization|cookie|set-cookie)\s*([:=])\s*([^\r\n]+)/gi;
+const URL_CREDENTIAL_PATTERN = /(\/\/[^/\s:@]+:)([^@\s]+)(@)/g;
+const AUTH_SCHEME_PATTERN = /\b(Basic|Bearer|Digest|Negotiate|NTLM)\s+([A-Za-z0-9._~+/=-]+)/gi;
+
 function tokenizeKey(key) {
   return String(key)
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .split(/[^a-zA-Z0-9]+/)
+    .split(/[^a-zA-Z0-9ñ]+/i)
     .filter(Boolean)
     .map((token) => token.toLowerCase());
 }
 
+function isSensitiveToken(token) {
+  if (SENSITIVE_TOKENS.has(token)) return true;
+  if (token.endsWith('s')) return SENSITIVE_TOKENS.has(token.slice(0, -1));
+  return false;
+}
+
 function isSensitiveKey(key) {
-  return tokenizeKey(key).some((token) => SENSITIVE_TOKENS.has(token));
+  return tokenizeKey(key).some(isSensitiveToken);
 }
 
 function scrubString(value) {
   let out = String(value);
-  out = out.replace(
-    /((?:password|passwd|pwd|secret|token|api[-_]?key|access[-_]?key|clave)\s*[=:]\s*)([^;\s,}"']+)/gi,
-    '$1[redactado]'
-  );
-  out = out.replace(/(\/\/[^/\s:@]+:)([^@\s]+)(@)/g, '$1[redactado]$3');
-  out = out.replace(/(Bearer\s+)\S+/gi, '$1[redactado]');
+
+  out = out.replace(AUTH_HEADER_PATTERN, (_match, header, separator) => `${header}${separator}[redactado]`);
+
+  out = out.replace(KEY_VALUE_PATTERN, (match, key, separator) => {
+    const cleanKey = key.replace(/^["']|["']$/g, '');
+    return isSensitiveKey(cleanKey) ? `${key}${separator}[redactado]` : match;
+  });
+
+  out = out.replace(URL_CREDENTIAL_PATTERN, '$1[redactado]$3');
+  out = out.replace(AUTH_SCHEME_PATTERN, '$1 [redactado]');
+
   return out.replace(/\r?\n/g, '\\n');
 }
 
 function normalizeLeaf(value) {
   if (value instanceof Error) {
-    return { name: value.name, message: value.message, code: value.code };
+    return { name: value.name, message: scrubString(value.message), code: value.code };
   }
   if (Buffer.isBuffer(value)) return `<Buffer ${value.length} bytes>`;
   if (value instanceof Date) return value.toISOString();
   if (typeof value === 'bigint') return value.toString();
+  if (typeof value === 'function') return '[función omitida]';
   return value;
 }
 
@@ -285,6 +367,10 @@ function redact(value, depth = 0) {
       result[key] = '[getter omitido]';
       continue;
     }
+    if (typeof descriptor.value === 'function') {
+      result[key] = '[función omitida]';
+      continue;
+    }
     result[key] = isSensitiveKey(key) ? '[redactado]' : redact(descriptor.value, depth + 1);
   }
 
@@ -292,7 +378,7 @@ function redact(value, depth = 0) {
 }
 
 function formatLine(level, scope, message, meta) {
-  const base = `[${new Date().toISOString()}] [${String(level).toUpperCase()}] [${scope}] ${scrubString(message)}`;
+  const base = `[${new Date().toISOString()}] [${String(level).toUpperCase()}] [${scrubString(scope)}] ${scrubString(message)}`;
   if (meta === null || meta === undefined) return base;
 
   const payload = typeof meta === 'object' ? meta : { meta };
@@ -346,6 +432,7 @@ module.exports = {
   SENSITIVE_TOKENS,
   LEVELS,
   tokenizeKey,
+  isSensitiveToken,
   isSensitiveKey,
   scrubString,
   redact,
@@ -362,7 +449,7 @@ module.exports = {
 npx vitest run src/test/logger.test.ts
 ```
 
-Expected: PASS, 7 tests.
+Expected: PASS, 12 tests.
 
 - [ ] **Step 5: Commit**
 
