@@ -5,6 +5,8 @@ import configManager from '../../electron/configManager.cjs';
 import {
   sanitizeHostOrIp,
   buildVncConfigFile,
+  buildVncTempPath,
+  cleanupStaleVncFiles,
   getVncCommand,
   getMsraCommand,
   getPingArgs,
@@ -44,9 +46,8 @@ describe('systemTools orchestration & security sanitization', () => {
   });
 
   describe('buildVncConfigFile', () => {
-    it('creates standard VNC config content injecting password from configManager', () => {
-      configManager.setConfig({ vncPassword: 'synthetic_vnc_hash_token' });
-      const content = buildVncConfigFile('192.0.2.101');
+    it('creates standard VNC config content from the explicit password', () => {
+      const content = buildVncConfigFile('192.0.2.101', 5901, 'synthetic_vnc_hash_token');
       expect(content).toContain('HOST=192.0.2.101');
       expect(content).toContain('Port=5901');
       expect(content).toContain('Password=synthetic_vnc_hash_token');
@@ -57,6 +58,33 @@ describe('systemTools orchestration & security sanitization', () => {
       expect(content).toContain('Port=5900');
       expect(content).toContain('Password=custom_token');
     });
+  });
+
+  it('escribe la clave VNC explícita en el archivo temporal y no la toma de la config', () => {
+    const contenido = buildVncConfigFile('192.0.2.10', 5901, 'clave-explicita');
+    expect(contenido).toContain('Password=clave-explicita');
+  });
+
+  it('genera el temporal con el prefijo pcd_', () => {
+    const ruta = buildVncTempPath('host01', 1700000000000);
+    expect(ruta).toContain('pcd_host01_1700000000000.vnc');
+  });
+
+  it('limpia temporales pcd_*.vnc de ejecuciones anteriores', () => {
+    const os = require('os');
+    const fs = require('fs');
+    const path = require('path');
+    const dir = path.join(os.tmpdir(), `pcd_cleanup_${Date.now()}`);
+    fs.mkdirSync(dir, { recursive: true });
+    const viejo = path.join(dir, 'pcd_host01_1.vnc');
+    fs.writeFileSync(viejo, 'x');
+
+    const { removed } = cleanupStaleVncFiles(dir, {
+      now: () => Date.now() + 25 * 60 * 60 * 1000,
+    });
+    expect(removed).toBeGreaterThanOrEqual(1);
+    expect(fs.existsSync(viejo)).toBe(false);
+    fs.rmSync(dir, { recursive: true, force: true });
   });
 
   describe('getVncCommand', () => {

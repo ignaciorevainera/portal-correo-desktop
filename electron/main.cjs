@@ -130,6 +130,8 @@ async function resolveVncSecret() {
 
 app.whenReady().then(async () => {
   initializeBootstrap();
+  const cleanup = systemTools.cleanupStaleVncFiles();
+  if (cleanup.removed > 0) logger.info('Temporales VNC eliminados', { count: cleanup.removed });
   await runGate();
 });
 

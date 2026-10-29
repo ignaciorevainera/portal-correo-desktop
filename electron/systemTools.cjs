@@ -23,13 +23,10 @@ function sanitizeHostOrIp(input) {
   return clean;
 }
 
-function buildVncConfigFile(targetIpOrHost, port = 5901, explicitPassword) {
+function buildVncConfigFile(targetIpOrHost, port = 5901, explicitPassword = '') {
   const cleanHost = sanitizeHostOrIp(targetIpOrHost);
   const p = Number(port) || 5901;
-  const vncPassword =
-    explicitPassword !== undefined
-      ? explicitPassword
-      : configManager.getConfig().vncPassword || '';
+  const vncPassword = String(explicitPassword || '').trim();
 
   return `[Connection]
 HOST=${cleanHost}
@@ -37,6 +34,36 @@ UserName=
 Password=${vncPassword}
 Port=${p}
 `;
+}
+
+function buildVncTempPath(targetIpOrHost, timestamp = Date.now()) {
+  const cleanHost = sanitizeHostOrIp(targetIpOrHost);
+  return path.join(os.tmpdir(), `pcd_${cleanHost}_${timestamp}.vnc`);
+}
+
+function cleanupStaleVncFiles(dir = os.tmpdir(), options = {}) {
+  const { now = () => Date.now(), maxAgeMs = 24 * 60 * 60 * 1000 } = options;
+  let removed = 0;
+
+  try {
+    for (const entry of fs.readdirSync(dir)) {
+      if (!/^pcd_.*\.vnc$/i.test(entry)) continue;
+      const full = path.join(dir, entry);
+      try {
+        const stats = fs.statSync(full);
+        if (now() - stats.mtimeMs >= maxAgeMs) {
+          fs.unlinkSync(full);
+          removed += 1;
+        }
+      } catch {
+        // archivo bloqueado o ya eliminado
+      }
+    }
+  } catch {
+    // directorio ilegible
+  }
+
+  return { removed };
 }
 
 function getVncCommand(vncPath, configPath) {
@@ -230,12 +257,13 @@ async function launchRemoteSmart(targetIpOrHost, options = {}) {
   }
 }
 
-function launchVnc(targetIpOrHost, port = 5901) {
+function launchVnc(targetIpOrHost, port = 5901, options = {}) {
   try {
     const cleanHost = sanitizeHostOrIp(targetIpOrHost);
-    const configContent = buildVncConfigFile(cleanHost, port);
-    const tempConfigPath = path.join(os.tmpdir(), `cmda_${cleanHost}_${Date.now()}.vnc`);
-    fs.writeFileSync(tempConfigPath, configContent, 'utf-8');
+    const configContent = buildVncConfigFile(cleanHost, port, options.vncPassword || '');
+    const tempConfigPath = buildVncTempPath(cleanHost);
+
+    fs.writeFileSync(tempConfigPath, configContent, { encoding: 'utf8', mode: 0o600 });
 
     const vncExe = getVncViewerPath();
     const cmd = getVncCommand(vncExe, tempConfigPath);
@@ -251,6 +279,14 @@ function launchVnc(targetIpOrHost, port = 5901) {
 
     proc.unref();
 
+    setTimeout(() => {
+      try {
+        fs.unlinkSync(tempConfigPath);
+      } catch {
+        // el visor ya lo eliminó o no existe
+      }
+    }, 2000);
+
     return { success: true, processId: proc.pid, configPath: tempConfigPath, portUsed: port };
   } catch (err) {
     return { success: false, message: `No se pudo iniciar VNC Viewer: ${err.message}` };
@@ -264,7 +300,7 @@ async function launchVncSmart(targetIpOrHost, options = {}) {
 
     if (probe.vncPort) {
       const launcher = options.mockLaunch || launchVnc;
-      const res = launcher(cleanHost, probe.vncPort);
+      const res = launcher(cleanHost, probe.vncPort, { vncPassword: options.vncPassword || '' });
       return {
         ...res,
         portUsed: probe.vncPort,
@@ -556,6 +592,8 @@ function executeNetUser(rawUser, onData, onDone, options = {}) {
 module.exports = {
   sanitizeHostOrIp,
   buildVncConfigFile,
+  buildVncTempPath,
+  cleanupStaleVncFiles,
   getVncCommand,
   getMsraCommand,
   getPingArgs,
