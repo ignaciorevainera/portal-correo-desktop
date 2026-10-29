@@ -1,121 +1,108 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
-import configManager from '../../electron/configManager.cjs';
-import securityGate from '../../electron/securityGate.cjs';
 
-describe('securityGate (Candado Dual Adaptativo de Dominio AD y Red/VPN)', () => {
-  const tempDir = path.join(os.tmpdir(), `cmda_gate_test_${Date.now()}`);
+const configManager = require('../../electron/configManager.cjs');
+const securityGate = require('../../electron/securityGate.cjs');
 
+const CONFIG_VALIDA = {
+  dbServer: 'sql.interno',
+  dbDatabase: 'Inventario',
+  dbUser: 'operador',
+  dbPassword: 'clave',
+  dbPort: 1433,
+  corporateDomain: 'dominio.interno',
+  authMode: 'static-sql',
+};
+
+function providerQueDevuelve(config: any) {
+  return {
+    source: 'unc',
+    describe: () => ({ source: 'unc', target: '\\\\host\\share\\portal-correo-desktop.config.json' }),
+    getConfig: async () => config,
+    getVncSecret: async () => 'clave-vnc',
+  };
+}
+
+function providerQueFalla(code: string) {
+  const { ConfigError } = require('../../electron/configProvider.cjs');
+  return {
+    source: 'unc',
+    describe: () => ({ source: 'unc', target: '\\\\host\\share\\portal-correo-desktop.config.json' }),
+    getConfig: async () => {
+      throw new ConfigError(code, 'fallo simulado');
+    },
+    getVncSecret: async () => {
+      throw new ConfigError(code, 'fallo simulado');
+    },
+  };
+}
+
+describe('securityGate (máquina de estados sobre el ConfigProvider)', () => {
   beforeEach(() => {
     configManager.resetConfig();
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+  });
+
+  it('queda READY y publica la configuración cuando el proveedor responde', async () => {
+    const result = await securityGate.evaluateGate({ provider: providerQueDevuelve(CONFIG_VALIDA) });
+
+    expect(result.status).toBe('READY');
+    expect(result.code).toBe('AUTHORIZED');
+    expect(configManager.getConfig().dbServer).toBe('sql.interno');
+  });
+
+  it('queda BLOCKED con NO_LAN_DNS y limpia el store', async () => {
+    configManager.setConfig(CONFIG_VALIDA);
+
+    const result = await securityGate.evaluateGate({ provider: providerQueFalla('NO_LAN_DNS') });
+
+    expect(result.status).toBe('BLOCKED');
+    expect(result.code).toBe('NO_LAN_DNS');
+    expect(result.message).toContain('red corporativa');
+    expect(configManager.getConfig().dbServer).toBe('');
+  });
+
+  it('queda BLOCKED con NO_PERMISSION y lo distingue del problema de red', async () => {
+    const result = await securityGate.evaluateGate({ provider: providerQueFalla('NO_PERMISSION') });
+
+    expect(result.status).toBe('BLOCKED');
+    expect(result.code).toBe('NO_PERMISSION');
+    expect(result.message).toContain('no tiene acceso');
+  });
+
+  it('queda NO_CONFIG cuando la red responde pero falta el archivo', async () => {
+    const result = await securityGate.evaluateGate({ provider: providerQueFalla('NO_CONFIG') });
+
+    expect(result.status).toBe('NO_CONFIG');
+    expect(result.code).toBe('NO_CONFIG');
+  });
+
+  it('queda NO_CONFIG cuando el esquema es inválido', async () => {
+    const result = await securityGate.evaluateGate({ provider: providerQueFalla('BAD_CONFIG') });
+
+    expect(result.status).toBe('NO_CONFIG');
+    expect(result.code).toBe('BAD_CONFIG');
+  });
+
+  it('nunca autoriza por pertenencia a dominio sin red', async () => {
+    const original = process.env.USERDNSDOMAIN;
+    process.env.USERDNSDOMAIN = 'dominio.interno';
+
+    try {
+      const result = await securityGate.evaluateGate({ provider: providerQueFalla('NO_LAN_ROUTE') });
+      expect(result.status).toBe('BLOCKED');
+      expect(result.code).toBe('NO_LAN_ROUTE');
+    } finally {
+      if (original === undefined) delete process.env.USERDNSDOMAIN;
+      else process.env.USERDNSDOMAIN = original;
     }
   });
 
-  it('blocks access when application has no configuration loaded (Zero-Secrets default)', async () => {
-    const status = await securityGate.evaluateSecurityGate({
-      ignoreEnv: true,
-      env: { USERDNSDOMAIN: '', USERDOMAIN: 'WORKGROUP' },
-      probeFn: async () => ({ open: false }),
-    });
-
-    expect(status.authorized).toBe(false);
-    expect(status.configured).toBe(false);
-    expect(status.reason).toBe('UNCONFIGURED');
+  it('no exporta checkDomainMembership como autorizador', () => {
+    expect(securityGate.checkDomainMembership).toBeUndefined();
   });
 
-  it('authorizes access when configured and workstation belongs to corporate AD domain', async () => {
-    configManager.setConfig({
-      dbServer: '192.0.2.50',
-      dbDatabase: 'InventoryDB',
-      dbUser: 'svc_user',
-      dbPassword: 'svc_password',
-      corporateDomain: 'corp.example.local',
-    });
-
-    const status = await securityGate.evaluateSecurityGate({
-      env: { USERDNSDOMAIN: 'CORP.EXAMPLE.LOCAL', USERDOMAIN: 'CORP' },
-      probeFn: async () => ({ open: false }),
-    });
-
-    expect(status.authorized).toBe(true);
-    expect(status.configured).toBe(true);
-    expect(status.domainMatched).toBe(true);
-    expect(status.reason).toBe('AUTHORIZED');
-  });
-
-  it('authorizes access when outside AD domain if VPN/Corporate network server is reachable', async () => {
-    configManager.setConfig({
-      dbServer: '192.0.2.50',
-      dbDatabase: 'InventoryDB',
-      dbUser: 'svc_user',
-      dbPassword: 'svc_password',
-      corporateDomain: 'corp.example.local',
-    });
-
-    const status = await securityGate.evaluateSecurityGate({
-      env: { USERDNSDOMAIN: '', USERDOMAIN: 'HOME-PC' },
-      probeFn: async (host: string, port: number) => ({
-        open: host === '192.0.2.50' && port === 1433,
-      }),
-    });
-
-    expect(status.authorized).toBe(true);
-    expect(status.domainMatched).toBe(false);
-    expect(status.networkReachable).toBe(true);
-    expect(status.reason).toBe('AUTHORIZED');
-  });
-
-  it('strictly blocks access when outside AD domain AND without VPN/Corporate network reachability', async () => {
-    configManager.setConfig({
-      dbServer: '192.0.2.50',
-      dbDatabase: 'InventoryDB',
-      dbUser: 'svc_user',
-      dbPassword: 'svc_password',
-      corporateDomain: 'corp.example.local',
-    });
-
-    const status = await securityGate.evaluateSecurityGate({
-      env: { USERDNSDOMAIN: '', USERDOMAIN: 'EXTERNAL-PC' },
-      probeFn: async () => ({ open: false }),
-    });
-
-    expect(status.authorized).toBe(false);
-    expect(status.configured).toBe(true);
-    expect(status.domainMatched).toBe(false);
-    expect(status.networkReachable).toBe(false);
-    expect(status.reason).toBe('OUTSIDE_CORPORATE_NETWORK');
-  });
-
-  it('unlocks application from encrypted config file and verifies corporate environment', async () => {
-    const cfgPath = path.join(tempDir, 'cmda.config.json');
-    configManager.saveEncryptedLocalConfig(
-      cfgPath,
-      {
-        dbServer: '192.0.2.88',
-        dbDatabase: 'CorpDB',
-        dbUser: 'corp_user',
-        dbPassword: 'corp_password',
-        corporateDomain: 'intranet.example.local',
-      },
-      'SecretKey123'
-    );
-
-    const badUnlock = await securityGate.unlockApplication(cfgPath, 'WrongKey', {
-      env: { USERDNSDOMAIN: 'intranet.example.local' },
-      probeFn: async () => ({ open: true }),
-    });
-    expect(badUnlock.authorized).toBe(false);
-    expect(badUnlock.reason).toBe('UNLOCK_ERROR');
-
-    const goodUnlock = await securityGate.unlockApplication(cfgPath, 'SecretKey123', {
-      env: { USERDNSDOMAIN: 'intranet.example.local' },
-      probeFn: async () => ({ open: true }),
-    });
-    expect(goodUnlock.authorized).toBe(true);
-    expect(goodUnlock.reason).toBe('AUTHORIZED');
+  it('describeEnvironment devuelve el dominio solo como dato informativo', () => {
+    const info = securityGate.describeEnvironment({ USERDNSDOMAIN: 'dominio.interno', USERDOMAIN: 'INTERNO' });
+    expect(info.detectedDomain).toBe('dominio.interno');
+    expect(info.isDomainJoined).toBe(true);
   });
 });

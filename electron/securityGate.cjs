@@ -1,106 +1,91 @@
 const configManager = require('./configManager.cjs');
-const { probeTcpPort } = require('./systemTools.cjs');
+const { ConfigError } = require('./configProvider.cjs');
 
-function checkDomainMembership(corporateDomain, envObj = process.env) {
-  const userDnsDomain = String(envObj.USERDNSDOMAIN || '').trim();
-  const userDomain = String(envObj.USERDOMAIN || '').trim();
-  const detectedDomain = userDnsDomain || userDomain || 'WORKGROUP';
-
-  if (!corporateDomain || typeof corporateDomain !== 'string' || !corporateDomain.trim()) {
-    return { matched: false, detectedDomain };
-  }
-
-  const targetFull = corporateDomain.trim().toLowerCase().replace(/^\./, '');
-  const targetShort = targetFull.split('.')[0];
-
-  const dnsMatch = Boolean(userDnsDomain && userDnsDomain.toLowerCase() === targetFull);
-  const netbiosMatch = Boolean(targetShort && userDomain && userDomain.toLowerCase() === targetShort);
-
-  return {
-    matched: dnsMatch || netbiosMatch,
-    detectedDomain,
-  };
-}
-
-async function evaluateSecurityGate(options = {}) {
-  const cfg = configManager.getConfig({
-    ignoreEnv: options.ignoreEnv,
-    skipLocalFiles: options.skipLocalFiles,
-  });
-
-  const configured = Boolean(cfg.dbServer && cfg.dbUser && cfg.dbPassword);
-  const domainInfo = checkDomainMembership(cfg.corporateDomain, options.env || process.env);
-
-  if (!configured) {
-    return {
-      authorized: false,
-      configured: false,
-      domainMatched: false,
-      networkReachable: false,
-      detectedDomain: domainInfo.detectedDomain,
-      reason: 'UNCONFIGURED',
-      message:
-        'Aplicativo sin configuración corporativa. Vincule el archivo cmda.config.json de la red interna e ingrese su Clave Corporativa.',
-    };
-  }
-
-  const probeRunner = options.probeFn || probeTcpPort;
-  let networkReachable = false;
-  try {
-    const res = await probeRunner(cfg.dbServer, cfg.dbPort || 1433, options.timeoutMs || 1500);
-    networkReachable = Boolean(res && res.open);
-  } catch {
-    networkReachable = false;
-  }
-
-  if (domainInfo.matched || networkReachable) {
-    return {
-      authorized: true,
-      configured: true,
-      domainMatched: domainInfo.matched,
-      networkReachable,
-      detectedDomain: domainInfo.detectedDomain,
-      reason: 'AUTHORIZED',
-      message:
-        domainInfo.matched && networkReachable
-          ? 'Entorno corporativo verificado (Dominio AD + Red Corporativa Activa)'
-          : domainInfo.matched
-          ? 'Autorizado por pertenencia al Dominio Active Directory Corporativo'
-          : 'Autorizado por conexión activa a la Red Interna / VPN Corporativa',
-    };
-  }
-
-  return {
-    authorized: false,
-    configured: true,
-    domainMatched: false,
-    networkReachable: false,
-    detectedDomain: domainInfo.detectedDomain,
-    reason: 'OUTSIDE_CORPORATE_NETWORK',
-    message:
-      'Acceso denegado: El equipo se encuentra fuera del dominio corporativo y sin conexión activa (LAN/VPN) a la red interna.',
-  };
-}
-
-async function unlockApplication(configPath, corporateKey = '', options = {}) {
-  try {
-    configManager.loadConfigFromFile(configPath, corporateKey);
-    return await evaluateSecurityGate(options);
-  } catch (err) {
-    return {
-      authorized: false,
-      configured: false,
-      domainMatched: false,
-      networkReachable: false,
-      detectedDomain: String((options.env || process.env).USERDNSDOMAIN || (options.env || process.env).USERDOMAIN || 'WORKGROUP'),
-      reason: 'UNLOCK_ERROR',
-      message: err.message || 'Error al desbloquear la configuración corporativa',
-    };
-  }
-}
-
-module.exports = {
-  checkDomainMembership,
-  evaluateSecurityGate,
-  unlockApplication,
+const STATUS = {
+  READY: 'READY',
+  BLOCKED: 'BLOCKED',
+  NO_CONFIG: 'NO_CONFIG',
 };
+
+const MESSAGES = {
+  AUTHORIZED: 'Red corporativa y configuración verificadas',
+  NO_LAN_DNS:
+    'No se pudo resolver el servidor de configuración. Verificá que estés conectado a la red corporativa.',
+  NO_LAN_ROUTE:
+    'Esta aplicación solo funciona dentro de la red corporativa. Conectate a la red de Correo (cable o Wi-Fi corporativo) y reintentá.',
+  NO_LAN_TIMEOUT: 'La red corporativa no respondió a tiempo. Reintentá en unos segundos.',
+  NO_PERMISSION: 'Estás en la red, pero tu usuario no tiene acceso a la configuración. Contactá a soporte.',
+  NO_CONFIG: 'No se encontró la configuración corporativa. Avisá a soporte.',
+  BAD_CONFIG: 'La configuración corporativa está incompleta o dañada. Avisá a soporte.',
+  UNKNOWN: 'No se pudo verificar el acceso a la configuración corporativa.',
+};
+
+const NETWORK_CODES = new Set(['NO_LAN_DNS', 'NO_LAN_ROUTE', 'NO_LAN_TIMEOUT', 'UNKNOWN']);
+const CONFIG_CODES = new Set(['NO_CONFIG', 'BAD_CONFIG']);
+
+function describeEnvironment(env = process.env) {
+  const dnsDomain = String(env.USERDNSDOMAIN || '').trim();
+  const netbiosDomain = String(env.USERDOMAIN || '').trim();
+  const detectedDomain = dnsDomain || netbiosDomain || 'WORKGROUP';
+  return {
+    detectedDomain,
+    isDomainJoined: Boolean(dnsDomain) || (Boolean(netbiosDomain) && netbiosDomain !== 'WORKGROUP'),
+    note: 'Dato informativo: no autoriza ni bloquea por sí mismo.',
+  };
+}
+
+async function evaluateGate(options = {}) {
+  const { provider, store = configManager, logger = null, env = process.env } = options;
+
+  if (!provider) {
+    store.resetConfig();
+    return {
+      status: STATUS.NO_CONFIG,
+      code: 'NO_CONFIG',
+      message: MESSAGES.NO_CONFIG,
+      source: 'none',
+      configPath: '',
+      environment: describeEnvironment(env),
+    };
+  }
+
+  const described = typeof provider.describe === 'function' ? provider.describe() : { source: provider.source, target: '' };
+
+  try {
+    const config = await provider.getConfig();
+    store.setConfig(config);
+    if (logger) logger.info('Gate autorizado', { source: described.source });
+    return {
+      status: STATUS.READY,
+      code: 'AUTHORIZED',
+      message: MESSAGES.AUTHORIZED,
+      source: described.source,
+      configPath: described.target,
+      environment: describeEnvironment(env),
+    };
+  } catch (err) {
+    store.resetConfig();
+
+    const code = err instanceof ConfigError ? err.code : 'UNKNOWN';
+    const status = CONFIG_CODES.has(code)
+      ? STATUS.NO_CONFIG
+      : NETWORK_CODES.has(code)
+        ? STATUS.BLOCKED
+        : STATUS.BLOCKED;
+
+    if (logger) {
+      logger.warn('Gate bloqueado', { code, detail: err && err.message, source: described.source });
+    }
+
+    return {
+      status,
+      code,
+      message: MESSAGES[code] || MESSAGES.UNKNOWN,
+      source: described.source,
+      configPath: described.target,
+      environment: describeEnvironment(env),
+    };
+  }
+}
+
+module.exports = { STATUS, MESSAGES, describeEnvironment, evaluateGate };
