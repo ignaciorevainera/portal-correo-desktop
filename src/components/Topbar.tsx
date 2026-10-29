@@ -38,7 +38,7 @@ interface TopbarProps {
 }
 
 const PORTAL_MDA_URL = "https://mda.correo.local/inventario-terminales";
-const RECENT_SEARCHES_KEY = "cmda_recent_searches";
+const RECENT_SEARCHES_KEY = "pcd_recent_searches";
 
 export function Topbar({
   onSelectTerminal,
@@ -112,10 +112,10 @@ export function Topbar({
         }
       }
     };
-    window.addEventListener("cmda:app-autofocus-search", handleAutofocusSearch);
+    window.addEventListener("pcd:app-autofocus-search", handleAutofocusSearch);
     return () =>
       window.removeEventListener(
-        "cmda:app-autofocus-search",
+        "pcd:app-autofocus-search",
         handleAutofocusSearch,
       );
   }, []);

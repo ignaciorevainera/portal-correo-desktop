@@ -70,7 +70,7 @@
         "nsis",
         "portable"
       ],
-      "icon": "public/correo-argentino-logo.ico"
+      "icon": "public/windows/icon.ico"
     },
     "nsis": {
       "oneClick": false,

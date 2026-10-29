@@ -6,5 +6,5 @@
   "dbPort": 1433,
   "vncPassword": "hash_vnc_corporativo",
   "corporateDomain": "dominio.corporativo.local",
-  "accessKey": "clave_activacion_operador"
+  "authMode": "static-sql"
 }

@@ -11,7 +11,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('cmda-theme') as Theme | null;
+    const saved = localStorage.getItem('pcd-theme') as Theme | null;
     return saved || 'dark';
   });
 
@@ -22,7 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }): Reac
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('cmda-theme', theme);
+    localStorage.setItem('pcd-theme', theme);
   }, [theme]);
 
   const toggleTheme = (): void => {

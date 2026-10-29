@@ -68,13 +68,13 @@ export function SettingsModal({
 
   // User Preferences
   const [minimizeToTray, setMinimizeToTray] = useState<boolean>(() => {
-    const saved = localStorage.getItem("cmda_pref_tray");
+    const saved = localStorage.getItem("pcd_pref_tray");
     return saved !== null ? saved === "true" : true;
   });
 
   const [globalHotkeyEnabled, setGlobalHotkeyEnabled] = useState<boolean>(
     () => {
-      const saved = localStorage.getItem("cmda_pref_hotkey");
+      const saved = localStorage.getItem("pcd_pref_hotkey");
       return saved !== null ? saved === "true" : true;
     },
   );
@@ -82,20 +82,20 @@ export function SettingsModal({
   const [defaultPingMode, setDefaultPingMode] = useState<
     "standard" | "infinite"
   >(() => {
-    const saved = localStorage.getItem("cmda_pref_ping_mode");
+    const saved = localStorage.getItem("pcd_pref_ping_mode");
     return (saved as "standard" | "infinite") || "standard";
   });
 
   useEffect(() => {
-    localStorage.setItem("cmda_pref_tray", String(minimizeToTray));
+    localStorage.setItem("pcd_pref_tray", String(minimizeToTray));
   }, [minimizeToTray]);
 
   useEffect(() => {
-    localStorage.setItem("cmda_pref_hotkey", String(globalHotkeyEnabled));
+    localStorage.setItem("pcd_pref_hotkey", String(globalHotkeyEnabled));
   }, [globalHotkeyEnabled]);
 
   useEffect(() => {
-    localStorage.setItem("cmda_pref_ping_mode", defaultPingMode);
+    localStorage.setItem("pcd_pref_ping_mode", defaultPingMode);
   }, [defaultPingMode]);
 
   useEffect(() => {

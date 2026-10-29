@@ -9,8 +9,12 @@ commit_msg.txt
 .env
 .env.*
 !.env.example
+# Configuración heredada (se detecta y elimina en la migración)
 cmda.config.json
 cmda.config.local.json
+# Configuración local del producto (nunca versionar)
+portal-correo-desktop.config.json
+portal-correo-desktop.config.local.json
 *.secure.dat
 *.vnc
 

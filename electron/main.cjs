@@ -25,8 +25,8 @@ const { migrateLegacyConfig } = require('./migration.cjs');
 //   FATAL:gpu_data_manager_impl_private.cc GPU process isn't usable. Goodbye.
 // Esta aplicación es un panel/formulario, por lo que no necesita aceleración por
 // hardware: se usa renderizado por software por defecto. En un equipo con GPU
-// funcional se puede reactivar con la variable de entorno CMDA_ENABLE_GPU=1.
-const gpuEnabled = /^(1|true|yes|on)$/i.test(String(process.env.CMDA_ENABLE_GPU || '').trim());
+// funcional se puede reactivar con la variable de entorno PCD_ENABLE_GPU=1.
+const gpuEnabled = /^(1|true|yes|on)$/i.test(String(process.env.PCD_ENABLE_GPU || '').trim());
 
 if (!gpuEnabled) {
   app.disableHardwareAcceleration();
@@ -42,8 +42,8 @@ if (!gpuEnabled) {
 // Modo compatibilidad: para equipos donde el antivirus/EDR corporativo bloquea
 // la creación de procesos hijos de Chromium y Electron aborta con
 // "Renderer process launch-failed" o "GPU process launch failed".
-// Se activa solo de forma explícita: CMDA_COMPAT_MODE=1
-const compatMode = /^(1|true|yes|on)$/i.test(String(process.env.CMDA_COMPAT_MODE || '').trim());
+// Se activa solo de forma explícita: PCD_COMPAT_MODE=1
+const compatMode = /^(1|true|yes|on)$/i.test(String(process.env.PCD_COMPAT_MODE || '').trim());
 
 if (compatMode) {
   app.commandLine.appendSwitch('no-sandbox');

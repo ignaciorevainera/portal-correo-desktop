@@ -76,7 +76,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
 
   it("provides direct 1-click VNC and Ping actions on search suggestions from recent history", () => {
     localStorage.setItem(
-      "cmda_recent_searches",
+      "pcd_recent_searches",
       JSON.stringify(["WS-DEMO-002", "WS-DEMO-003"]),
     );
 

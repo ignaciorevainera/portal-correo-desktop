@@ -123,7 +123,7 @@ export default function App(): React.JSX.Element {
     // Listen to Global Hotkey Autofocus Search (Ctrl+Space from background)
     const unsubHotkey = subscribeToAutofocusSearch((payload) => {
       window.dispatchEvent(
-        new CustomEvent("cmda:app-autofocus-search", { detail: payload }),
+        new CustomEvent("pcd:app-autofocus-search", { detail: payload }),
       );
       if (payload.autoSearch && payload.query) {
         handleSelectTerminal(payload.query);

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Topbar } from '../components/Topbar';
 import { ThemeProvider } from '../context/ThemeContext';
 
-const RECENT_KEY = 'cmda_recent_searches';
+const RECENT_KEY = 'pcd_recent_searches';
 
 describe('Topbar Search and Keyboard Navigation', () => {
   beforeEach(() => {
