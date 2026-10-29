@@ -13,6 +13,7 @@ const { createLogger } = require('./logger.cjs');
 const { loadBootstrap, DEFAULTS: BOOTSTRAP_DEFAULTS } = require('./bootstrap.cjs');
 const { createConfigProvider, ConfigError } = require('./configProvider.cjs');
 const { evaluateGate, describeEnvironment } = require('./securityGate.cjs');
+const { migrateLegacyConfig } = require('./migration.cjs');
 
 // ---------------------------------------------------------------------------
 // Modo de renderizado (GPU vs. software)
@@ -129,6 +130,12 @@ async function resolveVncSecret() {
 }
 
 app.whenReady().then(async () => {
+  migrateLegacyConfig({
+    userDataDir: app.getPath('userData'),
+    exeDir: path.dirname(process.execPath),
+    appRoot: path.resolve(__dirname, '..'),
+    logger,
+  });
   initializeBootstrap();
   const cleanup = systemTools.cleanupStaleVncFiles();
   if (cleanup.removed > 0) logger.info('Temporales VNC eliminados', { count: cleanup.removed });
