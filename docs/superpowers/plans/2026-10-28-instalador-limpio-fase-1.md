@@ -206,6 +206,18 @@ describe('logger con redacción de secretos', () => {
     expect(linea).toContain('[redactado]');
   });
 
+  it('redacta claves con acentos en texto libre y en mensajes de Error', () => {
+    const linea = formatLine('error', 'db', 'contraseña=ACENT1 y Contraseña=ACENT2', {
+      c: 'contraseña=ACENT3',
+      err: new Error('CONTRASEÑA=ACENT4'),
+    });
+
+    for (const secreto of ['ACENT1', 'ACENT2', 'ACENT3', 'ACENT4']) {
+      expect(linea).not.toContain(secreto);
+    }
+    expect(linea).toContain('[redactado]');
+  });
+
   it('no imprime valores sensibles pero conserva el contexto', () => {
     const linea = formatLine('info', 'gate', 'arranque', {
       dbPassword: 'SuperSecreto123',
@@ -297,7 +309,7 @@ const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };
 const ROUTE = { debug: 'log', info: 'log', warn: 'warn', error: 'error' };
 const MAX_LINE_LENGTH = 8192;
 
-const KEY_VALUE_PATTERN = /(?<key>"[^"]+"|'[^']+'|[A-Za-z0-9_.\-[\]]+)\s*(?<sep>[=:])\s*(?:"[^"]*"|'[^']*'|[^;\s,}{]+)/g;
+const KEY_VALUE_PATTERN = /(?<key>"[^"]+"|'[^']+'|[\p{L}0-9_.\-[\]]+)\s*(?<sep>[=:])\s*(?:"[^"]*"|'[^']*'|[^;\s,}{]+)/gu;
 const AUTH_HEADER_PATTERN = /\b(authorization|proxy-authorization|cookie|set-cookie)\s*([:=])\s*([^\r\n]+)/gi;
 const URL_CREDENTIAL_PATTERN = /(\/\/[^/\s:@]+:)([^@\s]+)(@)/g;
 const AUTH_SCHEME_PATTERN = /\b(Basic|Bearer|Digest|Negotiate|NTLM)\s+([A-Za-z0-9._~+/=-]+)/gi;
@@ -305,7 +317,7 @@ const AUTH_SCHEME_PATTERN = /\b(Basic|Bearer|Digest|Negotiate|NTLM)\s+([A-Za-z0-
 function tokenizeKey(key) {
   return String(key)
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .split(/[^a-zA-Z0-9ñ]+/i)
+    .split(/[^\p{L}0-9]+/u)
     .filter(Boolean)
     .map((token) => token.toLowerCase());
 }

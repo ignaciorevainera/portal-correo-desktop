@@ -109,6 +109,18 @@ describe('logger con redacción de secretos', () => {
     expect(linea).not.toContain('JSONP7');
   });
 
+  it('redacta claves con acentos en texto libre y en mensajes de Error', () => {
+    const linea = formatLine('error', 'db', 'contraseña=ACENT1 y Contraseña=ACENT2', {
+      c: 'contraseña=ACENT3',
+      err: new Error('CONTRASEÑA=ACENT4'),
+    });
+
+    for (const secreto of ['ACENT1', 'ACENT2', 'ACENT3', 'ACENT4']) {
+      expect(linea).not.toContain(secreto);
+    }
+    expect(linea).toContain('[redactado]');
+  });
+
   it('no imprime valores sensibles pero conserva el contexto', () => {
     const linea = formatLine('info', 'gate', 'arranque', {
       dbPassword: 'SuperSecreto123',
