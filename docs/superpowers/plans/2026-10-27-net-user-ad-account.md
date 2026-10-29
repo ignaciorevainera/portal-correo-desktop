@@ -276,10 +276,10 @@ function executeGenericCommand(cmd, toolName, onData, onDone, options = {}) {
           timeoutMessage ||
             `\n[timeout] El comando ${toolName} no respondió a tiempo.\n`
         );
+        finish(1);
         try {
           proc.kill();
         } catch {}
-        finish(1);
       }, timeoutMs);
     }
 
