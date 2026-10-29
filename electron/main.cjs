@@ -105,6 +105,7 @@ async function runGate() {
     }
     gateState = await evaluateGate({ provider: gateProvider, logger });
   } catch (err) {
+    configManager.resetConfig();
     const code = err instanceof ConfigError ? err.code : 'NO_CONFIG';
     gateState = {
       status: code === 'NO_CONFIG' ? 'NO_CONFIG' : 'BLOCKED',
@@ -130,12 +131,15 @@ async function resolveVncSecret() {
 }
 
 app.whenReady().then(async () => {
-  migrateLegacyConfig({
-    userDataDir: app.getPath('userData'),
-    exeDir: path.dirname(process.execPath),
-    appRoot: path.resolve(__dirname, '..'),
-    logger,
-  });
+  // Sólo en la app instalada: en desarrollo el appRoot es el repo y borraría el .env del desarrollador.
+  if (app.isPackaged) {
+    migrateLegacyConfig({
+      userDataDir: app.getPath('userData'),
+      exeDir: path.dirname(process.execPath),
+      appRoot: path.resolve(__dirname, '..'),
+      logger,
+    });
+  }
   initializeBootstrap();
   const cleanup = systemTools.cleanupStaleVncFiles();
   if (cleanup.removed > 0) logger.info('Temporales VNC eliminados', { count: cleanup.removed });
@@ -408,7 +412,8 @@ ipcMain.handle('pcd:probe-remote', async (_event, target) => {
 });
 
 ipcMain.handle('pcd:launch-remote-smart', async (_event, target) => {
-  return await systemTools.launchRemoteSmart(target);
+  const vncPassword = await resolveVncSecret();
+  return await systemTools.launchRemoteSmart(target, { vncPassword });
 });
 
 ipcMain.on('pcd:ping-start', async (event, target, continuous) => {

@@ -35,28 +35,40 @@ function describeEnvironment(env = process.env) {
 }
 
 function safeDescribe(provider) {
+  let source = 'none';
+
   try {
     const described = typeof provider.describe === 'function' ? provider.describe() : null;
     if (described && typeof described === 'object') {
       return {
-        source: String(described.source || provider.source || 'none'),
+        source: String(described.source || (provider && provider.source) || 'none'),
         target: String(described.target || ''),
       };
     }
   } catch {
     // Un proveedor defectuoso no debe tumbar el gate.
   }
-  return { source: String((provider && provider.source) || 'none'), target: '' };
+
+  try {
+    source = String((provider && provider.source) || 'none');
+  } catch {
+    source = 'none';
+  }
+
+  return { source, target: '' };
 }
 
 function isUsableConfig(config) {
-  return Boolean(
-    config &&
-      typeof config === 'object' &&
-      !Array.isArray(config) &&
-      String(config.dbServer || '').trim() &&
-      String(config.dbUser || '').trim()
-  );
+  if (!config || typeof config !== 'object' || Array.isArray(config)) return false;
+
+  const dbServer = String(config.dbServer || '').trim();
+  const dbUser = String(config.dbUser || '').trim();
+  if (!dbServer || !dbUser) return false;
+
+  const authMode = String(config.authMode || 'static-sql').trim();
+  if (authMode === 'static-sql' && !String(config.dbPassword || '').trim()) return false;
+
+  return true;
 }
 
 function safeLog(logger, level, message, meta) {
@@ -69,6 +81,8 @@ function safeLog(logger, level, message, meta) {
 
 async function evaluateGate(options = {}) {
   const { provider, store = configManager, logger = null, env = process.env } = options;
+
+  store.resetConfig();
 
   if (!provider) {
     store.resetConfig();

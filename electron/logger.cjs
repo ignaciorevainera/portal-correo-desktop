@@ -9,7 +9,7 @@ const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };
 const ROUTE = { debug: 'log', info: 'log', warn: 'warn', error: 'error' };
 const MAX_LINE_LENGTH = 8192;
 
-const KEY_VALUE_PATTERN = /(?<key>"[^"]+"|'[^']+'|[\p{L}0-9_.\-[\]]+)\s*(?<sep>[=:])\s*(?:"[^"]*"|'[^']*'|[^;\s,}{]+)/gu;
+const SENSITIVE_PAIR_PATTERN = /(?<=^|[\s,;:({\[])(["']?)([\p{L}0-9_.\-]*(?:passphrase|password|passwd|pwd|pass|secret|token|api[-_]?key|access[-_]?key|private[-_]?key|credential|clave|contras\w*|contraseña|authorization|cookie)[\p{L}0-9_.\-]*)\1\s*([=:])\s*("[^"]*"|'[^']*'|[^;\s,}{]+)/gimu;
 const AUTH_HEADER_PATTERN = /\b(authorization|proxy-authorization|cookie|set-cookie)\s*([:=])\s*([^\r\n]+)/gi;
 const URL_CREDENTIAL_PATTERN = /(\/\/[^/\s:@]+:)([^@\s]+)(@)/g;
 const AUTH_SCHEME_PATTERN = /\b(Basic|Bearer|Digest|Negotiate|NTLM)\s+([A-Za-z0-9._~+/=-]+)/gi;
@@ -37,10 +37,7 @@ function scrubString(value) {
 
   out = out.replace(AUTH_HEADER_PATTERN, (_match, header, separator) => `${header}${separator}[redactado]`);
 
-  out = out.replace(KEY_VALUE_PATTERN, (match, key, separator) => {
-    const cleanKey = key.replace(/^["']|["']$/g, '');
-    return isSensitiveKey(cleanKey) ? `${key}${separator}[redactado]` : match;
-  });
+  out = out.replace(SENSITIVE_PAIR_PATTERN, (_match, quote, key, separator) => `${quote}${key}${quote}${separator}[redactado]`);
 
   out = out.replace(URL_CREDENTIAL_PATTERN, '$1[redactado]$3');
   out = out.replace(AUTH_SCHEME_PATTERN, '$1 [redactado]');

@@ -121,6 +121,27 @@ describe('logger con redacción de secretos', () => {
     expect(linea).toContain('[redactado]');
   });
 
+  it('redacta credenciales cuando el secreto sigue a un prefijo con dos puntos', () => {
+    expect(formatLine('error', 'db', new Error('Password=HUNTER2'))).not.toContain('HUNTER2');
+    expect(formatLine('info', 'db', 'config: password=SECRET1')).not.toContain('SECRET1');
+    expect(formatLine('error', 'db', new Error('accessKey=AKIA123'))).not.toContain('AKIA123');
+    expect(formatLine('info', 'db', 'contexto: contraseña=ACENT9')).not.toContain('ACENT9');
+  });
+
+  it('redacta el mensaje cuando se loguea un Error como mensaje', () => {
+    const lineas: string[] = [];
+    const sink = {
+      log: (l: string) => lineas.push(l),
+      warn: (l: string) => lineas.push(l),
+      error: (l: string) => lineas.push(l),
+    };
+    const log = createLogger({ scope: 'db', sink });
+
+    log.error(new Error('Login failed: Server=sql;Password=LEAKEDLOG;'));
+
+    expect(lineas[0]).not.toContain('LEAKEDLOG');
+  });
+
   it('no imprime valores sensibles pero conserva el contexto', () => {
     const linea = formatLine('info', 'gate', 'arranque', {
       dbPassword: 'SuperSecreto123',

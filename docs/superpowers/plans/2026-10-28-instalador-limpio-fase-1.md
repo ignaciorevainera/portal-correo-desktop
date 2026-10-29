@@ -3133,3 +3133,22 @@ Las 14 tareas se implementaron en la rama `feat/instalador-limpio-fase-1`. Resul
 - **Fase 1b:** credenciales de red para equipos fuera de dominio (spec Â§8.4).
 - **Fase 2:** `HttpConfigProvider` sobre IIS con Windows Authentication en 443, `session-sql` y verificaciÃ³n Authenticode.
 
+
+## Correcciones posteriores a la revisión final — 2026-10-29
+
+La revisión de la rama completa encontró fallas que las revisiones por tarea no detectaron. Se corrigieron:
+
+| Hallazgo | Corrección |
+| --- | --- |
+| `logger.error(new Error('Password=X'))` y `'config: password=X'` filtraban el valor, porque un par no sensible (`Error:`) consumía el valor y ocultaba el par sensible | `scrubString` usa un patrón anclado con *lookbehind* de límite que sólo matchea pares cuya clave contiene un término sensible; se agregaron dos tests (mensaje `Error` y prefijo con dos puntos) |
+| El gate daba `READY` con configuración sin `dbPassword` en `static-sql` | `isUsableConfig` exige la clave para ese modo; test dedicado |
+| Un proveedor hostil (Proxy) o un `describe()` que lanza podía rechazar `evaluateGate` dejando el store con datos previos | `store.resetConfig()` al inicio de `evaluateGate`; `safeDescribe` ya no desreferencia fuera del `try`; tests de Proxy hostil y de `describe` defectuoso con config válida |
+| `launchRemoteSmart` arrancaba VNC sin clave | `main.cjs` resuelve el secreto y lo pasa como `{ vncPassword }` |
+| La migración borraba el `.env` del repo al ejecutar `npx electron .` | Sólo corre con `app.isPackaged` |
+| `prepare-bootstrap` copiaba claves arbitrarias al artefacto | Allowlist de las cinco claves del bootstrap, con aviso de las ignoradas |
+| El test de artefacto fallaba sin `release/` y no verificaba el bootstrap empaquetado | Listado perezoso y test de claves permitidas dentro del asar |
+| El README prometía cifrado AES-256-GCM, autorización por dominio/VPN y carga de `.env` | Se corrigieron las tres afirmaciones |
+
+**Pendiente de verificación:** reconstruir el artefacto en HEAD (`npm run release:build`) y correr `src/test/artifactSecrets.test.ts` sin que se saltee. En el entorno de implementación la red dejó de resolver `github.com` (`EAI_AGAIN`) y electron-builder no pudo completar el empaquetado. La última evidencia válida del artefacto corresponde a un build anterior a los últimos commits.
+
+**Deuda que sigue abierta:** el renderer arranca en `READY` y bloquea recién cuando llega la respuesta del gate (ventana de milisegundos, y permanente si el preload no carga); no hay re-evaluación periódica ni al recuperar foco; el `retryIntervalMs` sólo se muestra en diagnóstico.

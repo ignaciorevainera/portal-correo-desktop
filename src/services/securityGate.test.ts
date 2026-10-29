@@ -125,6 +125,51 @@ describe('securityGate (máquina de estados sobre el ConfigProvider)', () => {
     expect(configManager.getConfig().dbServer).toBe('');
   });
 
+  it('rechaza static-sql sin dbPassword aunque tenga servidor y usuario', async () => {
+    const result = await securityGate.evaluateGate({
+      provider: providerQueDevuelve({ dbServer: 'sql.interno', dbUser: 'operador', authMode: 'static-sql' }),
+    });
+
+    expect(result.status).toBe('NO_CONFIG');
+    expect(result.code).toBe('BAD_CONFIG');
+    expect(configManager.getConfig().dbServer).toBe('');
+  });
+
+  it('sigue READY si describe() falla pero la configuración es válida', async () => {
+    const provider = {
+      source: 'unc',
+      describe: () => {
+        throw new Error('boom');
+      },
+      getConfig: async () => CONFIG_VALIDA,
+      getVncSecret: async () => 'clave-vnc',
+    };
+
+    const result = await securityGate.evaluateGate({ provider });
+
+    expect(result.status).toBe('READY');
+    expect(result.source).toBe('unc');
+  });
+
+  it('no rechaza ni deja el store sucio con un proveedor hostil', async () => {
+    configManager.setConfig(CONFIG_VALIDA);
+
+    const hostil = new Proxy(
+      {},
+      {
+        get() {
+          throw new Error('boom');
+        },
+      }
+    );
+
+    const result = await securityGate.evaluateGate({ provider: hostil });
+
+    expect(result.status).toBe('BLOCKED');
+    expect(result.code).toBe('UNKNOWN');
+    expect(configManager.getConfig().dbServer).toBe('');
+  });
+
   it('no lanza si describe() explota y limpia el store', async () => {
     configManager.setConfig(CONFIG_VALIDA);
 

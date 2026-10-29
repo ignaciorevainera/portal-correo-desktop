@@ -16,22 +16,24 @@ Aplicación nativa moderna basada en Electron, React 19, TypeScript y Tailwind C
 
 3. **Arquitectura de Seguridad Zero-Secrets y Candado Corporativo (Gatekeeper)**:
    - Ninguna credencial SQL, clave VNC, IP interna ni sufijo de dominio se almacena en el repositorio de código.
-   - Provisión mediante archivo externo `portal-correo-desktop.config.json` en red interna (UNC Share) o cifrado local AES-256-GCM.
-   - Verificación dual adaptativa de pertenencia al Dominio Active Directory corporativo o alcance de red/VPN antes de desbloquear el aplicativo.
+   - Provisión mediante archivo externo `portal-correo-desktop.config.json` alojado en un share corporativo con ACL de AD. El instalador publicado no contiene secretos.
+   - Candado por alcanzabilidad real: la aplicación sólo se desbloquea si logra leer la configuración desde la red corporativa. La pertenencia al dominio **no** autoriza por sí sola.
 
 ## 🛠️ Configuración de Desarrollo Local
 
 La aplicación no guarda credenciales en el equipo. En producción lee su configuración
-de un share corporativo; en desarrollo usa variables de entorno o un archivo local
-no versionado.
+de un share corporativo; en desarrollo usa variables de entorno `PCD_*` o un archivo
+local no versionado.
 
-1. Copiá `.env.example` a `.env` y completá los valores, o copiá
-   `portal-correo-desktop.config.example.json` a `portal-correo-desktop.config.local.json`.
+1. Para trabajar con variables de entorno, copiá `.env.example` a `.env` y completá los valores.
+2. Para trabajar con archivo, copiá `portal-correo-desktop.config.example.json` a
+   `portal-correo-desktop.config.local.json`. El proveedor de desarrollo no lee `.env`:
+   usa las variables de entorno del proceso o ese archivo.
 
 ```bash
 npm install
 npm run dev            # Vite en modo web
-npx electron .         # Escritorio (usa .env o el config local)
+npx electron .         # Escritorio (variables PCD_* o el config local)
 npm run build
 npm test
 ```
