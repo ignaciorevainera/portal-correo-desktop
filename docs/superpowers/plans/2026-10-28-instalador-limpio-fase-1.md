@@ -3097,3 +3097,39 @@ git commit -m "chore: barrido final del renombre y documentacion del modelo de c
 - [ ] Arrancar la app con `npx electron .` sin VPN ni red corporativa muestra la pantalla de bloqueo con código `NO_LAN_ROUTE` o `NO_LAN_DNS`.
 - [ ] Con el share accesible, la app abre la interfaz normal y busca una terminal.
 - [ ] En `%APPDATA%\portal-correo-desktop\` no queda ningún archivo de configuración tras la migración.
+
+---
+
+## Estado de ejecución — 2026-10-29
+
+Las 14 tareas se implementaron en la rama `feat/instalador-limpio-fase-1`. Resultado al cierre:
+51 archivos de test, 272 tests verdes, `tsc --noEmit` en 0 y el artefacto empaquetado verificado sin secretos.
+
+### Desviaciones respecto de lo escrito arriba
+
+| Tarea | Desviación | Motivo |
+| --- | --- | --- |
+| 1 | La detección de claves pasó de regex a tokenización (`SENSITIVE_TOKENS` + `tokenizeKey`), y se agregaron `scrubString`, `safeDescribe`-style robustez, `AUTH_HEADER_PATTERN`, `AUTH_SCHEME_PATTERN` y `[^\p{L}...]` para acentos | La regex original no incluía `key` (fuga real de `accessKey`), no inspeccionaba strings y podía lanzar con `BigInt`/getters. Tres rondas de revisión |
+| 5 | Se agregaron `safeDescribe`, `isUsableConfig` y `safeLog` | `provider.describe()` fuera del `try` podía rechazar la promesa dejando el store con datos viejos; un `getConfig()` que resuelve `undefined` daba `READY` con la configuración anterior (fail-open) |
+| 6 | El bloque de arranque se insertó después de `app.isQuiting = false;` y se eliminaron `getUserDataConfigPath`/`getAdjacentExeConfigPath` | Evitar duplicar `app.isQuiting` y dejar sin código muerto al quitar la configuración embebida |
+| 7 y 9 | La eliminación de `unlockCorporateSecurity` se hizo en la 7; las funciones de importación/borrado, en la 9 | `SettingsModal` todavía las usaba: quitarlas antes rompía `tsc` |
+| 10 | El test de limpieza usa `now + 25 h` en lugar de `now + 1 s` | Con el umbral de 24 h, el test original nunca borraba nada (el test estaba mal, no el código) |
+| 13 | `package.json` + `internalReleasePackaging.test.ts` se adelantaron a un commit propio antes de la 13 | Dejar el script `release:internal` apuntando a un archivo borrado mantenía la suite en rojo durante seis tareas |
+| 14 | También se renombró `cmda-theme` → `pcd-theme` y se agregaron al `.gitignore` los nombres nuevos del archivo de configuración | Restos propios no enumerados; sin el gitignore, el config local que indica el README quedaría versionable |
+
+### Deuda registrada (no bloqueante)
+
+- `electron/bootstrap.cjs:45`: `existsSync` fuera del `try`; si lanza, no se prueba el siguiente candidato.
+- `electron/bootstrap.cjs:23`: `configSource` cae a `'unc'` hardcodeado en vez de a `defaults.configSource`.
+- `electron/configProvider.cjs`: el archivo local del proveedor de desarrollo relanza errores no-`ENOENT` sin envolver en `ConfigError`; las coerciones sobre JSON pueden lanzar `TypeError` sin `code`; el puerto acepta valores fuera de 1..65535.
+- `electron/systemTools.cjs`: queda un `require('./configManager.cjs')` sin uso.
+- `public/**/*` embebe los iconos completos en el asar (inofensivo, pero se puede acotar).
+- `electron/bootstrap.default.json` no está versionado: en un clone limpio la app avisa hasta que se corre `node scripts/prepare-bootstrap.cjs`.
+- Renombrar las claves de `localStorage` reinicia las preferencias de los operadores que ya usaban la app.
+
+### Pendiente fuera de este plan
+
+- **Operativo:** crear los shares y el grupo `PortalCorreoDesktop-Operadores`, publicar el artefacto en el repositorio público de releases y emitir el certificado de firma de código.
+- **Fase 1b:** credenciales de red para equipos fuera de dominio (spec §8.4).
+- **Fase 2:** `HttpConfigProvider` sobre IIS con Windows Authentication en 443, `session-sql` y verificación Authenticode.
+
