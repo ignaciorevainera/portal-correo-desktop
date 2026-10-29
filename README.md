@@ -39,3 +39,37 @@ npm run build
 # Correr suite completa de pruebas unitarias
 npm test
 ```
+
+## 🩺 Solución de problemas de arranque en escritorio
+
+### `GPU process launch failed: error_code=18` / `GPU process isn't usable. Goodbye.`
+
+Ocurre en equipos corporativos (escritorios virtuales, sesiones RDP, VMs sin GPU
+o GPU bloqueada por política/EDR). Electron no logra iniciar su proceso gráfico y
+aborta antes de mostrar la ventana.
+
+La aplicación ya arranca en **modo software** por defecto (`main.cjs` deshabilita
+la aceleración por hardware y el sandbox del proceso GPU), por lo que el error no
+debería volver a aparecer. Variables de entorno disponibles:
+
+| Variable | Efecto |
+| --- | --- |
+| `CMDA_ENABLE_GPU=1` | Reactiva la aceleración por hardware (solo en equipos con GPU funcional). |
+| `CMDA_COMPAT_MODE=1` | Modo compatibilidad agresivo: añade `--no-sandbox` y deshabilita `RendererCodeIntegrity`. Usar solo si aparece `Renderer process launch-failed` por bloqueo del antivirus/EDR corporativo. |
+
+Ejemplos en PowerShell:
+
+```powershell
+$env:CMDA_ENABLE_GPU = "1"; npx electron .
+$env:CMDA_COMPAT_MODE = "1"; npx electron .
+
+# Atajo equivalente a CMDA_COMPAT_MODE=1
+npm run electron:compat
+```
+
+### `Failed to load URL: http://localhost:5173` al usar `npx electron .`
+
+Es esperado: en modo desarrollo la app intenta el servidor de Vite y, si no está
+corriendo, carga automáticamente `dist/index.html`. Ejecute `npm run build` antes
+o use `npm run electron:dev` para levantar Vite y Electron juntos.
+

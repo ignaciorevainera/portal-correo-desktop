@@ -9,6 +9,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "electron:dev": "concurrently -k \"vite\" \"electron .\"",
+    "electron:compat": "electron . --no-sandbox",
     "release:check": "vitest run src/test/securityAudit.test.ts && npm run audit:contrast && npm run build",
     "release:build": "npm run release:check && electron-builder --win",
     "audit:contrast": "node scripts/check-contrast.mjs",
