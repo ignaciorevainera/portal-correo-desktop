@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const https = require('https');
 const http = require('http');
 
@@ -181,10 +182,31 @@ function downloadUpdateFile(fileUrl, destPath, onProgress, onComplete, onError) 
   }
 }
 
+function computeFileSha256(filePath) {
+  const hash = crypto.createHash('sha256');
+  const buffer = fs.readFileSync(filePath);
+  hash.update(buffer);
+  return hash.digest('hex');
+}
+
+function verifyFileSha256(filePath, expectedHex) {
+  const expected = String(expectedHex || '').trim().toLowerCase();
+  if (!expected) return false;
+  return computeFileSha256(filePath) === expected;
+}
+
+function parseChecksumFile(content) {
+  const first = String(content || '').trim().split(/\s+/)[0] || '';
+  return first.toLowerCase();
+}
+
 module.exports = {
   parseSemver,
   compareVersions,
   isNewerVersion,
   checkForUpdates,
   downloadUpdateFile,
+  computeFileSha256,
+  verifyFileSha256,
+  parseChecksumFile,
 };

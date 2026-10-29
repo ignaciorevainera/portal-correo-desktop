@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, globalShortcut, clipboard, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, globalShortcut, clipboard, dialog, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const dbService = require('./dbService.cjs');
@@ -601,32 +601,50 @@ ipcMain.handle('pcd:check-updates', async () => {
 
 ipcMain.handle('pcd:start-download-update', async (event, downloadUrl) => {
   if (!downloadUrl) return { success: false, error: 'URL de descarga vacía' };
-  
+
   const tempDir = app.getPath ? app.getPath('temp') : require('os').tmpdir();
   const fileName = path.basename(new URL(downloadUrl).pathname) || 'PortalCorreoDesktop-Update.exe';
   const targetPath = path.join(tempDir, fileName);
 
-  return new Promise((resolve) => {
+  const resultado = await new Promise((resolve) => {
     downloadUpdateFile(
       downloadUrl,
       targetPath,
       (progress) => {
-        if (!event.sender.isDestroyed()) {
-          event.sender.send('pcd:update-progress', progress);
-        }
+        if (!event.sender.isDestroyed()) event.sender.send('pcd:update-progress', progress);
       },
-      (completedPath) => {
-        downloadedInstallerPath = completedPath;
-        if (!event.sender.isDestroyed()) {
-          event.sender.send('pcd:update-downloaded', completedPath);
-        }
-        resolve({ success: true, filePath: completedPath });
-      },
-      (err) => {
-        resolve({ success: false, error: err.message });
-      }
+      (completedPath) => resolve({ success: true, filePath: completedPath }),
+      (err) => resolve({ success: false, error: err.message })
     );
   });
+
+  if (!resultado.success) return resultado;
+
+  const { parseChecksumFile, verifyFileSha256 } = require('./updaterService.cjs');
+
+  let esperado = '';
+  try {
+    const respuesta = await net.fetch(`${downloadUrl}.sha256`, {
+      headers: { 'User-Agent': 'PortalCorreoDesktop-AutoUpdater' },
+    });
+    if (respuesta.ok) esperado = parseChecksumFile(await respuesta.text());
+  } catch (err) {
+    logger.warn('No se pudo obtener el checksum de la actualización', { error: err && err.message });
+  }
+
+  if (!esperado) {
+    try { fs.unlinkSync(resultado.filePath); } catch {}
+    return { success: false, error: 'No se pudo verificar la integridad del instalador descargado.' };
+  }
+
+  if (!verifyFileSha256(resultado.filePath, esperado)) {
+    try { fs.unlinkSync(resultado.filePath); } catch {}
+    return { success: false, error: 'El instalador descargado no coincide con el checksum publicado.' };
+  }
+
+  downloadedInstallerPath = resultado.filePath;
+  if (!event.sender.isDestroyed()) event.sender.send('pcd:update-downloaded', resultado.filePath);
+  return { success: true, filePath: resultado.filePath };
 });
 
 ipcMain.handle('pcd:install-update-now', async () => {

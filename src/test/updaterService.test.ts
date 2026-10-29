@@ -107,4 +107,40 @@ describe('updaterService (In-App Updater and GitHub Releases Client)', () => {
     expect(result.hasUpdate).toBe(false);
     expect(result.error).toContain('Network offline or DNS error');
   });
+
+  it('calcula el SHA-256 de un archivo descargado', async () => {
+    const { computeFileSha256 } = await import('../../electron/updaterService.cjs');
+
+    const fs = require('fs');
+    const os = require('os');
+    const path = require('path');
+    const archivo = path.join(os.tmpdir(), `pcd_hash_${Date.now()}.bin`);
+    fs.writeFileSync(archivo, 'contenido de prueba');
+
+    const hash = computeFileSha256(archivo);
+    expect(hash).toMatch(/^[a-f0-9]{64}$/);
+    fs.unlinkSync(archivo);
+  });
+
+  it('rechaza un archivo cuyo hash no coincide', async () => {
+    const { computeFileSha256, verifyFileSha256 } = await import('../../electron/updaterService.cjs');
+
+    const fs = require('fs');
+    const os = require('os');
+    const path = require('path');
+    const archivo = path.join(os.tmpdir(), `pcd_hash_bad_${Date.now()}.bin`);
+    fs.writeFileSync(archivo, 'contenido de prueba');
+
+    expect(verifyFileSha256(archivo, 'a'.repeat(64))).toBe(false);
+    const real = computeFileSha256(archivo);
+    expect(verifyFileSha256(archivo, real)).toBe(true);
+    fs.unlinkSync(archivo);
+  });
+
+  it('interpreta el archivo .sha256 publicado', async () => {
+    const { parseChecksumFile } = await import('../../electron/updaterService.cjs');
+
+    expect(parseChecksumFile('  ABCDEF123  Portal Correo Desktop Setup 1.0.0.exe\n')).toBe('abcdef123');
+    expect(parseChecksumFile('')).toBe('');
+  });
 });
