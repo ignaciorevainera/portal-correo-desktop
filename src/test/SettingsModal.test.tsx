@@ -8,6 +8,7 @@ describe('SettingsModal Component', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
+    delete (window as any).electronAPI;
   });
 
   it('renders settings dialog when open with single-scroll sections and system version', () => {
@@ -130,28 +131,31 @@ describe('SettingsModal Component', () => {
     expect(trayCheckbox).not.toBeChecked();
   });
 
-  it('renders corporate connection section and allows importing, testing, and clearing configuration', async () => {
-    vi.spyOn(electronClient, 'getCorporateConfig').mockResolvedValue({
-      isConfigured: true,
-      dbServer: 'sql.example.corp',
-      dbDatabase: 'PortalDB',
-      dbUser: 'operador_corp',
-      dbPort: 1433,
-    });
+  it('renders corporate diagnostics panel with gate status, code and bootstrap info', async () => {
+    (window as any).electronAPI = {
+      getDiagnostics: vi.fn().mockResolvedValue({
+        gate: {
+          status: 'READY',
+          code: 'AUTHORIZED',
+          message: 'ok',
+          source: 'unc',
+          configPath: '\\\\host\\share\\portal-correo-desktop.config.json',
+        },
+        bootstrap: {
+          found: true,
+          path: 'C:\\ProgramData\\portal-correo-desktop\\bootstrap.json',
+          configSource: 'unc',
+          retryIntervalMs: 15000,
+        },
+        environment: {
+          detectedDomain: 'dominio.interno',
+          isDomainJoined: true,
+          note: '',
+        },
+        packaged: true,
+      }),
+    };
 
-    const importSpy = vi.spyOn(electronClient, 'importCorporateConfigDialog').mockResolvedValue({
-      success: true,
-      config: {
-        isConfigured: true,
-        dbServer: 'imported.example.corp',
-        dbDatabase: 'ImportedDB',
-        dbUser: 'operador_imported',
-        dbPort: 1433,
-      },
-      status: { connected: true, mode: 'sql', server: 'imported.example.corp' },
-    });
-
-    const clearSpy = vi.spyOn(electronClient, 'clearCorporateConfig').mockResolvedValue({ success: true });
     const testSqlSpy = vi.spyOn(electronClient, 'testSqlConnection').mockResolvedValue({
       connected: true,
       mode: 'sql',
@@ -167,22 +171,20 @@ describe('SettingsModal Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/sql.example.corp/i)).toBeInTheDocument();
+      expect(screen.getByText('Estado:')).toBeInTheDocument();
     });
 
-    const importBtn = screen.getByRole('button', { name: /importar archivo/i });
-    expect(importBtn).toBeInTheDocument();
-    fireEvent.click(importBtn);
-    expect(importSpy).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Código:')).toBeInTheDocument();
+    expect(screen.getByText('Bootstrap:')).toBeInTheDocument();
+    expect(screen.getByText('READY')).toBeInTheDocument();
+    expect(screen.getByText('AUTHORIZED')).toBeInTheDocument();
+    expect(screen.getByText('encontrado')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /importar archivo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /eliminar configuración/i })).not.toBeInTheDocument();
 
     const testBtn = screen.getByRole('button', { name: /probar conexión/i });
     expect(testBtn).toBeInTheDocument();
     fireEvent.click(testBtn);
     expect(testSqlSpy).toHaveBeenCalledTimes(1);
-
-    const clearBtn = screen.getByRole('button', { name: /eliminar configuración/i });
-    expect(clearBtn).toBeInTheDocument();
-    fireEvent.click(clearBtn);
-    expect(clearSpy).toHaveBeenCalledTimes(1);
   });
 });

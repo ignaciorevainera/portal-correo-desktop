@@ -75,10 +75,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('pcd:update-downloaded', listener);
   },
   installUpdateNow: () => ipcRenderer.invoke('pcd:install-update-now'),
-  // Corporate Config channels
-  getCorporateConfig: () => ipcRenderer.invoke('pcd:get-corporate-config'),
-  importConfigDialog: () => ipcRenderer.invoke('pcd:import-config-dialog'),
-  importConfigContent: (content) => ipcRenderer.invoke('pcd:import-config-content', content),
-  clearCorporateConfig: () => ipcRenderer.invoke('pcd:clear-corporate-config'),
+  // SQL connection channel
   testSqlConnection: () => ipcRenderer.invoke('pcd:test-sql-connection'),
 });

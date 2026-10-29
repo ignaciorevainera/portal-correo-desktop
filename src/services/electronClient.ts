@@ -619,61 +619,6 @@ export async function installUpdateNow(): Promise<{ success: boolean; error?: st
 }
 
 
-export interface CorporateConfigSummary {
-  isConfigured: boolean;
-  dbServer?: string;
-  dbDatabase?: string;
-  dbUser?: string;
-  dbPort?: number;
-  corporateDomain?: string;
-}
-
-export interface ImportConfigResult {
-  success?: boolean;
-  canceled?: boolean;
-  error?: string;
-  config?: CorporateConfigSummary;
-  status?: BackendStatus;
-}
-
-export async function getCorporateConfig(): Promise<CorporateConfigSummary> {
-  const api = getElectronAPI();
-  if (api && api.getCorporateConfig) {
-    return await api.getCorporateConfig();
-  }
-  return {
-    isConfigured: false,
-    dbServer: '',
-    dbDatabase: '',
-    dbUser: '',
-    dbPort: 1433,
-  };
-}
-
-export async function importCorporateConfigDialog(): Promise<ImportConfigResult> {
-  const api = getElectronAPI();
-  if (api && api.importConfigDialog) {
-    return await api.importConfigDialog();
-  }
-  return { success: true, canceled: false };
-}
-
-export async function importCorporateConfigContent(contentStr: string): Promise<ImportConfigResult> {
-  const api = getElectronAPI();
-  if (api && api.importConfigContent) {
-    return await api.importConfigContent(contentStr);
-  }
-  return { success: true };
-}
-
-export async function clearCorporateConfig(): Promise<{ success: boolean; error?: string }> {
-  const api = getElectronAPI();
-  if (api && api.clearCorporateConfig) {
-    return await api.clearCorporateConfig();
-  }
-  return { success: true };
-}
-
 export async function testSqlConnection(): Promise<BackendStatus> {
   const api = getElectronAPI();
   if (api && api.testSqlConnection) {

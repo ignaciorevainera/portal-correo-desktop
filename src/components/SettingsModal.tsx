@@ -13,11 +13,9 @@ import {
   checkAppUpdates,
   startDownloadUpdate,
   installUpdateNow,
-  getCorporateConfig,
-  importCorporateConfigDialog,
-  clearCorporateConfig,
   testSqlConnection,
-  CorporateConfigSummary,
+  getDiagnostics,
+  DiagnosticsInfo,
   UpdateCheckResult,
   UpdateDownloadProgress,
   BackendStatus,
@@ -34,8 +32,6 @@ import {
   Server,
   Sparkles,
   Database,
-  Upload,
-  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -64,9 +60,7 @@ export function SettingsModal({
   );
 
   // Corporate Config State
-  const [corpConfig, setCorpConfig] = useState<CorporateConfigSummary | null>(
-    null,
-  );
+  const [diagnostics, setDiagnostics] = useState<DiagnosticsInfo | null>(null);
   const [isTestingConn, setIsTestingConn] = useState(false);
   const [connTestResult, setConnTestResult] = useState<BackendStatus | null>(
     null,
@@ -106,9 +100,9 @@ export function SettingsModal({
 
   useEffect(() => {
     if (isOpen) {
-      getCorporateConfig()
-        .then(setCorpConfig)
-        .catch(() => {});
+      getDiagnostics()
+        .then(setDiagnostics)
+        .catch(() => setDiagnostics(null));
     }
   }, [isOpen]);
 
@@ -147,24 +141,6 @@ export function SettingsModal({
     await installUpdateNow();
   };
 
-  const handleImportConfigFile = async () => {
-    try {
-      const res = await importCorporateConfigDialog();
-      if (res.canceled) return;
-      if (res.success && res.config) {
-        setCorpConfig(res.config);
-        setConnTestResult(res.status || null);
-        toast.success(
-          "Configuración corporativa importada y guardada con éxito.",
-        );
-      } else if (res.error) {
-        toast.error(`Error al importar: ${res.error}`);
-      }
-    } catch (err: any) {
-      toast.error(`Fallo de importación: ${err.message}`);
-    }
-  };
-
   const handleTestConnection = async () => {
     setIsTestingConn(true);
     try {
@@ -179,25 +155,6 @@ export function SettingsModal({
       }
     } finally {
       setIsTestingConn(false);
-    }
-  };
-
-  const handleClearConfig = async () => {
-    try {
-      await clearCorporateConfig();
-      setCorpConfig({
-        isConfigured: false,
-        dbServer: "",
-        dbDatabase: "",
-        dbUser: "",
-        dbPort: 1433,
-      });
-      setConnTestResult(null);
-      toast.info(
-        "Configuración eliminada. La aplicación funcionará en modo Local / Offline.",
-      );
-    } catch (err: any) {
-      toast.error(`Error al eliminar configuración: ${err.message}`);
     }
   };
 
@@ -374,15 +331,13 @@ export function SettingsModal({
                 </div>
                 <Badge
                   variant={
-                    backendConnected ||
-                    (corpConfig?.isConfigured && connTestResult?.connected)
+                    backendConnected || connTestResult?.connected
                       ? "default"
                       : "secondary"
                   }
                   className="text-[11px] font-mono"
                 >
-                  {backendConnected ||
-                  (corpConfig?.isConfigured && connTestResult?.connected)
+                  {backendConnected || connTestResult?.connected
                     ? "SQL Online"
                     : "Modo Offline / Local"}
                 </Badge>
@@ -390,80 +345,47 @@ export function SettingsModal({
 
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>
-                  La configuración corporativa permite acceder al inventario
-                  histórico de terminales de Correo Argentino.
+                  La configuración se lee de la red corporativa en cada arranque.
+                  No se guarda en este equipo.
                 </p>
-                {corpConfig?.isConfigured ? (
-                  <div className="mt-2 p-2.5 rounded-md bg-background/60 border border-border/60 font-mono text-[11px] space-y-1">
-                    <div>
-                      <span className="text-muted-foreground">Servidor:</span>{" "}
-                      <strong>{corpConfig.dbServer}</strong>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">
-                        Base de Datos:
-                      </span>{" "}
-                      {corpConfig.dbDatabase || "Por defecto"}
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Usuario:</span>{" "}
-                      {corpConfig.dbUser}
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Puerto:</span>{" "}
-                      {corpConfig.dbPort || 1433}
-                    </div>
+                <div className="mt-2 p-2.5 rounded-md bg-background/60 border border-border/60 font-mono text-[11px] space-y-1">
+                  <div>
+                    <span className="text-muted-foreground">Estado:</span>{" "}
+                    <strong>{diagnostics?.gate.status || "desconocido"}</strong>
                   </div>
-                ) : (
-                  <div className="p-2.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px]">
-                    No hay archivo de configuración corporativo importado. Podés
-                    seguir usando las herramientas de red (Ping, VNC, MSRA, DNS,
-                    Escáner) normalmente.
+                  <div>
+                    <span className="text-muted-foreground">Código:</span>{" "}
+                    {diagnostics?.gate.code || "—"}
                   </div>
-                )}
+                  <div className="break-all">
+                    <span className="text-muted-foreground">Origen:</span>{" "}
+                    {diagnostics?.gate.configPath || "—"}
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Bootstrap:</span>{" "}
+                    {diagnostics?.bootstrap.found ? "encontrado" : "no encontrado"}
+                  </div>
+                  <div className="break-all">
+                    <span className="text-muted-foreground">Ruta bootstrap:</span>{" "}
+                    {diagnostics?.bootstrap.path || "—"}
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 pt-2">
                 <Button
                   type="button"
                   size="sm"
-                  onClick={handleImportConfigFile}
+                  variant="outline"
+                  onClick={handleTestConnection}
+                  disabled={isTestingConn || diagnostics?.gate.status !== "READY"}
                   className="text-xs font-semibold gap-1.5 h-8 cursor-pointer"
                 >
-                  <Upload className="h-3.5 w-3.5" />
-                  <span>Importar archivo de configuración (.json / .env)</span>
+                  <RefreshCw
+                    className={`h-3.5 w-3.5 ${isTestingConn ? "animate-spin" : ""}`}
+                  />
+                  <span>{isTestingConn ? "Probando..." : "Probar conexión"}</span>
                 </Button>
-
-                {corpConfig?.isConfigured && (
-                  <>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={handleTestConnection}
-                      disabled={isTestingConn}
-                      className="text-xs font-semibold gap-1.5 h-8 cursor-pointer"
-                    >
-                      <RefreshCw
-                        className={`h-3.5 w-3.5 ${isTestingConn ? "animate-spin" : ""}`}
-                      />
-                      <span>
-                        {isTestingConn ? "Probando..." : "Probar conexión"}
-                      </span>
-                    </Button>
-
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={handleClearConfig}
-                      className="text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1.5 h-8 cursor-pointer ml-auto"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      <span>Eliminar configuración</span>
-                    </Button>
-                  </>
-                )}
               </div>
             </div>
           </section>
