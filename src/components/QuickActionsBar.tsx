@@ -17,7 +17,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Kbd } from "@/components/ui/kbd";
 import { toast } from "sonner";
-import { RemoteProbeResult, DiagnosticCommandType } from "../services/electronClient";
+import {
+  RemoteProbeResult,
+  DiagnosticCommandType,
+} from "../services/electronClient";
 
 export interface ActionFeedbackState {
   type: "success" | "error" | "warning" | "info";
@@ -70,7 +73,10 @@ export function QuickActionsBar({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
       if (diagRef.current && !diagRef.current.contains(event.target as Node)) {
@@ -107,7 +113,9 @@ export function QuickActionsBar({
 
   if (isProbingRemote) {
     ctaVariant = "outline";
-    ctaIcon = <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
+    ctaIcon = (
+      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+    );
     ctaLabel = "Detectando acceso...";
   } else if (recommendedMethod === "msra") {
     ctaVariant = "secondary";
@@ -119,133 +127,148 @@ export function QuickActionsBar({
     ctaLabel = "Sin Acceso (Reintentar)";
   }
 
-  const vncPortOpen = Boolean(remoteProbe?.port5901Open || remoteProbe?.port5900Open);
+  const vncPortOpen = Boolean(
+    remoteProbe?.port5901Open || remoteProbe?.port5900Open,
+  );
   const msraOpen = Boolean(remoteProbe?.msraAvailable);
 
   return (
-    <div className="w-full flex flex-col gap-2">
-      {/* Grilla principal de 3 columnas para evitar truncamientos */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
-        {/* Columna 1: Split Button Inteligente de Conexión Remota */}
-        <div className="relative flex items-center w-full" ref={dropdownRef}>
-          <div className="flex w-full rounded-md shadow-xs">
-            <Button
-              type="button"
-              variant={ctaVariant}
-              size="sm"
-              onClick={handlePrimaryRemoteClick}
-              aria-label="Conexión Remota Inteligente"
-              title="Conectar automáticamente según puertos disponibles (Atajo F2)"
-              className="flex-1 rounded-r-none border-r border-primary-foreground/20 text-xs font-semibold cursor-pointer truncate"
-            >
-              {ctaIcon}
-              <span className="truncate">{ctaLabel}</span>
-              {!isProbingRemote && (
-                <Kbd className="hidden md:inline-block ml-1">F2</Kbd>
-              )}
-            </Button>
-
-            <Button
-              type="button"
-              variant={ctaVariant}
-              size="sm"
-              onClick={() => setIsDropdownOpen((prev) => !prev)}
-              aria-label="Opciones de conexión remota"
-              title="Opciones manuales y estado de puertos"
-              className="rounded-l-none px-2 cursor-pointer border-l-0"
-            >
-              <ChevronDown
-                className={`h-3.5 w-3.5 transition-transform ${
-                  isDropdownOpen ? "rotate-180" : ""
-                }`}
-              />
-            </Button>
-          </div>
-
-          {/* Menú Desplegable con Diagnóstico en Vivo y Opciones Forzadas */}
-          {isDropdownOpen && (
-            <div className="absolute top-full left-0 mt-1 w-72 p-2 bg-popover border border-border rounded-md shadow-lg z-50 flex flex-col gap-2 text-popover-foreground">
-              {/* Resumen de puertos */}
-              <div className="flex items-center justify-between gap-1 text-[11px] p-1.5 rounded bg-muted/60 border border-border">
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground font-medium">5901/5900:</span>
-                  <Badge
-                    variant={vncPortOpen ? "default" : "secondary"}
-                    className="text-[10px] px-1 py-0 h-4"
-                  >
-                    {remoteProbe ? (vncPortOpen ? "Abierto" : "Cerrado") : "Detectando"}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground font-medium">3389/135:</span>
-                  <Badge
-                    variant={msraOpen ? "default" : "secondary"}
-                    className="text-[10px] px-1 py-0 h-4"
-                  >
-                    {remoteProbe ? (msraOpen ? "Abierto" : "Cerrado") : "Detectando"}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Botón Forzar VNC */}
+    <div className="w-full flex flex-col gap-1">
+      {/* Barra de Acciones Rápida y Adaptativa: Botones juntos con gap-1 */}
+      <div className="flex flex-wrap items-center justify-between gap-1 w-full">
+        {/* Grupo de Botones de Acción (Conexión Remota, Ping, -t, Diag, Subred) */}
+        <div className="flex items-center flex-wrap gap-1 flex-1 min-w-0">
+          {/* Split Button Inteligente de Conexión Remota */}
+          <div className="relative flex items-center min-w-[155px] max-w-[210px] flex-1" ref={dropdownRef}>
+            <div className="flex w-full rounded-md shadow-xs">
               <Button
                 type="button"
-                variant="ghost"
+                variant={ctaVariant}
                 size="sm"
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  handleAction("VNC Viewer", onLaunchVnc);
-                }}
-                aria-label="Conectar por VNC Viewer"
-                className="justify-between text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                onClick={handlePrimaryRemoteClick}
+                aria-label="Conexión Remota Inteligente"
+                title="Conectar automáticamente según puertos disponibles (Atajo F2)"
+                className="flex-1 rounded-r-none text-xs font-semibold cursor-pointer truncate h-8 px-2.5"
               >
-                <span className="flex items-center gap-1.5">
-                  <MonitorPlay className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>Forzar VNC Viewer</span>
-                </span>
-                <Kbd>F2</Kbd>
+                {ctaIcon}
+                <span className="truncate">{ctaLabel}</span>
+                {!isProbingRemote && (
+                  <Kbd className="hidden md:inline-block ml-1">F2</Kbd>
+                )}
               </Button>
 
-              {/* Botón Forzar MSRA */}
               <Button
                 type="button"
-                variant="ghost"
+                variant={ctaVariant}
                 size="sm"
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  handleAction("Asistencia Remota MSRA", onLaunchMsra);
-                }}
-                aria-label="Iniciar Asistencia MSRA"
-                className="justify-between text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                onClick={() => setIsDropdownOpen((prev) => !prev)}
+                aria-label="Opciones de conexión remota"
+                title="Opciones manuales y estado de puertos"
+                className="rounded-l-none px-1.5 cursor-pointer border-l-0 h-8"
               >
-                <span className="flex items-center gap-1.5">
-                  <HelpCircle className="h-3.5 w-3.5 text-blue-500" />
-                  <span>Forzar Asistencia MSRA</span>
-                </span>
-                <Kbd>F3</Kbd>
-              </Button>
-
-              {/* Botón Re-verificar */}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  onReProbeRemote?.();
-                }}
-                aria-label="Re-verificar puertos"
-                className="justify-center text-xs w-full cursor-pointer h-7 text-muted-foreground hover:text-foreground mt-0.5"
-              >
-                <RotateCcw className="h-3 w-3 mr-1" />
-                <span>Re-verificar puertos</span>
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-transform ${
+                    isDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
               </Button>
             </div>
-          )}
-        </div>
 
-        {/* Columna 2: Grupo Ping 2:1 + Menú Diagnóstico */}
-        <div className="flex items-center gap-1">
+            {/* Menú Desplegable con Diagnóstico en Vivo y Opciones Forzadas */}
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 w-72 p-2 bg-popover border border-border rounded-md shadow-lg z-50 flex flex-col gap-2 text-popover-foreground">
+                {/* Resumen de puertos */}
+                <div className="flex items-center justify-between gap-1 text-[11px] p-1.5 rounded bg-muted/60 border border-border">
+                  <div className="flex items-center gap-1">
+                    <span className="text-muted-foreground font-medium">
+                      5901/5900:
+                    </span>
+                    <Badge
+                      variant={vncPortOpen ? "default" : "secondary"}
+                      className="text-[10px] px-1 py-0 h-4"
+                    >
+                      {remoteProbe
+                        ? vncPortOpen
+                          ? "Abierto"
+                          : "Cerrado"
+                        : "Detectando"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-muted-foreground font-medium">
+                      3389/135:
+                    </span>
+                    <Badge
+                      variant={msraOpen ? "default" : "secondary"}
+                      className="text-[10px] px-1 py-0 h-4"
+                    >
+                      {remoteProbe
+                        ? msraOpen
+                          ? "Abierto"
+                          : "Cerrado"
+                        : "Detectando"}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Botón Forzar VNC */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    handleAction("VNC Viewer", onLaunchVnc);
+                  }}
+                  aria-label="Conectar por VNC Viewer"
+                  className="justify-between text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <MonitorPlay className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>Forzar VNC Viewer</span>
+                  </span>
+                  <Kbd>F2</Kbd>
+                </Button>
+
+                {/* Botón Forzar MSRA */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    handleAction("Asistencia Remota MSRA", onLaunchMsra);
+                  }}
+                  aria-label="Iniciar Asistencia MSRA"
+                  className="justify-between text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <HelpCircle className="h-3.5 w-3.5 text-blue-500" />
+                    <span>Forzar Asistencia MSRA</span>
+                  </span>
+                  <Kbd>F3</Kbd>
+                </Button>
+
+                {/* Botón Re-verificar */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    onReProbeRemote?.();
+                  }}
+                  aria-label="Re-verificar puertos"
+                  className="justify-center text-xs w-full cursor-pointer h-7 text-muted-foreground hover:text-foreground mt-0.5"
+                >
+                  <RotateCcw className="h-3 w-3 mr-1" />
+                  <span>Re-verificar puertos</span>
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Botón de Ping con el mismo ancho que Conexión Remota */}
           <Button
             type="button"
             variant={isPinging ? "destructive" : "outline"}
@@ -253,21 +276,24 @@ export function QuickActionsBar({
             onClick={onTogglePing}
             aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
             title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
-            className={`flex-[2] text-xs font-semibold cursor-pointer ${
+            className={`min-w-[155px] max-w-[210px] flex-1 text-xs font-semibold cursor-pointer h-8 px-2.5 truncate ${
               isPinging
                 ? "animate-pulse"
                 : "bg-muted text-foreground border-border hover:bg-muted/80"
             }`}
           >
             <Activity
-              className={`h-3.5 w-3.5 ${
-                isPinging ? "animate-pulse" : "text-emerald-600 dark:text-emerald-400 font-bold"
+              className={`h-3.5 w-3.5 shrink-0 ${
+                isPinging
+                  ? "animate-pulse"
+                  : "text-emerald-600 dark:text-emerald-400 font-bold"
               }`}
             />
-            <span>{isPinging ? "Detener" : "Ping"}</span>
-            <Kbd className="hidden md:inline-block ml-0.5">F4</Kbd>
+            <span className="truncate">{isPinging ? "Detener" : "Ping"}</span>
+            <Kbd className="hidden md:inline-block ml-auto">F4</Kbd>
           </Button>
 
+          {/* Botón Ping continuo -t */}
           <Button
             type="button"
             variant="outline"
@@ -275,7 +301,7 @@ export function QuickActionsBar({
             onClick={() => onLaunchPingInfinite?.()}
             aria-label="Iniciar Ping continuo -t"
             title="Ejecutar Ping infinito / continuo (-t)"
-            className="flex-1 px-1.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer"
+            className="h-8 px-2 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer shrink-0"
           >
             <span className="font-mono text-[11px] font-bold">-t</span>
           </Button>
@@ -289,7 +315,7 @@ export function QuickActionsBar({
               onClick={() => setIsDiagOpen((prev) => !prev)}
               aria-label="Menú de diagnóstico de red"
               title="Diagnóstico nativo (Nbtstat, Tracert, ARP)"
-              className="px-2 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer flex items-center gap-1"
+              className="h-8 px-2 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer flex items-center gap-1 shrink-0"
             >
               <Network className="h-3.5 w-3.5 text-cyan-500" />
               <span className="hidden xl:inline text-[11px]">Diag</span>
@@ -308,7 +334,7 @@ export function QuickActionsBar({
                   size="sm"
                   onClick={() => {
                     setIsDiagOpen(false);
-                    onRunDiagnostic?.('nbtstat');
+                    onRunDiagnostic?.("nbtstat");
                   }}
                   aria-label="Ejecutar Nbtstat"
                   className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
@@ -316,7 +342,9 @@ export function QuickActionsBar({
                   <span className="flex items-center gap-2">
                     <Layers className="h-3.5 w-3.5 text-amber-500" />
                     <span className="font-mono text-[11px]">nbtstat -A</span>
-                    <span className="text-[10px] text-muted-foreground ml-auto">(NetBIOS)</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">
+                      (NetBIOS)
+                    </span>
                   </span>
                 </Button>
 
@@ -326,7 +354,7 @@ export function QuickActionsBar({
                   size="sm"
                   onClick={() => {
                     setIsDiagOpen(false);
-                    onRunDiagnostic?.('tracert');
+                    onRunDiagnostic?.("tracert");
                   }}
                   aria-label="Ejecutar Tracert"
                   className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
@@ -334,7 +362,9 @@ export function QuickActionsBar({
                   <span className="flex items-center gap-2">
                     <Route className="h-3.5 w-3.5 text-emerald-500" />
                     <span className="font-mono text-[11px]">tracert -d</span>
-                    <span className="text-[10px] text-muted-foreground ml-auto">(6 saltos)</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">
+                      (6 saltos)
+                    </span>
                   </span>
                 </Button>
 
@@ -344,7 +374,7 @@ export function QuickActionsBar({
                   size="sm"
                   onClick={() => {
                     setIsDiagOpen(false);
-                    onRunDiagnostic?.('arp');
+                    onRunDiagnostic?.("arp");
                   }}
                   aria-label="Ejecutar ARP"
                   className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
@@ -352,13 +382,16 @@ export function QuickActionsBar({
                   <span className="flex items-center gap-2">
                     <Network className="h-3.5 w-3.5 text-cyan-500" />
                     <span className="font-mono text-[11px]">arp -a</span>
-                    <span className="text-[10px] text-muted-foreground ml-auto">(Física)</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">
+                      (Física)
+                    </span>
                   </span>
                 </Button>
               </div>
             )}
           </div>
-          {/* Bot�n de Escanear Subred */}
+
+          {/* Botón de Escanear Subred */}
           {onOpenSubnetScanner && (
             <Button
               type="button"
@@ -375,16 +408,17 @@ export function QuickActionsBar({
           )}
         </div>
 
-        {/* Columna 3: Tarjeta de Uptime con Refresco */}
-        <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-muted/60 border border-border text-xs h-8">
-          <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium shrink-0">
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" /> Uptime
+        {/* Columna 3: Tarjeta de Uptime compacta con Refresco */}
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0">
+          <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <span className="text-muted-foreground text-[10px] font-medium hidden sm:inline">
+            Uptime:
           </span>
           <span
-            className="font-mono font-semibold text-foreground truncate max-w-28 text-[11px]"
+            className="font-mono font-semibold text-foreground truncate max-w-[100px] text-[11px]"
             title={terminal.uptimeText}
           >
-            {terminal.uptimeText}
+            {terminal.uptimeText || "N/D"}
           </span>
           {onRefreshUptime && (
             <Button
@@ -395,9 +429,11 @@ export function QuickActionsBar({
               disabled={isRefreshingUptime}
               aria-label="Refrescar Uptime"
               title="Refrescar tiempo de actividad"
-              className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+              className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground cursor-pointer shrink-0 ml-0.5"
             >
-              <RotateCcw className={`h-3 w-3 ${isRefreshingUptime ? 'animate-spin text-primary' : ''}`} />
+              <RotateCcw
+                className={`h-3 w-3 ${isRefreshingUptime ? "animate-spin text-primary" : ""}`}
+              />
             </Button>
           )}
         </div>

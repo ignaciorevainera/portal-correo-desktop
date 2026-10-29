@@ -49,9 +49,10 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
     expect(pingInfiniteBtn).toBeInTheDocument();
     expect(screen.getByText(/uptime/i)).toBeInTheDocument();
 
-    // Ratio 2:1 check
-    expect(pingBtn.className).toContain('flex-[2]');
-    expect(pingInfiniteBtn.className).toContain('flex-1');
+    // Width footprint check: Ping button has same flex footprint as remote connection
+    expect(pingBtn.className).toContain('min-w-[155px]');
+    expect(pingBtn.className).toContain('max-w-[210px]');
+    expect(pingBtn.className).toContain('flex-1');
 
     fireEvent.click(pingBtn);
     expect(onTogglePing).toHaveBeenCalledTimes(1);
