@@ -105,4 +105,44 @@ describe('securityGate (máquina de estados sobre el ConfigProvider)', () => {
     expect(info.detectedDomain).toBe('dominio.interno');
     expect(info.isDomainJoined).toBe(true);
   });
+
+  it('no deja el store con datos viejos si el proveedor devuelve config vacía', async () => {
+    configManager.setConfig(CONFIG_VALIDA);
+
+    const result = await securityGate.evaluateGate({ provider: providerQueDevuelve(undefined) });
+
+    expect(result.status).toBe('NO_CONFIG');
+    expect(result.code).toBe('BAD_CONFIG');
+    expect(configManager.getConfig().dbServer).toBe('');
+  });
+
+  it('no deja el store con datos viejos si el proveedor devuelve config parcial', async () => {
+    configManager.setConfig(CONFIG_VALIDA);
+
+    const result = await securityGate.evaluateGate({ provider: providerQueDevuelve({ dbPassword: 'nueva' }) });
+
+    expect(result.status).toBe('NO_CONFIG');
+    expect(configManager.getConfig().dbServer).toBe('');
+  });
+
+  it('no lanza si describe() explota y limpia el store', async () => {
+    configManager.setConfig(CONFIG_VALIDA);
+
+    const provider = {
+      source: 'unc',
+      describe: () => {
+        throw new Error('describe explosivo');
+      },
+      getConfig: async () => {
+        throw new Error('sin red');
+      },
+      getVncSecret: async () => '',
+    };
+
+    const result = await securityGate.evaluateGate({ provider });
+
+    expect(result.status).toBe('BLOCKED');
+    expect(result.code).toBe('UNKNOWN');
+    expect(configManager.getConfig().dbServer).toBe('');
+  });
 });

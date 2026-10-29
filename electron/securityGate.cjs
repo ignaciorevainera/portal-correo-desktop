@@ -34,6 +34,39 @@ function describeEnvironment(env = process.env) {
   };
 }
 
+function safeDescribe(provider) {
+  try {
+    const described = typeof provider.describe === 'function' ? provider.describe() : null;
+    if (described && typeof described === 'object') {
+      return {
+        source: String(described.source || provider.source || 'none'),
+        target: String(described.target || ''),
+      };
+    }
+  } catch {
+    // Un proveedor defectuoso no debe tumbar el gate.
+  }
+  return { source: String((provider && provider.source) || 'none'), target: '' };
+}
+
+function isUsableConfig(config) {
+  return Boolean(
+    config &&
+      typeof config === 'object' &&
+      !Array.isArray(config) &&
+      String(config.dbServer || '').trim() &&
+      String(config.dbUser || '').trim()
+  );
+}
+
+function safeLog(logger, level, message, meta) {
+  try {
+    if (logger && typeof logger[level] === 'function') logger[level](message, meta);
+  } catch {
+    // El logging nunca debe cambiar el veredicto del gate.
+  }
+}
+
 async function evaluateGate(options = {}) {
   const { provider, store = configManager, logger = null, env = process.env } = options;
 
@@ -49,12 +82,19 @@ async function evaluateGate(options = {}) {
     };
   }
 
-  const described = typeof provider.describe === 'function' ? provider.describe() : { source: provider.source, target: '' };
+  const described = safeDescribe(provider);
 
   try {
     const config = await provider.getConfig();
+    if (!isUsableConfig(config)) {
+      throw new ConfigError('BAD_CONFIG', 'El proveedor devolvió una configuración vacía o incompleta');
+    }
+
+    store.resetConfig();
     store.setConfig(config);
-    if (logger) logger.info('Gate autorizado', { source: described.source });
+
+    safeLog(logger, 'info', 'Gate autorizado', { source: described.source });
+
     return {
       status: STATUS.READY,
       code: 'AUTHORIZED',
@@ -73,9 +113,7 @@ async function evaluateGate(options = {}) {
         ? STATUS.BLOCKED
         : STATUS.BLOCKED;
 
-    if (logger) {
-      logger.warn('Gate bloqueado', { code, detail: err && err.message, source: described.source });
-    }
+    safeLog(logger, 'warn', 'Gate bloqueado', { code, detail: err && err.message, source: described.source });
 
     return {
       status,
