@@ -114,3 +114,58 @@ declare module '../../electron/updaterService.cjs' {
     onError?: (err: Error) => void
   ): void;
 }
+
+
+declare module '../../electron/logger.cjs' {
+  export function redact(value: any, depth?: number): any;
+  export function formatLine(level: string, scope: string, message: string, meta?: Record<string, any>): string;
+  export function createLogger(options?: { scope?: string; sink?: any; level?: string }): {
+    debug: (message: string, meta?: Record<string, any>) => void;
+    info: (message: string, meta?: Record<string, any>) => void;
+    warn: (message: string, meta?: Record<string, any>) => void;
+    error: (message: string, meta?: Record<string, any>) => void;
+    child: (scope: string) => any;
+  };
+}
+
+declare module '../../electron/bootstrap.cjs' {
+  export const DEFAULTS: {
+    configSource: string;
+    uncConfigPath: string;
+    updateFeed: string;
+    updateMirror: string;
+    retryIntervalMs: number;
+  };
+  export function getBootstrapPath(programDataDir: string): string;
+  export function normalizeBootstrap(raw: any, defaults?: any): any;
+  export function loadBootstrap(options?: any): any;
+}
+
+declare module '../../electron/configProvider.cjs' {
+  export class ConfigError extends Error {
+    code: string;
+    details: Record<string, any>;
+  }
+  export function mapFsError(err: any): string;
+  export function validateCorporateConfig(raw: any): any;
+  export class UncConfigProvider {
+    constructor(options: { configPath: string; readFile?: any; logger?: any });
+    source: string;
+    describe(): { source: string; target: string };
+    getConfig(): Promise<any>;
+    getVncSecret(): Promise<string>;
+  }
+  export class DevEnvConfigProvider {
+    constructor(options?: { env?: any; localConfigPath?: string });
+    source: string;
+    describe(): { source: string; target: string };
+    getConfig(): Promise<any>;
+    getVncSecret(): Promise<string>;
+  }
+  export function createConfigProvider(bootstrapConfig: any, options?: any): any;
+}
+
+declare module '../../electron/migration.cjs' {
+  export function getLegacyTargets(options: any): string[];
+  export function migrateLegacyConfig(options?: any): { removed: string[] };
+}

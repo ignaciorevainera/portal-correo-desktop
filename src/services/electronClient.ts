@@ -1,14 +1,43 @@
 import { TerminalData } from '../types/terminal';
 import { findTerminalByQuery } from './terminalService';
 
-export interface SecurityGateStatus {
-  authorized: boolean;
-  configured: boolean;
-  domainMatched: boolean;
-  networkReachable: boolean;
-  detectedDomain: string;
-  reason: 'AUTHORIZED' | 'UNCONFIGURED' | 'OUTSIDE_CORPORATE_NETWORK' | 'UNLOCK_ERROR';
+export type GateStatusCode =
+  | 'AUTHORIZED'
+  | 'NO_LAN_DNS'
+  | 'NO_LAN_ROUTE'
+  | 'NO_LAN_TIMEOUT'
+  | 'NO_PERMISSION'
+  | 'NO_CONFIG'
+  | 'BAD_CONFIG'
+  | 'UNKNOWN';
+
+export interface GateStatus {
+  status: 'READY' | 'BLOCKED' | 'NO_CONFIG';
+  code: GateStatusCode;
   message: string;
+  source: 'unc' | 'http' | 'dev' | 'none';
+  configPath: string;
+  environment?: {
+    detectedDomain: string;
+    isDomainJoined: boolean;
+    note: string;
+  };
+}
+
+export interface DiagnosticsInfo {
+  gate: GateStatus;
+  bootstrap: {
+    found: boolean;
+    path: string;
+    configSource: string;
+    retryIntervalMs: number;
+  };
+  environment: {
+    detectedDomain: string;
+    isDomainJoined: boolean;
+    note: string;
+  };
+  packaged: boolean;
 }
 
 export interface BackendStatus {
@@ -52,65 +81,62 @@ function getElectronAPI() {
   return null;
 }
 
-export async function checkSecurityGateStatus(): Promise<SecurityGateStatus> {
+export async function checkSecurityGateStatus(): Promise<GateStatus> {
   const api = getElectronAPI();
   if (api && api.getSecurityStatus) {
     try {
       return await api.getSecurityStatus();
     } catch (err: any) {
       return {
-        authorized: false,
-        configured: false,
-        domainMatched: false,
-        networkReachable: false,
-        detectedDomain: 'UNKNOWN',
-        reason: 'UNLOCK_ERROR',
-        message: err.message || 'Error al verificar el candado de seguridad corporativo',
+        status: 'BLOCKED',
+        code: 'UNKNOWN',
+        message: err.message || 'Error al verificar el acceso a la configuración corporativa',
+        source: 'none',
+        configPath: '',
       };
     }
   }
 
   return {
-    authorized: true,
-    configured: true,
-    domainMatched: true,
-    networkReachable: true,
-    detectedDomain: 'DEV-MODE',
-    reason: 'AUTHORIZED',
+    status: 'READY',
+    code: 'AUTHORIZED',
     message: 'Modo de prueba en navegador web',
+    source: 'dev',
+    configPath: '',
   };
 }
 
-export async function unlockCorporateSecurity(
-  configPath: string,
-  corporateKey: string
-): Promise<SecurityGateStatus> {
+export async function retrySecurityGate(): Promise<GateStatus> {
   const api = getElectronAPI();
-  if (api && api.unlockSecurity) {
+  if (api && api.retrySecurity) {
     try {
-      return await api.unlockSecurity(configPath, corporateKey);
+      return await api.retrySecurity();
     } catch (err: any) {
       return {
-        authorized: false,
-        configured: false,
-        domainMatched: false,
-        networkReachable: false,
-        detectedDomain: 'UNKNOWN',
-        reason: 'UNLOCK_ERROR',
-        message: err.message || 'No se pudo desbloquear la configuración corporativa',
+        status: 'BLOCKED',
+        code: 'UNKNOWN',
+        message: err.message || 'Error al reintentar el acceso',
+        source: 'none',
+        configPath: '',
       };
     }
   }
 
   return {
-    authorized: true,
-    configured: true,
-    domainMatched: true,
-    networkReachable: true,
-    detectedDomain: 'DEV-MODE',
-    reason: 'AUTHORIZED',
-    message: 'Configuración desbloqueada en modo desarrollo',
+    status: 'READY',
+    code: 'AUTHORIZED',
+    message: 'Modo de prueba en navegador web',
+    source: 'dev',
+    configPath: '',
   };
+}
+
+export async function getDiagnostics(): Promise<DiagnosticsInfo | null> {
+  const api = getElectronAPI();
+  if (api && api.getDiagnostics) {
+    return await api.getDiagnostics();
+  }
+  return null;
 }
 
 export async function checkBackendStatus(): Promise<BackendStatus> {
