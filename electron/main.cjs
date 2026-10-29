@@ -9,6 +9,10 @@ const { parseClipboardQuery } = require('./clipboardParser.cjs');
 const { generateSubnetRange, scanSubnetBatch } = require('./subnetScanner.cjs');
 const hostnameResolver = require('./hostnameResolver.cjs');
 const { checkForUpdates, downloadUpdateFile } = require('./updaterService.cjs');
+const { createLogger } = require('./logger.cjs');
+const { loadBootstrap, DEFAULTS: BOOTSTRAP_DEFAULTS } = require('./bootstrap.cjs');
+const { createConfigProvider, ConfigError } = require('./configProvider.cjs');
+const { evaluateGate, describeEnvironment } = require('./securityGate.cjs');
 
 // ---------------------------------------------------------------------------
 // Modo de renderizado (GPU vs. software)
@@ -52,43 +56,82 @@ let currentPingSessionId = 0;
 let activeSubnetAbortController = null;
 let downloadedInstallerPath = null;
 
-function getUserDataConfigPath() {
-  return path.join(app.getPath('userData'), 'cmda.config.json');
-}
+app.isQuiting = false;
 
-function getAdjacentExeConfigPath() {
-  return path.join(path.dirname(process.execPath), 'cmda.config.json');
-}
+const logger = createLogger({ scope: 'main' });
 
-function autoDiscoverCorporateConfig() {
-  // Check if installer injected an embedded configuration in the application bundle
-  const embeddedPath = path.join(__dirname, 'embedded.config.json');
-  if (fs.existsSync(embeddedPath)) {
-    try {
-      const destUserData = getUserDataConfigPath();
-      if (!fs.existsSync(destUserData)) {
-        fs.copyFileSync(embeddedPath, destUserData);
-        console.log('[CorporateConfig] Embedded config initialized into UserData');
-      }
-    } catch (e) {
-      console.warn('[CorporateConfig] Failed to copy embedded config:', e.message);
-    }
-  }
+let gateState = null;
+let gateProvider = null;
+let bootstrapConfig = null;
+let bootstrapPath = '';
+
+function resolvePackagedBootstrapDefaults() {
+  const defaultsPath = path.join(__dirname, 'bootstrap.default.json');
   try {
-    const loaded = configManager.loadFromHierarchicalPaths({
-      appDataPath: getUserDataConfigPath(),
-      exeDirPath: getAdjacentExeConfigPath(),
-    });
-    if (loaded && loaded.dbServer) {
-      console.log('[CorporateConfig] Autodiscovered config successfully');
+    if (fs.existsSync(defaultsPath)) {
+      return JSON.parse(fs.readFileSync(defaultsPath, 'utf8'));
     }
   } catch (err) {
-    console.warn('[CorporateConfig] Autodiscovery error:', err.message);
+    logger.warn('No se pudo leer bootstrap.default.json', { error: err && err.message });
+  }
+  return undefined;
+}
+
+function initializeBootstrap() {
+  const programDataDir = process.env.PROGRAMDATA || path.join(app.getPath('appData'), '..');
+  const packagedDefaults = resolvePackagedBootstrapDefaults();
+  bootstrapConfig = loadBootstrap({
+    programDataDir,
+    exeDir: path.dirname(process.execPath),
+    defaults: packagedDefaults ? { ...BOOTSTRAP_DEFAULTS, ...packagedDefaults } : undefined,
+  });
+  bootstrapPath = bootstrapConfig._path || '';
+  logger.info('Bootstrap cargado', {
+    found: bootstrapConfig._found,
+    path: bootstrapPath,
+    configSource: bootstrapConfig.configSource,
+  });
+}
+
+async function runGate() {
+  try {
+    if (!gateProvider) {
+      gateProvider = createConfigProvider(bootstrapConfig, {
+        isPackaged: app.isPackaged,
+        logger,
+        localConfigPath: path.join(path.resolve(__dirname, '..'), 'portal-correo-desktop.config.local.json'),
+      });
+    }
+    gateState = await evaluateGate({ provider: gateProvider, logger });
+  } catch (err) {
+    const code = err instanceof ConfigError ? err.code : 'NO_CONFIG';
+    gateState = {
+      status: code === 'NO_CONFIG' ? 'NO_CONFIG' : 'BLOCKED',
+      code,
+      message: err && err.message ? err.message : 'No se pudo verificar la configuración corporativa',
+      source: 'none',
+      configPath: bootstrapPath,
+      environment: describeEnvironment(),
+    };
+  }
+  logger.info('Estado del gate', { status: gateState.status, code: gateState.code });
+  return gateState;
+}
+
+async function resolveVncSecret() {
+  try {
+    if (!gateProvider) return null;
+    return await gateProvider.getVncSecret();
+  } catch (err) {
+    logger.warn('Clave VNC no disponible', { code: err && err.code });
+    return null;
   }
 }
-autoDiscoverCorporateConfig();
 
-app.isQuiting = false;
+app.whenReady().then(async () => {
+  initializeBootstrap();
+  await runGate();
+});
 
 function getAppIconPath() {
   const winIco = path.join(__dirname, '../public/windows/icon.ico');
@@ -225,12 +268,12 @@ function createWindow() {
 }
 
 // Window Controls & External Link IPC Handlers
-ipcMain.handle('cmda:window-minimize', (event) => {
+ipcMain.handle('pcd:window-minimize', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win) win.minimize();
 });
 
-ipcMain.handle('cmda:window-maximize', (event) => {
+ipcMain.handle('pcd:window-maximize', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win) {
     if (win.isMaximized()) {
@@ -241,112 +284,58 @@ ipcMain.handle('cmda:window-maximize', (event) => {
   }
 });
 
-ipcMain.handle('cmda:window-close', (event) => {
+ipcMain.handle('pcd:window-close', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win) win.close();
 });
 
-ipcMain.handle('cmda:window-hide-tray', (event) => {
+ipcMain.handle('pcd:window-hide-tray', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win) win.hide();
 });
 
-ipcMain.handle('cmda:open-external', async (_event, url) => {
+ipcMain.handle('pcd:open-external', async (_event, url) => {
   if (url && typeof url === 'string') {
     await shell.openExternal(url);
   }
 });
 
 // Operational IPC Handlers (Direct access without lock screen)
-ipcMain.handle('cmda:security-status', async () => {
-  return { authorized: true, reason: 'AUTHORIZED', message: 'Acceso directo habilitado' };
+ipcMain.handle('pcd:security-status', async () => {
+  if (!gateState) await runGate();
+  return gateState;
 });
 
-ipcMain.handle('cmda:security-unlock', async () => {
-  return { authorized: true, reason: 'AUTHORIZED', message: 'Acceso directo habilitado' };
+ipcMain.handle('pcd:security-retry', async () => {
+  gateProvider = null;
+  return await runGate();
 });
 
-
-ipcMain.handle('cmda:get-corporate-config', async () => {
-  const cfg = configManager.getConfig();
+ipcMain.handle('pcd:diagnostics', async () => {
+  if (!gateState) await runGate();
   return {
-    isConfigured: Boolean(cfg.dbServer && cfg.dbUser),
-    dbServer: cfg.dbServer,
-    dbDatabase: cfg.dbDatabase,
-    dbUser: cfg.dbUser,
-    dbPort: cfg.dbPort,
-    corporateDomain: cfg.corporateDomain,
+    gate: gateState,
+    bootstrap: {
+      found: Boolean(bootstrapConfig && bootstrapConfig._found),
+      path: bootstrapPath,
+      configSource: bootstrapConfig ? bootstrapConfig.configSource : '',
+      retryIntervalMs: bootstrapConfig ? bootstrapConfig.retryIntervalMs : 15000,
+    },
+    environment: describeEnvironment(),
+    packaged: app.isPackaged,
   };
 });
 
-ipcMain.handle('cmda:import-config-dialog', async () => {
-  const result = await dialog.showOpenDialog({
-    title: 'Seleccionar archivo de configuración corporativa',
-    filters: [
-      { name: 'Archivos de configuración (.json, .env)', extensions: ['json', 'env'] },
-      { name: 'Todos los archivos', extensions: ['*'] },
-    ],
-    properties: ['openFile'],
-  });
-
-  if (result.canceled || result.filePaths.length === 0) {
-    return { canceled: true };
-  }
-
-  const selectedPath = result.filePaths[0];
-  try {
-    const importRes = configManager.importConfigFile(selectedPath, getUserDataConfigPath());
-    dbService.resetPool();
-    const status = await dbService.checkStatus();
-    return { success: true, config: importRes.config, status };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
-});
-
-ipcMain.handle('cmda:import-config-content', async (_event, contentStr) => {
-  try {
-    let parsed;
-    if (contentStr.includes('=') && !contentStr.trim().startsWith('{')) {
-      parsed = configManager.parseDotEnvContent(contentStr);
-    } else {
-      parsed = JSON.parse(contentStr);
-    }
-    const targetPath = getUserDataConfigPath();
-    const targetDir = path.dirname(targetPath);
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true });
-    }
-    fs.writeFileSync(targetPath, JSON.stringify(parsed, null, 2), 'utf8');
-    configManager.setConfig(parsed);
-    dbService.resetPool();
-    const status = await dbService.checkStatus();
-    return { success: true, status };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
-});
-
-ipcMain.handle('cmda:clear-corporate-config', async () => {
-  try {
-    configManager.clearPersistedConfig(getUserDataConfigPath());
-    dbService.resetPool();
-    return { success: true };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
-});
-
-ipcMain.handle('cmda:test-sql-connection', async () => {
+ipcMain.handle('pcd:test-sql-connection', async () => {
   dbService.resetPool();
   return await dbService.checkStatus();
 });
 
-ipcMain.handle('cmda:status', async () => {
+ipcMain.handle('pcd:status', async () => {
   return await dbService.checkStatus();
 });
 
-ipcMain.handle('cmda:search-terminal', async (_event, query) => {
+ipcMain.handle('pcd:search-terminal', async (_event, query) => {
   try {
     const raw = await dbService.getTerminalInfo(query);
     if (raw) {
@@ -396,23 +385,24 @@ ipcMain.handle('cmda:search-terminal', async (_event, query) => {
   return { source: 'mock', data: null };
 });
 
-ipcMain.handle('cmda:launch-vnc', async (_event, target) => {
-  return await systemTools.launchVncSmart(target);
+ipcMain.handle('pcd:launch-vnc', async (_event, target) => {
+  const vncPassword = await resolveVncSecret();
+  return await systemTools.launchVncSmart(target, { vncPassword });
 });
 
-ipcMain.handle('cmda:launch-msra', async (_event, target) => {
+ipcMain.handle('pcd:launch-msra', async (_event, target) => {
   return systemTools.launchMsra(target);
 });
 
-ipcMain.handle('cmda:probe-remote', async (_event, target) => {
+ipcMain.handle('pcd:probe-remote', async (_event, target) => {
   return await systemTools.probeRemotePorts(target, 800);
 });
 
-ipcMain.handle('cmda:launch-remote-smart', async (_event, target) => {
+ipcMain.handle('pcd:launch-remote-smart', async (_event, target) => {
   return await systemTools.launchRemoteSmart(target);
 });
 
-ipcMain.on('cmda:ping-start', async (event, target, continuous) => {
+ipcMain.on('pcd:ping-start', async (event, target, continuous) => {
   currentPingSessionId++;
   const thisSessionId = currentPingSessionId;
 
@@ -431,14 +421,14 @@ ipcMain.on('cmda:ping-start', async (event, target, continuous) => {
     (data) => {
       if (thisSessionId !== currentPingSessionId) return;
       if (!event.sender.isDestroyed()) {
-        event.sender.send('cmda:ping-data', data);
+        event.sender.send('pcd:ping-data', data);
       }
     },
     (code) => {
       if (thisSessionId !== currentPingSessionId) return;
       activePingProcess = null;
       if (!event.sender.isDestroyed()) {
-        event.sender.send('cmda:ping-end', code);
+        event.sender.send('pcd:ping-end', code);
       }
     }
   );
@@ -446,7 +436,7 @@ ipcMain.on('cmda:ping-start', async (event, target, continuous) => {
   activePingProcess = proc;
 });
 
-ipcMain.handle('cmda:ping-stop', () => {
+ipcMain.handle('pcd:ping-stop', () => {
   currentPingSessionId++;
   if (activePingProcess) {
     try {
@@ -472,7 +462,7 @@ function stopActiveDiagnosticProcess() {
   return false;
 }
 
-ipcMain.on('cmda:cmd-start', async (event, payload) => {
+ipcMain.on('pcd:cmd-start', async (event, payload) => {
   const { command, target, options } = payload || {};
   currentPingSessionId++;
   // Detener proceso anterior de ping o diagnóstico si estuviera corriendo
@@ -486,14 +476,14 @@ ipcMain.on('cmda:cmd-start', async (event, payload) => {
 
   const onData = (data) => {
     if (!event.sender.isDestroyed()) {
-      event.sender.send('cmda:cmd-data', data);
+      event.sender.send('pcd:cmd-data', data);
     }
   };
 
   const onDone = (code) => {
     activeDiagnosticProcess = null;
     if (!event.sender.isDestroyed()) {
-      event.sender.send('cmda:cmd-end', code);
+      event.sender.send('pcd:cmd-end', code);
     }
   };
 
@@ -511,12 +501,12 @@ ipcMain.on('cmda:cmd-start', async (event, payload) => {
   }
 });
 
-ipcMain.handle('cmda:cmd-stop', () => {
+ipcMain.handle('pcd:cmd-stop', () => {
   return stopActiveDiagnosticProcess();
 });
 
 // Subnet Scanner IPC Handlers
-ipcMain.on('cmda:subnet-scan-start', async (event, targetIp) => {
+ipcMain.on('pcd:subnet-scan-start', async (event, targetIp) => {
   if (activeSubnetAbortController) {
     activeSubnetAbortController.abort();
     activeSubnetAbortController = null;
@@ -552,25 +542,25 @@ ipcMain.on('cmda:subnet-scan-start', async (event, targetIp) => {
         ]),
       onHostFound: (host) => {
         if (!event.sender.isDestroyed()) {
-          event.sender.send('cmda:subnet-host-found', host);
+          event.sender.send('pcd:subnet-host-found', host);
         }
       },
       onProgress: (scanned, total) => {
         if (!event.sender.isDestroyed()) {
-          event.sender.send('cmda:subnet-progress', { scanned, total });
+          event.sender.send('pcd:subnet-progress', { scanned, total });
         }
       },
     });
 
     if (!event.sender.isDestroyed()) {
-      event.sender.send('cmda:subnet-done', {
+      event.sender.send('pcd:subnet-done', {
         aborted: result.aborted,
         totalFound: result.hosts.length,
       });
     }
   } catch (err) {
     if (!event.sender.isDestroyed()) {
-      event.sender.send('cmda:subnet-done', {
+      event.sender.send('pcd:subnet-done', {
         aborted: false,
         error: err.message,
         totalFound: 0,
@@ -581,7 +571,7 @@ ipcMain.on('cmda:subnet-scan-start', async (event, targetIp) => {
   }
 });
 
-ipcMain.handle('cmda:subnet-scan-abort', () => {
+ipcMain.handle('pcd:subnet-scan-abort', () => {
   if (activeSubnetAbortController) {
     activeSubnetAbortController.abort();
     activeSubnetAbortController = null;
@@ -591,7 +581,7 @@ ipcMain.handle('cmda:subnet-scan-abort', () => {
 });
 
 // In-App Updater IPC Handlers
-ipcMain.handle('cmda:check-updates', async () => {
+ipcMain.handle('pcd:check-updates', async () => {
   const currentVersion = app.getVersion ? app.getVersion() : require('../package.json').version;
   return await checkForUpdates({
     currentVersion,
@@ -600,7 +590,7 @@ ipcMain.handle('cmda:check-updates', async () => {
   });
 });
 
-ipcMain.handle('cmda:start-download-update', async (event, downloadUrl) => {
+ipcMain.handle('pcd:start-download-update', async (event, downloadUrl) => {
   if (!downloadUrl) return { success: false, error: 'URL de descarga vacía' };
   
   const tempDir = app.getPath ? app.getPath('temp') : require('os').tmpdir();
@@ -613,13 +603,13 @@ ipcMain.handle('cmda:start-download-update', async (event, downloadUrl) => {
       targetPath,
       (progress) => {
         if (!event.sender.isDestroyed()) {
-          event.sender.send('cmda:update-progress', progress);
+          event.sender.send('pcd:update-progress', progress);
         }
       },
       (completedPath) => {
         downloadedInstallerPath = completedPath;
         if (!event.sender.isDestroyed()) {
-          event.sender.send('cmda:update-downloaded', completedPath);
+          event.sender.send('pcd:update-downloaded', completedPath);
         }
         resolve({ success: true, filePath: completedPath });
       },
@@ -630,7 +620,7 @@ ipcMain.handle('cmda:start-download-update', async (event, downloadUrl) => {
   });
 });
 
-ipcMain.handle('cmda:install-update-now', async () => {
+ipcMain.handle('pcd:install-update-now', async () => {
   if (downloadedInstallerPath && fs.existsSync(downloadedInstallerPath)) {
     try {
       shell.openPath(downloadedInstallerPath);
@@ -670,7 +660,7 @@ function registerGlobalSearchShortcut(win) {
       const rawClipboard = clipboard.readText();
       const parsed = parseClipboardQuery(rawClipboard);
 
-      win.webContents.send('cmda:trigger-autofocus-search', parsed);
+      win.webContents.send('pcd:trigger-autofocus-search', parsed);
     });
   } catch (err) {
     console.error('[GlobalShortcut] Failed to register CommandOrControl+Space:', err);
