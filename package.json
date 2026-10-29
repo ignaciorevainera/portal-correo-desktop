@@ -12,8 +12,7 @@
     "electron:compat": "electron . --no-sandbox",
     "release:check": "vitest run src/test/securityAudit.test.ts && npm run audit:contrast && npm run build",
     "release:build": "npm run release:check && electron-builder --win",
-    "audit:contrast": "node scripts/check-contrast.mjs",
-    "release:internal": "node scripts/build-internal.cjs"
+    "audit:contrast": "node scripts/check-contrast.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
