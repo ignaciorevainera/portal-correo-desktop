@@ -23,6 +23,10 @@ function mapFsError(err) {
   return 'UNKNOWN';
 }
 
+function stripBom(text) {
+  return String(text == null ? '' : text).replace(/^\uFEFF/, '');
+}
+
 function validateCorporateConfig(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     throw new ConfigError('BAD_CONFIG', 'El archivo de configuración no contiene un objeto JSON válido');
@@ -81,7 +85,7 @@ class UncConfigProvider {
 
     let parsed;
     try {
-      parsed = JSON.parse(content);
+      parsed = JSON.parse(stripBom(content));
     } catch {
       throw new ConfigError('BAD_CONFIG', 'El archivo de configuración no es JSON válido', { path: this.configPath });
     }
@@ -122,7 +126,7 @@ class DevEnvConfigProvider {
     if (this.localConfigPath) {
       try {
         const content = await fs.promises.readFile(this.localConfigPath, 'utf8');
-        return validateCorporateConfig(JSON.parse(content));
+        return validateCorporateConfig(JSON.parse(stripBom(content)));
       } catch (err) {
         if (!(err && err.code === 'ENOENT')) throw err;
       }

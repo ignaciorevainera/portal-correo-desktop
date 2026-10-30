@@ -109,21 +109,53 @@ Get-Content .env | ForEach-Object {
   Set-Content 'C:\portal-correo-desktop\config\portal-correo-desktop.config.json' -Encoding UTF8
 ```
 
+> **Cuidado con el BOM.** `Set-Content -Encoding UTF8` en Windows PowerShell 5.1 escribe un BOM
+> al inicio del archivo. La aplicación lo tolera (se ignora al parsear), pero si editás el archivo
+> con otra herramienta y falla, verificá que no tenga caracteres invisibles al inicio. Para
+> escribirlo sin BOM desde cualquier versión:
+>
+> ```powershell
+> $json = @{ dbServer = 'X' } | ConvertTo-Json
+> [System.IO.File]::WriteAllText(
+>   'C:\portal-correo-desktop\config\portal-correo-desktop.config.json',
+>   $json,
+>   (New-Object System.Text.UTF8Encoding($false))
+> )
+> ```
+
 ### 1.2 Publicar el share
 
 ```powershell
 New-SmbShare -Name 'portal-correo-desktop-config$' `
   -Path 'C:\portal-correo-desktop\config' `
   -ReadAccess "$env:USERDOMAIN\PortalCorreoDesktop-Operadores" `
-  -FullAccess "$env:USERDOMAIN\$env:USERNAME"
+  -FullAccess "${env:USERDOMAIN}\${env:USERNAME}"
 ```
 
 Si el grupo todavía no existe, para el piloto usá tu usuario en `-ReadAccess`.
 
+**Ojo:** `New-SmbShare` agrega por defecto `Todos` con lectura. Hay que quitarlo, o el share
+queda legible por cualquiera que llegue al equipo:
+
 ```powershell
-icacls C:\portal-correo-desktop\config /inheritance:r
-icacls C:\portal-correo-desktop\config /grant "$env:USERDOMAIN\$env:USERNAME:(OI)(CI)F"
+Revoke-SmbShareAccess -Name 'portal-correo-desktop-config$' -AccountName 'Todos' -Force
+Get-SmbShareAccess -Name 'portal-correo-desktop-config$'
 ```
+
+Después, la ACL NTFS. **Usá llaves** en `${env:USERNAME}`: sin ellas, PowerShell interpreta
+`:` como calificador y el comando falla con "parámetro no válido".
+
+```powershell
+$cuenta = "$env:USERDOMAIN\$env:USERNAME"
+icacls C:\portal-correo-desktop\config /inheritance:r
+icacls C:\portal-correo-desktop\config /grant "${cuenta}:(OI)(CI)F"
+icacls C:\portal-correo-desktop\config
+```
+
+> **No compartas la carpeta del repositorio.** Si `C:\Projects` está publicada por SMB
+> (por ejemplo, un share `Projects` con `Todos`), el `.env` con las credenciales queda
+> accesible por red y todo el diseño de secretos se pierde. Verificá con
+> `Get-SmbShare | Where-Object Path -like 'C:\Projects*'` y quitá ese share o restringilo.
 
 ### 1.3 Verificar antes de seguir
 

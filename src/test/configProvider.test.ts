@@ -114,6 +114,16 @@ describe('configProvider', () => {
     }
   });
 
+  it('tolera un BOM UTF-8 al inicio del archivo', async () => {
+    const provider = new UncConfigProvider({
+      configPath: '\\\\host\\share\\portal-correo-desktop.config.json',
+      readFile: async () => `\uFEFF${JSON.stringify(CONFIG_VALIDA)}`,
+    });
+
+    const cfg = await provider.getConfig();
+    expect(cfg.dbServer).toBe('sql.interno');
+  });
+
   it('traduce un JSON inválido a BAD_CONFIG', async () => {
     const provider = new UncConfigProvider({
       configPath: '\\\\host\\share\\portal-correo-desktop.config.json',
