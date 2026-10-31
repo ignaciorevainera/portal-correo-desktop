@@ -428,12 +428,6 @@ export default function App(): React.JSX.Element {
     setActiveDiagnostic(null);
   };
 
-  const handleCloseAccount = (): void => {
-    handleStopAccount();
-    setAccountQuery(null);
-    setSelectedPc("");
-  };
-
   const handleLaunchSmartRemote = async (
     targetOverride?: string,
   ): Promise<void> => {
@@ -581,7 +575,7 @@ export default function App(): React.JSX.Element {
           ref={mainRef}
           className={
             isAccountView
-              ? "flex-1 min-h-0 p-0 overflow-hidden flex flex-col"
+              ? "flex-1 min-h-0 p-3.5 overflow-hidden flex flex-col"
               : cn(
                   "flex-1 p-3.5 overflow-y-auto space-y-4",
                   !terminal || isLoading ? "flex flex-col" : "block",
@@ -610,7 +604,6 @@ export default function App(): React.JSX.Element {
                 onRerun={() => {
                   if (accountQuery) runNetUser(accountQuery);
                 }}
-                onClose={handleCloseAccount}
               />
             </div>
           ) : notFoundTerm ? (

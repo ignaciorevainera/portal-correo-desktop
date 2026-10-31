@@ -208,8 +208,8 @@ describe("Net user flow", () => {
     );
   });
 
-  it("closes the account console without a Volver button", async () => {
-    const { stopCommand } = mockApi({ source: "sql", data: null });
+  it("does not render close or Volver and leaves by searching another target", async () => {
+    mockApi({ source: "sql", data: null });
     render(<App />);
     await search("jperez");
 
@@ -217,10 +217,13 @@ describe("Net user flow", () => {
     expect(
       screen.queryByRole("button", { name: "Volver" }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /cerrar consulta/i }),
+    ).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Cerrar consulta" }));
+    await search("mgomez");
 
-    expect(stopCommand).toHaveBeenCalled();
+    expect(await screen.findByText(/Cuenta AD · mgomez/)).toBeInTheDocument();
     expect(screen.queryByText(/Cuenta AD · jperez/)).not.toBeInTheDocument();
   });
 

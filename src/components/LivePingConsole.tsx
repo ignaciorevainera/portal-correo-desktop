@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Square, Trash2, Copy, Check, Activity, UserRound, RefreshCw, X } from "lucide-react";
+import { Square, Trash2, Copy, Check, Activity, UserRound, RefreshCw } from "lucide-react";
 import {
   subscribeToPing,
   subscribeToDiagnosticCommand,
@@ -28,7 +28,6 @@ interface LivePingConsoleProps {
   targetLabel?: string;
   fill?: boolean;
   onRerun?: () => void;
-  onClose?: () => void;
 }
 
 function sanitizePingText(text: string): string {
@@ -57,7 +56,6 @@ export function LivePingConsole({
   targetLabel,
   fill = false,
   onRerun,
-  onClose,
 }: LivePingConsoleProps): React.JSX.Element {
   const [logs, setLogs] = useState<string[]>([]);
   const [copiedAll, setCopiedAll] = useState(false);
@@ -262,20 +260,6 @@ export function LivePingConsole({
             >
               <RefreshCw className="h-3 w-3" />
               <span>Re-ejecutar</span>
-            </Button>
-          )}
-
-          {onClose && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              onClick={onClose}
-              aria-label="Cerrar consulta"
-              title="Cerrar consulta"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-3.5 w-3.5" />
             </Button>
           )}
 
