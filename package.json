@@ -11,7 +11,8 @@
     "electron:dev": "concurrently -k \"vite\" \"electron .\"",
     "electron:compat": "electron . --no-sandbox",
     "release:check": "vitest run src/test/securityAudit.test.ts && npm run audit:contrast && npm run build",
-    "release:build": "npm run release:check && node scripts/prepare-bootstrap.cjs && electron-builder --win",
+    "release:build": "npm run release:check && node scripts/prepare-bootstrap.cjs && node scripts/clean-release.cjs && electron-builder --win && node scripts/checksums.cjs",
+    "release:checksums": "node scripts/checksums.cjs",
     "audit:contrast": "node scripts/check-contrast.mjs"
   },
   "dependencies": {

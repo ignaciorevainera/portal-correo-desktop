@@ -239,17 +239,22 @@ Instalar `release\Portal Correo Desktop-Corporativo-*.exe` en un equipo de la re
 
 ## Fase 5 — Publicar
 
-En el repositorio público de releases subir **dos archivos**:
+`npm run release:build` deja la carpeta `release\` lista para subir: la vacía antes de
+empaquetar (para no mezclar versiones) y genera los `.sha256` al final. Los nombres son
+los que produce electron-builder para la versión actual:
 
 | Archivo | Motivo |
 | --- | --- |
-| `Portal Correo Desktop-Corporativo-<version>.exe` | Instalador |
-| `<mismo nombre>.exe.sha256` | El actualizador rechaza la descarga si falta |
+| `Portal Correo Desktop Setup <version>.exe` | Instalador |
+| `Portal Correo Desktop Setup <version>.exe.sha256` | El actualizador rechaza la descarga si falta |
+| `Portal Correo Desktop-Portable-<version>.exe` | Versión portable (opcional) |
+| `Portal Correo Desktop-Portable-<version>.exe.sha256` | Checksum de la portable |
+
+Subir los `.sha256` con ese nombre exacto, al lado de su `.exe`: el actualizador pide
+`<url del exe>.sha256`. Si hace falta regenerarlos sin recompilar:
 
 ```powershell
-$exe = 'release\Portal Correo Desktop-Corporativo-1.0.0.exe'
-$hash = (Get-FileHash -Algorithm SHA256 $exe).Hash.ToLower()
-"$hash  $(Split-Path $exe -Leaf)" | Set-Content "$exe.sha256" -Encoding ASCII
+npm run release:checksums
 ```
 
 Copiar también el `.exe` a `\\<EQUIPO>\portal-correo-desktop-public$\` como espejo interno.
