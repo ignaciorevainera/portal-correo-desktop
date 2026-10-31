@@ -661,11 +661,8 @@ ipcMain.handle('pcd:subnet-scan-abort', () => {
 // In-App Updater IPC Handlers
 ipcMain.handle('pcd:check-updates', async () => {
   const currentVersion = app.getVersion ? app.getVersion() : require('../package.json').version;
-  return await checkForUpdates({
-    currentVersion,
-    repoOwner: 'correoargentino',
-    repoName: 'new-CMDA',
-  });
+  const feedUrl = bootstrapConfig && bootstrapConfig.updateFeed ? bootstrapConfig.updateFeed : '';
+  return await checkForUpdates({ currentVersion, feedUrl });
 });
 
 ipcMain.handle('pcd:start-download-update', async (event, downloadUrl) => {

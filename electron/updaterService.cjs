@@ -54,14 +54,23 @@ function isNewerVersion(remoteVer, currentVer) {
 
 /**
  * Consulta la API pública de GitHub Releases
+ *
+ * @param {object} [options]
+ * @param {string} [options.currentVersion]
+ * @param {string} [options.repoOwner]
+ * @param {string} [options.repoName]
+ * @param {string} [options.feedUrl] URL completa del endpoint de releases; tiene prioridad sobre owner/repo
+ * @param {Function|null} [options.fetcher]
  */
 async function checkForUpdates({
   currentVersion = '1.0.0',
-  repoOwner = 'correoargentino',
-  repoName = 'new-CMDA',
+  repoOwner = 'ignaciorevainera',
+  repoName = 'portal-correo-desktop',
+  feedUrl = '',
   fetcher = null,
 } = {}) {
-  const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest`;
+  const apiUrl =
+    String(feedUrl || '').trim() || `https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest`;
 
   try {
     let data;

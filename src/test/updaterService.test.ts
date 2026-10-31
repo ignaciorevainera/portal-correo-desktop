@@ -19,6 +19,38 @@ describe('updaterService (In-App Updater and GitHub Releases Client)', () => {
     expect(isNewerVersion('0.9.9', '1.0.0')).toBe(false);
   });
 
+  it('usa feedUrl cuando el bootstrap lo define, ignorando owner/repo', async () => {
+    const { checkForUpdates } = await import('../../electron/updaterService.cjs');
+
+    const mockFetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ tag_name: 'v1.0.0', assets: [] }),
+    });
+
+    await checkForUpdates({
+      currentVersion: '1.0.0',
+      feedUrl: 'https://api.github.com/repos/otra-org/otro-repo/releases/latest',
+      fetcher: mockFetcher,
+    });
+
+    expect(mockFetcher).toHaveBeenCalledWith('https://api.github.com/repos/otra-org/otro-repo/releases/latest');
+  });
+
+  it('cae al repositorio por defecto cuando no hay feedUrl', async () => {
+    const { checkForUpdates } = await import('../../electron/updaterService.cjs');
+
+    const mockFetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ tag_name: 'v1.0.0', assets: [] }),
+    });
+
+    await checkForUpdates({ currentVersion: '1.0.0', fetcher: mockFetcher });
+
+    expect(mockFetcher).toHaveBeenCalledWith(
+      'https://api.github.com/repos/ignaciorevainera/portal-correo-desktop/releases/latest'
+    );
+  });
+
   it('queries GitHub Releases API and detects updates with assets', async () => {
     const { checkForUpdates } = await import('../../electron/updaterService.cjs');
 
