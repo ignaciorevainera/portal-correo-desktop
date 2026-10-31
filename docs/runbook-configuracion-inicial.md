@@ -304,6 +304,26 @@ grupo/ACL, `NO_LAN_*` es red, `NO_CONFIG` es archivo.
 
 ---
 
+## Equipos donde la ventana no aparece
+
+En algunas máquinas (VMs, sesiones RDP, equipos con EDR estricto) Chromium no puede crear
+sus procesos hijos. Síntoma: la app se abre y se cierra al instante; en la consola aparece
+`Renderer process launch-failed` o `GPU process launch failed: error_code=18`, y el log del
+gate alcanza a escribir `READY` antes de morir.
+
+La aplicación se recupera sola: detecta el fallo y se relanza una vez con `--no-sandbox`,
+registrando `[Compat] ... relanzando sin sandbox`. En una máquina sin la restricción sigue
+usando el sandbox normal.
+
+Para evitar el primer intento fallido en un equipo que ya sabés restringido:
+
+```powershell
+$env:PCD_COMPAT_MODE = "1"
+& "C:\Program Files\Portal Correo Desktop\Portal Correo Desktop.exe"
+```
+
+---
+
 ## Deuda conocida
 
 - El actualizador todavía usa el repositorio fijo del código, no `updateFeed` / `updateMirror`

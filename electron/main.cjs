@@ -14,6 +14,7 @@ const { loadBootstrap, DEFAULTS: BOOTSTRAP_DEFAULTS } = require('./bootstrap.cjs
 const { createConfigProvider, ConfigError } = require('./configProvider.cjs');
 const { evaluateGate, describeEnvironment } = require('./securityGate.cjs');
 const { migrateLegacyConfig } = require('./migration.cjs');
+const { RELAUNCH_FLAG, isCompatEnabled, shouldRetryWithoutSandbox, buildRelaunchArgs } = require('./compatMode.cjs');
 
 // ---------------------------------------------------------------------------
 // Modo de renderizado (GPU vs. software)
@@ -43,13 +44,49 @@ if (!gpuEnabled) {
 // la creación de procesos hijos de Chromium y Electron aborta con
 // "Renderer process launch-failed" o "GPU process launch failed".
 // Se activa solo de forma explícita: PCD_COMPAT_MODE=1
-const compatMode = /^(1|true|yes|on)$/i.test(String(process.env.PCD_COMPAT_MODE || '').trim());
+const compatMode = isCompatEnabled(process.env);
 
 if (compatMode) {
   app.commandLine.appendSwitch('no-sandbox');
   app.commandLine.appendSwitch('disable-features', 'RendererCodeIntegrity');
   console.warn('[Compat] Modo compatibilidad activo (sandbox y Renderer Code Integrity deshabilitados)');
 }
+
+// ---------------------------------------------------------------------------
+// Relanzamiento automático sin sandbox
+// ---------------------------------------------------------------------------
+// En equipos con EDR o políticas que impiden crear procesos hijos de Chromium,
+// el proceso renderer no llega a lanzarse: la app arranca, corre el gate y muere
+// antes de dibujar la ventana. En ese caso se relanza UNA vez con --no-sandbox,
+// que es la única combinación que funciona en esos equipos. La guarda evita bucles.
+let relaunchingWithoutSandbox = false;
+
+function relaunchWithoutSandbox(reason) {
+  if (relaunchingWithoutSandbox) return;
+
+  if (!shouldRetryWithoutSandbox({ env: process.env, argv: process.argv })) {
+    console.error(`[Compat] ${reason}. No se relanza: ya se intentó o el sandbox está deshabilitado.`);
+    return;
+  }
+
+  relaunchingWithoutSandbox = true;
+  console.warn(`[Compat] ${reason}; relanzando sin sandbox`);
+
+  try {
+    process.env[RELAUNCH_FLAG] = '1';
+    app.relaunch({ args: buildRelaunchArgs(process.argv) });
+  } catch (err) {
+    console.error('[Compat] No se pudo programar el relanzamiento:', err && err.message);
+  }
+
+  app.exit(0);
+}
+
+app.on('child-process-gone', (_event, details) => {
+  if (details && details.reason === 'launch-failed') {
+    relaunchWithoutSandbox(`el proceso ${details.type} no pudo lanzarse`);
+  }
+});
 
 let tray = null;
 let activePingProcess = null;
@@ -266,6 +303,33 @@ function createWindow() {
   const logLoadError = (target) => (err) => {
     console.error(`[Load] No se pudo cargar ${target}: ${err && err.message ? err.message : err}`);
   };
+
+  let windowLoaded = false;
+  let loadWatchdog = null;
+
+  win.webContents.on('render-process-gone', (_event, details) => {
+    if (details && details.reason === 'launch-failed') {
+      relaunchWithoutSandbox('el renderer no pudo lanzarse');
+      return;
+    }
+    console.error('[Renderer] El proceso terminó:', details && details.reason);
+  });
+
+  win.webContents.on('did-finish-load', () => {
+    windowLoaded = true;
+    if (loadWatchdog) clearTimeout(loadWatchdog);
+  });
+
+  win.on('closed', () => {
+    if (loadWatchdog) clearTimeout(loadWatchdog);
+  });
+
+  // Red de seguridad: si el renderer no llega a cargar y ningún evento avisa,
+  // se relanza sin sandbox en lugar de dejar al operador con una ventana en blanco.
+  loadWatchdog = setTimeout(() => {
+    if (windowLoaded || relaunchingWithoutSandbox) return;
+    relaunchWithoutSandbox('la ventana no terminó de cargar en 20 segundos');
+  }, 20000);
 
   if (isDev) {
     win.loadURL(devUrl).catch(() => {

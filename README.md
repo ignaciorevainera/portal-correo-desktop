@@ -50,6 +50,24 @@ Si la aplicación no alcanza el share, se bloquea y muestra un código de diagn�
 
 ## 🩺 Solución de problemas de arranque en escritorio
 
+### La ventana no aparece y el proceso termina solo (`Renderer process launch-failed`)
+
+En equipos con EDR o políticas que impiden crear procesos hijos de Chromium, el
+proceso **renderer** no llega a lanzarse: la app arranca, escribe el estado del
+gate en el log y muere antes de dibujar la ventana. Al ejecutarla desde una consola
+se ve `Renderer process launch-failed` y se vuelve al prompt.
+
+**La aplicación se recupera sola:** si detecta ese fallo, se relanza una única vez
+con `--no-sandbox` y deja constancia en el log (`[Compat] ... relanzando sin
+sandbox`). En una máquina sin esa restricción el sandbox se mantiene.
+
+Si querés forzarlo desde el principio, sin esperar el primer fallo:
+
+```powershell
+$env:PCD_COMPAT_MODE = "1"; npx electron .
+npm run electron:compat
+```
+
 ### `GPU process launch failed: error_code=18` / `GPU process isn't usable. Goodbye.`
 
 Ocurre en equipos corporativos (escritorios virtuales, sesiones RDP, VMs sin GPU
@@ -63,7 +81,7 @@ debería volver a aparecer. Variables de entorno disponibles:
 | Variable | Efecto |
 | --- | --- |
 | `PCD_ENABLE_GPU=1` | Reactiva la aceleración por hardware (solo en equipos con GPU funcional). |
-| `PCD_COMPAT_MODE=1` | Modo compatibilidad agresivo: añade `--no-sandbox` y deshabilita `RendererCodeIntegrity`. Usar solo si aparece `Renderer process launch-failed` por bloqueo del antivirus/EDR corporativo. |
+| `PCD_COMPAT_MODE=1` | Modo compatibilidad agresivo: añade `--no-sandbox` y deshabilita `RendererCodeIntegrity`. La app lo aplica sola si detecta un fallo de lanzamiento; forzarlo acá evita el primer intento fallido. |
 
 Ejemplos en PowerShell:
 
