@@ -25,9 +25,6 @@ import {
   RefreshCw,
   Download,
   CheckCircle2,
-  HardDrive,
-  Keyboard,
-  Activity,
   Sliders,
   Server,
   Sparkles,
@@ -323,12 +320,9 @@ export function SettingsModal({
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Database className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-bold text-foreground">
-                    Estado de Conexión SQL
-                  </span>
-                </div>
+                <span className="text-xs font-bold text-foreground">
+                  Estado de Conexión SQL
+                </span>
                 <Badge
                   variant={
                     backendConnected || connTestResult?.connected
@@ -400,9 +394,8 @@ export function SettingsModal({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
-              <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <HardDrive className="h-3.5 w-3.5 text-primary" />
-                <span>Comportamiento de Ventana y Bandeja</span>
+              <div className="text-xs font-bold text-foreground">
+                Comportamiento de Ventana y Bandeja
               </div>
               <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
                 <input
@@ -424,9 +417,8 @@ export function SettingsModal({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
-              <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Keyboard className="h-3.5 w-3.5 text-primary" />
-                <span>Atajo Global de Teclado</span>
+              <div className="text-xs font-bold text-foreground">
+                Atajo Global de Teclado
               </div>
               <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
                 <input
@@ -448,9 +440,8 @@ export function SettingsModal({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">
-              <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Activity className="h-3.5 w-3.5 text-primary" />
-                <span>Modo de Ping Predeterminado</span>
+              <div className="text-xs font-bold text-foreground">
+                Modo de Ping Predeterminado
               </div>
               <div className="text-[11px] text-muted-foreground">
                 Tipo de ping enviado automáticamente al cargar una terminal

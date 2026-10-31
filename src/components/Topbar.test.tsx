@@ -149,6 +149,21 @@ describe("Topbar & Compact Unified Titlebar component", () => {
 
     const buttonGroup = container.querySelector('[data-slot="button-group"]');
     expect(buttonGroup).toBeInTheDocument();
+    expect(header?.className).not.toContain("border-b");
+  });
+
+  it("renders a connected badge with the same height as the search bar", () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} backendMode="sql" />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByText("Conectado")).toBeInTheDocument();
+
+    const badge = screen.getByTitle("Modo actual");
+    expect(badge.className).toContain("h-10");
+    expect(badge.className).not.toContain("h-8");
   });
 
   it("shows account recents without remote actions and activates them", () => {

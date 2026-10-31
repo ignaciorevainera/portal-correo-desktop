@@ -225,7 +225,7 @@ export function Topbar({
 
   return (
     <>
-      <header className="h-14 border-b border-border bg-card/90 backdrop-blur px-4 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
+      <header className="h-14 bg-card/90 backdrop-blur px-4 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
         {/* Identidad / Brand (Arrastrable junto al header para mover la ventana con el mouse) */}
         <div className="flex items-center gap-2.5 shrink-0 cursor-default select-none">
           <div className="p-1.5 rounded-md bg-primary/10 text-primary pointer-events-none">
@@ -422,7 +422,7 @@ export function Topbar({
           {/* Badge de Conexión */}
           <Badge
             variant="outline"
-            className="hidden lg:flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-muted text-foreground border-border h-8"
+            className="hidden lg:flex h-10 items-center gap-2 rounded-md border-border bg-muted px-3 text-xs font-medium text-foreground"
             title={serverName || "Modo actual"}
           >
             <Database
@@ -432,7 +432,7 @@ export function Topbar({
               className={`h-2 w-2 rounded-full ${backendMode === "sql" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`}
             />
             <span>
-              {backendMode === "sql" ? "SQL Online" : "Offline / Mock"}
+              {backendMode === "sql" ? "Conectado" : "Sin conexión"}
             </span>
           </Badge>
 
