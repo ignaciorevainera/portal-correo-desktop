@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Laptop,
   Loader2,
+  MonitorPlay,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +24,7 @@ interface SubnetScannerDrawerProps {
   onClose: () => void;
   targetIp: string;
   onSelectTerminal: (pcOrIp: string) => void;
-  onLaunchVnc: (target: string) => void;
+  onSmartRemote: (target: string) => void | Promise<void>;
 }
 
 export function SubnetScannerDrawer({
@@ -31,13 +32,14 @@ export function SubnetScannerDrawer({
   onClose,
   targetIp,
   onSelectTerminal,
-  onLaunchVnc,
+  onSmartRemote,
 }: SubnetScannerDrawerProps): React.JSX.Element | null {
   const [hosts, setHosts] = useState<SubnetDiscoveredHost[]>([]);
   const [progress, setProgress] = useState<SubnetScanProgress>({ scanned: 0, total: 254 });
   const [isScanning, setIsScanning] = useState(false);
   const [isAborted, setIsAborted] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
+  const [connectingIp, setConnectingIp] = useState<string | null>(null);
 
   const parts = targetIp.split('.');
   const subnetPrefix = parts.length === 4 ? `${parts[0]}.${parts[1]}.${parts[2]}.0/24` : targetIp;
@@ -69,6 +71,16 @@ export function SubnetScannerDrawer({
       cleanup();
     };
   }, [isOpen, targetIp]);
+
+  const handleRemote = async (ip: string): Promise<void> => {
+    if (connectingIp) return;
+    setConnectingIp(ip);
+    try {
+      await onSmartRemote(ip);
+    } finally {
+      setConnectingIp(null);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -191,10 +203,14 @@ export function SubnetScannerDrawer({
             return (
             <div
               key={host.ip}
-              onClick={() => onSelectTerminal(lookupTarget)}
-              className="p-2.5 rounded-lg border border-border/80 bg-card hover:bg-accent/15 hover:border-border transition-colors flex items-center justify-between gap-2 group cursor-pointer"
+              className="p-2.5 rounded-lg border border-border/80 bg-card hover:bg-accent/15 hover:border-border transition-colors flex items-center justify-between gap-2 group"
             >
-              <div className="flex-1 min-w-0">
+              <button
+                type="button"
+                onClick={() => onSelectTerminal(lookupTarget)}
+                aria-label={`Consultar ${displayName}`}
+                className="flex-1 min-w-0 text-left cursor-pointer rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 <div className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                   <span className="text-xs font-bold text-foreground font-mono truncate">
@@ -207,29 +223,24 @@ export function SubnetScannerDrawer({
                     <span className="text-muted-foreground/70">{host.latency}ms</span>
                   )}
                 </div>
-              </div>
+              </button>
 
-              {/* Quick Actions */}
-              <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 px-2 text-[10px] font-medium cursor-pointer"
-                  onClick={() => onSelectTerminal(lookupTarget)}
-                  title="Consultar ficha de terminal"
-                >
-                  Consultar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-7 px-2 text-[10px] font-medium cursor-pointer"
-                  onClick={() => onLaunchVnc(host.ip)}
-                  title="Conectar por VNC Viewer directo"
-                >
-                  VNC
-                </Button>
-              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-7 px-2 text-[10px] font-medium cursor-pointer shrink-0"
+                onClick={() => handleRemote(host.ip)}
+                disabled={connectingIp !== null}
+                aria-label={`Conexión remota a ${displayName}`}
+                title="Detectar y conectar por la mejor opción (VNC/MSRA)"
+              >
+                {connectingIp === host.ip ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <MonitorPlay className="h-3 w-3" />
+                )}
+                <span>Conexión remota</span>
+              </Button>
             </div>
             );
           })

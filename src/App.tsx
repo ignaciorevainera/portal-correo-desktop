@@ -717,8 +717,8 @@ export default function App(): React.JSX.Element {
               handleSelectTerminal(pc);
               setIsSubnetDrawerOpen(false);
             }}
-            onLaunchVnc={(target) => {
-              handleLaunchVnc(target);
+            onSmartRemote={(target) => {
+              handleLaunchSmartRemote(target);
             }}
           />
         )}
