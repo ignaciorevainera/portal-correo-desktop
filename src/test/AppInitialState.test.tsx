@@ -79,7 +79,7 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
     render(<App />);
 
     // Perform search
-    const searchInput = screen.getByPlaceholderText(/Buscar terminal o IP/i);
+    const searchInput = screen.getByPlaceholderText(/buscar terminal/i);
     fireEvent.change(searchInput, { target: { value: 'WS-CORP-100' } });
     fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
 

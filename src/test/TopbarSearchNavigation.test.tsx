@@ -21,7 +21,7 @@ describe('Topbar Search and Keyboard Navigation', () => {
       </ThemeProvider>
     );
 
-    const searchInput = screen.getByPlaceholderText(/buscar terminal o ip/i);
+    const searchInput = screen.getByPlaceholderText(/buscar terminal/i);
     expect(screen.queryByText('SUC10-PC01')).not.toBeInTheDocument();
 
     // Focusing the input triggers the dropdown with the recent searches
@@ -51,7 +51,7 @@ describe('Topbar Search and Keyboard Navigation', () => {
       </ThemeProvider>
     );
 
-    const searchInput = screen.getByPlaceholderText(/buscar terminal o ip/i);
+    const searchInput = screen.getByPlaceholderText(/buscar terminal/i);
     fireEvent.focus(searchInput);
 
     // Arrow up wraps around to last item (PC-B)

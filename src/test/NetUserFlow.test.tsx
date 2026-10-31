@@ -32,13 +32,14 @@ const terminal = {
 function mockApi(searchResult: unknown) {
   const startCommand = vi.fn();
   const stopCommand = vi.fn();
+  const searchTerminal = vi.fn().mockResolvedValue(searchResult);
   let commandEnd: ((code: number) => void) | null = null;
 
   (window as any).electronAPI = {
     checkStatus: vi
       .fn()
       .mockResolvedValue({ connected: true, mode: "sql", server: "srv" }),
-    searchTerminal: vi.fn().mockResolvedValue(searchResult),
+    searchTerminal,
     ping: vi.fn(),
     stopPing: vi.fn(),
     onPingData: vi.fn().mockReturnValue(() => {}),
@@ -55,12 +56,13 @@ function mockApi(searchResult: unknown) {
   return {
     startCommand,
     stopCommand,
+    searchTerminal,
     emitCommandEnd: (code = 0) => commandEnd?.(code),
   };
 }
 
 async function search(query: string) {
-  const input = screen.getByPlaceholderText(/buscar terminal o ip/i);
+  const input = screen.getByPlaceholderText(/buscar terminal/i);
   fireEvent.change(input, { target: { value: query } });
   fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
 }
@@ -68,6 +70,7 @@ async function search(query: string) {
 describe("Net user flow", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    localStorage.clear();
   });
 
   it("runs net user in the console from the identity button", async () => {
@@ -118,18 +121,20 @@ describe("Net user flow", () => {
     );
   });
 
-  it("offers the account query from the not-found state", async () => {
-    const { startCommand } = mockApi({ source: "sql", data: null });
+  it("routes an account-like query straight to the account console", async () => {
+    const { startCommand, searchTerminal } = mockApi({
+      source: "sql",
+      data: null,
+    });
     render(<App />);
     await search("jperez");
 
-    const action = await screen.findByRole("button", {
-      name: /consultar «jperez» como cuenta ad/i,
-    });
-    expect(action).toHaveClass("bg-primary");
-    fireEvent.click(action);
-
     expect(await screen.findByText(/Cuenta AD · jperez/)).toBeInTheDocument();
+    expect(searchTerminal).not.toHaveBeenCalled();
+    expect(
+      screen.queryByText(/No se encontró la terminal/i),
+    ).not.toBeInTheDocument();
+
     await waitFor(() =>
       expect(startCommand).toHaveBeenCalledWith(
         expect.objectContaining({ command: "netuser", target: "jperez" }),
@@ -137,33 +142,83 @@ describe("Net user flow", () => {
     );
   });
 
-  it("does not offer the account query for invalid or IP text", async () => {
-    mockApi({ source: "sql", data: null });
+  it("falls back to the account console when a short username is not a terminal", async () => {
+    const { startCommand, searchTerminal } = mockApi({
+      source: "sql",
+      data: null,
+    });
     render(<App />);
+    await search("juan");
 
-    await search("operador.demo01");
+    expect(searchTerminal).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText(/Cuenta AD · juan/)).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /como cuenta ad/i }),
+      screen.queryByText(/No se encontró la terminal/i),
     ).not.toBeInTheDocument();
 
-    await search("192.0.2.50");
+    await waitFor(() =>
+      expect(startCommand).toHaveBeenCalledWith(
+        expect.objectContaining({ command: "netuser", target: "juan" }),
+      ),
+    );
+  });
+
+  it("keeps the not-found state for invalid usernames", async () => {
+    mockApi({ source: "sql", data: null });
+    render(<App />);
+    await search("operador.demo01");
+
+    expect(
+      await screen.findByText(/No se encontró la terminal/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Cuenta AD ·/)).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /como cuenta ad/i }),
     ).not.toBeInTheDocument();
   });
 
-  it("stops the command and returns when pressing Volver", async () => {
+  it("re-runs the command from the console header", async () => {
+    const { startCommand, emitCommandEnd } = mockApi({
+      source: "sql",
+      data: null,
+    });
+    render(<App />);
+    await search("jperez");
+
+    await waitFor(() =>
+      expect(startCommand).toHaveBeenCalledTimes(1),
+    );
+
+    act(() => {
+      emitCommandEnd(0);
+    });
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /detener/i }),
+      ).not.toBeInTheDocument(),
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Re-ejecutar consulta" }),
+    );
+
+    await waitFor(() =>
+      expect(startCommand).toHaveBeenCalledTimes(2),
+    );
+  });
+
+  it("closes the account console without a Volver button", async () => {
     const { stopCommand } = mockApi({ source: "sql", data: null });
     render(<App />);
     await search("jperez");
 
-    fireEvent.click(
-      await screen.findByRole("button", {
-        name: /consultar «jperez» como cuenta ad/i,
-      }),
-    );
+    expect(await screen.findByText(/Cuenta AD · jperez/)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Volver" }),
+    ).not.toBeInTheDocument();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Volver" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar consulta" }));
 
     expect(stopCommand).toHaveBeenCalled();
     expect(screen.queryByText(/Cuenta AD · jperez/)).not.toBeInTheDocument();
@@ -173,12 +228,6 @@ describe("Net user flow", () => {
     const { emitCommandEnd } = mockApi({ source: "sql", data: null });
     render(<App />);
     await search("jperez");
-
-    fireEvent.click(
-      await screen.findByRole("button", {
-        name: /consultar «jperez» como cuenta ad/i,
-      }),
-    );
 
     await waitFor(() =>
       expect(

@@ -401,4 +401,33 @@ describe('LivePingConsole Component', () => {
 
     expect(onDiagnosticComplete).toHaveBeenCalledTimes(1);
   });
+
+  it('fills the height and exposes rerun and close actions in account mode', () => {
+    const onRerun = vi.fn();
+    const onClose = vi.fn();
+
+    const { container } = render(
+      <LivePingConsole
+        mode="account"
+        fill
+        targetLabel="jperez"
+        ip=""
+        isPinging={false}
+        onTogglePing={vi.fn()}
+        onRerun={onRerun}
+        onClose={onClose}
+      />,
+    );
+
+    const root = container.firstChild as HTMLElement;
+    expect(root.className).toContain('h-full');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Re-ejecutar consulta' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar consulta' }));
+
+    expect(onRerun).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
 });

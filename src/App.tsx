@@ -47,10 +47,16 @@ import { Kbd } from "@/components/ui/kbd";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { RESET_QUEUE_MESSAGE } from "@/lib/constants";
-import { isIpAddress, isValidUsername, splitUsernames } from "@/lib/usernames";
+import {
+  classifySearch,
+  isValidUsername,
+  splitUsernames,
+} from "@/lib/usernames";
+import { updateRecentSearchKind } from "@/lib/recentSearches";
 
 export default function App(): React.JSX.Element {
   const [selectedPc, setSelectedPc] = useState<string>("");
+  const [searchNonce, setSearchNonce] = useState(0);
   const [terminal, setTerminal] = useState<TerminalData | null>(null);
   const [notFoundTerm, setNotFoundTerm] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -156,23 +162,51 @@ export default function App(): React.JSX.Element {
       setIsPinging(false);
       return;
     }
+
+    if (classifySearch(selectedPc) === "account") {
+      setTerminal(null);
+      setNotFoundTerm(null);
+      setRemoteProbe(null);
+      setIsPinging(false);
+      setIsLoading(false);
+      setAccountQuery(selectedPc);
+      runNetUser(selectedPc);
+      return;
+    }
+
     setIsLoading(true);
     setActiveDiagnostic(null);
     setNotFoundTerm(null);
 
     searchTerminalUnified(selectedPc)
       .then((res) => {
-        setTerminal(res.data);
         if (!res.data) {
+          if (isValidUsername(selectedPc)) {
+            updateRecentSearchKind(selectedPc, "account");
+            setTerminal(null);
+            setNotFoundTerm(null);
+            setRemoteProbe(null);
+            setIsPinging(false);
+            setIsLoading(false);
+            setAccountQuery(selectedPc);
+            runNetUser(selectedPc);
+            return;
+          }
+
+          setTerminal(null);
           setNotFoundTerm(selectedPc);
           setRemoteProbe(null);
           setIsPinging(false);
+          setIsLoading(false);
+          return;
         }
+
+        setTerminal(res.data);
         setIsLoading(false);
         if (mainRef.current) {
           mainRef.current.scrollTop = 0;
         }
-        if (res.data?.ip) {
+        if (res.data.ip) {
           setPingMode("standard");
           setIsPinging(true);
           handleProbeRemote(res.data.ip);
@@ -182,13 +216,25 @@ export default function App(): React.JSX.Element {
         }
       })
       .catch(() => {
+        if (isValidUsername(selectedPc)) {
+          updateRecentSearchKind(selectedPc, "account");
+          setTerminal(null);
+          setNotFoundTerm(null);
+          setRemoteProbe(null);
+          setIsPinging(false);
+          setIsLoading(false);
+          setAccountQuery(selectedPc);
+          runNetUser(selectedPc);
+          return;
+        }
+
         setTerminal(null);
         setNotFoundTerm(selectedPc);
         setIsLoading(false);
         setRemoteProbe(null);
         setIsPinging(false);
       });
-  }, [selectedPc]);
+  }, [selectedPc, searchNonce]);
 
   const handleClearSearch = (): void => {
     setSelectedPc("");
@@ -289,6 +335,7 @@ export default function App(): React.JSX.Element {
       return;
     }
     setSelectedPc(pc);
+    setSearchNonce((prev) => prev + 1);
     setActionFeedback(null);
     setRemoteProbe(null);
     setIsProbingRemote(false);
@@ -370,8 +417,10 @@ export default function App(): React.JSX.Element {
   const handleOpenAccount = (user: string): void => {
     const cleanUser = user.trim();
     if (!isValidUsername(cleanUser)) return;
-    setAccountQuery(cleanUser);
-    runNetUser(cleanUser);
+    setSelectedPc(cleanUser);
+    setSearchNonce((prev) => prev + 1);
+    setNotFoundTerm(null);
+    setAccountQuery(null);
   };
 
   const handleStopAccount = (): void => {
@@ -382,6 +431,7 @@ export default function App(): React.JSX.Element {
   const handleCloseAccount = (): void => {
     handleStopAccount();
     setAccountQuery(null);
+    setSelectedPc("");
   };
 
   const handleLaunchSmartRemote = async (
@@ -467,6 +517,8 @@ export default function App(): React.JSX.Element {
     setIsPinging(true);
   };
 
+  const isAccountView = !terminal && Boolean(accountQuery);
+
   if (gate.status !== "READY") {
     return (
       <ThemeProvider>
@@ -491,6 +543,7 @@ export default function App(): React.JSX.Element {
       >
         <Topbar
           onSelectTerminal={handleSelectTerminal}
+          onSelectAccount={handleOpenAccount}
           onDirectVnc={handleLaunchVnc}
           onDirectPing={handleDirectPing}
           backendMode={status.mode}
@@ -526,10 +579,14 @@ export default function App(): React.JSX.Element {
         {/* Layout Unificado: El desplazamiento / scroll vertical es exclusivo sobre este contenedor <main> */}
         <main
           ref={mainRef}
-          className={cn(
-            "flex-1 p-3.5 overflow-y-auto space-y-4",
-            !terminal || isLoading ? "flex flex-col" : "block",
-          )}
+          className={
+            isAccountView
+              ? "flex-1 min-h-0 p-0 overflow-hidden flex flex-col"
+              : cn(
+                  "flex-1 p-3.5 overflow-y-auto space-y-4",
+                  !terminal || isLoading ? "flex flex-col" : "block",
+                )
+          }
         >
           {isLoading ? (
             <div className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-6 space-y-3">
@@ -539,19 +596,10 @@ export default function App(): React.JSX.Element {
               </p>
             </div>
           ) : !terminal && accountQuery ? (
-            <div className="space-y-2">
-              <div className="flex items-center justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCloseAccount}
-                >
-                  Volver
-                </Button>
-              </div>
+            <div className="flex-1 min-h-0 flex flex-col">
               <LivePingConsole
                 mode="account"
+                fill
                 targetLabel={accountQuery}
                 ip=""
                 isPinging={false}
@@ -559,6 +607,10 @@ export default function App(): React.JSX.Element {
                 onTogglePing={() => {}}
                 onStopCommand={handleStopAccount}
                 onDiagnosticComplete={() => setActiveDiagnostic(null)}
+                onRerun={() => {
+                  if (accountQuery) runNetUser(accountQuery);
+                }}
+                onClose={handleCloseAccount}
               />
             </div>
           ) : notFoundTerm ? (
@@ -580,17 +632,6 @@ export default function App(): React.JSX.Element {
                   el alcance de red.
                 </p>
               </div>
-              {!isIpAddress(notFoundTerm) && isValidUsername(notFoundTerm) && (
-                <Button
-                  type="button"
-                  variant="default"
-                  size="xs"
-                  onClick={() => handleOpenAccount(notFoundTerm)}
-                  className="text-xs gap-1.5 h-7 px-3"
-                >
-                  Consultar «{notFoundTerm}» como cuenta AD
-                </Button>
-              )}
               <Button
                 variant="outline"
                 size="xs"

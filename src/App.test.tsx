@@ -54,7 +54,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
 
     render(<App />);
 
-    const searchInput = screen.getByPlaceholderText(/Buscar terminal o IP/i);
+    const searchInput = screen.getByPlaceholderText(/buscar terminal/i);
     fireEvent.change(searchInput, { target: { value: 'WS-DEMO-002' } });
     fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
 
@@ -99,7 +99,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     // Initial state check
     expect(screen.getByText(/Buscar una terminal para comenzar/i)).toBeInTheDocument();
 
-    const searchInput = screen.getByPlaceholderText(/Buscar terminal o IP/i);
+    const searchInput = screen.getByPlaceholderText(/buscar terminal/i);
     fireEvent.change(searchInput, { target: { value: 'PC-NOEXISTE-999' } });
     fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
 
@@ -164,7 +164,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
 
     render(<App />);
 
-    const searchInput = screen.getByPlaceholderText(/Buscar terminal o IP/i);
+    const searchInput = screen.getByPlaceholderText(/buscar terminal/i);
     fireEvent.change(searchInput, { target: { value: 'PC-DEMO-001' } });
     fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
 
