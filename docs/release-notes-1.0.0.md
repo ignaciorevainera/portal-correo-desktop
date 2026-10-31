@@ -1,78 +1,86 @@
 # Portal Correo Desktop 1.0.0
 
-Primera versión con **instalador sin secretos**. La configuración corporativa ya no viaja
-dentro del ejecutable: se lee de un share de la red al abrir la aplicación.
+**Primera versión pública.**
 
-## Lo más importante
+## ¿Qué es esta aplicación?
 
-- **El instalador no contiene credenciales.** Ninguna clave SQL, de VNC ni de dominio se
-  empaqueta. Cualquiera puede descargar el `.exe` sin que eso exponga nada.
-- **La configuración se lee de la red.** Al abrir, la app busca
-  `\\<HOST>\portal-correo-desktop-config$\portal-correo-desktop.config.json` con la sesión
-  de Windows del operador. No hay nada que configurar: la ruta ya viene en el paquete.
-- **Si no hay acceso, la app se bloquea y lo explica.** Muestra un código
-  (`NO_LAN_ROUTE`, `NO_PERMISSION`, `NO_CONFIG`, `BAD_CONFIG`) en vez de fallar en silencio.
-- **Nada queda en el disco del operador.** La configuración vive en memoria. La clave VNC se
-  pide bajo demanda y el archivo temporal se borra al instante.
-- **Migración automática.** Al primer arranque de la versión instalada se eliminan los
-  `cmda.config.json` y `.env` en texto plano que hubieran dejado versiones anteriores.
+Es una herramienta de escritorio para el personal de soporte técnico. Sirve para atender
+una terminal sin tener que ir hasta ella y sin abrir cinco programas distintos.
 
-## Cambios de comportamiento
+Con Portal Correo Desktop podés:
 
-- **Ya no funciona fuera de la red corporativa.** Antes, con la configuración embebida,
-  funcionaba por VPN. Ahora requiere acceso al share; es la contrapartida de no llevar
-  secretos en el binario.
-- **Desaparece la importación manual de configuración.** El panel de Ajustes muestra el
-  diagnóstico del acceso (estado, código, origen, bootstrap) en lugar de pedir un archivo.
-- **El actualizador verifica integridad.** Descarga el `.sha256` publicado junto al
-  instalador y rechaza el archivo si no coincide. Si el checksum no está disponible, no
-  instala.
+- **Buscar una terminal** por su nombre o por su IP y ver su ficha completa: a quién está
+  asignada, qué sistema operativo tiene, procesador, memoria, antivirus y versión de
+  Internet Explorer.
+- **Ver su historial**: las alertas abiertas y cerradas, y los reseteos que se hicieron,
+  con fecha, operador y motivo.
+- **Conectarte a distancia con un clic.** La aplicación detecta sola si el equipo admite
+  VNC o Escritorio Remoto de Windows y abre la opción que corresponde.
+- **Diagnosticar sin salir de la aplicación**: ping, rastreo de ruta, NetBIOS y tabla ARP,
+  con la salida en vivo.
+- **Revisar la red**: escanear el rango de una terminal para encontrar los equipos que
+  están respondiendo.
+- **Consultar una cuenta de dominio**: estado, grupos y datos de la cuenta de un usuario.
 
-## Equipos con restricciones (EDR, VMs, RDP)
+Todo en una sola ventana, con atajos de teclado para buscar y conectar.
 
-Si el sistema impide crear los procesos hijos de Chromium, la app se relanza sola una vez
-sin sandbox y lo registra en el log. En equipos sin esa restricción el sandbox se mantiene.
-Se puede forzar desde el arranque con `PCD_COMPAT_MODE=1`.
+## Qué tiene de nuevo esta versión
 
-## Instalación
+Esta es la primera versión que se publica abiertamente. Los cambios importantes son de
+seguridad y de instalación:
 
-1. Descargar `Portal Correo Desktop Setup 1.0.0.exe`.
-2. Ejecutarlo. **Windows va a mostrar una advertencia de SmartScreen** porque el binario no
-   está firmado: *Más información → Ejecutar de todas formas*.
-3. Abrir la aplicación desde el acceso directo.
+- **El instalador ya no contiene contraseñas.** Antes, las claves de la base de datos y de
+  acceso remoto viajaban dentro del archivo de instalación. Ahora no: se puede descargar
+  desde cualquier lugar sin exponer nada de la empresa.
+- **La configuración se toma de la red.** Al abrir la aplicación, toma los datos que
+  necesita desde un recurso interno de Correo. No hay que configurar nada a mano ni pedir
+  un archivo: si la computadora está en la red y la cuenta está habilitada, funciona.
+- **Si no hay acceso, avisa.** En lugar de abrirse a medias o fallar sin explicación,
+  muestra un cartel que dice qué está faltando: si es la conexión a la red, si es el
+  permiso de la cuenta, o si falta la configuración.
+- **No deja nada guardado en la computadora.** Los datos de acceso se usan en el momento y
+  no quedan en el equipo. Si alguien usa otra máquina, no arrastra credenciales.
+- **Limpia versiones anteriores.** Si en el equipo había quedado un archivo de
+  configuración viejo con contraseñas, la aplicación lo elimina la primera vez que se abre.
 
-Alternativa sin instalación: `Portal Correo Desktop-Portable-1.0.0.exe`.
+## Cómo se instala
 
-### Verificar la descarga
+1. Descargar **Portal Correo Desktop Setup 1.0.0.exe**.
+2. Ejecutarlo.
+3. Windows va a mostrar un aviso azul de "Windows protegió tu PC" porque el programa
+   todavía no está firmado digitalmente. Hay que elegir **Más información** y después
+   **Ejecutar de todas formas**.
+4. Abrir la aplicación desde el acceso directo o desde el menú Inicio.
 
-Cada ejecutable tiene su archivo `.sha256` al lado. Para comprobar que no fue alterado:
+Si no querés instalarla, también está **Portal Correo Desktop-Portable-1.0.0.exe**, que
+funciona sin instalarse.
 
-```powershell
-$exe = 'Portal Correo Desktop Setup 1.0.0.exe'
-$esperado = (Get-Content "$exe.sha256").Split(' ')[0]
-$real = (Get-FileHash -Algorithm SHA256 $exe).Hash.ToLower()
-if ($esperado -eq $real) { 'OK' } else { 'NO COINCIDE' }
-```
+## Qué necesita para funcionar
 
-### Requisitos
+- Una computadora con Windows 10 o superior.
+- Estar conectada a la red de Correo (en la oficina, no desde la casa).
+- Una cuenta habilitada para usar el sistema.
 
-- Windows 10 o superior, x64.
-- Equipo en la red corporativa con acceso al share de configuración.
-- Cuenta de AD incluida en el grupo de operadores.
+## Si algo no funciona
 
-## Qué hacer si no abre
+La aplicación muestra un cartel con el motivo. Estos son los casos habituales:
 
-| Síntoma | Causa |
+| Lo que ves | Qué significa |
 | --- | --- |
-| Pantalla de bloqueo con `NO_LAN_ROUTE` / `NO_LAN_DNS` | El equipo no llega al share |
-| Pantalla de bloqueo con `NO_PERMISSION` | La cuenta no está en el grupo de operadores |
-| Pantalla de bloqueo con `NO_CONFIG` / `BAD_CONFIG` | El archivo del share falta o está incompleto |
-| No aparece ninguna ventana | Restricción de EDR: revisar el log; la app debería relanzarse sola |
+| "Solo funciona dentro de la red corporativa" | La computadora no está conectada a la red de Correo |
+| "Tu usuario no tiene acceso" | La cuenta todavía no está habilitada; hay que pedir el alta |
+| "No se encontró la configuración" | Falta el archivo de configuración del sistema; hay que avisar a soporte |
+| "La configuración está incompleta" | El archivo de configuración tiene un problema; hay que avisar a soporte |
+| No aparece ninguna ventana | El equipo tiene una protección que impide abrir la aplicación; probá de nuevo o avisá a soporte |
 
-## Limitaciones conocidas
+En **Ajustes → Conexión Corporativa** se puede ver el estado del acceso y el detalle del
+último intento.
 
-- El binario no está firmado: SmartScreen advierte en cada instalación.
-- La interfaz se dibuja antes de que el gate confirme el acceso (ventana de milisegundos).
-- No hay re-evaluación periódica: si el share deja de estar accesible con la app abierta,
-  sigue funcionando hasta reiniciar.
-- Sin verificación de firma Authenticode en las actualizaciones (solo SHA-256).
+## Notas
+
+- En algunos equipos con protecciones corporativas, la aplicación puede tardar unos
+  segundos más en abrir la primera vez. Es normal.
+- Si la aplicación estaba abierta y se corta el acceso a la red, sigue funcionando hasta
+  que se cierre. Al volver a abrirla, verifica el acceso de nuevo.
+- Esta versión todavía no está firmada digitalmente; por eso Windows muestra la advertencia
+  al instalar.
