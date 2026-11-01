@@ -115,23 +115,19 @@ export function QuickActionsBar({
   // Determine Primary CTA visual state
   const recommendedMethod = remoteProbe?.recommendedMethod ?? "vnc";
 
-  let ctaVariant: "default" | "secondary" | "outline" = "default";
-  let ctaIcon = <MonitorPlay className="h-4 w-4" />;
+  let ctaIcon = <MonitorPlay className="h-3.5 w-3.5 shrink-0 text-blue-600 dark:text-blue-400 mr-1" />;
   let ctaLabel = `Conectar VNC :${remoteProbe?.vncPort || 5901}`;
 
   if (isProbingRemote) {
-    ctaVariant = "outline";
     ctaIcon = (
-      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground mr-1" />
     );
     ctaLabel = "Detectando acceso...";
   } else if (recommendedMethod === "msra") {
-    ctaVariant = "secondary";
-    ctaIcon = <HelpCircle className="h-4 w-4 text-blue-500" />;
+    ctaIcon = <HelpCircle className="h-3.5 w-3.5 shrink-0 text-blue-500 mr-1" />;
     ctaLabel = "Conectar MSRA";
   } else if (recommendedMethod === "none") {
-    ctaVariant = "outline";
-    ctaIcon = <AlertCircle className="h-4 w-4 text-amber-500" />;
+    ctaIcon = <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500 mr-1" />;
     ctaLabel = "Sin Acceso (Reintentar)";
   }
 
@@ -153,12 +149,12 @@ export function QuickActionsBar({
             <div className="flex w-full rounded-md shadow-xs">
               <Button
                 type="button"
-                variant={ctaVariant}
+                variant="outline"
                 size="sm"
                 onClick={handlePrimaryRemoteClick}
                 aria-label="Conexión Remota Inteligente"
                 title="Conectar automáticamente según puertos disponibles (Atajo F2)"
-                className="flex-1 rounded-r-none text-xs font-semibold cursor-pointer truncate h-8 px-2.5"
+                className="flex-1 rounded-r-none text-xs font-semibold cursor-pointer truncate h-8 px-2.5 bg-muted text-foreground border-border hover:bg-muted/80"
               >
                 {ctaIcon}
                 <span className="truncate">{ctaLabel}</span>
@@ -169,12 +165,12 @@ export function QuickActionsBar({
 
               <Button
                 type="button"
-                variant={ctaVariant}
+                variant="outline"
                 size="sm"
                 onClick={() => setIsDropdownOpen((prev) => !prev)}
                 aria-label="Opciones de conexión remota"
                 title="Opciones manuales y estado de puertos"
-                className="rounded-l-none px-1.5 cursor-pointer border-l-0 h-8"
+                className="rounded-l-none px-1.5 cursor-pointer border-l-0 h-8 bg-muted text-foreground border-border hover:bg-muted/80"
               >
                 <ChevronDown
                   className={`h-3.5 w-3.5 transition-transform ${
