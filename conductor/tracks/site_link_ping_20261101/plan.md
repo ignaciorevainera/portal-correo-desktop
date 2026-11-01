@@ -1,9 +1,9 @@
 # Implementation Plan: Ping de Sitio (Router .250 / Servidor .231)
 
 ## Phase 1: Lógica de derivación y secuenciación (TDD)
-- [ ] Task: Write Tests: helper `deriveSiteTargets(ip)` (`.250`, `.231`, IP inválida, ya `.250`)
-- [ ] Task: Implement helper en `src/utils/siteTargets.ts`
-- [ ] Task: Write Tests: secuencia de ping (equipo → .250, omitida si ya es .250, cancelación con Detener)
+- [x] Task: Write Tests: helper `deriveSiteTargets(ip)` (`.250`, `.231`, IP inválida, ya `.250`)
+- [x] Task: Implement helper en `src/utils/siteTargets.ts` [1e97888]
+- [~] Task: Write Tests: secuencia de ping (equipo → .250, omitida si ya es .250, cancelación con Detener)
 - [ ] Task: Implement estado de secuencia en `App.tsx` (objetivo activo, cola, etiqueta)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
