@@ -48,6 +48,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { RESET_QUEUE_MESSAGE } from "@/lib/constants";
 import { isIpAddress, isValidUsername, splitUsernames } from "@/lib/usernames";
+import { deriveSiteTargets } from "@/utils/siteTargets";
 
 export default function App(): React.JSX.Element {
   const [selectedPc, setSelectedPc] = useState<string>("");
@@ -56,6 +57,12 @@ export default function App(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPinging, setIsPinging] = useState(false);
   const [pingMode, setPingMode] = useState<"standard" | "infinite">("standard");
+  const [pingTarget, setPingTarget] = useState<string>("");
+  const [pingLinePrefix, setPingLinePrefix] = useState<string | undefined>(undefined);
+  const [pendingSitePing, setPendingSitePing] = useState<{
+    ip: string;
+    prefix: string;
+  } | null>(null);
   const [activeDiagnostic, setActiveDiagnostic] =
     useState<DiagnosticCommandEvent | null>(null);
   const [isAccountChooserOpen, setIsAccountChooserOpen] = useState(false);
@@ -174,10 +181,22 @@ export default function App(): React.JSX.Element {
         }
         if (res.data?.ip) {
           setPingMode("standard");
+          setPingTarget(res.data.ip);
+          setPingLinePrefix(undefined);
+          const targets = deriveSiteTargets(res.data.ip);
+          if (targets.isValid && !targets.isTargetRouter && targets.routerIp) {
+            setPendingSitePing({
+              ip: targets.routerIp,
+              prefix: "[ROUTER .250]",
+            });
+          } else {
+            setPendingSitePing(null);
+          }
           setIsPinging(true);
           handleProbeRemote(res.data.ip);
         } else {
           setRemoteProbe(null);
+          setPendingSitePing(null);
           setIsPinging(false);
         }
       })
@@ -194,6 +213,8 @@ export default function App(): React.JSX.Element {
     setSelectedPc("");
     setTerminal(null);
     setNotFoundTerm(null);
+    setPendingSitePing(null);
+    setPingLinePrefix(undefined);
     setIsPinging(false);
     setActiveDiagnostic(null);
     setActionFeedback(null);
@@ -203,10 +224,45 @@ export default function App(): React.JSX.Element {
     setIsAccountChooserOpen(false);
   };
 
-  const handleStartPing = (mode: "standard" | "infinite" = "standard") => {
+  const handleStartPing = (
+    mode: "standard" | "infinite" = "standard",
+    target?: string,
+    prefix?: string,
+  ) => {
     setActiveDiagnostic(null);
     setPingMode(mode);
+    setPingTarget(target || terminal?.ip || "");
+    setPingLinePrefix(prefix);
     setIsPinging(true);
+  };
+
+  const handleLaunchSitePing = (
+    targetType: "router" | "server",
+    mode: "standard" | "infinite" = "standard",
+  ) => {
+    if (!terminal?.ip) return;
+    const targets = deriveSiteTargets(terminal.ip);
+    const targetIp =
+      targetType === "router" ? targets.routerIp : targets.serverIp;
+    if (!targetIp) return;
+    setPendingSitePing(null); // Cancel automatic sequence if user manually triggers site ping
+    const prefix =
+      targetType === "router" ? "[ROUTER .250]" : "[SERVIDOR .231]";
+    handleStartPing(mode, targetIp, prefix);
+  };
+
+  const handlePingComplete = () => {
+    if (pendingSitePing) {
+      const nextPing = pendingSitePing;
+      setPendingSitePing(null);
+      setPingTarget(nextPing.ip);
+      setPingLinePrefix(nextPing.prefix);
+      setPingMode("standard");
+      // Keep isPinging true so next ping runs seamlessly in LivePingConsole
+      setIsPinging(true);
+    } else {
+      setIsPinging(false);
+    }
   };
 
   const handleRunDiagnostic = (cmd: DiagnosticCommandType) => {
@@ -256,9 +312,10 @@ export default function App(): React.JSX.Element {
 
   const handleTogglePing = () => {
     if (isPinging) {
+      setPendingSitePing(null);
       setIsPinging(false);
     } else {
-      handleStartPing("standard");
+      handleStartPing("standard", terminal?.ip, undefined);
     }
   };
 
@@ -628,12 +685,13 @@ export default function App(): React.JSX.Element {
 
               {/* 2° Consola interna: ping automático y comandos de la quick bar */}
               <LivePingConsole
-                ip={terminal.ip}
+                ip={pingTarget || terminal.ip}
                 isPinging={isPinging}
                 pingMode={pingMode}
+                linePrefix={pingLinePrefix}
                 activeCommand={activeDiagnostic}
                 onTogglePing={handleTogglePing}
-                onPingComplete={() => setIsPinging(false)}
+                onPingComplete={handlePingComplete}
                 onStopCommand={() => {
                   setActiveDiagnostic(null);
                   stopDiagnosticCommand().catch(() => {});

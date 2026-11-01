@@ -185,7 +185,13 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
       expect(screen.getAllByRole('button', { name: /detener ping en vivo/i }).length).toBeGreaterThan(0);
     });
 
-    // 2. Verify when the 4-packet ping completes, isPinging turns off automatically
+    // 2. Verify sequence: first ping completes, triggers second ping to .250, then completes
+    (doneCallback as ((code: number) => void) | null)?.(0);
+
+    await waitFor(() => {
+      expect(startPingMock).toHaveBeenCalledWith('192.0.2.250', false);
+    });
+
     (doneCallback as ((code: number) => void) | null)?.(0);
 
     await waitFor(() => {
