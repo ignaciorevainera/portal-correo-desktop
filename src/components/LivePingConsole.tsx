@@ -19,6 +19,7 @@ interface LivePingConsoleProps {
   ip: string;
   isPinging: boolean;
   pingMode?: "standard" | "infinite";
+  linePrefix?: string;
   activeCommand?: DiagnosticCommandEvent | null;
   onTogglePing: () => void;
   onPingComplete?: () => void;
@@ -45,6 +46,7 @@ export function LivePingConsole({
   ip,
   isPinging,
   pingMode = "standard",
+  linePrefix,
   activeCommand,
   onTogglePing,
   onPingComplete,
@@ -75,14 +77,18 @@ export function LivePingConsole({
 
     const isInfinite = pingMode === "infinite";
     // Append instead of wiping
-    const header = `[${new Date().toLocaleTimeString()}] > ping ${isInfinite ? "-t" : "-n 4"} ${ip}`;
+    const prefixTag = linePrefix ? `${linePrefix} ` : "";
+    const header = `[${new Date().toLocaleTimeString()}] > ${prefixTag}ping ${isInfinite ? "-t" : "-n 4"} ${ip}`;
     setLogs((prev) => [...prev, header]);
 
     const unsubscribe = subscribeToPing(
       ip,
       (text: string) => {
         const sanitized = sanitizePingText(text);
-        const lines = sanitized.split(/\r?\n/).filter(Boolean);
+        const rawLines = sanitized.split(/\r?\n/).filter(Boolean);
+        const lines = linePrefix
+          ? rawLines.map((l) => `${linePrefix} ${l}`)
+          : rawLines;
         if (lines.length > 0) {
           setLogs((prev) => [...prev, ...lines].slice(-400));
         }
@@ -91,8 +97,8 @@ export function LivePingConsole({
         setLogs((prev) => [
           ...prev,
           code === null
-            ? `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`
-            : `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`,
+            ? `[${new Date().toLocaleTimeString()}] ${prefixTag}Proceso ping detenido.\n`
+            : `[${new Date().toLocaleTimeString()}] ${prefixTag}Proceso ping finalizado (código: ${code}).\n`,
         ]);
         onPingCompleteRef.current?.();
       },
