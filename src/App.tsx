@@ -245,6 +245,11 @@ export default function App(): React.JSX.Element {
     const targetIp =
       targetType === "router" ? targets.routerIp : targets.serverIp;
     if (!targetIp) return;
+    if (isPinging && pingTarget === targetIp && pingMode === mode) {
+      setIsPinging(false);
+      setPendingSitePing(null);
+      return;
+    }
     setPendingSitePing(null); // Cancel automatic sequence if user manually triggers site ping
     const prefix =
       targetType === "router" ? "[ROUTER .250]" : "[SERVIDOR .231]";
@@ -320,7 +325,15 @@ export default function App(): React.JSX.Element {
   };
 
   const handleLaunchPingInfinite = () => {
-    handleStartPing("infinite");
+    if (
+      isPinging &&
+      (!pingTarget || pingTarget === terminal?.ip) &&
+      pingMode === "infinite"
+    ) {
+      setIsPinging(false);
+      return;
+    }
+    handleStartPing("infinite", terminal?.ip);
   };
 
   // Global Keyboard Shortcuts (F2 Smart Remote, F3 Ping, F4 MSRA)
@@ -561,6 +574,8 @@ export default function App(): React.JSX.Element {
             <QuickActionsBar
               terminal={terminal}
               isPinging={isPinging}
+              pingMode={pingMode}
+              pingTarget={pingTarget}
               actionFeedback={actionFeedback}
               remoteProbe={remoteProbe}
               isProbingRemote={isProbingRemote}

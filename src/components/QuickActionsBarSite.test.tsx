@@ -95,4 +95,96 @@ describe("QuickActionsBar Site Link Buttons (.250 and .231)", () => {
     const diagBtn = screen.getByRole("button", { name: /menú de diagnóstico de red/i });
     expect(diagBtn.querySelector(".lucide-terminal")).not.toBeNull();
   });
+
+  it("shows active/selected visual indicators on .250 and .231 buttons when pinging them", () => {
+    // 1. Router standard ping active (10.66.10.250)
+    const { rerender } = render(
+      <QuickActionsBar
+        terminal={mockTerminal}
+        isPinging={true}
+        pingTarget="10.66.10.250"
+        pingMode="standard"
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+      />
+    );
+
+    const routerStandardBtn = screen.getByRole("button", { name: /hacer ping al router \.250/i });
+    expect(routerStandardBtn.getAttribute("aria-pressed")).toBe("true");
+    expect(routerStandardBtn.className).toContain("animate-pulse");
+
+    // 2. Router -t infinite ping active
+    rerender(
+      <QuickActionsBar
+        terminal={mockTerminal}
+        isPinging={true}
+        pingTarget="10.66.10.250"
+        pingMode="infinite"
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+      />
+    );
+
+    const routerInfiniteBtn = screen.getByRole("button", { name: /ping continuo -t router \.250/i });
+    expect(routerInfiniteBtn.getAttribute("aria-pressed")).toBe("true");
+    expect(routerInfiniteBtn.className).toContain("animate-pulse");
+
+    // 3. Server standard ping active (10.66.10.231)
+    rerender(
+      <QuickActionsBar
+        terminal={mockTerminal}
+        isPinging={true}
+        pingTarget="10.66.10.231"
+        pingMode="standard"
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+      />
+    );
+
+    const serverStandardBtn = screen.getByRole("button", { name: /hacer ping al servidor \.231/i });
+    expect(serverStandardBtn.getAttribute("aria-pressed")).toBe("true");
+    expect(serverStandardBtn.className).toContain("animate-pulse");
+
+    // 4. Server -t infinite ping active
+    rerender(
+      <QuickActionsBar
+        terminal={mockTerminal}
+        isPinging={true}
+        pingTarget="10.66.10.231"
+        pingMode="infinite"
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+      />
+    );
+
+    const serverInfiniteBtn = screen.getByRole("button", { name: /ping continuo -t servidor \.231/i });
+    expect(serverInfiniteBtn.getAttribute("aria-pressed")).toBe("true");
+    expect(serverInfiniteBtn.className).toContain("animate-pulse");
+
+    // 5. Terminal -t infinite ping active
+    rerender(
+      <QuickActionsBar
+        terminal={mockTerminal}
+        isPinging={true}
+        pingTarget={mockTerminal.ip}
+        pingMode="infinite"
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+      />
+    );
+
+    const terminalInfiniteBtn = screen.getByRole("button", { name: /iniciar ping continuo -t/i });
+    expect(terminalInfiniteBtn.getAttribute("aria-pressed")).toBe("true");
+    expect(terminalInfiniteBtn.className).toContain("animate-pulse");
+  });
 });
