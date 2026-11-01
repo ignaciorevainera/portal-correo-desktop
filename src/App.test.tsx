@@ -207,4 +207,30 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     await new Promise((r) => setTimeout(r, 100));
     expect(scrollMock).not.toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
   });
+
+  it('handles clicking search bar or autofocus hotkey with malformed or object recent searches without crashing', async () => {
+    // Malformed localStorage with objects or invalid values
+    localStorage.setItem(
+      'pcd_recent_searches',
+      JSON.stringify([{ pc: 'WS-CORRUPT-001', ip: '10.0.0.1' }, null, 12345, 'VALID-PC'])
+    );
+
+    render(<App />);
+
+    const searchInput = screen.getByPlaceholderText(/Buscar terminal o IP/i);
+
+    // Clicking / focusing the search bar must not throw or blank out the app
+    fireEvent.click(searchInput);
+    fireEvent.focus(searchInput);
+
+    // App header must still be alive and rendered
+    expect(screen.getByText(/Portal Correo Desktop/i)).toBeInTheDocument();
+
+    // Triggering autofocus hotkey event must not throw or blank out the app
+    window.dispatchEvent(
+      new CustomEvent('pcd:app-autofocus-search', { detail: {} })
+    );
+
+    expect(screen.getByText(/Portal Correo Desktop/i)).toBeInTheDocument();
+  });
 });

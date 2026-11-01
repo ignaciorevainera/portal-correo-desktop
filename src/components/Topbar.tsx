@@ -40,6 +40,19 @@ interface TopbarProps {
 const PORTAL_MDA_URL = "https://mda.correo.local/inventario-terminales";
 const RECENT_SEARCHES_KEY = "pcd_recent_searches";
 
+function normalizeSearchItem(item: unknown): string | null {
+  if (typeof item === "string" && item.trim().length > 0) {
+    return item.trim();
+  }
+  if (item && typeof item === "object" && "pc" in item) {
+    const pcVal = (item as { pc: unknown }).pc;
+    if (typeof pcVal === "string" && pcVal.trim().length > 0) {
+      return pcVal.trim();
+    }
+  }
+  return null;
+}
+
 export function Topbar({
   onSelectTerminal,
   onDirectVnc,
@@ -56,14 +69,30 @@ export function Topbar({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Cargar historial de las últimas 5 terminales desde localStorage
+  // Cargar historial de las últimas 5 terminales desde localStorage de forma segura
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
+      const stored =
+        localStorage.getItem(RECENT_SEARCHES_KEY) ||
+        localStorage.getItem("cmda_recent_searches");
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
-          setRecentSearches(parsed.slice(0, 5));
+          const cleaned: string[] = [];
+          for (const item of parsed) {
+            const normalized = normalizeSearchItem(item);
+            if (normalized && !cleaned.includes(normalized)) {
+              cleaned.push(normalized);
+            }
+          }
+          const finalHistory = cleaned.slice(0, 5);
+          setRecentSearches(finalHistory);
+          try {
+            localStorage.setItem(
+              RECENT_SEARCHES_KEY,
+              JSON.stringify(finalHistory),
+            );
+          } catch {}
         }
       }
     } catch {
@@ -72,10 +101,12 @@ export function Topbar({
   }, []);
 
   const saveRecentSearch = (pc: string) => {
-    if (!pc || !pc.trim()) return;
+    if (!pc || typeof pc !== "string" || !pc.trim()) return;
     const cleanPc = pc.trim().toUpperCase();
     setRecentSearches((prev) => {
-      const filtered = prev.filter((item) => item.toUpperCase() !== cleanPc);
+      const filtered = prev.filter(
+        (item) => typeof item === "string" && item.toUpperCase() !== cleanPc,
+      );
       const next = [cleanPc, ...filtered].slice(0, 5);
       try {
         localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
@@ -87,7 +118,7 @@ export function Topbar({
   const removeRecentSearch = (e: React.MouseEvent, pc: string) => {
     e.stopPropagation();
     setRecentSearches((prev) => {
-      const next = prev.filter((item) => item !== pc);
+      const next = prev.filter((item) => typeof item === "string" && item !== pc);
       try {
         localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
       } catch {}
@@ -121,13 +152,15 @@ export function Topbar({
   }, []);
 
   // Coincidencias basadas en el historial de búsquedas reales (hasta 5)
-  const filteredMatches = query.trim()
-    ? recentSearches
-        .filter((item) =>
-          item.toLowerCase().includes(query.trim().toLowerCase()),
+  const filteredMatches = (
+    query.trim()
+      ? recentSearches.filter(
+          (item) =>
+            typeof item === "string" &&
+            item.toLowerCase().includes(query.trim().toLowerCase()),
         )
-        .slice(0, 5)
-    : recentSearches.slice(0, 5);
+      : recentSearches.filter((item) => typeof item === "string")
+  ).slice(0, 5);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
@@ -293,7 +326,7 @@ export function Topbar({
                   const isSelected = index === selectedIndex;
                   return (
                     <li
-                      key={pcName}
+                      key={`${typeof pcName === "string" ? pcName : index}-${index}`}
                       className={`flex items-center justify-between px-2.5 py-1.5 transition-colors group cursor-pointer ${
                         isSelected
                           ? "text-accent-foreground bg:text-inherit dark:bg-muted/80"
@@ -320,7 +353,7 @@ export function Topbar({
                               : "text-foreground"
                           }`}
                         >
-                          {pcName}
+                          {String(pcName)}
                         </span>
                       </button>
 
