@@ -13,12 +13,12 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Botones manuales en QuickActionsBar
-- [~] Task: Write Tests: split buttons Router .250 / Servidor .231 (-4 principal, -t en desplegable, cierre al hacer clic fuera)
-- [ ] Task: Implement split buttons y props `onLaunchSitePing(target, mode)` en `QuickActionsBar.tsx`
-- [ ] Task: Conectar handlers en `App.tsx`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Write Tests: split buttons Router .250 / Servidor .231 (-4 principal, -t en desplegable, cierre al hacer clic fuera) [8d1155f]
+- [x] Task: Implement split buttons y props `onLaunchSitePing(target, mode)` en `QuickActionsBar.tsx` [8d1155f]
+- [x] Task: Conectar handlers en `App.tsx` [8d1155f]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Cierre
-- [ ] Task: Actualizar `product.md` y `tech-stack.md` (nueva capacidad)
+- [~] Task: Actualizar `product.md` y `tech-stack.md` (nueva capacidad)
 - [ ] Task: Ejecutar suite completa, lint y typecheck
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
