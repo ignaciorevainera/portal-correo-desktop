@@ -87,3 +87,9 @@
 
 
 
+
+---
+
+- [ ] **Track: Ping de Sitio: Router .250 automatico y Servidor .231 manual**
+  *Link: [./tracks/site_link_ping_20261101/index.md](./tracks/site_link_ping_20261101/index.md)*
+
