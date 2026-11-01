@@ -19,6 +19,6 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Cierre
-- [~] Task: Actualizar `product.md` y `tech-stack.md` (nueva capacidad)
-- [ ] Task: Ejecutar suite completa, lint y typecheck
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Actualizar `product.md` y `tech-stack.md` (nueva capacidad) [be2f4ec]
+- [x] Task: Ejecutar suite completa, lint y typecheck
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)

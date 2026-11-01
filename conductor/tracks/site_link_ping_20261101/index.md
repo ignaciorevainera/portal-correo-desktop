@@ -2,7 +2,7 @@
 
 - **ID:** site_link_ping_20261101
 - **Type:** Feature
-- **Status:** New
+- **Status:** Complete
 - **Specification:** [spec.md](./spec.md)
 - **Implementation Plan:** [plan.md](./plan.md)
 - **Metadata:** [metadata.json](./metadata.json)
