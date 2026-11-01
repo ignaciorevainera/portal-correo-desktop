@@ -21,6 +21,7 @@ import {
   RemoteProbeResult,
   DiagnosticCommandType,
 } from "../services/electronClient";
+import { deriveSiteTargets } from "@/utils/siteTargets";
 
 export interface ActionFeedbackState {
   type: "success" | "error" | "warning" | "info";
@@ -47,6 +48,10 @@ export interface QuickActionsBarProps {
   onLaunchSmartRemote?: () => void;
   onReProbeRemote?: () => void;
   onRunDiagnostic?: (cmd: DiagnosticCommandType) => void;
+  onLaunchSitePing?: (
+    target: "router" | "server",
+    mode: "standard" | "infinite",
+  ) => void;
 }
 
 export function QuickActionsBar({
@@ -65,11 +70,16 @@ export function QuickActionsBar({
   onLaunchSmartRemote,
   onReProbeRemote,
   onRunDiagnostic,
+  onLaunchSitePing,
 }: QuickActionsBarProps): React.JSX.Element {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDiagOpen, setIsDiagOpen] = useState(false);
+  const [isRouterDropdownOpen, setIsRouterDropdownOpen] = useState(false);
+  const [isServerDropdownOpen, setIsServerDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const diagRef = useRef<HTMLDivElement>(null);
+  const routerDropdownRef = useRef<HTMLDivElement>(null);
+  const serverDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -82,14 +92,31 @@ export function QuickActionsBar({
       if (diagRef.current && !diagRef.current.contains(event.target as Node)) {
         setIsDiagOpen(false);
       }
+      if (
+        routerDropdownRef.current &&
+        !routerDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsRouterDropdownOpen(false);
+      }
+      if (
+        serverDropdownRef.current &&
+        !serverDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsServerDropdownOpen(false);
+      }
     }
-    if (isDropdownOpen || isDiagOpen) {
+    if (
+      isDropdownOpen ||
+      isDiagOpen ||
+      isRouterDropdownOpen ||
+      isServerDropdownOpen
+    ) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isDropdownOpen, isDiagOpen]);
+  }, [isDropdownOpen, isDiagOpen, isRouterDropdownOpen, isServerDropdownOpen]);
 
   const handleAction = (label: string, callback: () => void): void => {
     callback();
@@ -131,6 +158,8 @@ export function QuickActionsBar({
     remoteProbe?.port5901Open || remoteProbe?.port5900Open,
   );
   const msraOpen = Boolean(remoteProbe?.msraAvailable);
+
+  const siteTargets = deriveSiteTargets(terminal.ip);
 
   return (
     <div className="w-full flex flex-col gap-1">
@@ -305,6 +334,150 @@ export function QuickActionsBar({
           >
             <span className="font-mono text-[11px] font-bold">-t</span>
           </Button>
+
+          {/* Split Button: Router .250 */}
+          {siteTargets.isValid && onLaunchSitePing && (
+            <div
+              className="relative flex items-center shrink-0"
+              ref={routerDropdownRef}
+            >
+              <div className="flex rounded-md shadow-xs">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLaunchSitePing("router", "standard")}
+                  aria-label="Hacer ping al router .250"
+                  title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
+                  className="rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 bg-muted text-foreground border-border hover:bg-muted/80"
+                >
+                  <Network className="h-3.5 w-3.5 text-blue-500 mr-1" />
+                  <span>.250</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsRouterDropdownOpen((prev) => !prev)}
+                  aria-label="Opciones de ping para router .250"
+                  title="Opciones de ping al router"
+                  className="rounded-l-none px-1 cursor-pointer border-l-0 h-8 bg-muted text-foreground border-border hover:bg-muted/80"
+                >
+                  <ChevronDown
+                    className={`h-3 w-3 transition-transform ${
+                      isRouterDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </Button>
+              </div>
+
+              {isRouterDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 w-44 p-1.5 bg-popover border border-border rounded-md shadow-lg z-50 flex flex-col gap-1 text-popover-foreground">
+                  <div className="px-2 py-0.5 text-[10px] font-mono text-muted-foreground border-b border-border/50 truncate">
+                    {siteTargets.routerIp}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsRouterDropdownOpen(false);
+                      onLaunchSitePing("router", "standard");
+                    }}
+                    aria-label="Ping estándar (4 paquetes) router .250"
+                    className="justify-start text-xs w-full cursor-pointer h-7 px-2 hover:bg-muted"
+                  >
+                    <span>Ping estándar (4)</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsRouterDropdownOpen(false);
+                      onLaunchSitePing("router", "infinite");
+                    }}
+                    aria-label="Ping continuo -t router .250"
+                    className="justify-start text-xs w-full cursor-pointer h-7 px-2 hover:bg-muted font-semibold text-blue-600 dark:text-blue-400"
+                  >
+                    <span>Ping continuo (-t)</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Split Button: Servidor .231 */}
+          {siteTargets.isValid && onLaunchSitePing && (
+            <div
+              className="relative flex items-center shrink-0"
+              ref={serverDropdownRef}
+            >
+              <div className="flex rounded-md shadow-xs">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLaunchSitePing("server", "standard")}
+                  aria-label="Hacer ping al servidor .231"
+                  title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
+                  className="rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 bg-muted text-foreground border-border hover:bg-muted/80"
+                >
+                  <Layers className="h-3.5 w-3.5 text-amber-500 mr-1" />
+                  <span>.231</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsServerDropdownOpen((prev) => !prev)}
+                  aria-label="Opciones de ping para servidor .231"
+                  title="Opciones de ping al servidor de transacciones"
+                  className="rounded-l-none px-1 cursor-pointer border-l-0 h-8 bg-muted text-foreground border-border hover:bg-muted/80"
+                >
+                  <ChevronDown
+                    className={`h-3 w-3 transition-transform ${
+                      isServerDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </Button>
+              </div>
+
+              {isServerDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 w-44 p-1.5 bg-popover border border-border rounded-md shadow-lg z-50 flex flex-col gap-1 text-popover-foreground">
+                  <div className="px-2 py-0.5 text-[10px] font-mono text-muted-foreground border-b border-border/50 truncate">
+                    {siteTargets.serverIp}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsServerDropdownOpen(false);
+                      onLaunchSitePing("server", "standard");
+                    }}
+                    aria-label="Ping estándar (4 paquetes) servidor .231"
+                    className="justify-start text-xs w-full cursor-pointer h-7 px-2 hover:bg-muted"
+                  >
+                    <span>Ping estándar (4)</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsServerDropdownOpen(false);
+                      onLaunchSitePing("server", "infinite");
+                    }}
+                    aria-label="Ping continuo -t servidor .231"
+                    className="justify-start text-xs w-full cursor-pointer h-7 px-2 hover:bg-muted font-semibold text-amber-600 dark:text-amber-400"
+                  >
+                    <span>Ping continuo (-t)</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Menú Desplegable Diagnóstico de Red */}
           <div ref={diagRef} className="relative">

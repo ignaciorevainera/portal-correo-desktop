@@ -573,6 +573,7 @@ export default function App(): React.JSX.Element {
               onTogglePing={handleTogglePing}
               onLaunchPingInfinite={handleLaunchPingInfinite}
               onRunDiagnostic={handleRunDiagnostic}
+              onLaunchSitePing={handleLaunchSitePing}
               onOpenSubnetScanner={() => setIsSubnetDrawerOpen(true)}
               onRefreshUptime={handleRefreshUptime}
               isRefreshingUptime={isRefreshingUptime}
