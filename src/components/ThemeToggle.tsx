@@ -10,7 +10,7 @@ export function ThemeToggle(): React.JSX.Element {
     <Button
       type="button"
       variant="ghost"
-      size="default"
+      size="sm"
       onClick={toggleTheme}
       aria-label="Cambiar tema de interfaz"
       className="text-muted-foreground hover:text-foreground cursor-pointer px-2"

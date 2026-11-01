@@ -12,6 +12,8 @@ import {
   Network,
   Route,
   Layers,
+  Wifi,
+  Terminal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,12 +76,8 @@ export function QuickActionsBar({
 }: QuickActionsBarProps): React.JSX.Element {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDiagOpen, setIsDiagOpen] = useState(false);
-  const [isRouterDropdownOpen, setIsRouterDropdownOpen] = useState(false);
-  const [isServerDropdownOpen, setIsServerDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const diagRef = useRef<HTMLDivElement>(null);
-  const routerDropdownRef = useRef<HTMLDivElement>(null);
-  const serverDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -92,31 +90,14 @@ export function QuickActionsBar({
       if (diagRef.current && !diagRef.current.contains(event.target as Node)) {
         setIsDiagOpen(false);
       }
-      if (
-        routerDropdownRef.current &&
-        !routerDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsRouterDropdownOpen(false);
-      }
-      if (
-        serverDropdownRef.current &&
-        !serverDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsServerDropdownOpen(false);
-      }
     }
-    if (
-      isDropdownOpen ||
-      isDiagOpen ||
-      isRouterDropdownOpen ||
-      isServerDropdownOpen
-    ) {
+    if (isDropdownOpen || isDiagOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isDropdownOpen, isDiagOpen, isRouterDropdownOpen, isServerDropdownOpen]);
+  }, [isDropdownOpen, isDiagOpen]);
 
   const handleAction = (label: string, callback: () => void): void => {
     callback();
@@ -168,7 +149,7 @@ export function QuickActionsBar({
         {/* Grupo de Botones de Acción (Conexión Remota, Ping, -t, Diag, Subred) */}
         <div className="flex items-center flex-wrap gap-1 flex-1 min-w-0">
           {/* Split Button Inteligente de Conexión Remota */}
-          <div className="relative flex items-center min-w-[155px] max-w-[210px] flex-1" ref={dropdownRef}>
+          <div className="relative flex items-center min-w-[180px] max-w-[240px] flex-1" ref={dropdownRef}>
             <div className="flex w-full rounded-md shadow-xs">
               <Button
                 type="button"
@@ -297,185 +278,105 @@ export function QuickActionsBar({
             )}
           </div>
 
-          {/* Botón de Ping con el mismo ancho que Conexión Remota */}
-          <Button
-            type="button"
-            variant={isPinging ? "destructive" : "outline"}
-            size="sm"
-            onClick={onTogglePing}
-            aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
-            title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
-            className={`min-w-[155px] max-w-[210px] flex-1 text-xs font-semibold cursor-pointer h-8 px-2.5 truncate ${
-              isPinging
-                ? "animate-pulse"
-                : "bg-muted text-foreground border-border hover:bg-muted/80"
-            }`}
-          >
-            <Activity
-              className={`h-3.5 w-3.5 shrink-0 ${
+          {/* Split Button: Ping del equipo consultado (unificado con -t y ancho optimizado) */}
+          <div className="flex rounded-md shadow-xs shrink-0">
+            <Button
+              type="button"
+              variant={isPinging ? "destructive" : "outline"}
+              size="sm"
+              onClick={onTogglePing}
+              aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
+              title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
+              className={`rounded-r-none h-8 px-2.5 text-xs font-semibold cursor-pointer ${
                 isPinging
                   ? "animate-pulse"
-                  : "text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "bg-muted text-foreground border-border hover:bg-muted/80"
               }`}
-            />
-            <span className="truncate">{isPinging ? "Detener" : "Ping"}</span>
-            <Kbd className="hidden md:inline-block ml-auto">F4</Kbd>
-          </Button>
-
-          {/* Botón Ping continuo -t */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onLaunchPingInfinite?.()}
-            aria-label="Iniciar Ping continuo -t"
-            title="Ejecutar Ping infinito / continuo (-t)"
-            className="h-8 px-2 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer shrink-0"
-          >
-            <span className="font-mono text-[11px] font-bold">-t</span>
-          </Button>
-
-          {/* Split Button: Router .250 */}
-          {siteTargets.isValid && onLaunchSitePing && (
-            <div
-              className="relative flex items-center shrink-0"
-              ref={routerDropdownRef}
             >
-              <div className="flex rounded-md shadow-xs">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onLaunchSitePing("router", "standard")}
-                  aria-label="Hacer ping al router .250"
-                  title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
-                  className="rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 bg-muted text-foreground border-border hover:bg-muted/80"
-                >
-                  <Network className="h-3.5 w-3.5 text-blue-500 mr-1" />
-                  <span>.250</span>
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsRouterDropdownOpen((prev) => !prev)}
-                  aria-label="Opciones de ping para router .250"
-                  title="Opciones de ping al router"
-                  className="rounded-l-none px-1 cursor-pointer border-l-0 h-8 bg-muted text-foreground border-border hover:bg-muted/80"
-                >
-                  <ChevronDown
-                    className={`h-3 w-3 transition-transform ${
-                      isRouterDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </Button>
-              </div>
+              <Activity
+                className={`h-3.5 w-3.5 shrink-0 mr-1.5 ${
+                  isPinging
+                    ? "animate-pulse"
+                    : "text-emerald-600 dark:text-emerald-400 font-bold"
+                }`}
+              />
+              <span>{isPinging ? "Detener" : "Ping"}</span>
+              <Kbd className="hidden md:inline-block ml-1.5">F4</Kbd>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onLaunchPingInfinite?.()}
+              aria-label="Iniciar Ping continuo -t"
+              title="Ejecutar Ping infinito / continuo (-t)"
+              className="rounded-l-none border-l-0 h-8 px-2 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer shrink-0"
+            >
+              <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                -t
+              </span>
+            </Button>
+          </div>
 
-              {isRouterDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-44 p-1.5 bg-popover border border-border rounded-md shadow-lg z-50 flex flex-col gap-1 text-popover-foreground">
-                  <div className="px-2 py-0.5 text-[10px] font-mono text-muted-foreground border-b border-border/50 truncate">
-                    {siteTargets.routerIp}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsRouterDropdownOpen(false);
-                      onLaunchSitePing("router", "standard");
-                    }}
-                    aria-label="Ping estándar (4 paquetes) router .250"
-                    className="justify-start text-xs w-full cursor-pointer h-7 px-2 hover:bg-muted"
-                  >
-                    <span>Ping estándar (4)</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsRouterDropdownOpen(false);
-                      onLaunchSitePing("router", "infinite");
-                    }}
-                    aria-label="Ping continuo -t router .250"
-                    className="justify-start text-xs w-full cursor-pointer h-7 px-2 hover:bg-muted font-semibold text-blue-600 dark:text-blue-400"
-                  >
-                    <span>Ping continuo (-t)</span>
-                  </Button>
-                </div>
-              )}
+          {/* Split Button: Router .250 (1 clic: estándar .250 y continuo -t, con ícono Wifi) */}
+          {siteTargets.isValid && onLaunchSitePing && (
+            <div className="flex rounded-md shadow-xs shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("router", "standard")}
+                aria-label="Hacer ping al router .250"
+                title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
+                className="rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 bg-muted text-foreground border-border hover:bg-muted/80 flex items-center gap-1"
+              >
+                <Wifi className="h-3.5 w-3.5 text-blue-500" />
+                <span>.250</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("router", "infinite")}
+                aria-label="Ping continuo -t router .250"
+                title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
+                className="rounded-l-none px-2 cursor-pointer border-l-0 h-8 bg-muted text-foreground border-border hover:bg-muted/80 text-xs font-semibold"
+              >
+                <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                  -t
+                </span>
+              </Button>
             </div>
           )}
 
-          {/* Split Button: Servidor .231 */}
+          {/* Split Button: Servidor .231 (1 clic: estándar .231 y continuo -t) */}
           {siteTargets.isValid && onLaunchSitePing && (
-            <div
-              className="relative flex items-center shrink-0"
-              ref={serverDropdownRef}
-            >
-              <div className="flex rounded-md shadow-xs">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onLaunchSitePing("server", "standard")}
-                  aria-label="Hacer ping al servidor .231"
-                  title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
-                  className="rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 bg-muted text-foreground border-border hover:bg-muted/80"
-                >
-                  <Layers className="h-3.5 w-3.5 text-amber-500 mr-1" />
-                  <span>.231</span>
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsServerDropdownOpen((prev) => !prev)}
-                  aria-label="Opciones de ping para servidor .231"
-                  title="Opciones de ping al servidor de transacciones"
-                  className="rounded-l-none px-1 cursor-pointer border-l-0 h-8 bg-muted text-foreground border-border hover:bg-muted/80"
-                >
-                  <ChevronDown
-                    className={`h-3 w-3 transition-transform ${
-                      isServerDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </Button>
-              </div>
-
-              {isServerDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-44 p-1.5 bg-popover border border-border rounded-md shadow-lg z-50 flex flex-col gap-1 text-popover-foreground">
-                  <div className="px-2 py-0.5 text-[10px] font-mono text-muted-foreground border-b border-border/50 truncate">
-                    {siteTargets.serverIp}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsServerDropdownOpen(false);
-                      onLaunchSitePing("server", "standard");
-                    }}
-                    aria-label="Ping estándar (4 paquetes) servidor .231"
-                    className="justify-start text-xs w-full cursor-pointer h-7 px-2 hover:bg-muted"
-                  >
-                    <span>Ping estándar (4)</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsServerDropdownOpen(false);
-                      onLaunchSitePing("server", "infinite");
-                    }}
-                    aria-label="Ping continuo -t servidor .231"
-                    className="justify-start text-xs w-full cursor-pointer h-7 px-2 hover:bg-muted font-semibold text-amber-600 dark:text-amber-400"
-                  >
-                    <span>Ping continuo (-t)</span>
-                  </Button>
-                </div>
-              )}
+            <div className="flex rounded-md shadow-xs shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("server", "standard")}
+                aria-label="Hacer ping al servidor .231"
+                title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
+                className="rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 bg-muted text-foreground border-border hover:bg-muted/80 flex items-center gap-1"
+              >
+                <Layers className="h-3.5 w-3.5 text-amber-500" />
+                <span>.231</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("server", "infinite")}
+                aria-label="Ping continuo -t servidor .231"
+                title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
+                className="rounded-l-none px-2 cursor-pointer border-l-0 h-8 bg-muted text-foreground border-border hover:bg-muted/80 text-xs font-semibold"
+              >
+                <span className="font-mono text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                  -t
+                </span>
+              </Button>
             </div>
           )}
 
@@ -490,7 +391,7 @@ export function QuickActionsBar({
               title="Diagnóstico nativo (Nbtstat, Tracert, ARP)"
               className="h-8 px-2 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer flex items-center gap-1 shrink-0"
             >
-              <Network className="h-3.5 w-3.5 text-cyan-500" />
+              <Terminal className="h-3.5 w-3.5 text-cyan-500" />
               <span className="hidden xl:inline text-[11px]">Diag</span>
               <ChevronDown className="h-3 w-3 text-muted-foreground" />
             </Button>

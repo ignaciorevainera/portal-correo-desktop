@@ -25,7 +25,7 @@ const mockTerminal: TerminalData = {
 };
 
 describe("QuickActionsBar Site Link Buttons (.250 and .231)", () => {
-  it("renders Router .250 and Servidor .231 split buttons when terminal has valid IP", () => {
+  it("renders Router .250 and Servidor .231 split buttons when terminal has valid IP with direct 1-click -4 actions", () => {
     const onLaunchSitePing = vi.fn();
     render(
       <QuickActionsBar
@@ -52,7 +52,7 @@ describe("QuickActionsBar Site Link Buttons (.250 and .231)", () => {
     expect(onLaunchSitePing).toHaveBeenCalledWith("server", "standard");
   });
 
-  it("allows selecting continuous ping (-t) via dropdown", () => {
+  it("allows direct 1-click continuous ping (-t) without submenu", () => {
     const onLaunchSitePing = vi.fn();
     render(
       <QuickActionsBar
@@ -65,13 +65,34 @@ describe("QuickActionsBar Site Link Buttons (.250 and .231)", () => {
       />
     );
 
-    const routerOptionsBtn = screen.getByRole("button", { name: /opciones de ping para router \.250/i });
-    fireEvent.click(routerOptionsBtn);
-
-    const continuousPingOption = screen.getByRole("button", { name: /ping continuo -t router \.250/i });
-    expect(continuousPingOption).toBeInTheDocument();
-
-    fireEvent.click(continuousPingOption);
+    // Direct 1-click -t buttons
+    const routerInfiniteBtn = screen.getByRole("button", { name: /ping continuo -t router \.250/i });
+    expect(routerInfiniteBtn).toBeInTheDocument();
+    fireEvent.click(routerInfiniteBtn);
     expect(onLaunchSitePing).toHaveBeenCalledWith("router", "infinite");
+
+    const serverInfiniteBtn = screen.getByRole("button", { name: /ping continuo -t servidor \.231/i });
+    expect(serverInfiniteBtn).toBeInTheDocument();
+    fireEvent.click(serverInfiniteBtn);
+    expect(onLaunchSitePing).toHaveBeenCalledWith("server", "infinite");
+  });
+
+  it("renders Wifi icon on .250 button and Terminal icon on diagnostic menu", () => {
+    render(
+      <QuickActionsBar
+        terminal={mockTerminal}
+        isPinging={false}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+      />
+    );
+
+    const routerBtn = screen.getByRole("button", { name: /hacer ping al router \.250/i });
+    expect(routerBtn.querySelector(".lucide-wifi")).not.toBeNull();
+
+    const diagBtn = screen.getByRole("button", { name: /menú de diagnóstico de red/i });
+    expect(diagBtn.querySelector(".lucide-terminal")).not.toBeNull();
   });
 });

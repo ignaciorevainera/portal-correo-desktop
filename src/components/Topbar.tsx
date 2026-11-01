@@ -438,7 +438,7 @@ export function Topbar({
             <Button
               type="button"
               variant="ghost"
-              size="default"
+              size="sm"
               onClick={handleOpenPortalMda}
               aria-label="Abrir Portal MDA"
               title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
@@ -452,7 +452,7 @@ export function Topbar({
             <Button
               type="button"
               variant="ghost"
-              size="default"
+              size="sm"
               onClick={() => onOpenSettings?.()}
               aria-label="Abrir ajustes y configuración"
               title="Configuración y Actualizaciones (Atajo F10)"
@@ -465,7 +465,7 @@ export function Topbar({
             <Button
               type="button"
               variant="ghost"
-              size="default"
+              size="sm"
               onClick={() => setIsInfoOpen(true)}
               aria-label="Abrir información del sistema"
               title="Información y características del aplicativo"
@@ -483,7 +483,7 @@ export function Topbar({
             <Button
               type="button"
               variant="ghost"
-              size="default"
+              size="sm"
               onClick={minimizeWindow}
               aria-label="Minimizar ventana"
               title="Minimizar a barra de tareas"
@@ -496,7 +496,7 @@ export function Topbar({
             <Button
               type="button"
               variant="ghost"
-              size="default"
+              size="sm"
               onClick={hideToTray}
               aria-label="Minimizar a bandeja del sistema"
               title="Ocultar en bandeja del sistema (Turn Off)"

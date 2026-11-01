@@ -86,19 +86,18 @@ export function LivePingConsole({
       (text: string) => {
         const sanitized = sanitizePingText(text);
         const rawLines = sanitized.split(/\r?\n/).filter(Boolean);
-        const lines = linePrefix
-          ? rawLines.map((l) => `${linePrefix} ${l}`)
-          : rawLines;
-        if (lines.length > 0) {
-          setLogs((prev) => [...prev, ...lines].slice(-400));
+        // Mantener las líneas intermedias limpias (el prefijo solo va en la cabecera inicial)
+        if (rawLines.length > 0) {
+          setLogs((prev) => [...prev, ...rawLines].slice(-400));
         }
       },
       (code: number) => {
+        // Línea final limpia sin prefijo repetido
         setLogs((prev) => [
           ...prev,
           code === null
-            ? `[${new Date().toLocaleTimeString()}] ${prefixTag}Proceso ping detenido.\n`
-            : `[${new Date().toLocaleTimeString()}] ${prefixTag}Proceso ping finalizado (código: ${code}).\n`,
+            ? `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`
+            : `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`,
         ]);
         onPingCompleteRef.current?.();
       },
@@ -108,7 +107,7 @@ export function LivePingConsole({
     return () => {
       unsubscribe();
     };
-  }, [isPinging, ip, pingMode]);
+  }, [isPinging, ip, pingMode, linePrefix]);
 
   // Generic diagnostic command subscription (nbtstat, tracert, arp)
   useEffect(() => {
