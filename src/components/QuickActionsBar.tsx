@@ -287,21 +287,21 @@ export function QuickActionsBar({
               onClick={onTogglePing}
               aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
               title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
-              className={`rounded-r-none h-8 px-2.5 text-xs font-semibold cursor-pointer ${
+              className={`rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer w-[104px] justify-between ${
                 isPinging
                   ? "animate-pulse"
                   : "bg-muted text-foreground border-border hover:bg-muted/80"
               }`}
             >
               <Activity
-                className={`h-3.5 w-3.5 shrink-0 mr-1.5 ${
+                className={`h-3.5 w-3.5 shrink-0 mr-1 ${
                   isPinging
                     ? "animate-pulse"
                     : "text-emerald-600 dark:text-emerald-400 font-bold"
                 }`}
               />
-              <span>{isPinging ? "Detener" : "Ping"}</span>
-              <Kbd className="hidden md:inline-block ml-1.5">F4</Kbd>
+              <span className="truncate">{isPinging ? "Detener" : "Ping"}</span>
+              <Kbd className="hidden md:inline-block ml-auto">F4</Kbd>
             </Button>
             <Button
               type="button"
@@ -482,15 +482,14 @@ export function QuickActionsBar({
           )}
         </div>
 
-        {/* Columna 3: Tarjeta de Uptime compacta con Refresco */}
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0">
+        {/* Columna 3: Tarjeta de Uptime compacta con Refresco (sin label de texto para optimizar espacio) */}
+        <div
+          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0"
+          title={`Uptime: ${terminal.uptimeText || "N/D"}`}
+        >
           <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          <span className="text-muted-foreground text-[10px] font-medium hidden sm:inline">
-            Uptime:
-          </span>
           <span
             className="font-mono font-semibold text-foreground truncate max-w-[100px] text-[11px]"
-            title={terminal.uptimeText}
           >
             {terminal.uptimeText || "N/D"}
           </span>

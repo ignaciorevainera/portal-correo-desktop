@@ -47,7 +47,8 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
 
     expect(pingBtn).toBeInTheDocument();
     expect(pingInfiniteBtn).toBeInTheDocument();
-    expect(screen.getByText(/uptime/i)).toBeInTheDocument();
+    expect(screen.getByText(terminal.uptimeText)).toBeInTheDocument();
+    expect(screen.getByTitle(/uptime:/i)).toBeInTheDocument();
 
     // Width footprint check: Remote connection has expanded room, Ping button is unified in split button
     expect(pingBtn.className).toContain('rounded-r-none');

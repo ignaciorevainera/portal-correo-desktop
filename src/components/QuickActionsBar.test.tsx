@@ -56,7 +56,8 @@ describe('QuickActionsBar Polish: Subnet Scanner & Uptime Refresh', () => {
       />
     );
 
-    expect(screen.getByText(/uptime/i)).toBeInTheDocument();
+    expect(screen.getByText(terminal.uptimeText)).toBeInTheDocument();
+    expect(screen.getByTitle(/uptime:/i)).toBeInTheDocument();
     expect(screen.getByText(terminal.uptimeText)).toBeInTheDocument();
 
     const refreshBtn = screen.getByRole('button', { name: /refrescar uptime/i });
