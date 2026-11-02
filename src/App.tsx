@@ -576,6 +576,7 @@ export default function App(): React.JSX.Element {
               isPinging={isPinging}
               pingMode={pingMode}
               pingTarget={pingTarget}
+              pingLinePrefix={pingLinePrefix}
               actionFeedback={actionFeedback}
               remoteProbe={remoteProbe}
               isProbingRemote={isProbingRemote}

@@ -42,6 +42,7 @@ export interface QuickActionsBarProps {
   isPinging: boolean;
   pingMode?: "standard" | "infinite";
   pingTarget?: string;
+  pingLinePrefix?: string;
   actionFeedback?: ActionFeedbackState | null;
   onLaunchVnc: () => void;
   onLaunchMsra: () => void;
@@ -66,6 +67,7 @@ export function QuickActionsBar({
   isPinging,
   pingMode = "standard",
   pingTarget,
+  pingLinePrefix,
   actionFeedback,
   onLaunchVnc,
   onLaunchMsra,
@@ -142,20 +144,35 @@ export function QuickActionsBar({
 
   const siteTargets = deriveSiteTargets(terminal.ip);
 
-  // Active ping visual indicators
+  // Active ping visual indicators with strict mutual exclusivity
   const currentPingTarget = pingTarget || terminal.ip;
-  const isTerminalTarget = Boolean(currentPingTarget && currentPingTarget === terminal.ip);
-  const isRouterTarget = Boolean(siteTargets.routerIp && currentPingTarget === siteTargets.routerIp);
-  const isServerTarget = Boolean(siteTargets.serverIp && currentPingTarget === siteTargets.serverIp);
 
-  const isTerminalStandardActive = isPinging && isTerminalTarget && pingMode === "standard";
-  const isTerminalInfiniteActive = isPinging && isTerminalTarget && pingMode === "infinite";
+  const isRouterActive = Boolean(
+    isPinging && (
+      pingLinePrefix === "[ROUTER .250]" ||
+      (siteTargets.routerIp && currentPingTarget === siteTargets.routerIp && (!siteTargets.isTargetRouter || pingLinePrefix === "[ROUTER .250]"))
+    )
+  );
 
-  const isRouterStandardActive = isPinging && isRouterTarget && pingMode === "standard";
-  const isRouterInfiniteActive = isPinging && isRouterTarget && pingMode === "infinite";
+  const isServerActive = Boolean(
+    isPinging && (
+      pingLinePrefix === "[SERVIDOR .231]" ||
+      (siteTargets.serverIp && currentPingTarget === siteTargets.serverIp)
+    )
+  );
 
-  const isServerStandardActive = isPinging && isServerTarget && pingMode === "standard";
-  const isServerInfiniteActive = isPinging && isServerTarget && pingMode === "infinite";
+  const isTerminalActive = Boolean(
+    isPinging && !isRouterActive && !isServerActive
+  );
+
+  const isTerminalStandardActive = isTerminalActive && pingMode === "standard";
+  const isTerminalInfiniteActive = isTerminalActive && pingMode === "infinite";
+
+  const isRouterStandardActive = isRouterActive && pingMode === "standard";
+  const isRouterInfiniteActive = isRouterActive && pingMode === "infinite";
+
+  const isServerStandardActive = isServerActive && pingMode === "standard";
+  const isServerInfiniteActive = isServerActive && pingMode === "infinite";
 
   return (
     <div className="w-full flex flex-col gap-1">
@@ -297,7 +314,7 @@ export function QuickActionsBar({
           <div className="flex rounded-md shadow-xs shrink-0">
             <Button
               type="button"
-              variant={isPinging ? "destructive" : "outline"}
+              variant="outline"
               size="sm"
               onClick={onTogglePing}
               aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
@@ -305,7 +322,7 @@ export function QuickActionsBar({
               title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
               className={`rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer w-[104px] justify-between border-border transition-colors ${
                 isPinging
-                  ? "animate-pulse"
+                  ? "bg-destructive/15 text-destructive hover:bg-destructive/25 animate-pulse"
                   : "bg-muted text-foreground hover:bg-muted/80"
               }`}
             >
@@ -331,13 +348,13 @@ export function QuickActionsBar({
                   ? "Ping continuo (-t) en ejecución (clic para detener)"
                   : "Ejecutar Ping infinito / continuo (-t)"
               }
-              className={`rounded-l-none border-l-0 h-8 px-2 text-xs font-semibold cursor-pointer shrink-0 border-border transition-colors ${
+              className={`rounded-l-none border-l-0 h-8 w-8 px-0 justify-center text-xs font-semibold cursor-pointer shrink-0 border-border transition-colors ${
                 isTerminalInfiniteActive
-                  ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 animate-pulse font-bold"
+                  ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 animate-pulse"
                   : "bg-muted text-foreground hover:bg-muted/80"
               }`}
             >
-              <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="font-mono text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                 -t
               </span>
             </Button>
@@ -360,7 +377,7 @@ export function QuickActionsBar({
                 }
                 className={`rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 flex items-center gap-1 border-border transition-colors ${
                   isRouterStandardActive
-                    ? "bg-blue-500/20 text-blue-600 dark:text-blue-400 animate-pulse font-bold"
+                    ? "bg-blue-500/20 text-blue-600 dark:text-blue-400 animate-pulse"
                     : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
@@ -385,13 +402,13 @@ export function QuickActionsBar({
                     ? `Ping continuo (-t) a ${siteTargets.routerIp} en ejecución (clic para detener)`
                     : `Ping continuo (-t) a ${siteTargets.routerIp}`
                 }
-                className={`rounded-l-none px-2 cursor-pointer border-l-0 h-8 text-xs font-semibold border-border transition-colors ${
+                className={`rounded-l-none border-l-0 h-8 w-8 px-0 justify-center text-xs font-semibold cursor-pointer shrink-0 border-border transition-colors ${
                   isRouterInfiniteActive
-                    ? "bg-blue-500/20 text-blue-600 dark:text-blue-400 animate-pulse font-bold"
+                    ? "bg-blue-500/20 text-blue-600 dark:text-blue-400 animate-pulse"
                     : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
-                <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                <span className="font-mono text-[11px] font-semibold text-blue-600 dark:text-blue-400">
                   -t
                 </span>
               </Button>
@@ -415,7 +432,7 @@ export function QuickActionsBar({
                 }
                 className={`rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 flex items-center gap-1 border-border transition-colors ${
                   isServerStandardActive
-                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 animate-pulse font-bold"
+                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 animate-pulse"
                     : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
@@ -440,13 +457,13 @@ export function QuickActionsBar({
                     ? `Ping continuo (-t) a ${siteTargets.serverIp} en ejecución (clic para detener)`
                     : `Ping continuo (-t) a ${siteTargets.serverIp}`
                 }
-                className={`rounded-l-none px-2 cursor-pointer border-l-0 h-8 text-xs font-semibold border-border transition-colors ${
+                className={`rounded-l-none border-l-0 h-8 w-8 px-0 justify-center text-xs font-semibold cursor-pointer shrink-0 border-border transition-colors ${
                   isServerInfiniteActive
-                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 animate-pulse font-bold"
+                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 animate-pulse"
                     : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
-                <span className="font-mono text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                <span className="font-mono text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                   -t
                 </span>
               </Button>

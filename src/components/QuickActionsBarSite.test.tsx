@@ -133,6 +133,11 @@ describe("QuickActionsBar Site Link Buttons (.250 and .231)", () => {
     expect(routerInfiniteBtn.getAttribute("aria-pressed")).toBe("true");
     expect(routerInfiniteBtn.className).toContain("animate-pulse");
 
+    // The terminal -t button must NOT be active or green when router -t is running
+    const terminalInfiniteBtnWhenRouter = screen.getByRole("button", { name: /iniciar ping continuo -t/i });
+    expect(terminalInfiniteBtnWhenRouter.getAttribute("aria-pressed")).toBe("false");
+    expect(terminalInfiniteBtnWhenRouter.className).not.toContain("bg-emerald-500/20");
+
     // 3. Server standard ping active (10.66.10.231)
     rerender(
       <QuickActionsBar
