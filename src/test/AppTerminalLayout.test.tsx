@@ -25,7 +25,7 @@ const terminal = {
 
 async function renderLoadedApp() {
   const { container } = render(<App />);
-  const input = screen.getByPlaceholderText(/buscar terminal o ip/i);
+  const input = screen.getByPlaceholderText(/buscar terminal/i);
 
   fireEvent.change(input, { target: { value: "WS-CORP-100" } });
   fireEvent.keyDown(input, { key: "Enter", code: "Enter" });

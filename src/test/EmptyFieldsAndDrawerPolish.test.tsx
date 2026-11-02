@@ -48,7 +48,7 @@ describe('Terminal identity, details grid & SubnetScannerDrawer polish', () => {
         onClose={vi.fn()}
         targetIp="192.0.2.200"
         onSelectTerminal={vi.fn()}
-        onLaunchVnc={vi.fn()}
+        onSmartRemote={vi.fn()}
       />,
     );
 

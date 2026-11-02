@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  classifySearch,
   isIpAddress,
   isValidUsername,
   splitUsernames,
@@ -30,5 +31,21 @@ describe("usernames", () => {
     expect(isIpAddress("192.0.2.101")).toBe(true);
     expect(isIpAddress("jperez")).toBe(false);
     expect(isIpAddress("192.0.2")).toBe(false);
+  });
+
+  it("classifies account-like and terminal-like searches", () => {
+    expect(classifySearch("jperez")).toBe("account");
+    expect(classifySearch("mgomez")).toBe("account");
+    expect(classifySearch("operadordemo01")).toBe("account");
+    expect(classifySearch("  jperez  ")).toBe("account");
+
+    expect(classifySearch("PC-DEMO-001")).toBe("terminal");
+    expect(classifySearch("WS-CORP-100")).toBe("terminal");
+    expect(classifySearch("192.0.2.101")).toBe("terminal");
+    expect(classifySearch("PCDEMO01")).toBe("terminal");
+    expect(classifySearch("TERM01")).toBe("terminal");
+    expect(classifySearch("juan")).toBe("terminal");
+    expect(classifySearch("")).toBe("terminal");
+    expect(classifySearch(null)).toBe("terminal");
   });
 });

@@ -7,6 +7,7 @@ import * as electronClient from "../services/electronClient";
 describe("Topbar & Compact Unified Titlebar component", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    localStorage.clear();
   });
 
   it("renders search input, brand and compact layout", () => {
@@ -17,7 +18,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
       </ThemeProvider>,
     );
 
-    const input = screen.getByPlaceholderText(/buscar terminal o ip/i);
+    const input = screen.getByPlaceholderText(/buscar terminal/i);
     expect(input).toBeInTheDocument();
     expect(screen.getByText(/portal correo desktop/i)).toBeInTheDocument();
   });
@@ -94,7 +95,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
       </ThemeProvider>,
     );
 
-    const input = screen.getByPlaceholderText(/buscar terminal o ip/i);
+    const input = screen.getByPlaceholderText(/buscar terminal/i);
     fireEvent.change(input, { target: { value: "WS-DEMO" } });
 
     const suggestion = screen.getByText(/WS-DEMO-002/i);
@@ -119,7 +120,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
         />
       </ThemeProvider>,
     );
-    const input2 = screen.getByPlaceholderText(/buscar terminal o ip/i);
+    const input2 = screen.getByPlaceholderText(/buscar terminal/i);
     fireEvent.change(input2, { target: { value: "WS-DEMO" } });
 
     const pingQuickBtn = screen.getByRole("button", {
@@ -140,7 +141,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     const header = container.querySelector("header");
     expect(header?.className).toContain("h-14");
 
-    const input = screen.getByPlaceholderText(/buscar terminal o ip/i);
+    const input = screen.getByPlaceholderText(/buscar terminal/i);
     expect(input.className).toContain("h-10");
 
     const portalBtn = screen.getByRole("button", { name: /portal mda/i });
@@ -148,6 +149,57 @@ describe("Topbar & Compact Unified Titlebar component", () => {
 
     const buttonGroup = container.querySelector('[data-slot="button-group"]');
     expect(buttonGroup).toBeInTheDocument();
+    expect(header?.className).not.toContain("border-b");
+  });
+
+  it("renders a connected badge with the same height as the search bar", () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} backendMode="sql" />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByText("Conectado")).toBeInTheDocument();
+
+    const badge = screen.getByTitle("Modo actual");
+    expect(badge.className).toContain("h-10");
+    expect(badge.className).not.toContain("h-8");
+  });
+
+  it("shows account recents without remote actions and activates them", () => {
+    localStorage.setItem(
+      "pcd_recent_searches",
+      JSON.stringify([
+        { value: "jperez", kind: "account" },
+        { value: "WS-DEMO-002", kind: "terminal" },
+      ]),
+    );
+
+    const handleAccount = vi.fn();
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} onSelectAccount={handleAccount} />
+      </ThemeProvider>,
+    );
+
+    const input = screen.getByPlaceholderText(/buscar terminal/i);
+    fireEvent.focus(input);
+
+    expect(screen.getByText("Búsquedas recientes")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /conectar vnc a jperez/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /ping a jperez/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /conectar vnc a ws-demo-002/i }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /consultar cuenta ad a jperez/i }),
+    );
+    expect(handleAccount).toHaveBeenCalledWith("jperez");
   });
 });
 

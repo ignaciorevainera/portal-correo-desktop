@@ -3,6 +3,7 @@ import logoIcon from "../assets/icon.png";
 import {
   Search,
   Monitor,
+  UserRound,
   Terminal as TerminalIcon,
   Database,
   HelpCircle,
@@ -27,9 +28,18 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Kbd } from "@/components/ui/kbd";
+import { classifySearch } from "@/lib/usernames";
+import {
+  loadRecentSearches,
+  removeRecentSearch,
+  saveRecentSearch,
+  subscribeToRecentSearches,
+  type RecentSearch,
+} from "@/lib/recentSearches";
 
 interface TopbarProps {
   onSelectTerminal: (pc: string) => void;
+  onSelectAccount?: (user: string) => void;
   onDirectVnc?: (pc: string) => void;
   onDirectPing?: (pc: string) => void;
   backendMode?: "sql" | "mock";
@@ -38,23 +48,10 @@ interface TopbarProps {
 }
 
 const PORTAL_MDA_URL = "https://mda.correo.local/inventario-terminales";
-const RECENT_SEARCHES_KEY = "pcd_recent_searches";
-
-function normalizeSearchItem(item: unknown): string | null {
-  if (typeof item === "string" && item.trim().length > 0) {
-    return item.trim();
-  }
-  if (item && typeof item === "object" && "pc" in item) {
-    const pcVal = (item as { pc: unknown }).pc;
-    if (typeof pcVal === "string" && pcVal.trim().length > 0) {
-      return pcVal.trim();
-    }
-  }
-  return null;
-}
 
 export function Topbar({
   onSelectTerminal,
+  onSelectAccount,
   onDirectVnc,
   onDirectPing,
   backendMode = "mock",
@@ -65,66 +62,19 @@ export function Topbar({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() =>
+    loadRecentSearches(),
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Cargar historial de las últimas 5 terminales desde localStorage de forma segura
-  useEffect(() => {
-    try {
-      const stored =
-        localStorage.getItem(RECENT_SEARCHES_KEY) ||
-        localStorage.getItem("cmda_recent_searches");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          const cleaned: string[] = [];
-          for (const item of parsed) {
-            const normalized = normalizeSearchItem(item);
-            if (normalized && !cleaned.includes(normalized)) {
-              cleaned.push(normalized);
-            }
-          }
-          const finalHistory = cleaned.slice(0, 5);
-          setRecentSearches(finalHistory);
-          try {
-            localStorage.setItem(
-              RECENT_SEARCHES_KEY,
-              JSON.stringify(finalHistory),
-            );
-          } catch {}
-        }
-      }
-    } catch {
-      // Ignorar error al acceder a localStorage
-    }
-  }, []);
-
-  const saveRecentSearch = (pc: string) => {
-    if (!pc || typeof pc !== "string" || !pc.trim()) return;
-    const cleanPc = pc.trim().toUpperCase();
-    setRecentSearches((prev) => {
-      const filtered = prev.filter(
-        (item) => typeof item === "string" && item.toUpperCase() !== cleanPc,
-      );
-      const next = [cleanPc, ...filtered].slice(0, 5);
-      try {
-        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
-
-  const removeRecentSearch = (e: React.MouseEvent, pc: string) => {
-    e.stopPropagation();
-    setRecentSearches((prev) => {
-      const next = prev.filter((item) => typeof item === "string" && item !== pc);
-      try {
-        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
+  useEffect(
+    () =>
+      subscribeToRecentSearches(() =>
+        setRecentSearches(loadRecentSearches()),
+      ),
+    [],
+  );
 
   useEffect(() => {
     const handleAutofocusSearch = (e: any) => {
@@ -134,7 +84,7 @@ export function Topbar({
         if (payload && payload.query) {
           setQuery(payload.query);
           if (payload.autoSearch) {
-            handleSelect(payload.query);
+            handleSubmit(payload.query);
           } else {
             inputRef.current.select();
           }
@@ -151,15 +101,14 @@ export function Topbar({
       );
   }, []);
 
-  // Coincidencias basadas en el historial de búsquedas reales (hasta 5)
+  // Coincidencias sobre el historial de búsquedas (hasta 5)
+  const normalizedQuery = query.trim().toLowerCase();
   const filteredMatches = (
-    query.trim()
-      ? recentSearches.filter(
-          (item) =>
-            typeof item === "string" &&
-            item.toLowerCase().includes(query.trim().toLowerCase()),
+    normalizedQuery
+      ? recentSearches.filter((item) =>
+          item.value.toLowerCase().includes(normalizedQuery),
         )
-      : recentSearches.filter((item) => typeof item === "string")
+      : recentSearches
   ).slice(0, 5);
 
   useEffect(() => {
@@ -198,12 +147,42 @@ export function Topbar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (pc: string): void => {
-    saveRecentSearch(pc);
-    onSelectTerminal(pc);
+  const commitSearch = (value: string, kind: RecentSearch["kind"]): void => {
+    const clean = value.trim();
+    if (!clean) return;
+
+    setRecentSearches(saveRecentSearch(clean, kind));
+    if (kind === "account") {
+      onSelectAccount?.(clean);
+    } else {
+      onSelectTerminal(clean);
+    }
     setQuery("");
     setIsOpen(false);
     setSelectedIndex(-1);
+  };
+
+  const handleSubmit = (value: string): void => {
+    commitSearch(value, classifySearch(value));
+  };
+
+  const handleActivate = (item: RecentSearch): void => {
+    commitSearch(item.value, item.kind);
+  };
+
+  const handleDirectAction = (
+    event: React.MouseEvent,
+    item: RecentSearch,
+    action: (value: string) => void,
+  ): void => {
+    event.stopPropagation();
+    commitSearch(item.value, "terminal");
+    action(item.value);
+  };
+
+  const removeRecent = (event: React.MouseEvent, value: string): void => {
+    event.stopPropagation();
+    setRecentSearches(removeRecentSearch(value));
   };
 
   const handleKeyDownInput = (
@@ -227,16 +206,16 @@ export function Topbar({
       if (e.key === "Enter") {
         e.preventDefault();
         if (selectedIndex >= 0 && selectedIndex < filteredMatches.length) {
-          handleSelect(filteredMatches[selectedIndex]);
+          handleActivate(filteredMatches[selectedIndex]);
           return;
         }
         if (query.trim()) {
-          handleSelect(query.trim());
+          handleSubmit(query.trim());
         }
         return;
       }
     } else if (e.key === "Enter" && query.trim()) {
-      handleSelect(query.trim());
+      handleSubmit(query.trim());
     }
   };
 
@@ -246,7 +225,7 @@ export function Topbar({
 
   return (
     <>
-      <header className="h-14 border-b border-border bg-card/90 backdrop-blur px-4 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
+      <header className="h-14 bg-card/90 backdrop-blur px-4 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
         {/* Identidad / Brand (Arrastrable junto al header para mover la ventana con el mouse) */}
         <div className="flex items-center gap-2.5 shrink-0 cursor-default select-none">
           <div className="p-1.5 rounded-md bg-primary/10 text-primary pointer-events-none">
@@ -280,7 +259,7 @@ export function Topbar({
                   setSelectedIndex(-1);
                 }
               }}
-              placeholder="Buscar terminal o IP"
+              placeholder="Buscar terminal, IP o usuario"
               className="w-full h-10 pl-3.5 pr-20 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-sm"
             />
             <div className="absolute right-1.5 flex items-center gap-1.5">
@@ -291,10 +270,10 @@ export function Topbar({
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                onClick={() => query.trim() && handleSelect(query.trim())}
+                onClick={() => query.trim() && handleSubmit(query.trim())}
                 disabled={!query.trim()}
-                aria-label="Buscar terminal"
-                title="Buscar terminal (o Enter)"
+                aria-label="Buscar terminal, IP o usuario"
+                title="Buscar terminal, IP o usuario (o Enter)"
                 className="h-7 w-7 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-muted/80 cursor-pointer disabled:opacity-30 rounded-md shrink-0"
               >
                 <Search className="h-4 w-4" />
@@ -312,7 +291,7 @@ export function Topbar({
                 <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
                   {query.trim()
                     ? `Coincidencias (${filteredMatches.length})`
-                    : "Terminales recientes"}
+                    : "Búsquedas recientes"}
                 </span>
                 <span className="text-[9px] text-muted-foreground lowercase flex items-center gap-1">
                   <Kbd className="text-[9px] px-1 py-0 h-4">↓</Kbd>
@@ -322,11 +301,13 @@ export function Topbar({
                 </span>
               </div>
               <ul className="max-h-60 overflow-y-auto divide-y divide-border/40">
-                {filteredMatches.map((pcName, index) => {
+                {filteredMatches.map((item, index) => {
                   const isSelected = index === selectedIndex;
+                  const isAccount = item.kind === "account";
+
                   return (
                     <li
-                      key={`${typeof pcName === "string" ? pcName : index}-${index}`}
+                      key={item.value}
                       className={`flex items-center justify-between px-2.5 py-1.5 transition-colors group cursor-pointer ${
                         isSelected
                           ? "text-accent-foreground bg:text-inherit dark:bg-muted/80"
@@ -336,16 +317,26 @@ export function Topbar({
                     >
                       <button
                         type="button"
-                        onClick={() => handleSelect(pcName)}
+                        onClick={() => handleActivate(item)}
                         className="flex-1 text-left flex items-center gap-2 cursor-pointer py-0.5 outline-none"
                       >
-                        <Monitor
-                          className={`h-3.5 w-3.5 shrink-0 transition-colors ${
-                            isSelected
-                              ? "text-blue-600 dark:text-blue-400"
-                              : "text-muted-foreground group-hover:text-primary"
-                          }`}
-                        />
+                        {isAccount ? (
+                          <UserRound
+                            className={`h-3.5 w-3.5 shrink-0 transition-colors ${
+                              isSelected
+                                ? "text-blue-600 dark:text-blue-400"
+                                : "text-muted-foreground group-hover:text-primary"
+                            }`}
+                          />
+                        ) : (
+                          <Monitor
+                            className={`h-3.5 w-3.5 shrink-0 transition-colors ${
+                              isSelected
+                                ? "text-blue-600 dark:text-blue-400"
+                                : "text-muted-foreground group-hover:text-primary"
+                            }`}
+                          />
+                        )}
                         <span
                           className={`font-mono text-xs font-semibold ${
                             isSelected
@@ -353,48 +344,65 @@ export function Topbar({
                               : "text-foreground"
                           }`}
                         >
-                          {String(pcName)}
+                          {item.value}
                         </span>
                       </button>
 
                       {/* Acciones directas en 1 clic y botón para quitar del historial */}
                       <div className="flex items-center gap-1 shrink-0">
+                        {isAccount ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleActivate(item);
+                            }}
+                            aria-label={`Consultar cuenta AD a ${item.value}`}
+                            title="Consultar cuenta AD"
+                            className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
+                          >
+                            <UserRound className="h-3 w-3" />
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={(e) =>
+                                onDirectVnc &&
+                                handleDirectAction(e, item, onDirectVnc)
+                              }
+                              aria-label={`Conectar VNC a ${item.value}`}
+                              title={`Lanzar VNC Viewer a ${item.value}`}
+                              className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
+                            >
+                              <MonitorPlay className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={(e) =>
+                                onDirectPing &&
+                                handleDirectAction(e, item, onDirectPing)
+                              }
+                              aria-label={`Ping a ${item.value}`}
+                              title={`Lanzar Ping a ${item.value}`}
+                              className="bg-muted hover:bg-accent/20 text-foreground cursor-pointer"
+                            >
+                              <Play className="h-3 w-3 text-emerald-500" />
+                            </Button>
+                          </>
+                        )}
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon-xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelect(pcName);
-                            onDirectVnc?.(pcName);
-                          }}
-                          aria-label={`Conectar VNC a ${pcName}`}
-                          title={`Lanzar VNC Viewer a ${pcName}`}
-                          className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
-                        >
-                          <MonitorPlay className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelect(pcName);
-                            onDirectPing?.(pcName);
-                          }}
-                          aria-label={`Ping a ${pcName}`}
-                          title={`Lanzar Ping a ${pcName}`}
-                          className="bg-muted hover:bg-accent/20 text-foreground cursor-pointer"
-                        >
-                          <Play className="h-3 w-3 text-emerald-500" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={(e) => removeRecentSearch(e, pcName)}
-                          aria-label={`Quitar ${pcName} del historial`}
+                          onClick={(e) => removeRecent(e, item.value)}
+                          aria-label={`Quitar ${item.value} del historial`}
                           title="Quitar del historial"
                           className="h-5 w-5 text-muted-foreground hover:text-destructive cursor-pointer opacity-60 hover:opacity-100"
                         >
@@ -414,7 +422,7 @@ export function Topbar({
           {/* Badge de Conexión */}
           <Badge
             variant="outline"
-            className="hidden lg:flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-muted text-foreground border-border h-8"
+            className="hidden lg:flex h-10 items-center gap-2 rounded-md border-border bg-muted px-3 text-xs font-medium text-foreground"
             title={serverName || "Modo actual"}
           >
             <Database
@@ -424,7 +432,7 @@ export function Topbar({
               className={`h-2 w-2 rounded-full ${backendMode === "sql" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`}
             />
             <span>
-              {backendMode === "sql" ? "SQL Online" : "Offline / Mock"}
+              {backendMode === "sql" ? "Conectado" : "Sin conexión"}
             </span>
           </Badge>
 
@@ -438,7 +446,7 @@ export function Topbar({
             <Button
               type="button"
               variant="ghost"
-              size="sm"
+              size="default"
               onClick={handleOpenPortalMda}
               aria-label="Abrir Portal MDA"
               title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"

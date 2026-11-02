@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { SubnetScannerDrawer } from '../components/SubnetScannerDrawer';
 import * as electronClient from '../services/electronClient';
@@ -12,13 +12,13 @@ describe('SubnetScannerDrawer Component', () => {
         onClose={vi.fn()}
         targetIp="192.0.2.50"
         onSelectTerminal={vi.fn()}
-        onLaunchVnc={vi.fn()}
+        onSmartRemote={vi.fn()}
       />
     );
     expect(container.firstChild).toBeNull();
   });
 
-  it('should render drawer and start scanner when isOpen is true', () => {
+  it('opens the terminal by clicking the card and connects remotely from one button', async () => {
     const mockCleanup = vi.fn();
     const spyScanner = vi.spyOn(electronClient, 'startSubnetScanner').mockImplementation(
       (_targetIp, onHostFound, onProgress, onDone) => {
@@ -35,7 +35,7 @@ describe('SubnetScannerDrawer Component', () => {
     );
 
     const onSelectMock = vi.fn();
-    const onVncMock = vi.fn();
+    const onRemoteMock = vi.fn().mockResolvedValue(undefined);
 
     render(
       <SubnetScannerDrawer
@@ -43,7 +43,7 @@ describe('SubnetScannerDrawer Component', () => {
         onClose={vi.fn()}
         targetIp="192.0.2.50"
         onSelectTerminal={onSelectMock}
-        onLaunchVnc={onVncMock}
+        onSmartRemote={onRemoteMock}
       />
     );
 
@@ -52,13 +52,22 @@ describe('SubnetScannerDrawer Component', () => {
     expect(screen.getByText('PC-SUCURSAL-01')).toBeInTheDocument();
     expect(screen.getByText('192.0.2.15')).toBeInTheDocument();
 
-    const consultBtn = screen.getByText('Consultar');
-    fireEvent.click(consultBtn);
+    fireEvent.click(
+      screen.getByRole('button', { name: /consultar pc-sucursal-01/i })
+    );
     expect(onSelectMock).toHaveBeenCalledWith('PC-SUCURSAL-01');
 
-    const vncBtn = screen.getByText('VNC');
-    fireEvent.click(vncBtn);
-    expect(onVncMock).toHaveBeenCalledWith('192.0.2.15');
+    expect(screen.queryByText('VNC')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^Consultar$/i })
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /conexión remota a pc-sucursal-01/i })
+    );
+    await waitFor(() =>
+      expect(onRemoteMock).toHaveBeenCalledWith('192.0.2.15')
+    );
 
     spyScanner.mockRestore();
   });
@@ -86,13 +95,15 @@ describe('SubnetScannerDrawer Component', () => {
         onClose={vi.fn()}
         targetIp="192.0.2.50"
         onSelectTerminal={onSelectMock}
-        onLaunchVnc={vi.fn()}
+        onSmartRemote={vi.fn()}
       />
     );
 
     expect(screen.getAllByText('192.0.2.77')).toHaveLength(1);
 
-    fireEvent.click(screen.getByText('Consultar'));
+    fireEvent.click(
+      screen.getByRole('button', { name: /consultar 192.0.2.77/i })
+    );
     expect(onSelectMock).toHaveBeenCalledWith('192.0.2.77');
 
     spyScanner.mockRestore();

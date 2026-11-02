@@ -401,4 +401,31 @@ describe('LivePingConsole Component', () => {
 
     expect(onDiagnosticComplete).toHaveBeenCalledTimes(1);
   });
+
+  it('fills the height and exposes the rerun action in account mode', () => {
+    const onRerun = vi.fn();
+
+    const { container } = render(
+      <LivePingConsole
+        mode="account"
+        fill
+        targetLabel="jperez"
+        ip=""
+        isPinging={false}
+        onTogglePing={vi.fn()}
+        onRerun={onRerun}
+      />,
+    );
+
+    const root = container.firstChild as HTMLElement;
+    expect(root.className).toContain('h-full');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Re-ejecutar consulta' }),
+    );
+    expect(onRerun).toHaveBeenCalledTimes(1);
+    expect(
+      screen.queryByRole('button', { name: /cerrar consulta/i }),
+    ).not.toBeInTheDocument();
+  });
 });

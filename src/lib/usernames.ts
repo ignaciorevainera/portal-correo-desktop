@@ -20,3 +20,20 @@ export function splitUsernames(raw: string | null | undefined): string[] {
   }
   return [...unique];
 }
+
+export type SearchKind = "terminal" | "account";
+
+const HOST_PREFIX = /^(PC|WS|TERM|SRV|NB|SUC)/i;
+
+export function classifySearch(raw: string | null | undefined): SearchKind {
+  if (typeof raw !== "string") return "terminal";
+  const value = raw.trim();
+  if (!value) return "terminal";
+  if (isIpAddress(value)) return "terminal";
+  if (/[-._\\/]/.test(value)) return "terminal";
+  if (HOST_PREFIX.test(value)) return "terminal";
+  if (value.length > 20) return "terminal";
+  if (!USERNAME_PATTERN.test(value)) return "terminal";
+  if (!/[A-Za-z]{6,}/.test(value)) return "terminal";
+  return "account";
+}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Square, Trash2, Copy, Check, Activity, UserRound } from "lucide-react";
+import { Square, Trash2, Copy, Check, Activity, UserRound, RefreshCw } from "lucide-react";
 import {
   subscribeToPing,
   subscribeToDiagnosticCommand,
@@ -27,6 +27,8 @@ interface LivePingConsoleProps {
   onDiagnosticComplete?: () => void;
   mode?: "terminal" | "account";
   targetLabel?: string;
+  fill?: boolean;
+  onRerun?: () => void;
 }
 
 function sanitizePingText(text: string): string {
@@ -54,6 +56,8 @@ export function LivePingConsole({
   onDiagnosticComplete,
   mode = "terminal",
   targetLabel,
+  fill = false,
+  onRerun,
 }: LivePingConsoleProps): React.JSX.Element {
   const [logs, setLogs] = useState<string[]>([]);
   const [copiedAll, setCopiedAll] = useState(false);
@@ -218,7 +222,11 @@ export function LivePingConsole({
   let insideGlobalGroups = false;
 
   return (
-    <div className="w-full shrink-0 rounded-lg border border-border bg-card shadow-xs overflow-hidden">
+    <div
+      className={`w-full rounded-lg border border-border bg-card shadow-xs overflow-hidden ${
+        fill ? "flex h-full min-h-0 flex-col" : "shrink-0"
+      }`}
+    >
       {/* Barra de Controles Superior: Sin botón Iniciar redundante */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
         <div className="flex items-center gap-2">
@@ -241,6 +249,22 @@ export function LivePingConsole({
             >
               <Square className="h-3 w-3" />
               <span>Detener</span>
+            </Button>
+          )}
+
+          {onRerun && (
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              onClick={onRerun}
+              disabled={isAnyRunning}
+              aria-label="Re-ejecutar consulta"
+              title="Volver a ejecutar net user"
+              className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer disabled:opacity-40"
+            >
+              <RefreshCw className="h-3 w-3" />
+              <span>Re-ejecutar</span>
             </Button>
           )}
 
@@ -301,7 +325,9 @@ export function LivePingConsole({
       <div
         ref={scrollContainerRef}
         data-testid="terminal-scroll-container"
-        className="h-[clamp(24rem,55vh,48rem)] min-h-[24rem] overflow-y-auto overflow-x-auto p-3.5 bg-[#0C0C0C] font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] select-text scrollbar-thin"
+        className={`${
+          fill ? "flex-1 min-h-0" : "h-[clamp(24rem,55vh,48rem)] min-h-[24rem]"
+        } overflow-y-auto overflow-x-auto p-3.5 bg-[#0C0C0C] font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] select-text scrollbar-thin`}
       >
         {logs.length === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
