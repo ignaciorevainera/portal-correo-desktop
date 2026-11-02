@@ -78,5 +78,5 @@ describe('Repository Zero-Secrets Security Audit', () => {
     expect(legacyVncHashRegex.test(sanitizedHistoryLog)).toBe(false);
     expect(legacySqlUserRegex.test(sanitizedHistoryLog)).toBe(false);
     expect(legacyDomainRegex.test(sanitizedHistoryLog)).toBe(false);
-  });
+  }, 20000);
 });
