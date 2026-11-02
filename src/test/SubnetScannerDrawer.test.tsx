@@ -67,6 +67,14 @@ describe('SubnetScannerDrawer Component', () => {
     fireEvent.click(monitorBtn);
     expect(onRemoteMock).toHaveBeenCalledWith('PC-SUCURSAL-01');
 
+    // The card container uses neutral hover and does not have primary-colored hover tint
+    const cardContainer = hostCard.closest('.flex.items-stretch');
+    expect(cardContainer).toBeInTheDocument();
+    expect(cardContainer?.className).toContain('hover:border-border');
+    expect(cardContainer?.className).not.toContain('border-primary');
+    expect(cardContainer?.className).not.toContain('hover:bg-accent');
+    // Monitor button occupies reserved end portion
+    expect(monitorBtn.className).toContain('w-10');
 
     spyScanner.mockRestore();
   });

@@ -266,23 +266,19 @@ export function SubnetScannerDrawer({
               return (
                 <div
                   key={host.ip}
-                  onClick={() => onSelectTerminal(lookupTarget)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      onSelectTerminal(lookupTarget);
-                    }
-                  }}
-                  aria-label={`Consultar terminal ${displayName}`}
-                  title={`Consultar terminal ${displayName}`}
-                  className="p-2.5 rounded-lg border border-border/80 bg-card hover:bg-accent/20 hover:border-primary/40 transition-all flex items-center justify-between gap-2.5 group cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="flex items-stretch rounded-lg border border-border/80 bg-card hover:border-border hover:shadow-xs hover:bg-muted/30 transition-all overflow-hidden group"
                 >
-                  <div className="flex-1 min-w-0">
+                  {/* Porción principal: Información y selección de terminal */}
+                  <button
+                    type="button"
+                    onClick={() => onSelectTerminal(lookupTarget)}
+                    aria-label={`Consultar terminal ${displayName}`}
+                    title={`Consultar terminal ${displayName}`}
+                    className="flex-1 min-w-0 p-2.5 text-left flex flex-col justify-center cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
                     <div className="flex items-center gap-1.5">
                       <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                      <span className="text-xs font-bold text-foreground font-mono truncate group-hover:text-primary transition-colors">
+                      <span className="text-xs font-bold text-foreground font-mono truncate transition-colors">
                         {displayName}
                       </span>
                     </div>
@@ -292,26 +288,26 @@ export function SubnetScannerDrawer({
                         <span className="text-muted-foreground/70">{host.latency}ms</span>
                       )}
                     </div>
-                  </div>
+                  </button>
 
-                  {/* Quick Remote Action Button (Monitor Icon) */}
-                  <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="icon-xs"
-                      variant="ghost"
-                      className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer rounded-md"
-                      onClick={(e) => handleRemoteClick(e, lookupTarget)}
-                      disabled={isConnectingThis}
-                      aria-label={`Conexión remota rápida con ${displayName}`}
-                      title="Conexión remota rápida (VNC / MSRA)"
-                    >
-                      {isConnectingThis ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                      ) : (
-                        <Monitor className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                  </div>
+                  {/* Divisor vertical sutil entre porciones */}
+                  <div className="w-px bg-border/60 self-stretch my-1" />
+
+                  {/* Última porción reservada exclusivamente para el botón de conexión remota */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleRemoteClick(e, lookupTarget)}
+                    disabled={isConnectingThis}
+                    aria-label={`Conexión remota rápida con ${displayName}`}
+                    title="Conexión remota rápida (VNC / MSRA)"
+                    className="w-10 flex items-center justify-center shrink-0 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    {isConnectingThis ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Monitor className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
               );
             })
