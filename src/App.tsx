@@ -630,7 +630,7 @@ export default function App(): React.JSX.Element {
 
         {/* Barra de Comandos Fija (siempre debajo del header, sin contenido pasando por debajo) */}
         {terminal && (
-          <section className="shrink-0 px-3.5 pt-2.5 pb-2 border-b border-border bg-card/40">
+          <section className="shrink-0 px-3.5 pt-0 pb-2 border-b border-border bg-card/40">
             <QuickActionsBar
               terminal={terminal}
               isPinging={isPinging}
