@@ -303,10 +303,10 @@ export function QuickActionsBar({
               aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
               aria-pressed={isTerminalStandardActive}
               title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
-              className={`rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer w-[104px] justify-between transition-all ${
+              className={`rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer w-[104px] justify-between border-border transition-colors ${
                 isPinging
                   ? "animate-pulse"
-                  : "bg-muted text-foreground border-border hover:bg-muted/80"
+                  : "bg-muted text-foreground hover:bg-muted/80"
               }`}
             >
               <Activity
@@ -331,10 +331,10 @@ export function QuickActionsBar({
                   ? "Ping continuo (-t) en ejecución (clic para detener)"
                   : "Ejecutar Ping infinito / continuo (-t)"
               }
-              className={`rounded-l-none border-l-0 h-8 px-2 text-xs font-semibold cursor-pointer shrink-0 transition-all ${
+              className={`rounded-l-none border-l-0 h-8 px-2 text-xs font-semibold cursor-pointer shrink-0 border-border transition-colors ${
                 isTerminalInfiniteActive
-                  ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500 ring-1 ring-emerald-500/40 font-bold animate-pulse"
-                  : "bg-muted text-foreground border-border hover:bg-muted/80"
+                  ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 animate-pulse font-bold"
+                  : "bg-muted text-foreground hover:bg-muted/80"
               }`}
             >
               <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
@@ -358,17 +358,15 @@ export function QuickActionsBar({
                     ? `Ping estándar (4 paquetes) a ${siteTargets.routerIp} en ejecución (clic para detener)`
                     : `Ping estándar (4 paquetes) a ${siteTargets.routerIp}`
                 }
-                className={`rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 flex items-center gap-1 transition-all ${
+                className={`rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 flex items-center gap-1 border-border transition-colors ${
                   isRouterStandardActive
-                    ? "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500 ring-1 ring-blue-500/40 font-bold animate-pulse"
-                    : isRouterInfiniteActive
-                    ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/60 font-semibold"
-                    : "bg-muted text-foreground border-border hover:bg-muted/80"
+                    ? "bg-blue-500/20 text-blue-600 dark:text-blue-400 animate-pulse font-bold"
+                    : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
                 <Wifi
                   className={`h-3.5 w-3.5 ${
-                    isRouterStandardActive || isRouterInfiniteActive
+                    isRouterStandardActive
                       ? "text-blue-600 dark:text-blue-400 animate-pulse"
                       : "text-blue-500"
                   }`}
@@ -387,10 +385,10 @@ export function QuickActionsBar({
                     ? `Ping continuo (-t) a ${siteTargets.routerIp} en ejecución (clic para detener)`
                     : `Ping continuo (-t) a ${siteTargets.routerIp}`
                 }
-                className={`rounded-l-none px-2 cursor-pointer border-l-0 h-8 text-xs font-semibold transition-all ${
+                className={`rounded-l-none px-2 cursor-pointer border-l-0 h-8 text-xs font-semibold border-border transition-colors ${
                   isRouterInfiniteActive
-                    ? "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500 ring-1 ring-blue-500/40 font-bold animate-pulse"
-                    : "bg-muted text-foreground border-border hover:bg-muted/80"
+                    ? "bg-blue-500/20 text-blue-600 dark:text-blue-400 animate-pulse font-bold"
+                    : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
                 <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400">
@@ -415,17 +413,15 @@ export function QuickActionsBar({
                     ? `Ping estándar (4 paquetes) a ${siteTargets.serverIp} en ejecución (clic para detener)`
                     : `Ping estándar (4 paquetes) a ${siteTargets.serverIp}`
                 }
-                className={`rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 flex items-center gap-1 transition-all ${
+                className={`rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 flex items-center gap-1 border-border transition-colors ${
                   isServerStandardActive
-                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500 ring-1 ring-amber-500/40 font-bold animate-pulse"
-                    : isServerInfiniteActive
-                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/60 font-semibold"
-                    : "bg-muted text-foreground border-border hover:bg-muted/80"
+                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 animate-pulse font-bold"
+                    : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
                 <Layers
                   className={`h-3.5 w-3.5 ${
-                    isServerStandardActive || isServerInfiniteActive
+                    isServerStandardActive
                       ? "text-amber-600 dark:text-amber-400 animate-pulse"
                       : "text-amber-500"
                   }`}
@@ -444,10 +440,10 @@ export function QuickActionsBar({
                     ? `Ping continuo (-t) a ${siteTargets.serverIp} en ejecución (clic para detener)`
                     : `Ping continuo (-t) a ${siteTargets.serverIp}`
                 }
-                className={`rounded-l-none px-2 cursor-pointer border-l-0 h-8 text-xs font-semibold transition-all ${
+                className={`rounded-l-none px-2 cursor-pointer border-l-0 h-8 text-xs font-semibold border-border transition-colors ${
                   isServerInfiniteActive
-                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500 ring-1 ring-amber-500/40 font-bold animate-pulse"
-                    : "bg-muted text-foreground border-border hover:bg-muted/80"
+                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 animate-pulse font-bold"
+                    : "bg-muted text-foreground hover:bg-muted/80"
                 }`}
               >
                 <span className="font-mono text-[11px] font-bold text-amber-600 dark:text-amber-400">
