@@ -351,17 +351,9 @@ export function SettingsModal({
                     <span className="text-muted-foreground">Código:</span>{" "}
                     {diagnostics?.gate.code || "—"}
                   </div>
-                  <div className="break-all">
-                    <span className="text-muted-foreground">Origen:</span>{" "}
-                    {diagnostics?.gate.configPath || "—"}
-                  </div>
                   <div>
                     <span className="text-muted-foreground">Bootstrap:</span>{" "}
                     {diagnostics?.bootstrap.found ? "encontrado" : "no encontrado"}
-                  </div>
-                  <div className="break-all">
-                    <span className="text-muted-foreground">Ruta bootstrap:</span>{" "}
-                    {diagnostics?.bootstrap.path || "—"}
                   </div>
                 </div>
               </div>

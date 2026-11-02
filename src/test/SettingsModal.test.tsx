@@ -182,6 +182,12 @@ describe('SettingsModal Component', () => {
     expect(screen.queryByRole('button', { name: /importar archivo/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /eliminar configuración/i })).not.toBeInTheDocument();
 
+    // Las rutas y orígenes de red/disco no deben exponerse en el diálogo
+    expect(screen.queryByText(/Origen:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Ruta bootstrap:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/\\\\host\\share/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/ProgramData/i)).not.toBeInTheDocument();
+
     const testBtn = screen.getByRole('button', { name: /probar conexión/i });
     expect(testBtn).toBeInTheDocument();
     fireEvent.click(testBtn);
