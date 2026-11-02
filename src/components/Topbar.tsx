@@ -10,7 +10,6 @@ import {
   ExternalLink,
   Minus,
   Power,
-  Play,
   MonitorPlay,
   Settings,
   History,
@@ -350,52 +349,21 @@ export function Topbar({
 
                       {/* Acciones directas en 1 clic y botón para quitar del historial */}
                       <div className="flex items-center gap-1 shrink-0">
-                        {isAccount ? (
+                        {!isAccount && (
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon-xs"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleActivate(item);
-                            }}
-                            aria-label={`Consultar cuenta AD a ${item.value}`}
-                            title="Consultar cuenta AD"
+                            onClick={(e) =>
+                              onDirectVnc &&
+                              handleDirectAction(e, item, onDirectVnc)
+                            }
+                            aria-label={`Conectar VNC a ${item.value}`}
+                            title={`Lanzar VNC Viewer a ${item.value}`}
                             className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
                           >
-                            <UserRound className="h-3 w-3" />
+                            <MonitorPlay className="h-3 w-3" />
                           </Button>
-                        ) : (
-                          <>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-xs"
-                              onClick={(e) =>
-                                onDirectVnc &&
-                                handleDirectAction(e, item, onDirectVnc)
-                              }
-                              aria-label={`Conectar VNC a ${item.value}`}
-                              title={`Lanzar VNC Viewer a ${item.value}`}
-                              className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
-                            >
-                              <MonitorPlay className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-xs"
-                              onClick={(e) =>
-                                onDirectPing &&
-                                handleDirectAction(e, item, onDirectPing)
-                              }
-                              aria-label={`Ping a ${item.value}`}
-                              title={`Lanzar Ping a ${item.value}`}
-                              className="bg-muted hover:bg-accent/20 text-foreground cursor-pointer"
-                            >
-                              <Play className="h-3 w-3 text-emerald-500" />
-                            </Button>
-                          </>
                         )}
                         <Button
                           type="button"

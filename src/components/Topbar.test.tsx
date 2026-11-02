@@ -75,31 +75,32 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     expect(traySpy).toHaveBeenCalledTimes(1);
   });
 
-  it("provides direct 1-click VNC and Ping actions on search suggestions from recent history", () => {
+  it("provides direct 1-click VNC action on terminal suggestions and omits redundant inline ping or AD consult buttons", () => {
     localStorage.setItem(
       "pcd_recent_searches",
-      JSON.stringify(["WS-DEMO-002", "WS-DEMO-003"]),
+      JSON.stringify([
+        { value: "WS-DEMO-002", kind: "terminal" },
+        { value: "jperez", kind: "account" },
+      ]),
     );
 
     const handleSelect = vi.fn();
     const handleDirectVnc = vi.fn();
-    const handleDirectPing = vi.fn();
 
-    const { unmount } = render(
+    render(
       <ThemeProvider>
         <Topbar
           onSelectTerminal={handleSelect}
           onDirectVnc={handleDirectVnc}
-          onDirectPing={handleDirectPing}
         />
       </ThemeProvider>,
     );
 
     const input = screen.getByPlaceholderText(/buscar terminal/i);
-    fireEvent.change(input, { target: { value: "WS-DEMO" } });
+    fireEvent.focus(input);
 
-    const suggestion = screen.getByText(/WS-DEMO-002/i);
-    expect(suggestion).toBeInTheDocument();
+    const termSuggestion = screen.getByText("WS-DEMO-002");
+    expect(termSuggestion).toBeInTheDocument();
 
     const vncQuickBtn = screen.getByRole("button", {
       name: /conectar vnc a ws-demo-002/i,
@@ -108,27 +109,13 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     fireEvent.click(vncQuickBtn);
     expect(handleDirectVnc).toHaveBeenCalledWith("WS-DEMO-002");
 
-    unmount();
-
-    // Volver a renderizar para verificar acción Ping
-    render(
-      <ThemeProvider>
-        <Topbar
-          onSelectTerminal={handleSelect}
-          onDirectVnc={handleDirectVnc}
-          onDirectPing={handleDirectPing}
-        />
-      </ThemeProvider>,
-    );
-    const input2 = screen.getByPlaceholderText(/buscar terminal/i);
-    fireEvent.change(input2, { target: { value: "WS-DEMO" } });
-
-    const pingQuickBtn = screen.getByRole("button", {
-      name: /ping a ws-demo-002/i,
-    });
-    expect(pingQuickBtn).toBeInTheDocument();
-    fireEvent.click(pingQuickBtn);
-    expect(handleDirectPing).toHaveBeenCalledWith("WS-DEMO-002");
+    // Botones redundantes no deben existir en el menú
+    expect(
+      screen.queryByRole("button", { name: /ping a ws-demo-002/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /consultar cuenta ad/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders topbar with expanded h-14 dimensions, h-10 input and grouped action buttons", () => {
@@ -196,9 +183,11 @@ describe("Topbar & Compact Unified Titlebar component", () => {
       screen.getByRole("button", { name: /conectar vnc a ws-demo-002/i }),
     ).toBeInTheDocument();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: /consultar cuenta ad a jperez/i }),
-    );
+    expect(
+      screen.queryByRole("button", { name: /consultar cuenta ad a jperez/i }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "jperez" }));
     expect(handleAccount).toHaveBeenCalledWith("jperez");
   });
 });
