@@ -297,11 +297,11 @@ export function LivePingConsole({
         </div>
       </div>
 
-      {/* Pantalla Contigua estilo Windows Terminal: bg-[#0C0C0C], altura generosa h-64, auto-scroll interno por línea */}
+      {/* Pantalla Contigua estilo Windows Terminal: bg-[#0C0C0C], altura adaptable (24rem–48rem, ~55vh), auto-scroll interno por línea */}
       <div
         ref={scrollContainerRef}
         data-testid="terminal-scroll-container"
-        className="h-64 min-h-[16rem] overflow-y-auto overflow-x-auto p-3.5 bg-[#0C0C0C] font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] select-text scrollbar-thin"
+        className="h-[clamp(24rem,55vh,48rem)] min-h-[24rem] overflow-y-auto overflow-x-auto p-3.5 bg-[#0C0C0C] font-mono text-[11.5px] leading-relaxed text-[#CCCCCC] select-text scrollbar-thin"
       >
         {logs.length === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">

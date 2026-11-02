@@ -288,7 +288,7 @@ describe('LivePingConsole Component', () => {
     expect(terminalBox?.className).toContain('overflow-x-auto');
   });
 
-  it('renders contiguous console without section title and with height h-64', () => {
+  it('renders contiguous console without section title and with adaptive height', () => {
     const { container } = render(
       <LivePingConsole
         ip="192.0.2.100"
@@ -305,9 +305,9 @@ describe('LivePingConsole Component', () => {
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
 
-    // Console terminal has height class h-64
+    // Console terminal has adaptive height (24rem-48rem, ~55vh)
     const terminalBox = container.querySelector('.bg-\\[\\#0C0C0C\\]');
-    expect(terminalBox?.className).toContain('h-64');
+    expect(terminalBox?.className).toContain('h-[clamp(24rem,55vh,48rem)]');
   });
 
   it('never calls scrollIntoView when ping data arrives, ping finishes, or logs are cleared', () => {
