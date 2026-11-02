@@ -96,8 +96,8 @@ describe("QuickActionsBar Site Link Buttons (.250 and .231)", () => {
     expect(diagBtn.querySelector(".lucide-terminal")).not.toBeNull();
   });
 
-  it("shows active/selected visual indicators on .250 and .231 buttons when pinging them", () => {
-    // 1. Router standard ping active (10.66.10.250)
+  it("ensures only the Ping button has activation state while .250, .231, and -t remain non-activated", () => {
+    // 1. When isPinging is true (even if targeting .250), only the Ping button pulses/activates
     const { rerender } = render(
       <QuickActionsBar
         terminal={mockTerminal}
@@ -111,40 +111,27 @@ describe("QuickActionsBar Site Link Buttons (.250 and .231)", () => {
       />
     );
 
-    const routerStandardBtn = screen.getByRole("button", { name: /hacer ping al router \.250/i });
-    expect(routerStandardBtn.getAttribute("aria-pressed")).toBe("true");
-    expect(routerStandardBtn.className).toContain("animate-pulse");
+    // Primary Ping button is the ONLY activated button
+    const pingBtn = screen.getByRole("button", { name: /detener ping en vivo/i });
+    expect(pingBtn).toBeInTheDocument();
+    expect(pingBtn.className).toContain("animate-pulse");
 
-    // 2. Router -t infinite ping active
-    rerender(
-      <QuickActionsBar
-        terminal={mockTerminal}
-        isPinging={true}
-        pingTarget="10.66.10.250"
-        pingMode="infinite"
-        onLaunchVnc={vi.fn()}
-        onLaunchMsra={vi.fn()}
-        onTogglePing={vi.fn()}
-        onLaunchSitePing={vi.fn()}
-      />
-    );
+    // Router .250 buttons do NOT have active/pulse state
+    const routerStandardBtn = screen.getByRole("button", { name: /hacer ping al router \.250/i });
+    expect(routerStandardBtn.getAttribute("aria-pressed")).toBeNull();
+    expect(routerStandardBtn.className).not.toContain("animate-pulse");
 
     const routerInfiniteBtn = screen.getByRole("button", { name: /ping continuo -t router \.250/i });
-    expect(routerInfiniteBtn.getAttribute("aria-pressed")).toBe("true");
-    expect(routerInfiniteBtn.className).toContain("animate-pulse");
+    expect(routerInfiniteBtn.getAttribute("aria-pressed")).toBeNull();
+    expect(routerInfiniteBtn.className).not.toContain("animate-pulse");
 
-    // The terminal -t button must NOT be active or green when router -t is running
-    const terminalInfiniteBtnWhenRouter = screen.getByRole("button", { name: /iniciar ping continuo -t/i });
-    expect(terminalInfiniteBtnWhenRouter.getAttribute("aria-pressed")).toBe("false");
-    expect(terminalInfiniteBtnWhenRouter.className).not.toContain("bg-emerald-500/20");
-
-    // 3. Server standard ping active (10.66.10.231)
+    // 2. Server .231 target active -> still only Ping button is activated
     rerender(
       <QuickActionsBar
         terminal={mockTerminal}
         isPinging={true}
         pingTarget="10.66.10.231"
-        pingMode="standard"
+        pingMode="infinite"
         onLaunchVnc={vi.fn()}
         onLaunchMsra={vi.fn()}
         onTogglePing={vi.fn()}
@@ -153,43 +140,16 @@ describe("QuickActionsBar Site Link Buttons (.250 and .231)", () => {
     );
 
     const serverStandardBtn = screen.getByRole("button", { name: /hacer ping al servidor \.231/i });
-    expect(serverStandardBtn.getAttribute("aria-pressed")).toBe("true");
-    expect(serverStandardBtn.className).toContain("animate-pulse");
-
-    // 4. Server -t infinite ping active
-    rerender(
-      <QuickActionsBar
-        terminal={mockTerminal}
-        isPinging={true}
-        pingTarget="10.66.10.231"
-        pingMode="infinite"
-        onLaunchVnc={vi.fn()}
-        onLaunchMsra={vi.fn()}
-        onTogglePing={vi.fn()}
-        onLaunchSitePing={vi.fn()}
-      />
-    );
+    expect(serverStandardBtn.getAttribute("aria-pressed")).toBeNull();
+    expect(serverStandardBtn.className).not.toContain("animate-pulse");
 
     const serverInfiniteBtn = screen.getByRole("button", { name: /ping continuo -t servidor \.231/i });
-    expect(serverInfiniteBtn.getAttribute("aria-pressed")).toBe("true");
-    expect(serverInfiniteBtn.className).toContain("animate-pulse");
+    expect(serverInfiniteBtn.getAttribute("aria-pressed")).toBeNull();
+    expect(serverInfiniteBtn.className).not.toContain("animate-pulse");
 
-    // 5. Terminal -t infinite ping active
-    rerender(
-      <QuickActionsBar
-        terminal={mockTerminal}
-        isPinging={true}
-        pingTarget={mockTerminal.ip}
-        pingMode="infinite"
-        onLaunchVnc={vi.fn()}
-        onLaunchMsra={vi.fn()}
-        onTogglePing={vi.fn()}
-        onLaunchSitePing={vi.fn()}
-      />
-    );
-
+    // Terminal -t button also does not have pulse state
     const terminalInfiniteBtn = screen.getByRole("button", { name: /iniciar ping continuo -t/i });
-    expect(terminalInfiniteBtn.getAttribute("aria-pressed")).toBe("true");
-    expect(terminalInfiniteBtn.className).toContain("animate-pulse");
+    expect(terminalInfiniteBtn.getAttribute("aria-pressed")).toBeNull();
+    expect(terminalInfiniteBtn.className).not.toContain("animate-pulse");
   });
 });
