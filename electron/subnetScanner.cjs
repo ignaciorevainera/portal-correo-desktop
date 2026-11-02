@@ -35,8 +35,12 @@ function generateSubnetRange(ip) {
  * Lightweight TCP/ICMP ping probe with strict timeout.
  * Tests port 445 (SMB) or 135 (RPC/WMI) commonly open on Windows corporate workstations.
  */
-async function defaultPingProbe(targetIp, timeoutMs = 400) {
+async function defaultPingProbe(targetIp, timeoutMs = 400, signal = null) {
   return new Promise((resolve) => {
+    if (signal && signal.aborted) {
+      resolve({ alive: false, latency: null });
+      return;
+    }
     const startTime = Date.now();
     const socket = new net.Socket();
     let isResolved = false;
@@ -44,9 +48,23 @@ async function defaultPingProbe(targetIp, timeoutMs = 400) {
     const cleanup = () => {
       if (!isResolved) {
         isResolved = true;
+        if (signal && onAbort) {
+          try {
+            signal.removeEventListener('abort', onAbort);
+          } catch {}
+        }
         socket.destroy();
       }
     };
+
+    const onAbort = () => {
+      cleanup();
+      resolve({ alive: false, latency: null });
+    };
+
+    if (signal && typeof signal.addEventListener === 'function') {
+      signal.addEventListener('abort', onAbort, { once: true });
+    }
 
     socket.setTimeout(timeoutMs);
 
@@ -57,6 +75,11 @@ async function defaultPingProbe(targetIp, timeoutMs = 400) {
     });
 
     socket.on('timeout', () => {
+      cleanup();
+      resolve({ alive: false, latency: null });
+    });
+
+    socket.on('close', () => {
       cleanup();
       resolve({ alive: false, latency: null });
     });
@@ -102,14 +125,16 @@ async function scanSubnetBatch(ips, options = {}) {
   const {
     concurrency = 16,
     signal,
+    startIndex = 0,
+    totalCount,
     pinger = defaultPingProbe,
     dnsResolver = defaultDnsResolver,
     onHostFound,
     onProgress,
   } = options;
 
-  const total = ips.length;
-  let scanned = 0;
+  const total = totalCount || (ips.length + startIndex);
+  let scanned = startIndex;
   const foundHosts = [];
   const seenIps = new Set();
 
@@ -124,13 +149,15 @@ async function scanSubnetBatch(ips, options = {}) {
         if (signal && signal.aborted) return;
 
         try {
-          const pingRes = await pinger(ip);
+          const pingRes = await pinger(ip, 400, signal);
+          if (signal && signal.aborted) return;
           scanned++;
           if (onProgress) {
             onProgress(scanned, total);
           }
 
           if (pingRes.alive) {
+            if (signal && signal.aborted) return;
             if (seenIps.has(ip)) {
               return;
             }
@@ -140,6 +167,7 @@ async function scanSubnetBatch(ips, options = {}) {
             try {
               hostname = await dnsResolver(ip);
             } catch {}
+            if (signal && signal.aborted) return;
 
             const host = {
               ip,
@@ -154,6 +182,7 @@ async function scanSubnetBatch(ips, options = {}) {
             }
           }
         } catch {
+          if (signal && signal.aborted) return;
           scanned++;
           if (onProgress) {
             onProgress(scanned, total);

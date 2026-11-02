@@ -38,6 +38,7 @@ import {
   checkSecurityGateStatus,
   retrySecurityGate,
   GateStatus,
+  checkIsAdmin,
 } from "./services/electronClient";
 import { TerminalData } from "./types/terminal";
 import { Search, SearchX, RotateCcw, Loader2 } from "lucide-react";
@@ -75,6 +76,17 @@ export default function App(): React.JSX.Element {
   const [isAccountChooserOpen, setIsAccountChooserOpen] = useState(false);
   const [accountQuery, setAccountQuery] = useState<string | null>(null);
   const [isRefreshingUptime, setIsRefreshingUptime] = useState(false);
+  // Alertas/Reseteos: oculto por defecto, visible solo para administradores.
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    let active = true;
+    checkIsAdmin().then((v) => {
+      if (active) setIsAdmin(v);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
   const [status, setStatus] = useState<BackendStatus>({
     connected: false,
     mode: "mock",
@@ -755,12 +767,14 @@ export default function App(): React.JSX.Element {
               <TerminalDetailsGrid terminal={terminal} />
 
               {/* 4° Alertas y reseteos unificados, ordenados por fecha */}
-              <ActivityPanel
-                terminal={terminal}
-                onAddAlert={handleAddAlert}
-                onCloseAlert={handleCloseAlert}
-                onRequestReset={handleRequestReset}
-              />
+              {isAdmin && (
+                <ActivityPanel
+                  terminal={terminal}
+                  onAddAlert={handleAddAlert}
+                  onCloseAlert={handleCloseAlert}
+                  onRequestReset={handleRequestReset}
+                />
+              )}
             </>
           )}
         </main>
@@ -793,7 +807,10 @@ export default function App(): React.JSX.Element {
               handleSelectTerminal(pc);
               setIsSubnetDrawerOpen(false);
             }}
-            onSmartRemote={(target) => {
+            onLaunchRemote={(target) => {
+              handleLaunchSmartRemote(target);
+            }}
+            onLaunchVnc={(target) => {
               handleLaunchSmartRemote(target);
             }}
           />

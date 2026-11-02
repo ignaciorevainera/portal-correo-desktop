@@ -12,13 +12,15 @@ describe('SubnetScannerDrawer Component', () => {
         onClose={vi.fn()}
         targetIp="192.0.2.50"
         onSelectTerminal={vi.fn()}
-        onSmartRemote={vi.fn()}
+        onLaunchRemote={vi.fn()}
+
       />
     );
     expect(container.firstChild).toBeNull();
   });
 
-  it('opens the terminal by clicking the card and connects remotely from one button', async () => {
+  it('should render drawer and start scanner, selecting terminal on card click and connecting remotely on monitor button click', () => {
+
     const mockCleanup = vi.fn();
     const spyScanner = vi.spyOn(electronClient, 'startSubnetScanner').mockImplementation(
       (_targetIp, onHostFound, onProgress, onDone) => {
@@ -35,7 +37,8 @@ describe('SubnetScannerDrawer Component', () => {
     );
 
     const onSelectMock = vi.fn();
-    const onRemoteMock = vi.fn().mockResolvedValue(undefined);
+    const onRemoteMock = vi.fn();
+
 
     render(
       <SubnetScannerDrawer
@@ -43,7 +46,8 @@ describe('SubnetScannerDrawer Component', () => {
         onClose={vi.fn()}
         targetIp="192.0.2.50"
         onSelectTerminal={onSelectMock}
-        onSmartRemote={onRemoteMock}
+        onLaunchRemote={onRemoteMock}
+
       />
     );
 
@@ -52,27 +56,22 @@ describe('SubnetScannerDrawer Component', () => {
     expect(screen.getByText('PC-SUCURSAL-01')).toBeInTheDocument();
     expect(screen.getByText('192.0.2.15')).toBeInTheDocument();
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /consultar pc-sucursal-01/i })
-    );
+    // Redundant "Consultar" button is removed; clicking the card consults the terminal
+    expect(screen.queryByText('Consultar')).toBeNull();
+    const hostCard = screen.getByRole('button', { name: /consultar terminal pc-sucursal-01/i });
+    fireEvent.click(hostCard);
     expect(onSelectMock).toHaveBeenCalledWith('PC-SUCURSAL-01');
 
-    expect(screen.queryByText('VNC')).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /^Consultar$/i })
-    ).not.toBeInTheDocument();
+    // Monitor icon button triggers remote smart connection
+    const monitorBtn = screen.getByRole('button', { name: /conexión remota rápida con pc-sucursal-01/i });
+    fireEvent.click(monitorBtn);
+    expect(onRemoteMock).toHaveBeenCalledWith('PC-SUCURSAL-01');
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /conexión remota a pc-sucursal-01/i })
-    );
-    await waitFor(() =>
-      expect(onRemoteMock).toHaveBeenCalledWith('192.0.2.15')
-    );
 
     spyScanner.mockRestore();
   });
 
-  it('shows the IP once when no hostname can be resolved', () => {
+  it('shows the IP once when no hostname can be resolved and clicking card consults IP', () => {
     const spyScanner = vi.spyOn(electronClient, 'startSubnetScanner').mockImplementation(
       (_targetIp, onHostFound, onProgress, onDone) => {
         onProgress({ scanned: 254, total: 254 });
@@ -101,10 +100,60 @@ describe('SubnetScannerDrawer Component', () => {
 
     expect(screen.getAllByText('192.0.2.77')).toHaveLength(1);
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /consultar 192.0.2.77/i })
-    );
+    const hostCard = screen.getByRole('button', { name: /consultar terminal 192.0.2.77/i });
+    fireEvent.click(hostCard);
+
     expect(onSelectMock).toHaveBeenCalledWith('192.0.2.77');
+
+    spyScanner.mockRestore();
+  });
+
+  it('pauses scan without closing drawer when clicking Pausar, and stops spinning animation', () => {
+    const mockCleanup = vi.fn();
+    const spyScanner = vi.spyOn(electronClient, 'startSubnetScanner').mockImplementation(
+      (_targetIp, _onHostFound, onProgress) => {
+        onProgress({ scanned: 50, total: 254 });
+        return mockCleanup;
+      }
+    );
+
+    const onCloseMock = vi.fn();
+
+    render(
+      <SubnetScannerDrawer
+        isOpen={true}
+        onClose={onCloseMock}
+        targetIp="192.0.2.50"
+        onSelectTerminal={vi.fn()}
+      />
+    );
+
+    // Initial state: scanning
+    expect(screen.getByText('Escaneando hosts...')).toBeInTheDocument();
+    const pauseBtn = screen.getByRole('button', { name: /pausar escaneo/i });
+    fireEvent.click(pauseBtn);
+
+    // Drawer must NOT be closed!
+    expect(onCloseMock).not.toHaveBeenCalled();
+    expect(mockCleanup).toHaveBeenCalled();
+
+    // Status is paused, spinner is gone
+    expect(screen.getAllByText('Escaneo en pausa').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Escaneando hosts...')).toBeNull();
+
+    // Shows Reanudar button
+    const resumeBtn = screen.getByRole('button', { name: /reanudar escaneo/i });
+    expect(resumeBtn).toBeInTheDocument();
+
+    // Clicking Reanudar restarts scan from paused index (50)
+    fireEvent.click(resumeBtn);
+    expect(spyScanner).toHaveBeenLastCalledWith(
+      '192.0.2.50',
+      expect.any(Function),
+      expect.any(Function),
+      expect.any(Function),
+      50
+    );
 
     spyScanner.mockRestore();
   });

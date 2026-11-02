@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   getSecurityStatus: () => ipcRenderer.invoke('pcd:security-status'),
   retrySecurity: () => ipcRenderer.invoke('pcd:security-retry'),
+  isAdmin: () => ipcRenderer.invoke('pcd:is-admin'),
   getDiagnostics: () => ipcRenderer.invoke('pcd:diagnostics'),
   checkStatus: () => ipcRenderer.invoke('pcd:status'),
   searchTerminal: (query) => ipcRenderer.invoke('pcd:search-terminal', query),
@@ -44,7 +45,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('pcd:trigger-autofocus-search', listener);
     return () => ipcRenderer.removeListener('pcd:trigger-autofocus-search', listener);
   },
-  startSubnetScan: (targetIp) => ipcRenderer.send('pcd:subnet-scan-start', targetIp),
+  startSubnetScan: (payload) => ipcRenderer.send('pcd:subnet-scan-start', payload),
   abortSubnetScan: () => ipcRenderer.invoke('pcd:subnet-scan-abort'),
   onSubnetHostFound: (callback) => {
     const listener = (_event, host) => callback(host);

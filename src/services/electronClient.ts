@@ -477,14 +477,15 @@ export function startSubnetScanner(
   targetIp: string,
   onHostFound: (host: SubnetDiscoveredHost) => void,
   onProgress: (progress: SubnetScanProgress) => void,
-  onDone: (summary: SubnetScanSummary) => void
+  onDone: (summary: SubnetScanSummary) => void,
+  startIndex: number = 0
 ): () => void {
   const api = getElectronAPI();
   if (api && api.startSubnetScan && api.onSubnetHostFound) {
     const unsubHost = api.onSubnetHostFound(onHostFound);
     const unsubProgress = api.onSubnetProgress(onProgress);
     const unsubDone = api.onSubnetDone(onDone);
-    api.startSubnetScan(targetIp);
+    api.startSubnetScan({ targetIp, fromIndex: startIndex });
 
     return () => {
       unsubHost();
@@ -495,13 +496,18 @@ export function startSubnetScanner(
   }
 
   // Web Browser fallback simulation
-  let current = 1;
+  let current = startIndex + 1;
   const total = 254;
   const parts = targetIp.split('.');
   const prefix = `${parts[0] || '192'}.${parts[1] || '0'}.${parts[2] || '2'}`;
   let timer: any = null;
+  let aborted = false;
 
   timer = setInterval(() => {
+    if (aborted) {
+      clearInterval(timer);
+      return;
+    }
     if (current <= total) {
       onProgress({ scanned: current, total });
       if (current === 10 || current === 25 || current === 42 || current === 88) {
@@ -521,8 +527,14 @@ export function startSubnetScanner(
   }, 100);
 
   return () => {
+    aborted = true;
     if (timer) clearInterval(timer);
   };
+}
+
+export function abortSubnetScan(): void {
+  const api = getElectronAPI();
+  api?.abortSubnetScan?.();
 }
 
 
@@ -618,6 +630,19 @@ export async function installUpdateNow(): Promise<{ success: boolean; error?: st
   return { success: true };
 }
 
+
+/** Indica si el usuario de Windows en sesión es administrador del aplicativo. */
+export async function checkIsAdmin(): Promise<boolean> {
+  const api = getElectronAPI();
+  if (api && typeof api.isAdmin === 'function') {
+    try {
+      return Boolean(await api.isAdmin());
+    } catch {
+      return false;
+    }
+  }
+  return true;
+}
 
 export async function testSqlConnection(): Promise<BackendStatus> {
   const api = getElectronAPI();

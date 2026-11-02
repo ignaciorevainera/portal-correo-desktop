@@ -408,6 +408,26 @@ ipcMain.handle('pcd:test-sql-connection', async () => {
   return await dbService.checkStatus();
 });
 
+// Administradores habilitados para ver funciones ocultas (p. ej. Alertas y
+// Reseteos). Lista separada por comas en PCD_ADMIN_USERS; por defecto, solo el
+// administrador del aplicativo. Se compara con el usuario de Windows en sesión.
+const DEFAULT_ADMIN_USERS = ['irevainera'];
+function isCurrentUserAdmin() {
+  try {
+    const current = require('os').userInfo().username.toLowerCase();
+    const fromEnv = String(process.env.PCD_ADMIN_USERS || '')
+      .split(',')
+      .map((u) => u.trim().toLowerCase())
+      .filter(Boolean);
+    const admins = fromEnv.length ? fromEnv : DEFAULT_ADMIN_USERS;
+    return admins.includes(current);
+  } catch {
+    return false;
+  }
+}
+
+ipcMain.handle('pcd:is-admin', () => isCurrentUserAdmin());
+
 ipcMain.handle('pcd:status', async () => {
   return await dbService.checkStatus();
 });
@@ -584,7 +604,7 @@ ipcMain.handle('pcd:cmd-stop', () => {
 });
 
 // Subnet Scanner IPC Handlers
-ipcMain.on('pcd:subnet-scan-start', async (event, targetIp) => {
+ipcMain.on('pcd:subnet-scan-start', async (event, payload) => {
   if (activeSubnetAbortController) {
     activeSubnetAbortController.abort();
     activeSubnetAbortController = null;
@@ -593,9 +613,15 @@ ipcMain.on('pcd:subnet-scan-start', async (event, targetIp) => {
   activeSubnetAbortController = new AbortController();
   const signal = activeSubnetAbortController.signal;
 
+  const targetIp = typeof payload === 'object' && payload !== null ? payload.targetIp : payload;
+  const fromIndex = typeof payload === 'object' && payload !== null && typeof payload.fromIndex === 'number' ? payload.fromIndex : 0;
+
   try {
-    const range = generateSubnetRange(targetIp);
+    const fullRange = generateSubnetRange(targetIp);
+    const range = fromIndex > 0 ? fullRange.slice(fromIndex) : fullRange;
     const result = await scanSubnetBatch(range, {
+      startIndex: fromIndex,
+      totalCount: 254,
       concurrency: 16,
       signal,
       dnsResolver: (ip) =>
