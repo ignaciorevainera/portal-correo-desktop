@@ -25,7 +25,7 @@ describe('SettingsModal Component', () => {
     expect(screen.getByRole('heading', { name: /actualizaciones del sistema/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /conexión corporativa sql server/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /preferencias de la aplicación/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /diagnóstico y entorno/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /diagnóstico y entorno/i })).not.toBeInTheDocument();
     expect(screen.getByText(/versión actual: v1.0.0/i)).toBeInTheDocument();
   });
 

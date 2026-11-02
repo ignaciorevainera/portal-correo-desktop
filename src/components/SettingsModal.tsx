@@ -26,7 +26,6 @@ import {
   Download,
   CheckCircle2,
   Sliders,
-  Server,
   Sparkles,
   Database,
 } from "lucide-react";
@@ -465,59 +464,6 @@ export function SettingsModal({
             </div>
           </section>
 
-          {/* SECCIÓN 4: DIAGNÓSTICO Y ENTORNO */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2 border-b border-border/60 pb-2">
-              <Server className="h-4 w-4 text-primary" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Diagnóstico y Entorno
-              </h3>
-            </div>
-
-            <div className="p-3.5 rounded-xl border border-border bg-muted/20 space-y-3">
-              <div className="text-xs font-bold text-foreground">
-                Estado de Infraestructura y Conexión
-              </div>
-
-              <div className="flex items-center justify-between text-xs py-1 border-b border-border/50">
-                <span className="text-muted-foreground">
-                  Base de Datos SQL:
-                </span>
-                <Badge
-                  variant={backendConnected ? "default" : "secondary"}
-                  className="text-[11px]"
-                >
-                  {backendConnected
-                    ? "Conectado a Red Corporativa"
-                    : "Modo Seguro / Offline (Mocks)"}
-                </Badge>
-              </div>
-
-              <div className="flex items-center justify-between text-xs py-1 border-b border-border/50">
-                <span className="text-muted-foreground">
-                  Política Zero-Secrets:
-                </span>
-                <Badge
-                  variant="outline"
-                  className="text-[11px] text-emerald-400 border-emerald-500/30"
-                >
-                  Activa (Cero credenciales en código)
-                </Badge>
-              </div>
-
-              <div className="flex items-center justify-between text-xs py-1">
-                <span className="text-muted-foreground">
-                  Entorno de Ejecución:
-                </span>
-                <span className="font-mono text-[11px] text-foreground">
-                  Electron{" "}
-                  {typeof process !== "undefined"
-                    ? process.versions?.electron || "Desktop"
-                    : "Desktop"}
-                </span>
-              </div>
-            </div>
-          </section>
         </div>
 
         <DialogFooter className="p-3 bg-muted/30 border-t border-border flex justify-end shrink-0">
