@@ -4,6 +4,7 @@ import {
   Monitor,
   Activity,
   Network,
+  UserCheck,
 } from "lucide-react";
 import {
   Dialog,
@@ -32,8 +33,12 @@ export function InfoModal({
   const capabilities = [
     {
       icon: Search,
-      label: "Búsqueda rápida de puestos y cuentas AD",
+      label: "Búsqueda rápida de puestos de trabajo e IPs",
       shortcut: "Ctrl + F",
+    },
+    {
+      icon: UserCheck,
+      label: "Consulta de cuenta Active Directory (net user) por username",
     },
     {
       icon: Activity,
@@ -53,7 +58,7 @@ export function InfoModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md p-0 overflow-hidden border border-border/80 shadow-xl">
         {/* Cabecera Minimalista con Identidad de Marca */}
-        <DialogHeader className="px-5 pt-5 pb-4 border-b border-border/60 bg-muted/20">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60 bg-muted/20">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 shrink-0">
               <img
@@ -81,28 +86,28 @@ export function InfoModal({
           </div>
         </DialogHeader>
 
-        {/* Contenido / Capacidades Principales */}
-        <div className="px-5 py-4 space-y-4 text-xs">
-          <div className="space-y-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {/* Contenido / Capacidades Principales (sin márgenes verticales y con espaciado amplio entre items) */}
+        <div className="px-6 py-0 text-xs">
+          <div className="py-5 space-y-3">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
               Capacidades Principales
             </span>
-            <div className="space-y-1.5 rounded-lg border border-border/60 bg-muted/20 p-2.5">
+            <div className="space-y-3 rounded-lg border border-border/60 bg-muted/20 p-4">
               {capabilities.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between gap-2 py-1 text-foreground"
+                    className="flex items-center justify-between gap-3 text-foreground"
                   >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <span className="text-xs text-foreground/90 truncate">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-xs text-foreground/90 leading-snug">
                         {item.label}
                       </span>
                     </div>
                     {item.shortcut && (
-                      <Kbd className="text-[9px] px-1 py-0 h-4 shrink-0">
+                      <Kbd className="text-[9px] px-1.5 py-0.5 h-4 shrink-0">
                         {item.shortcut}
                       </Kbd>
                     )}
@@ -111,37 +116,16 @@ export function InfoModal({
               })}
             </div>
           </div>
-
-          {/* Especificaciones de Entorno Compactas */}
-          <div className="rounded-lg border border-border/60 bg-muted/10 p-2.5 space-y-1 font-mono text-[11px]">
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span>Plataforma:</span>
-              <span className="text-foreground">Windows x64 (Desktop)</span>
-            </div>
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span>Conectividad:</span>
-              <span className="text-foreground">SQL Server Corporativo</span>
-            </div>
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span>Políticas:</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                Zero-Secrets AD
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Footer Minimalista */}
-        <DialogFooter className="px-5 py-3 border-t border-border/60 bg-muted/20 flex items-center justify-between sm:justify-between">
-          <span className="text-[11px] text-muted-foreground font-mono">
-            Gerencia de Tecnología
-          </span>
+        <DialogFooter className="px-6 py-4 border-t border-border/60 bg-muted/20 flex items-center justify-end">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={onClose}
-            className="text-xs h-7 px-3 cursor-pointer"
+            className="text-xs h-8 px-4 cursor-pointer"
           >
             Cerrar
           </Button>

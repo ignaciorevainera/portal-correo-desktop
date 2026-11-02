@@ -23,11 +23,14 @@ describe("InfoModal Component", () => {
     expect(screen.getByAltText("Correo Argentino")).toBeInTheDocument();
   });
 
-  it("renders key capabilities list and shortcut kbd badge", () => {
+  it("renders key capabilities list including net user for username and shortcut kbd badge", () => {
     render(<InfoModal isOpen={true} onClose={vi.fn()} />);
 
     expect(
-      screen.getByText("Búsqueda rápida de puestos y cuentas AD"),
+      screen.getByText("Búsqueda rápida de puestos de trabajo e IPs"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Consulta de cuenta Active Directory (net user) por username"),
     ).toBeInTheDocument();
     expect(screen.getByText("Ctrl + F")).toBeInTheDocument();
     expect(
@@ -36,16 +39,20 @@ describe("InfoModal Component", () => {
     expect(
       screen.getByText("Asistencia remota integrada (VNC Viewer y MSRA)"),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText("Escaneo inteligente de subred y enlaces de sucursal"),
+    ).toBeInTheDocument();
+
+    // Verificamos que las secciones y textos eliminados no estén presentes
+    expect(screen.queryByText(/gerencia de tecnología/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/plataforma:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/conectividad:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/políticas:/i)).not.toBeInTheDocument();
   });
 
-  it("renders environment specifications and invokes onClose on Cerrar button click", () => {
+  it("invokes onClose on Cerrar button click", () => {
     const handleClose = vi.fn();
     render(<InfoModal isOpen={true} onClose={handleClose} />);
-
-    expect(screen.getByText("Plataforma:")).toBeInTheDocument();
-    expect(screen.getByText("Windows x64 (Desktop)")).toBeInTheDocument();
-    expect(screen.getByText("SQL Server Corporativo")).toBeInTheDocument();
-    expect(screen.getByText("Zero-Secrets AD")).toBeInTheDocument();
 
     const closeButtons = screen.getAllByRole("button", { name: /cerrar/i });
     expect(closeButtons.length).toBeGreaterThanOrEqual(1);
