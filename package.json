@@ -5,7 +5,8 @@
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "node scripts/patch-esbuild.cjs && tsc && vite build",
+    "postinstall": "node scripts/patch-esbuild.cjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "electron:dev": "concurrently -k \"vite\" \"electron .\"",
