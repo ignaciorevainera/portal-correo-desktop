@@ -6,7 +6,8 @@
  * OKLCH to sRGB and reports WCAG 2.1 contrast for the pairs that matter to the
  * operator workflow. Exit code 1 when a *text* pair is below 4.5:1.
  *
- * Usage: node scripts/check-contrast.mjs
+ * Usage: node scripts/check-contrast.mjs [--strict]
+ *   --strict ignora las excepciones y exige 0 fallas de texto.
  */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -155,25 +156,44 @@ const pairs = [
 const EXCEPTIONS = [
   {
     label: "light Labels sobre muted",
+    ratio: 4.34,
     reason: "Chips con bg-muted y --muted-foreground del sitio (4.34:1). Fase 2: pasar esos chips a bg-card.",
   },
   {
     label: "light Botón destructive (10%)",
+    ratio: 3.99,
     reason: "variant destructive sobre tinte 10% (3.99:1). Fase 2: fondo sólido con destructive-foreground.",
   },
   {
     label: "dark Texto primary sobre card",
+    ratio: 2.03,
     reason: "--primary oscuro del sitio (2.03:1) no sirve como texto. Fase 2: mover text-primary a --sidebar-primary.",
   },
   {
     label: "dark Texto primary sobre fondo",
+    ratio: 2.24,
     reason: "Mismo caso sobre background (2.24:1). Fase 2: idem.",
   },
   {
     label: "dark Primary sobre tinte primary/10",
+    ratio: 1.95,
     reason: "Tinte de primary en oscuro (1.95:1). Fase 2: idem.",
   },
 ];
+
+const pairLabels = pairs.map((p) => `${p.t} ${p.label}`);
+const duplicated = pairLabels.filter((label, index) => pairLabels.indexOf(label) !== index);
+if (duplicated.length > 0) {
+  console.error(`Etiquetas de par duplicadas: ${[...new Set(duplicated)].join(", ")}`);
+  process.exit(1);
+}
+for (const exception of EXCEPTIONS) {
+  const matches = pairLabels.filter((label) => label === exception.label).length;
+  if (matches !== 1) {
+    console.error(`Excepción sin par único: "${exception.label}" (${matches} coincidencias)`);
+    process.exit(1);
+  }
+}
 
 const strict = process.argv.includes("--strict");
 
@@ -199,16 +219,31 @@ for (const pair of pairs) {
   const value = ratio(fgRgb, bgRgb);
   const threshold = pair.kind === "text" ? 4.5 : 3;
   const pass = value >= threshold;
-  const exception = !strict ? EXCEPTIONS.find((e) => e.label === rowLabel) : undefined;
-  if (!pass && !exception) {
+  const candidate = strict
+    ? undefined
+    : EXCEPTIONS.find((e) => e.label === rowLabel);
+  const documented = candidate && value <= candidate.ratio + 0.05 ? candidate : undefined;
+  const stale = candidate !== undefined && pass;
+  const drifted = candidate !== undefined && !pass && value > candidate.ratio + 0.05;
+
+  if (stale || (!pass && !documented)) {
     pair.kind === "text" ? textFailures++ : uiFailures++;
   }
+
   rows.push([
     rowLabel,
     hex(fgRgb),
     hex(bgRgb),
     value.toFixed(2),
-    pass ? "ok" : exception ? "excepción documentada" : `FALLA (${threshold}:1)`,
+    stale
+      ? "excepción obsoleta: el par ya cumple, borrarla"
+      : drifted
+        ? `empeoró: documentado ${candidate.ratio.toFixed(2)}, hoy ${value.toFixed(2)}`
+        : documented
+          ? "excepción documentada"
+          : pass
+            ? "ok"
+            : `FALLA (${threshold}:1)`,
   ]);
 }
 
@@ -221,8 +256,8 @@ for (const [label, fg, bg, value, verdict] of rows) {
 }
 if (!strict) {
   console.log(`\nExcepciones documentadas: ${EXCEPTIONS.length} (usar --strict para exigir 0)`);
-  for (const e of EXCEPTIONS) console.log(`  - ${e.label}: ${e.reason}`);
 }
+for (const e of EXCEPTIONS) console.log(`  - ${e.label}: ${e.reason}`);
 console.log(
   `\nTexto: ${textFailures} par(es) bajo 4.5:1 · UI: ${uiFailures} borde(s) bajo 3:1.\n`,
 );
