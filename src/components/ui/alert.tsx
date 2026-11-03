@@ -56,7 +56,7 @@ const AlertDescription = React.forwardRef<
   <div
     ref={ref}
     data-slot="alert-description"
-    className={cn("col-start-2 text-xs [&_p]:leading-relaxed text-muted-foreground", className)}
+    className={cn("col-start-2 text-sm [&_p]:leading-relaxed text-foreground", className)}
     {...props}
   />
 ))

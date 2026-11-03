@@ -50,7 +50,7 @@ export function NewAlertDialog({
   const [description, setDescription] = useState("");
   const [operator, setOperator] = useState(DEFAULT_OPERATOR);
   const valid =
-    title.trim().length > 0 &&
+    title.trim().length >= 3 &&
     description.trim().length > 0 &&
     operator.trim().length > 0;
   // El título necesita al menos 3 caracteres para servir como encabezado.

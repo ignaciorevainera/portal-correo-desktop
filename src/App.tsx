@@ -73,6 +73,7 @@ export default function App(): React.JSX.Element {
   const [notFoundTerm, setNotFoundTerm] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPinging, setIsPinging] = useState(false);
+  const [consoleOpenSignal, setConsoleOpenSignal] = useState(0);
   const [pingMode, setPingMode] = useState<"standard" | "infinite">("standard");
   const [pingTarget, setPingTarget] = useState<string>("");
   const [pingLinePrefix, setPingLinePrefix] = useState<string | undefined>(undefined);
@@ -102,6 +103,13 @@ export default function App(): React.JSX.Element {
   });
   const [actionFeedback, setActionFeedback] =
     useState<ActionFeedbackState | null>(null);
+
+  // El feedback inline se descarta solo, como los toasts que reemplazó.
+  useEffect(() => {
+    if (!actionFeedback) return;
+    const timer = setTimeout(() => setActionFeedback(null), 6000);
+    return () => clearTimeout(timer);
+  }, [actionFeedback]);
   const [remoteProbe, setRemoteProbe] = useState<RemoteProbeResult | null>(
     null,
   );
@@ -302,6 +310,7 @@ export default function App(): React.JSX.Element {
     setPingTarget(target || terminal?.ip || "");
     setPingLinePrefix(prefix);
     setIsPinging(true);
+    setConsoleOpenSignal((prev) => prev + 1);
   };
 
   const handleLaunchSitePing = (
@@ -372,12 +381,16 @@ export default function App(): React.JSX.Element {
       const res = await searchTerminalUnified(selectedPc);
       if (res.data) {
         setTerminal(res.data);
-        toast.success("Tiempo de actividad actualizado", {
-          description: `Uptime: ${res.data.uptimeText}`,
+        setActionFeedback({
+          type: "success",
+          message: `Uptime actualizado: ${res.data.uptimeText}`,
         });
       }
     } catch {
-      toast.error("Error al actualizar uptime");
+      setActionFeedback({
+        type: "error",
+        message: "No se pudo actualizar el uptime.",
+      });
     } finally {
       setIsRefreshingUptime(false);
     }
@@ -532,21 +545,21 @@ export default function App(): React.JSX.Element {
     }
 
     if (res.success) {
-      if (res.methodUsed === "vnc") {
-        toast.success(
-          res.message ||
-            `VNC Viewer iniciado correctamente hacia ${target}${res.portUsed ? `:${res.portUsed}` : ""}`,
-        );
-      } else if (res.methodUsed === "msra") {
-        toast.info(
-          res.message ||
-            `VNC cerrado. Asistencia Remota (MSRA) iniciada para ${target}`,
-        );
-      } else {
-        toast.success(res.message || `Conexión remota exitosa hacia ${target}`);
-      }
+      const methodLabel =
+        res.methodUsed === "vnc"
+          ? "VNC"
+          : res.methodUsed === "msra"
+            ? "Asistencia Remota (MSRA)"
+            : "Conexión remota";
+      setActionFeedback({
+        type: "success",
+        message: res.message || `${methodLabel} iniciada hacia ${target}`,
+      });
     } else {
-      toast.error(res.message || `Sin acceso remoto directo a ${target}`);
+      setActionFeedback({
+        type: "error",
+        message: res.message || `Sin acceso remoto directo a ${target}`,
+      });
     }
   };
 
@@ -557,29 +570,27 @@ export default function App(): React.JSX.Element {
     const res = await launchVncClient(target);
 
     if (res.vncClosed) {
-      toast.error(
-        res.message || `Puertos VNC (5901/5900) cerrados en ${target}.`,
-        {
-          description: res.msraAvailable
-            ? "Asistencia Remota (MSRA) está disponible como alternativa."
-            : undefined,
-          action: res.msraAvailable
-            ? {
-                label: "Conectar por MSRA",
-                onClick: () => handleLaunchMsra(target),
-              }
-            : undefined,
-        },
-      );
+      setActionFeedback({
+        type: "warning",
+        message:
+          res.message || `Puertos VNC (5901/5900) cerrados en ${target}.`,
+        fallbackAction: res.msraAvailable
+          ? {
+              label: "Conectar por MSRA",
+              onClick: () => handleLaunchMsra(target),
+            }
+          : undefined,
+      });
     } else if (res.success) {
-      toast.success(
-        res.message ||
-          `VNC Viewer iniciado correctamente hacia ${target}${res.portUsed ? `:${res.portUsed}` : ""}`,
-      );
+      setActionFeedback({
+        type: "success",
+        message: res.message || `VNC iniciado hacia ${target}`,
+      });
     } else {
-      toast.error(
-        res.message || `Error al intentar conectar por VNC a ${target}`,
-      );
+      setActionFeedback({
+        type: "error",
+        message: res.message || `Error al intentar conectar por VNC a ${target}`,
+      });
     }
   };
 
@@ -589,11 +600,16 @@ export default function App(): React.JSX.Element {
 
     const res = await launchMsraClient(target);
     if (res.success) {
-      toast.success(res.message || `Asistencia Remota iniciada para ${target}`);
+      setActionFeedback({
+        type: "success",
+        message: res.message || `Asistencia Remota iniciada para ${target}`,
+      });
     } else {
-      toast.error(
-        res.message || `Error al iniciar Asistencia Remota para ${target}`,
-      );
+      setActionFeedback({
+        type: "error",
+        message:
+          res.message || `Error al iniciar Asistencia Remota para ${target}`,
+      });
     }
   };
 
@@ -601,6 +617,7 @@ export default function App(): React.JSX.Element {
     setSelectedPc(pc);
     setPingMode("standard");
     setIsPinging(true);
+    setConsoleOpenSignal((prev) => prev + 1);
   };
 
   const isAccountView = !terminal && Boolean(accountQuery);
@@ -775,6 +792,7 @@ export default function App(): React.JSX.Element {
                 pingMode={pingMode}
                 linePrefix={pingLinePrefix}
                 activeCommand={activeDiagnostic}
+                openSignal={consoleOpenSignal}
                 onTogglePing={handleTogglePing}
                 onPingComplete={handlePingComplete}
                 onStopCommand={() => {

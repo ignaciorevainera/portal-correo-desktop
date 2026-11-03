@@ -3,6 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LivePingConsole } from '../components/LivePingConsole';
 import * as electronClient from '../services/electronClient';
 
+function openConsole(): void {
+  fireEvent.click(screen.getByRole('button', { name: /consola/i }));
+}
+
 describe('LivePingConsole Component', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -32,7 +36,11 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
-    expect(screen.getByRole('button', { name: /detener/i })).toBeInTheDocument();
+    const stopButton = screen.getByRole('button', { name: /detener/i });
+    expect(stopButton).toHaveClass('bg-destructive');
+    expect(stopButton).toHaveClass('text-destructive-foreground');
+    expect(stopButton).not.toHaveClass('dark:bg-destructive/20');
+    expect(stopButton).not.toHaveClass('dark:hover:bg-destructive/30');
   });
 
   it('appends multiple command executions sequentially without wiping previous history', () => {
@@ -50,6 +58,7 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
+    openConsole();
 
     act(() => {
       capturedCallback?.('Respuesta desde 192.0.2.100: bytes=32 tiempo=1ms');
@@ -106,6 +115,7 @@ describe('LivePingConsole Component', () => {
         onTogglePing={onTogglePing}
       />
     );
+    openConsole();
 
     // Simulate arriving logs
     act(() => {
@@ -156,6 +166,7 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
+    openConsole();
 
     // Command 1 output
     act(() => {
@@ -212,6 +223,7 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
+    openConsole();
 
     const scrollBox = container.querySelector('[data-testid="terminal-scroll-container"]') as HTMLDivElement;
     expect(scrollBox).not.toBeNull();
@@ -248,6 +260,7 @@ describe('LivePingConsole Component', () => {
         onPingComplete={onPingComplete}
       />
     );
+    openConsole();
 
     act(() => {
       doneHandler?.(0);
@@ -271,6 +284,7 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
+    openConsole();
 
     // Feed raw Windows ping text with CP850/CP1252 corrupted characters
     act(() => {
@@ -333,6 +347,7 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
+    openConsole();
 
     // Initial mount and log replacement
     scrollMock.mockClear();
@@ -449,6 +464,31 @@ describe('LivePingConsole Component', () => {
       "aria-expanded",
       "false",
     );
+  });
+
+  it("no se abre con una señal vieja al montarse y sí con un incremento", () => {
+    const { rerender } = render(
+      <LivePingConsole
+        ip="10.0.0.5"
+        isPinging={false}
+        openSignal={2}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    const trigger = screen.getByRole("button", { name: /consola/i });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+    rerender(
+      <LivePingConsole
+        ip="10.0.0.5"
+        isPinging={false}
+        openSignal={3}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
   });
 
   it("se expande al hacer click en el encabezado", () => {

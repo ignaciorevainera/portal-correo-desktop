@@ -71,6 +71,53 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
     expect(onLaunchVnc).toHaveBeenCalledTimes(1);
   });
 
+  it('muestra el feedback warning con título y acción de respaldo', () => {
+    const onFallback = vi.fn();
+
+    render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={false}
+        actionFeedback={{
+          type: 'warning',
+          message: 'Puertos VNC (5901/5900) cerrados en 192.0.2.10.',
+          fallbackAction: {
+            label: 'Conectar por MSRA',
+            onClick: onFallback,
+          },
+        }}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(/puertos vnc \(5901\/5900\) cerrados/i)).toBeInTheDocument();
+    expect(screen.getByText('Para revisar')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Conectar por MSRA' }));
+    expect(onFallback).toHaveBeenCalledTimes(1);
+  });
+
+  it('usa destructive sólido en el control de detener sin tintes de hover', () => {
+    render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={true}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    const stopPingBtn = screen.getByRole('button', { name: /detener ping en vivo/i });
+    expect(stopPingBtn).toHaveClass('bg-destructive');
+    expect(stopPingBtn).toHaveClass('text-destructive-foreground');
+    expect(stopPingBtn).toHaveClass('hover:bg-destructive/90');
+    expect(stopPingBtn).not.toHaveClass('dark:bg-destructive/20');
+    expect(stopPingBtn).not.toHaveClass('dark:hover:bg-destructive/30');
+  });
+
   it('uses pulse animation (animate-pulse) instead of spin (animate-spin) while pinging', () => {
     render(
       <QuickActionsBar

@@ -1,6 +1,6 @@
 # Fase 2 — Superficies, densidad y semántica de color · Implementation Plan
 
-> **Estado (2026-11-03):** ejecutado completo (T0-T9) en `feat/fase-2-superficies`. Resultado medido: paleta fija 95 → 0, sombras propias 15 → 0, radios pelados 9 → 0, `z-50` 5 → 4; ratchet en 0/0/0/4; `--strict` en 0 con `EXCEPTIONS` vacío; suite 361/361; build verde. Los desvíos y la evidencia están registrados en §Fase 2 de `docs/ui-slop-audit-2026-11-02.md`.
+> **Estado (2026-11-03):** ejecutado completo (T0-T9) en `feat/fase-2-superficies`. Resultado medido: paleta fija 95 → 0, sombras propias 18 → 0, radios pelados 9 → 0, `z-50` 5 → 4; ratchet en 0/0/0/4; `--strict` en 0 con `EXCEPTIONS` vacío; suite 366/366; build verde. Los desvíos y la evidencia están registrados en §Fase 2 de `docs/ui-slop-audit-2026-11-02.md`.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

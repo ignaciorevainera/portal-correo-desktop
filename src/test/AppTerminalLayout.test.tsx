@@ -90,6 +90,54 @@ describe("App terminal layout", () => {
     ]);
   });
 
+  it("arranca con la consola colapsada tras el ping automático y la abre con una acción del operador", async () => {
+    await renderLoadedApp();
+
+    const consoleTrigger = screen.getByRole("button", { name: /consola/i });
+    expect(consoleTrigger).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByTestId("terminal-scroll-container")).toBeNull();
+
+    // La cabecera de la consola sigue visible y accesible aunque esté colapsada.
+    expect(
+      screen.getByRole("button", { name: "Consola de 192.0.2.100" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("terminal-scroll-container")).toBeNull();
+
+    // Detener el ping automático no debe abrir la consola.
+    fireEvent.click(
+      screen.getByRole("button", { name: "Detener Ping en vivo" }),
+    );
+    expect(consoleTrigger).toHaveAttribute("aria-expanded", "false");
+
+    // Iniciar un ping desde la barra sí es una acción del operador.
+    fireEvent.click(screen.getByRole("button", { name: "Iniciar Ping" }));
+
+    await waitFor(() =>
+      expect(consoleTrigger).toHaveAttribute("aria-expanded", "true"),
+    );
+    expect(screen.getByTestId("terminal-scroll-container")).toBeInTheDocument();
+  });
+
+  it("muestra el feedback inline al refrescar el uptime", async () => {
+    const updated = { ...terminal, uptimeText: "4 day(s), 1 hour(s)" };
+    (window as any).electronAPI.searchTerminal = vi
+      .fn()
+      .mockResolvedValueOnce({ source: "sql", data: terminal })
+      .mockResolvedValueOnce({ source: "sql", data: updated });
+
+    await renderLoadedApp();
+
+    fireEvent.click(screen.getByRole("button", { name: /más acciones/i }));
+    fireEvent.click(screen.getByRole("button", { name: /refrescar uptime/i }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Uptime actualizado: 4 day(s), 1 hour(s)"),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByText("Listo")).toBeInTheDocument();
+  });
+
   it("does not hijack the native context menu inside the search input", async () => {
     const { input } = await renderLoadedApp();
 

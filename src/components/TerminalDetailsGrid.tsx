@@ -43,6 +43,7 @@ export function TerminalDetailsGrid({
   return (
     <Card
       data-testid="terminal-details"
+      role="region"
       aria-labelledby="terminal-details-title"
       className="gap-0 px-3 py-2.5"
     >

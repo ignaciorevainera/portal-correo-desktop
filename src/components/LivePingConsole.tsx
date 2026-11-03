@@ -36,6 +36,8 @@ interface LivePingConsoleProps {
   pingMode?: "standard" | "infinite";
   linePrefix?: string;
   activeCommand?: DiagnosticCommandEvent | null;
+  /** Se incrementa sólo ante acciones iniciadas por el operador; abre la consola. */
+  openSignal?: number;
   onTogglePing: () => void;
   onPingComplete?: () => void;
   onStopCommand?: () => void;
@@ -59,12 +61,18 @@ function sanitizePingText(text: string): string {
     .replace(/aproximad[\ufffd\?]?s/gi, "aproximados");
 }
 
+/**
+ * Consola de ping/diagnóstico colapsable. Arranca cerrada: sólo la abre una
+ * acción del operador (`openSignal`) o un comando de diagnóstico (`activeCommand`).
+ * La cabecera con Detener/limpiar/copiar queda visible aunque esté colapsada.
+ */
 export function LivePingConsole({
   ip,
   isPinging,
   pingMode = "standard",
   linePrefix,
   activeCommand,
+  openSignal,
   onTogglePing,
   onPingComplete,
   onStopCommand,
@@ -84,11 +92,23 @@ export function LivePingConsole({
   onDiagnosticCompleteRef.current = onDiagnosticComplete;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeCommandId = activeCommand?.id;
+  // Señal ya procesada al montar: evita que un valor viejo reabra la consola
+  // al montarse de nuevo tras una búsqueda.
+  const handledOpenSignal = useRef(openSignal ?? 0);
 
-  // Cualquier ejecución abre la consola; el colapso manual se respeta
+  // Los diagnósticos siempre son iniciados por el operador: abren la consola.
   useEffect(() => {
-    if (isPinging || activeCommandId) setIsOpen(true);
-  }, [isPinging, activeCommandId]);
+    if (activeCommandId) setIsOpen(true);
+  }, [activeCommandId]);
+
+  // Sólo un incremento de la señal (acción del operador mientras la consola
+  // está montada) la abre; el ping automático de carga no incrementa nada.
+  useEffect(() => {
+    if ((openSignal ?? 0) > handledOpenSignal.current) {
+      handledOpenSignal.current = openSignal ?? 0;
+      setIsOpen(true);
+    }
+  }, [openSignal]);
 
   // Auto-desplazamiento exclusivo dentro del contenedor de la terminal ante nuevas líneas
   useEffect(() => {
@@ -284,7 +304,7 @@ export function LivePingConsole({
                   handleStop();
                 }}
                 aria-label="Detener ping en vivo"
-                className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer"
+                className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90"
               >
                 <Square className="h-3 w-3" />
                 <span>Detener</span>

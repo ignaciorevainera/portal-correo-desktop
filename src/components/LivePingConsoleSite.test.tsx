@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import React from "react";
 import { LivePingConsole } from "./LivePingConsole";
 
@@ -31,6 +31,7 @@ describe("LivePingConsole with site targets and prefix labels", () => {
         onTogglePing={() => {}}
       />
     );
+    fireEvent.click(screen.getByRole("button", { name: /consola/i }));
 
     // Initial header contains prefix
     expect(screen.getByText(/\[ROUTER \.250\] ping -n 4 10\.66\.10\.250/)).toBeInTheDocument();
@@ -67,6 +68,7 @@ describe("LivePingConsole with site targets and prefix labels", () => {
         onTogglePing={() => {}}
       />
     );
+    fireEvent.click(screen.getByRole("button", { name: /consola/i }));
 
     // Initial header contains prefix
     expect(screen.getByText(/\[SERVIDOR \.231\] ping -n 4 10\.66\.10\.231/)).toBeInTheDocument();

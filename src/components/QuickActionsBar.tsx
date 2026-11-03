@@ -298,8 +298,7 @@ export function QuickActionsBar({
         <div className="flex rounded-md flex-1 min-w-[110px] grow">
           <Button
             type="button"
-            // En oscuro el tinte del variant outline gana sobre bg-destructive:
-            // el estado activo usa el variant destructive, que ya define su tinte.
+            // El estado activo fuerza destructive sólido (AA también en hover) sobre el variant.
             variant={isPinging ? "destructive" : "outline"}
             size="sm"
             onClick={onTogglePing}
@@ -308,7 +307,7 @@ export function QuickActionsBar({
             title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
             className={`flex-1 min-w-0 rounded-r-none h-8 px-2.5 text-xs font-semibold cursor-pointer justify-between border-border transition-colors ${
               isPinging
-                ? "animate-pulse"
+                ? "animate-pulse bg-destructive text-destructive-foreground hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90"
                 : "bg-muted text-foreground hover:bg-muted/80"
             }`}
           >
@@ -322,7 +321,9 @@ export function QuickActionsBar({
               />
               <span className="truncate">{isPinging ? "Detener" : "Ping"}</span>
             </span>
-            <Kbd className="hidden md:inline-block ml-auto shrink-0">F4</Kbd>
+            {!isPinging && (
+              <Kbd className="hidden md:inline-block ml-auto shrink-0">F4</Kbd>
+            )}
           </Button>
           <Button
             type="button"
@@ -595,8 +596,28 @@ export function QuickActionsBar({
                     : "default"
             }
           >
-            <AlertTitle>{actionFeedback.type === "error" ? "Error" : "Listo"}</AlertTitle>
-            <AlertDescription>{actionFeedback.message}</AlertDescription>
+            <AlertTitle>
+              {actionFeedback.type === "error"
+                ? "Error"
+                : actionFeedback.type === "warning"
+                  ? "Para revisar"
+                  : actionFeedback.type === "success"
+                    ? "Listo"
+                    : "Información"}
+            </AlertTitle>
+            <AlertDescription className="flex flex-wrap items-center gap-2">
+              <span>{actionFeedback.message}</span>
+              {actionFeedback.fallbackAction && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={actionFeedback.fallbackAction.onClick}
+                >
+                  {actionFeedback.fallbackAction.label}
+                </Button>
+              )}
+            </AlertDescription>
           </Alert>
         </div>
       )}

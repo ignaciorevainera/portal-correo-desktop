@@ -47,6 +47,26 @@ describe("ActivityDialogs accesibilidad", () => {
     expect(screen.queryByText(TITLE_ERROR)).not.toBeInTheDocument();
   });
 
+  it("no permite registrar una alerta con un título de menos de 3 caracteres", () => {
+    render(<NewAlertDialog open onOpenChange={vi.fn()} onSubmit={vi.fn()} />);
+
+    fireEvent.change(screen.getByLabelText("Título"), {
+      target: { value: "Di" },
+    });
+    fireEvent.change(screen.getByLabelText("Descripción"), {
+      target: { value: "Detalle del incidente" },
+    });
+
+    const submit = screen.getByRole("button", { name: "Registrar alerta" });
+    expect(submit).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText("Título"), {
+      target: { value: "Dis" },
+    });
+
+    expect(submit).toBeEnabled();
+  });
+
   it("descripción y operador conservan label y ayuda asociada", () => {
     render(<NewAlertDialog open onOpenChange={vi.fn()} onSubmit={vi.fn()} />);
 
