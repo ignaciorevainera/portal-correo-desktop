@@ -257,7 +257,7 @@ describe('LivePingConsole Component', () => {
     expect(screen.getByText(/Proceso ping finalizado/i)).toBeInTheDocument();
   });
 
-  it('renders windows console aesthetic with bg-[#0C0C0C], whitespace-pre, horizontal overflow and sanitizes corrupt ping accents', () => {
+  it('renders windows console aesthetic with bg-console-bg, whitespace-pre, horizontal overflow and sanitizes corrupt ping accents', () => {
     let capturedCallback: ((text: string) => void) | null = null;
     vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
       capturedCallback = onData;
@@ -284,6 +284,7 @@ describe('LivePingConsole Component', () => {
 
     // Check terminal styling
     const terminalBox = container.querySelector('[data-testid="terminal-scroll-container"]');
+    expect(terminalBox?.className).toContain("bg-console-bg");
     expect(terminalBox).not.toBeNull();
     expect(terminalBox?.className).toContain('overflow-x-auto');
   });

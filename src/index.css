@@ -103,8 +103,8 @@
 
   /* Superficie de log: oscura en ambos temas, nunca sigue al tema */
   --console-bg: oklch(0.154 0 0);    /* #0C0C0C exacto */
-  --console-fg: oklch(0.922 0 0);    /* #E5E5E5, color de línea por defecto */
-  --console-muted: oklch(0.845 0 0); /* #CCCCCC, el texto base actual */
+  --console-fg: oklch(0.922 0 0);    /* #E5E5E5, color por defecto de cada línea */
+  --console-muted: oklch(0.845 0 0); /* #CCCCCC, texto base del viewport */
 
   --radius: 0.45rem;
   --chart-1: oklch(0.837 0.128 66.29);
