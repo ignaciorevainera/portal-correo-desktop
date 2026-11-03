@@ -1,6 +1,7 @@
 import React from "react";
 import { TerminalData } from "../types/terminal";
 import { CopyValueButton } from "./CopyValueButton";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const FALLBACK = "No informado";
@@ -40,13 +41,14 @@ export function TerminalDetailsGrid({
   const fields = buildFields(terminal);
 
   return (
-    <section
+    <Card
       data-testid="terminal-details"
       aria-labelledby="terminal-details-title"
-      className="rounded-lg border border-border bg-card px-3 py-2.5"
+      className="gap-0 px-3 py-2.5"
     >
       <h2
         id="terminal-details-title"
+        data-slot="card-title"
         className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
       >
         Datos del equipo
@@ -81,6 +83,6 @@ export function TerminalDetailsGrid({
           );
         })}
       </dl>
-    </section>
+    </Card>
   );
 }

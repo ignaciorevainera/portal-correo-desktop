@@ -13,6 +13,7 @@ import {
   RotateCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   startSubnetScanner,
   SubnetDiscoveredHost,
@@ -264,9 +265,9 @@ export function SubnetScannerDrawer({
               const isConnectingThis = connectingIp === lookupTarget || connectingIp === host.ip;
 
               return (
-                <div
+                <Card
                   key={host.ip}
-                  className="flex items-stretch rounded-lg border border-border/80 bg-card hover:border-border hover:shadow-xs hover:bg-muted/30 transition-all overflow-hidden group"
+                  className="flex-row items-stretch gap-0 border-border/80 p-0 hover:border-border hover:shadow-xs hover:bg-muted/30 transition-all overflow-hidden group"
                 >
                   {/* Porción principal: Información y selección de terminal */}
                   <button
@@ -308,7 +309,7 @@ export function SubnetScannerDrawer({
                       <Monitor className="h-4 w-4" />
                     )}
                   </button>
-                </div>
+                </Card>
               );
             })
           )}

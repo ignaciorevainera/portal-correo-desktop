@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { CheckCircle2, ChevronRight, PlusCircle, RotateCcw } from "lucide-react";
 import { TerminalAlert, TerminalData } from "../types/terminal";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { StatusBadge, StatusTone } from "@/components/StatusBadge";
 import {
   Table,
@@ -185,7 +186,7 @@ export function ActivityPanel({
           Sin alertas ni reseteos registrados.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <Card className="gap-0 overflow-hidden py-0">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -292,7 +293,7 @@ export function ActivityPanel({
               })}
             </TableBody>
           </Table>
-        </div>
+        </Card>
       )}
 
       <NewAlertDialog

@@ -5,6 +5,7 @@ import {
   subscribeToDiagnosticCommand,
 } from "../services/electronClient";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export interface DiagnosticCommandEvent {
   id: string;
@@ -222,8 +223,8 @@ export function LivePingConsole({
   let insideGlobalGroups = false;
 
   return (
-    <div
-      className={`w-full rounded-lg border border-border bg-card shadow-xs overflow-hidden ${
+    <Card
+      className={`w-full gap-0 overflow-hidden py-0 shadow-xs ${
         fill ? "flex h-full min-h-0 flex-col" : "shrink-0"
       }`}
     >
@@ -371,6 +372,6 @@ export function LivePingConsole({
           })
         )}
       </div>
-    </div>
+    </Card>
   );
 }

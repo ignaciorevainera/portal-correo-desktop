@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Kbd } from "@/components/ui/kbd";
 import logoIcon from "../assets/icon.png";
 
@@ -92,7 +93,7 @@ export function InfoModal({
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
               Capacidades Principales
             </span>
-            <div className="space-y-3 rounded-lg border border-border/60 bg-muted/20 p-4">
+            <Card className="space-y-3 gap-0 bg-muted/20 p-4">
               {capabilities.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -114,7 +115,7 @@ export function InfoModal({
                   </div>
                 );
               })}
-            </div>
+            </Card>
           </div>
         </div>
 
