@@ -36,13 +36,15 @@ describe('QuickActionsBar Polish: Subnet Scanner & Uptime Refresh', () => {
       />
     );
 
+    fireEvent.click(screen.getByRole('button', { name: /más/i }));
+
     const scanBtn = screen.getByRole('button', { name: /escanear subred/i });
     expect(scanBtn).toBeInTheDocument();
     fireEvent.click(scanBtn);
     expect(onOpenSubnet).toHaveBeenCalledTimes(1);
   });
 
-  it('renders Uptime card with refresh button and handles clicking refresh', () => {
+  it('renders display-only Uptime chip and refreshes from the Más menu', () => {
     const onRefreshUptime = vi.fn();
     render(
       <QuickActionsBar
@@ -59,6 +61,8 @@ describe('QuickActionsBar Polish: Subnet Scanner & Uptime Refresh', () => {
     expect(screen.getByText(terminal.uptimeText)).toBeInTheDocument();
     expect(screen.getByTitle(/uptime:/i)).toBeInTheDocument();
     expect(screen.getByText(terminal.uptimeText)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /más/i }));
 
     const refreshBtn = screen.getByRole('button', { name: /refrescar uptime/i });
     expect(refreshBtn).toBeInTheDocument();

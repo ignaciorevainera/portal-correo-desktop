@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useId, useRef } from "react";
 import { TerminalData } from "../types/terminal";
 import {
   MonitorPlay,
@@ -13,12 +13,18 @@ import {
   Route,
   Layers,
   Wifi,
-  Terminal,
+  MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Kbd } from "@/components/ui/kbd";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import {
   RemoteProbeResult,
   DiagnosticCommandType,
@@ -81,9 +87,9 @@ export function QuickActionsBar({
   onLaunchSitePing,
 }: QuickActionsBarProps): React.JSX.Element {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isDiagOpen, setIsDiagOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const diagRef = useRef<HTMLDivElement>(null);
+  const moreTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -93,19 +99,23 @@ export function QuickActionsBar({
       ) {
         setIsDropdownOpen(false);
       }
-      if (diagRef.current && !diagRef.current.contains(event.target as Node)) {
-        setIsDiagOpen(false);
-      }
     }
-    if (isDropdownOpen || isDiagOpen) {
+    if (isDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isDropdownOpen, isDiagOpen]);
+  }, [isDropdownOpen]);
 
   const handleAction = (_label: string, callback: () => void): void => {
+    callback();
+  };
+
+  const handleMoreAction = (callback: () => void): void => {
+    setIsMoreOpen(false);
+    // Devuelve el foco al disparador al cerrar desde un ítem del menú
+    moreTriggerRef.current?.focus();
     callback();
   };
 
@@ -142,6 +152,8 @@ export function QuickActionsBar({
   const msraOpen = Boolean(remoteProbe?.msraAvailable);
 
   const siteTargets = deriveSiteTargets(terminal.ip);
+  const diagnosticSectionId = useId();
+  const siteSectionId = useId();
 
   return (
     <div className="w-full flex flex-col gap-1">
@@ -325,102 +337,48 @@ export function QuickActionsBar({
           </Button>
         </div>
 
-        {/* Split Button: Router .250 (1 clic: estándar .250 y continuo -t, sin estados de activación) */}
-        {siteTargets.isValid && onLaunchSitePing && (
-          <div className="flex rounded-md shadow-xs shrink-0">
+        {/* Menú "Más": acciones secundarias agrupadas sin competir con las primarias */}
+        <Popover open={isMoreOpen} onOpenChange={setIsMoreOpen}>
+          <PopoverTrigger asChild>
             <Button
+              ref={moreTriggerRef}
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => onLaunchSitePing("router", "standard")}
-              aria-label="Hacer ping al router .250"
-              title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
-              className="rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 flex items-center gap-1 border-border bg-muted text-foreground hover:bg-muted/80 transition-colors"
+              aria-label="Más acciones"
+              title="Más acciones"
+              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0"
             >
-              <Wifi className="h-3.5 w-3.5 text-blue-500" />
-              <span>.250</span>
+              <MoreHorizontal className="h-3.5 w-3.5" />
+              <span>Más</span>
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onLaunchSitePing("router", "infinite")}
-              aria-label="Ping continuo -t router .250"
-              title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
-              className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center text-xs font-semibold cursor-pointer shrink-0 border-border bg-muted text-foreground hover:bg-muted/80 transition-colors"
-            >
-              <span className="font-mono text-[11px] font-semibold text-blue-600 dark:text-blue-400">
-                -t
-              </span>
-            </Button>
-          </div>
-        )}
-
-        {/* Split Button: Servidor .231 (1 clic: estándar .231 y continuo -t, sin estados de activación) */}
-        {siteTargets.isValid && onLaunchSitePing && (
-          <div className="flex rounded-md shadow-xs shrink-0">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onLaunchSitePing("server", "standard")}
-              aria-label="Hacer ping al servidor .231"
-              title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
-              className="rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2 flex items-center gap-1 border-border bg-muted text-foreground hover:bg-muted/80 transition-colors"
-            >
-              <Layers className="h-3.5 w-3.5 text-amber-500" />
-              <span>.231</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onLaunchSitePing("server", "infinite")}
-              aria-label="Ping continuo -t servidor .231"
-              title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
-              className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center text-xs font-semibold cursor-pointer shrink-0 border-border bg-muted text-foreground hover:bg-muted/80 transition-colors"
-            >
-              <span className="font-mono text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                -t
-              </span>
-            </Button>
-          </div>
-        )}
-
-        {/* Menú Desplegable Diagnóstico de Red */}
-        <div ref={diagRef} className="relative shrink-0">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsDiagOpen((prev) => !prev)}
-            aria-label="Menú de diagnóstico de red"
-            title="Diagnóstico nativo (Nbtstat, Tracert, ARP)"
-            className="h-8 px-2 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer flex items-center gap-1 shrink-0"
+          </PopoverTrigger>
+          <PopoverContent
+            align="end"
+            aria-label="Más acciones"
+            className="w-64 p-1 gap-1"
           >
-            <Terminal className="h-3.5 w-3.5 text-cyan-500" />
-            <span className="hidden xl:inline text-[11px]">Diag</span>
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
-          </Button>
-
-          {isDiagOpen && (
-            <div className="absolute right-0 top-full mt-1.5 z-50 w-56 rounded-md border border-border bg-popover p-1.5 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 flex flex-col gap-1">
-              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/50">
-                Herramientas de Red Nativas
+            <div
+              role="group"
+              aria-labelledby={diagnosticSectionId}
+              className="flex flex-col gap-1"
+            >
+              <div
+                id={diagnosticSectionId}
+                className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+              >
+                Diagnóstico
               </div>
 
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setIsDiagOpen(false);
-                  onRunDiagnostic?.("nbtstat");
-                }}
+                onClick={() => handleMoreAction(() => onRunDiagnostic?.("nbtstat"))}
                 aria-label="Ejecutar Nbtstat"
                 className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 w-full">
                   <Layers className="h-3.5 w-3.5 text-amber-500" />
                   <span className="font-mono text-[11px]">nbtstat -A</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">
@@ -433,14 +391,11 @@ export function QuickActionsBar({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setIsDiagOpen(false);
-                  onRunDiagnostic?.("tracert");
-                }}
+                onClick={() => handleMoreAction(() => onRunDiagnostic?.("tracert"))}
                 aria-label="Ejecutar Tracert"
                 className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 w-full">
                   <Route className="h-3.5 w-3.5 text-emerald-500" />
                   <span className="font-mono text-[11px]">tracert -d</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">
@@ -453,14 +408,11 @@ export function QuickActionsBar({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setIsDiagOpen(false);
-                  onRunDiagnostic?.("arp");
-                }}
+                onClick={() => handleMoreAction(() => onRunDiagnostic?.("arp"))}
                 aria-label="Ejecutar ARP"
                 className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 w-full">
                   <Network className="h-3.5 w-3.5 text-cyan-500" />
                   <span className="font-mono text-[11px]">arp -a</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">
@@ -469,52 +421,162 @@ export function QuickActionsBar({
                 </span>
               </Button>
             </div>
-          )}
-        </div>
 
-        {/* Botón de Escanear Subred */}
-        {onOpenSubnetScanner && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onOpenSubnetScanner}
-            aria-label="Escanear Subred"
-            title="Escanear toda la subred de esta terminal"
-            className="h-8 px-2.5 text-xs font-medium gap-1.5 cursor-pointer bg-muted/60 hover:bg-muted border-border text-foreground shrink-0"
-          >
-            <Network className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-            <span>Escanear Subred</span>
-          </Button>
-        )}
+            {siteTargets.isValid && onLaunchSitePing && (
+              <div
+                role="group"
+                aria-labelledby={siteSectionId}
+                className="flex flex-col gap-1"
+              >
+                <div
+                  id={siteSectionId}
+                  className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                >
+                  Enlaces del sitio
+                </div>
 
-        {/* Tarjeta de Uptime compacta con Refresco incorporada en el mismo contenedor */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    handleMoreAction(() => onLaunchSitePing("router", "standard"))
+                  }
+                  aria-label="Hacer ping al router .250"
+                  title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
+                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                >
+                  <span className="flex items-center gap-2">
+                    <Wifi className="h-3.5 w-3.5 text-blue-500" />
+                    <span className="font-mono text-[11px]">.250</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      router
+                    </span>
+                  </span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    handleMoreAction(() => onLaunchSitePing("router", "infinite"))
+                  }
+                  aria-label="Ping continuo -t router .250"
+                  title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
+                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="font-mono text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+                      -t
+                    </span>
+                    <span className="font-mono text-[11px]">.250</span>
+                  </span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    handleMoreAction(() => onLaunchSitePing("server", "standard"))
+                  }
+                  aria-label="Hacer ping al servidor .231"
+                  title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
+                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                >
+                  <span className="flex items-center gap-2">
+                    <Layers className="h-3.5 w-3.5 text-amber-500" />
+                    <span className="font-mono text-[11px]">.231</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      servidor
+                    </span>
+                  </span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    handleMoreAction(() => onLaunchSitePing("server", "infinite"))
+                  }
+                  aria-label="Ping continuo -t servidor .231"
+                  title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
+                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="font-mono text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                      -t
+                    </span>
+                    <span className="font-mono text-[11px]">.231</span>
+                  </span>
+                </Button>
+              </div>
+            )}
+
+            {(onOpenSubnetScanner || onRefreshUptime) && (
+              <>
+                <Separator className="my-1" />
+                <div className="flex flex-col gap-1">
+                  {onOpenSubnetScanner && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        handleMoreAction(onOpenSubnetScanner)
+                      }
+                      aria-label="Escanear Subred"
+                      title="Escanear toda la subred de esta terminal"
+                      className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                    >
+                      <Network className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                      <span>Escanear Subred</span>
+                    </Button>
+                  )}
+
+                  {onRefreshUptime && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleMoreAction(onRefreshUptime)}
+                      disabled={isRefreshingUptime}
+                      aria-label="Refrescar Uptime"
+                      title="Refrescar tiempo de actividad"
+                      className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                    >
+                      <RotateCcw
+                        className={`h-3.5 w-3.5 text-muted-foreground ${
+                          isRefreshingUptime ? "animate-spin" : ""
+                        }`}
+                      />
+                      <span>Refrescar Uptime</span>
+                    </Button>
+                  )}
+                </div>
+              </>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
         <div
           className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0"
           title={`Uptime: ${terminal.uptimeText || "N/D"}`}
+          aria-busy={isRefreshingUptime}
         >
-          <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          {isRefreshingUptime ? (
+            <RotateCcw className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />
+          ) : (
+            <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          )}
           <span
             className="font-mono font-semibold text-foreground truncate max-w-[100px] text-[11px]"
           >
             {terminal.uptimeText || "N/D"}
           </span>
-          {onRefreshUptime && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              onClick={onRefreshUptime}
-              disabled={isRefreshingUptime}
-              aria-label="Refrescar Uptime"
-              title="Refrescar tiempo de actividad"
-              className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground cursor-pointer shrink-0 ml-0.5"
-            >
-              <RotateCcw
-                className={`h-3 w-3 ${isRefreshingUptime ? "animate-spin text-primary" : ""}`}
-              />
-            </Button>
-          )}
         </div>
       </div>
 

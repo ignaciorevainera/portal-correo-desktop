@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { QuickActionsBar } from '../components/QuickActionsBar';
 import { getAllTerminals } from '../services/terminalService';
@@ -264,8 +264,72 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
     });
   });
 
-  describe('Diagnostic Tools Dropdown (Nbtstat, Tracert, ARP)', () => {
-    it('renders Diagnóstico dropdown button and triggers onRunDiagnostic with chosen command', () => {
+  it('muestra las dos acciones primarias y oculta los comandos secundarios', () => {
+    render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={false}
+        onOpenSubnetScanner={vi.fn()}
+        onRefreshUptime={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+        onRunDiagnostic={vi.fn()}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: /conexión remota inteligente/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^iniciar ping$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /más acciones/i })).toBeInTheDocument();
+
+    // Ningún comando movido al menú debe quedar visible en la barra
+    expect(screen.queryByRole('button', { name: /escanear subred/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /menú de diagnóstico de red/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /hacer ping al router \.250/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /hacer ping al servidor \.231/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /ejecutar nbtstat/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /refrescar uptime/i })).toBeNull();
+  });
+
+  it('el menú Más contiene las acciones secundarias en orden', () => {
+    render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={false}
+        onOpenSubnetScanner={vi.fn()}
+        onRefreshUptime={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+        onRunDiagnostic={vi.fn()}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /más acciones/i }));
+
+    const dialog = screen.getByRole('dialog', { name: /más acciones/i });
+    const items = within(dialog).getAllByRole('button');
+    expect(items.map((item) => item.getAttribute('aria-label'))).toEqual([
+      'Ejecutar Nbtstat',
+      'Ejecutar Tracert',
+      'Ejecutar ARP',
+      'Hacer ping al router .250',
+      'Ping continuo -t router .250',
+      'Hacer ping al servidor .231',
+      'Ping continuo -t servidor .231',
+      'Escanear Subred',
+      'Refrescar Uptime',
+    ]);
+
+    fireEvent.click(within(dialog).getByRole('button', { name: /escanear subred/i }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('button', { name: /más acciones/i })).toHaveFocus();
+  });
+
+  describe('Diagnostic Tools inside the Más menu (Nbtstat, Tracert, ARP)', () => {
+    it('opens the Más menu and triggers onRunDiagnostic with chosen command', () => {
       const onRunDiagnostic = vi.fn();
 
       render(
@@ -279,11 +343,8 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
         />
       );
 
-      const diagTrigger = screen.getByRole('button', { name: /menú de diagnóstico de red/i });
-      expect(diagTrigger).toBeInTheDocument();
-
-      // Open diagnostic menu
-      fireEvent.click(diagTrigger);
+      // Open the Más menu
+      fireEvent.click(screen.getByRole('button', { name: /más/i }));
 
       expect(screen.getByRole('button', { name: /ejecutar nbtstat/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /ejecutar tracert/i })).toBeInTheDocument();
