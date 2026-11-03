@@ -79,7 +79,7 @@ export function OperatorContextMenu({
       style={{ top: `${adjustedY}px`, left: `${adjustedX}px` }}
       className="fixed z-50 w-56 animate-fade-in"
     >
-      <Card className="gap-0 bg-popover/95 p-1 text-popover-foreground shadow-xl backdrop-blur font-sans text-xs select-none">
+      <Card className="gap-0 bg-popover/95 p-1 text-popover-foreground backdrop-blur font-sans text-xs select-none">
         {terminal ? (
           <>
             <div className="px-2.5 py-1.5 border-b border-border/60 text-[11px] font-bold text-muted-foreground flex items-center justify-between">
@@ -99,7 +99,7 @@ export function OperatorContextMenu({
                 className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
               >
                 <span className="flex items-center gap-2">
-                  <MonitorPlay className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" /> Conectar VNC
+                  <MonitorPlay className="h-3.5 w-3.5 text-link" /> Conectar VNC
                 </span>
                 <Kbd>F2</Kbd>
               </Button>
@@ -116,7 +116,7 @@ export function OperatorContextMenu({
                 className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
               >
                 <span className="flex items-center gap-2">
-                  <HelpCircle className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" /> Asistencia MSRA
+                  <HelpCircle className="h-3.5 w-3.5 text-link" /> Asistencia MSRA
                 </span>
                 <Kbd>F3</Kbd>
               </Button>
@@ -134,7 +134,7 @@ export function OperatorContextMenu({
               >
                 <span className="flex items-center gap-2">
                   <Activity
-                    className={`h-3.5 w-3.5 ${isPinging ? "text-destructive" : "text-emerald-600 dark:text-emerald-400 font-bold"}`}
+                    className={`h-3.5 w-3.5 ${isPinging ? "text-destructive" : "text-success font-bold"}`}
                   />
                   {isPinging ? "Detener Ping" : "Iniciar Ping"}
                 </span>
@@ -197,7 +197,7 @@ export function OperatorContextMenu({
                 aria-label="Abrir Portal MDA"
                 className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
               >
-                <ExternalLink className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" /> Abrir Portal MDA
+                <ExternalLink className="h-3.5 w-3.5 text-link" /> Abrir Portal MDA
               </Button>
 
               {onFocusSearch && (
@@ -235,7 +235,7 @@ export function OperatorContextMenu({
               aria-label="Abrir Portal MDA"
               className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
             >
-              <ExternalLink className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" /> Abrir Portal MDA
+              <ExternalLink className="h-3.5 w-3.5 text-link" /> Abrir Portal MDA
             </Button>
           </div>
         )}

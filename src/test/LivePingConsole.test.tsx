@@ -400,7 +400,7 @@ describe('LivePingConsole Component', () => {
 
     expect(
       screen.getByText(/Miembro de grupos globales/),
-    ).toHaveClass('text-cyan-300');
+    ).toHaveClass('text-console-info');
 
     act(() => {
       finish?.(0);

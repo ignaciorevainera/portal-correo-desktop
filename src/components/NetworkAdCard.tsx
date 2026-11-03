@@ -17,16 +17,16 @@ export function NetworkAdCard({ terminal }: { terminal: TerminalData }): React.J
   };
 
   return (
-    <Card size="sm" className="rounded-lg border-border bg-card shadow-xs">
+    <Card size="sm" className="rounded-lg border-border bg-card">
       <CardHeader className="border-b border-border/60 pb-2">
         <CardTitle className="text-xs font-bold font-heading uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-          <Network className="h-3.5 w-3.5 text-primary" />
+          <Network className="h-3.5 w-3.5 text-link" />
           Red, Ubicación y Active Directory
         </CardTitle>
         <CardAction>
           <Badge
             variant="outline"
-            className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25 font-bold h-5"
+            className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-success/15 text-success border-success/25 font-bold h-5"
           >
             En Línea
           </Badge>
@@ -49,14 +49,14 @@ export function NetworkAdCard({ terminal }: { terminal: TerminalData }): React.J
                 className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 {copiedKey === 'ip' ? (
-                  <Check className="h-3 w-3 text-emerald-500 animate-in zoom-in-75 duration-150" />
+                  <Check className="h-3 w-3 text-success animate-in zoom-in-75 duration-150" />
                 ) : (
                   <Copy className="h-3 w-3" />
                 )}
                 {copiedKey === 'ip' && <span className="sr-only">Copiado</span>}
               </Button>
             </div>
-            <p className="font-mono text-xs font-bold text-foreground bg-muted/40 px-2 py-0.5 rounded border border-border/50">
+            <p className="font-mono text-xs font-bold text-foreground bg-muted/40 px-2 py-0.5 rounded-md border border-border/50">
               {terminal.ip}
             </p>
           </div>
@@ -75,14 +75,14 @@ export function NetworkAdCard({ terminal }: { terminal: TerminalData }): React.J
                 className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 {copiedKey === 'mac' ? (
-                  <Check className="h-3 w-3 text-emerald-500 animate-in zoom-in-75 duration-150" />
+                  <Check className="h-3 w-3 text-success animate-in zoom-in-75 duration-150" />
                 ) : (
                   <Copy className="h-3 w-3" />
                 )}
                 {copiedKey === 'mac' && <span className="sr-only">Copiado</span>}
               </Button>
             </div>
-            <p className="font-mono text-xs text-foreground bg-muted/40 px-2 py-0.5 rounded border border-border/50">
+            <p className="font-mono text-xs text-foreground bg-muted/40 px-2 py-0.5 rounded-md border border-border/50">
               {terminal.mac}
             </p>
           </div>
@@ -91,7 +91,7 @@ export function NetworkAdCard({ terminal }: { terminal: TerminalData }): React.J
           <div className="space-y-0.5 md:col-span-2">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground font-medium flex items-center gap-1 text-[11px]">
-                <UserCheck className="h-3 w-3 text-primary" /> Usuarios de Dominio (UserNT)
+                <UserCheck className="h-3 w-3 text-link" /> Usuarios de Dominio (UserNT)
               </span>
               <Button
                 type="button"
@@ -103,14 +103,14 @@ export function NetworkAdCard({ terminal }: { terminal: TerminalData }): React.J
                 className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 {copiedKey === 'user' ? (
-                  <Check className="h-3 w-3 text-emerald-500 animate-in zoom-in-75 duration-150" />
+                  <Check className="h-3 w-3 text-success animate-in zoom-in-75 duration-150" />
                 ) : (
                   <Copy className="h-3 w-3" />
                 )}
                 {copiedKey === 'user' && <span className="sr-only">Copiado</span>}
               </Button>
             </div>
-            <div className="px-2.5 py-1.5 rounded bg-muted/50 border border-border font-mono text-xs text-foreground font-medium break-all">
+            <div className="px-2.5 py-1.5 rounded-md bg-muted/50 border border-border font-mono text-xs text-foreground font-medium break-all">
               {terminal.userNt}
             </div>
           </div>

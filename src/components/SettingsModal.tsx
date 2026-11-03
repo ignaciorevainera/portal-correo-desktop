@@ -156,11 +156,11 @@ export function SettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-155 max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-card text-card-foreground border-border shadow-2xl">
+      <DialogContent className="sm:max-w-155 max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-card text-card-foreground border-border">
         <DialogHeader className="p-4 bg-muted/40 border-b border-border shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <div className="p-2 rounded-lg bg-primary/10 text-link">
                 <Settings className="h-5 w-5" />
               </div>
               <div>
@@ -177,7 +177,7 @@ export function SettingsModal({
           {/* SECCIÓN 1: ACTUALIZACIONES DEL SISTEMA */}
           <section className="space-y-3">
             <div className="flex items-center gap-2 border-b border-border/60 pb-2">
-              <RefreshCw className="h-4 w-4 text-primary" />
+              <RefreshCw className="h-4 w-4 text-link" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Actualizaciones del Sistema
               </h3>
@@ -211,8 +211,8 @@ export function SettingsModal({
             </div>
 
             {updateResult && !updateResult.hasUpdate && (
-              <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-start gap-2.5 text-xs">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+              <div className="p-3.5 rounded-xl border border-success/20 bg-success/10 text-success flex items-start gap-2.5 text-xs">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-success mt-0.5" />
                 <div>
                   <div className="font-semibold">
                     Estás utilizando la última versión disponible
@@ -228,7 +228,7 @@ export function SettingsModal({
             {updateResult && updateResult.hasUpdate && (
               <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-primary text-xs font-bold">
+                  <div className="flex items-center gap-1.5 text-link text-xs font-bold">
                     <Sparkles className="h-4 w-4" />
                     <span>¡Nueva versión disponible!</span>
                   </div>
@@ -285,7 +285,7 @@ export function SettingsModal({
 
                 {downloadedFilePath && (
                   <div className="space-y-2 pt-1">
-                    <div className="flex items-center gap-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    <div className="flex items-center gap-2 text-xs font-medium text-success">
                       <CheckCircle2 className="h-4 w-4 shrink-0" />
                       <span>Actualización lista para instalar</span>
                     </div>
@@ -293,7 +293,7 @@ export function SettingsModal({
                       type="button"
                       size="sm"
                       onClick={handleInstallNow}
-                      className="w-full text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-9 cursor-pointer"
+                      className="w-full text-xs font-semibold bg-success hover:bg-success/90 text-success-foreground gap-1.5 h-9 cursor-pointer"
                     >
                       <RefreshCw className="h-4 w-4" />
                       <span>Reiniciar e instalar ahora</span>
@@ -311,7 +311,7 @@ export function SettingsModal({
           {/* SECCIÓN 2: CONEXIÓN CORPORATIVA SQL SERVER */}
           <section className="space-y-3">
             <div className="flex items-center gap-2 border-b border-border/60 pb-2">
-              <Database className="h-4 w-4 text-primary" />
+              <Database className="h-4 w-4 text-link" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Conexión Corporativa SQL Server
               </h3>
@@ -378,7 +378,7 @@ export function SettingsModal({
           {/* SECCIÓN 3: PREFERENCIAS DE LA APLICACIÓN */}
           <section className="space-y-3">
             <div className="flex items-center gap-2 border-b border-border/60 pb-2">
-              <Sliders className="h-4 w-4 text-primary" />
+              <Sliders className="h-4 w-4 text-link" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Preferencias de la Aplicación
               </h3>
@@ -393,7 +393,7 @@ export function SettingsModal({
                   type="checkbox"
                   checked={minimizeToTray}
                   onChange={(e) => setMinimizeToTray(e.target.checked)}
-                  className="mt-0.5 rounded border-border text-primary focus:ring-primary h-4 w-4"
+                  className="mt-0.5 border-border accent-link focus-visible:ring-ring h-4 w-4"
                 />
                 <div>
                   <span className="font-medium text-foreground">
@@ -416,7 +416,7 @@ export function SettingsModal({
                   type="checkbox"
                   checked={globalHotkeyEnabled}
                   onChange={(e) => setGlobalHotkeyEnabled(e.target.checked)}
-                  className="mt-0.5 rounded border-border text-primary focus:ring-primary h-4 w-4"
+                  className="mt-0.5 border-border accent-link focus-visible:ring-ring h-4 w-4"
                 />
                 <div>
                   <span className="font-medium text-foreground">

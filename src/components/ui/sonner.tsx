@@ -20,9 +20,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
       richColors
       position="bottom-right"
       icons={{
-        success: <CircleCheck className="h-4 w-4 text-emerald-500" />,
-        info: <Info className="h-4 w-4 text-blue-500" />,
-        warning: <TriangleAlert className="h-4 w-4 text-amber-500" />,
+        success: <CircleCheck className="h-4 w-4 text-success" />,
+        info: <Info className="h-4 w-4 text-info" />,
+        warning: <TriangleAlert className="h-4 w-4 text-warning" />,
         error: <OctagonX className="h-4 w-4 text-destructive" />,
         loading: <LoaderCircle className="h-4 w-4 animate-spin" />,
       }}

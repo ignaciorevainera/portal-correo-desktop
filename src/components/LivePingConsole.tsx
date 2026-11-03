@@ -248,7 +248,7 @@ export function LivePingConsole({
       <Card
         data-testid="live-ping-console"
         data-slot="card"
-        className={`w-full gap-0 overflow-hidden py-0 shadow-xs ${
+        className={`w-full gap-0 overflow-hidden py-0 ${
           fill && isOpen ? "flex h-full min-h-0 flex-col" : "shrink-0"
         }`}
       >
@@ -265,8 +265,8 @@ export function LivePingConsole({
                   isOpen ? "rotate-90" : ""
                 }`}
               />
-              <HeaderIcon className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-              <span className="font-mono text-xs font-bold text-foreground dark:text-zinc-100">
+              <HeaderIcon className="h-3.5 w-3.5 text-link shrink-0" />
+              <span className="font-mono text-xs font-bold text-foreground">
                 {headerLabel}
               </span>
             </button>
@@ -341,7 +341,7 @@ export function LivePingConsole({
               className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
             >
               {copiedLast ? (
-                <Check className="h-3 w-3 text-emerald-500" />
+                <Check className="h-3 w-3 text-success" />
               ) : (
                 <Copy className="h-3 w-3 text-muted-foreground" />
               )}
@@ -363,7 +363,7 @@ export function LivePingConsole({
               className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
             >
               {copiedAll ? (
-                <Check className="h-3 w-3 text-emerald-500" />
+                <Check className="h-3 w-3 text-success" />
               ) : (
                 <Copy className="h-3 w-3 text-muted-foreground" />
               )}
@@ -384,7 +384,7 @@ export function LivePingConsole({
             } overflow-y-auto overflow-x-auto p-3.5 bg-console-bg font-mono text-[11.5px] leading-relaxed text-console-muted select-text`}
           >
             {logs.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
+              <div className="h-full flex items-center justify-center text-console-muted font-sans text-xs">
                 {isAccountMode
                   ? "Consultá una cuenta para ver la salida de net user."
                   : "Selecciona una acción (Ping, Ping -t, Nbtstat, Tracert, ARP) en la barra superior para iniciar diagnóstico."}
@@ -402,19 +402,19 @@ export function LivePingConsole({
                 }
 
                 const tone = isGroupHeader
-                  ? "text-cyan-300 font-semibold"
+                  ? "text-console-info font-semibold"
                   : isGroupItem
-                    ? "text-cyan-300"
+                    ? "text-console-info"
                     : line.startsWith("[") && line.includes(">")
-                      ? "text-cyan-400 font-bold"
+                      ? "text-console-info font-bold"
                       : line.includes("Iniciando") || line.includes("Ejecutando")
-                        ? "text-amber-400 font-semibold"
+                        ? "text-console-warning font-semibold"
                         : line.includes("finalizado")
-                          ? "text-emerald-400 font-semibold"
+                          ? "text-console-success font-semibold"
                           : line.includes("Error") ||
                               line.includes("cerrado") ||
                               line.includes("inaccesible")
-                            ? "text-red-400 font-semibold"
+                            ? "text-console-destructive font-semibold"
                             : "text-console-fg";
 
                 return (

@@ -130,7 +130,7 @@ export function QuickActionsBar({
   // Determine Primary CTA visual state
   const recommendedMethod = remoteProbe?.recommendedMethod ?? "vnc";
 
-  let ctaIcon = <MonitorPlay className="h-3.5 w-3.5 shrink-0 text-blue-600 dark:text-blue-400 mr-1" />;
+  let ctaIcon = <MonitorPlay className="h-3.5 w-3.5 shrink-0 text-link mr-1" />;
   let ctaLabel = `Conectar VNC :${remoteProbe?.vncPort || 5901}`;
 
   if (isProbingRemote) {
@@ -139,10 +139,10 @@ export function QuickActionsBar({
     );
     ctaLabel = "Detectando acceso...";
   } else if (recommendedMethod === "msra") {
-    ctaIcon = <HelpCircle className="h-3.5 w-3.5 shrink-0 text-blue-500 mr-1" />;
+    ctaIcon = <HelpCircle className="h-3.5 w-3.5 shrink-0 text-link mr-1" />;
     ctaLabel = "Conectar MSRA";
   } else if (recommendedMethod === "none") {
-    ctaIcon = <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500 mr-1" />;
+    ctaIcon = <AlertCircle className="h-3.5 w-3.5 shrink-0 text-warning mr-1" />;
     ctaLabel = "Sin Acceso (Reintentar)";
   }
 
@@ -164,7 +164,7 @@ export function QuickActionsBar({
           className="relative flex items-center min-w-[180px] flex-1 grow"
           ref={dropdownRef}
         >
-          <div className="flex w-full rounded-md shadow-xs">
+          <div className="flex w-full rounded-md">
             <Button
               type="button"
               variant="outline"
@@ -202,9 +202,9 @@ export function QuickActionsBar({
 
           {/* Menú Desplegable con Diagnóstico en Vivo y Opciones Forzadas */}
           {isDropdownOpen && (
-            <div className="absolute top-full left-0 mt-1 w-72 p-2 bg-popover border border-border rounded-md shadow-lg z-50 flex flex-col gap-2 text-popover-foreground">
+            <div className="absolute top-full left-0 mt-1 w-72 p-2 bg-popover border border-border rounded-md ring-1 ring-foreground/10 z-50 flex flex-col gap-2 text-popover-foreground">
               {/* Resumen de puertos */}
-              <div className="flex items-center justify-between gap-1 text-[11px] p-1.5 rounded bg-muted/60 border border-border">
+              <div className="flex items-center justify-between gap-1 text-[11px] p-1.5 rounded-md bg-muted/60 border border-border">
                 <div className="flex items-center gap-1">
                   <span className="text-muted-foreground font-medium">
                     5901/5900:
@@ -269,7 +269,7 @@ export function QuickActionsBar({
                 className="justify-between text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
               >
                 <span className="flex items-center gap-1.5">
-                  <HelpCircle className="h-3.5 w-3.5 text-blue-500" />
+                  <HelpCircle className="h-3.5 w-3.5 text-link" />
                   <span>Forzar Asistencia MSRA</span>
                 </span>
                 <Kbd>F3</Kbd>
@@ -295,7 +295,7 @@ export function QuickActionsBar({
         </div>
 
         {/* Split Button: Ping del equipo consultado con grow (Único botón con estado de activación) */}
-        <div className="flex rounded-md shadow-xs flex-1 min-w-[110px] grow">
+        <div className="flex rounded-md flex-1 min-w-[110px] grow">
           <Button
             type="button"
             variant="outline"
@@ -306,7 +306,7 @@ export function QuickActionsBar({
             title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
             className={`flex-1 min-w-0 rounded-r-none h-8 px-2.5 text-xs font-semibold cursor-pointer justify-between border-border transition-colors ${
               isPinging
-                ? "bg-destructive/15 text-destructive hover:bg-destructive/25 animate-pulse"
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 animate-pulse"
                 : "bg-muted text-foreground hover:bg-muted/80"
             }`}
           >
@@ -315,7 +315,7 @@ export function QuickActionsBar({
                 className={`h-3.5 w-3.5 shrink-0 mr-1.5 ${
                   isPinging
                     ? "animate-pulse"
-                    : "text-emerald-600 dark:text-emerald-400 font-bold"
+                    : "text-success font-bold"
                 }`}
               />
               <span className="truncate">{isPinging ? "Detener" : "Ping"}</span>
@@ -331,7 +331,7 @@ export function QuickActionsBar({
             title="Ejecutar Ping infinito / continuo (-t)"
             className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center text-xs font-semibold cursor-pointer shrink-0 border-border bg-muted text-foreground hover:bg-muted/80 transition-colors"
           >
-            <span className="font-mono text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="font-mono text-[11px] font-semibold text-success">
               -t
             </span>
           </Button>
@@ -379,7 +379,7 @@ export function QuickActionsBar({
                 className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
               >
                 <span className="flex items-center gap-2 w-full">
-                  <Layers className="h-3.5 w-3.5 text-amber-500" />
+                  <Layers className="h-3.5 w-3.5 text-warning" />
                   <span className="font-mono text-[11px]">nbtstat -A</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">
                     (NetBIOS)
@@ -396,7 +396,7 @@ export function QuickActionsBar({
                 className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
               >
                 <span className="flex items-center gap-2 w-full">
-                  <Route className="h-3.5 w-3.5 text-emerald-500" />
+                  <Route className="h-3.5 w-3.5 text-success" />
                   <span className="font-mono text-[11px]">tracert -d</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">
                     (6 saltos)
@@ -413,7 +413,7 @@ export function QuickActionsBar({
                 className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
               >
                 <span className="flex items-center gap-2 w-full">
-                  <Network className="h-3.5 w-3.5 text-cyan-500" />
+                  <Network className="h-3.5 w-3.5 text-info" />
                   <span className="font-mono text-[11px]">arp -a</span>
                   <span className="text-[10px] text-muted-foreground ml-auto">
                     (Física)
@@ -447,7 +447,7 @@ export function QuickActionsBar({
                   className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
                 >
                   <span className="flex items-center gap-2">
-                    <Wifi className="h-3.5 w-3.5 text-blue-500" />
+                    <Wifi className="h-3.5 w-3.5 text-link" />
                     <span className="font-mono text-[11px]">.250</span>
                     <span className="text-[10px] text-muted-foreground">
                       router
@@ -467,7 +467,7 @@ export function QuickActionsBar({
                   className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
                 >
                   <span className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+                    <span className="font-mono text-[11px] font-semibold text-link">
                       -t
                     </span>
                     <span className="font-mono text-[11px]">.250</span>
@@ -486,7 +486,7 @@ export function QuickActionsBar({
                   className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
                 >
                   <span className="flex items-center gap-2">
-                    <Layers className="h-3.5 w-3.5 text-amber-500" />
+                    <Layers className="h-3.5 w-3.5 text-warning" />
                     <span className="font-mono text-[11px]">.231</span>
                     <span className="text-[10px] text-muted-foreground">
                       servidor
@@ -506,7 +506,7 @@ export function QuickActionsBar({
                   className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
                 >
                   <span className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                    <span className="font-mono text-[11px] font-semibold text-warning">
                       -t
                     </span>
                     <span className="font-mono text-[11px]">.231</span>
@@ -531,7 +531,7 @@ export function QuickActionsBar({
                       title="Escanear toda la subred de esta terminal"
                       className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
                     >
-                      <Network className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                      <Network className="h-3.5 w-3.5 text-link" />
                       <span>Escanear Subred</span>
                     </Button>
                   )}

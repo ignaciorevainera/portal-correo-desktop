@@ -17,9 +17,9 @@ export function ThemeToggle(): React.JSX.Element {
       title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
     >
       {theme === 'dark' ? (
-        <Sun className="h-4 w-4 text-amber-400" />
+        <Sun className="h-4 w-4 text-warning" />
       ) : (
-        <Moon className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+        <Moon className="h-4 w-4 text-foreground" />
       )}
     </Button>
   );

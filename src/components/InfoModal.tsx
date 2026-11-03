@@ -57,11 +57,11 @@ export function InfoModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md p-0 overflow-hidden border border-border/80 shadow-xl">
+      <DialogContent className="max-w-md p-0 overflow-hidden border border-border/80">
         {/* Cabecera Minimalista con Identidad de Marca */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60 bg-muted/20">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 shrink-0">
+            <div className="p-2 rounded-lg bg-primary/10 text-link border border-primary/20 shrink-0">
               <img
                 src={logoIcon}
                 alt="Correo Argentino"

@@ -36,16 +36,16 @@ export function HardwareCard({
   };
 
   return (
-    <Card size="sm" className="rounded-lg border-border bg-card shadow-xs">
+    <Card size="sm" className="rounded-lg border-border bg-card">
       <CardHeader className="border-b border-border/60 pb-2">
         <CardTitle className="text-xs font-bold font-heading uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-          <Cpu className="h-3.5 w-3.5 text-primary" />
+          <Cpu className="h-3.5 w-3.5 text-link" />
           Ficha Técnica & Sistema
         </CardTitle>
         <CardAction>
           <Badge
             variant="outline"
-            className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted text-muted-foreground border-border font-medium h-5"
+            className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-muted text-muted-foreground border-border font-medium h-5"
           >
             {terminal.architecture}
           </Badge>
@@ -89,7 +89,7 @@ export function HardwareCard({
                 className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 {copiedKey === "cpu" ? (
-                  <Check className="h-3 w-3 text-emerald-500 animate-in zoom-in-75 duration-150" />
+                  <Check className="h-3 w-3 text-success animate-in zoom-in-75 duration-150" />
                 ) : (
                   <Copy className="h-3 w-3" />
                 )}
@@ -118,7 +118,7 @@ export function HardwareCard({
 
           <div className="space-y-0.5">
             <span className="text-muted-foreground font-medium flex items-center gap-1 text-[11px]">
-              <Shield className="h-3 w-3 text-emerald-500" /> Antivirus
+              <Shield className="h-3 w-3 text-success" /> Antivirus
             </span>
             <p className="font-mono font-medium text-foreground text-xs">
               {terminal.antivirusVersion}
@@ -127,7 +127,7 @@ export function HardwareCard({
 
           <div className="space-y-0.5">
             <span className="text-muted-foreground font-medium flex items-center gap-1 text-[11px]">
-              <Globe className="h-3 w-3 text-blue-500" /> Internet Explorer /
+              <Globe className="h-3 w-3 text-link" /> Internet Explorer /
               Navegador
             </span>
             <p className="font-mono text-foreground text-xs">

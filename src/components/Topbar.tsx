@@ -227,7 +227,7 @@ export function Topbar({
       <header className="h-14 bg-card/90 backdrop-blur px-4 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
         {/* Identidad / Brand (Arrastrable junto al header para mover la ventana con el mouse) */}
         <div className="flex items-center gap-2.5 shrink-0 cursor-default select-none">
-          <div className="p-1.5 rounded-md bg-primary/10 text-primary pointer-events-none">
+          <div className="p-1.5 rounded-md bg-primary/10 text-link pointer-events-none">
             <img
               src={logoIcon}
               alt="Correo Argentino"
@@ -273,7 +273,7 @@ export function Topbar({
                 disabled={!query.trim()}
                 aria-label="Buscar terminal, IP o usuario"
                 title="Buscar terminal, IP o usuario (o Enter)"
-                className="h-7 w-7 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-muted/80 cursor-pointer disabled:opacity-30 rounded-md shrink-0"
+                className="h-7 w-7 text-link hover:text-link hover:bg-muted/80 cursor-pointer disabled:opacity-30 rounded-md shrink-0"
               >
                 <Search className="h-4 w-4" />
               </Button>
@@ -284,10 +284,10 @@ export function Topbar({
           {isOpen && filteredMatches.length > 0 && (
             <div
               ref={dropdownRef}
-              className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg overflow-hidden z-50 animate-fade-in"
+              className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md ring-1 ring-foreground/10 overflow-hidden z-50 animate-fade-in"
             >
               <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border bg-muted/40 flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                <span className="flex items-center gap-1.5 text-foreground">
                   {query.trim()
                     ? `Coincidencias (${filteredMatches.length})`
                     : "Búsquedas recientes"}
@@ -309,7 +309,7 @@ export function Topbar({
                       key={item.value}
                       className={`flex items-center justify-between px-2.5 py-1.5 transition-colors group cursor-pointer ${
                         isSelected
-                          ? "text-accent-foreground bg:text-inherit dark:bg-muted/80"
+                          ? "text-foreground dark:bg-muted/80"
                           : "hover:bg-accent/10"
                       }`}
                       onMouseEnter={() => setSelectedIndex(index)}
@@ -323,23 +323,23 @@ export function Topbar({
                           <UserRound
                             className={`h-3.5 w-3.5 shrink-0 transition-colors ${
                               isSelected
-                                ? "text-blue-600 dark:text-blue-400"
-                                : "text-muted-foreground group-hover:text-primary"
+                                ? "text-link"
+                                : "text-muted-foreground group-hover:text-link"
                             }`}
                           />
                         ) : (
                           <Monitor
                             className={`h-3.5 w-3.5 shrink-0 transition-colors ${
                               isSelected
-                                ? "text-blue-600 dark:text-blue-400"
-                                : "text-muted-foreground group-hover:text-primary"
+                                ? "text-link"
+                                : "text-muted-foreground group-hover:text-link"
                             }`}
                           />
                         )}
                         <span
                           className={`font-mono text-xs font-semibold ${
                             isSelected
-                              ? "text-primary font-bold"
+                              ? "text-foreground font-bold"
                               : "text-foreground"
                           }`}
                         >
@@ -360,7 +360,7 @@ export function Topbar({
                             }
                             aria-label={`Conectar VNC a ${item.value}`}
                             title={`Lanzar VNC Viewer a ${item.value}`}
-                            className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer"
+                            className="bg-primary/10 hover:bg-primary/20 text-link cursor-pointer"
                           >
                             <MonitorPlay className="h-3 w-3" />
                           </Button>
@@ -394,10 +394,10 @@ export function Topbar({
             title={serverName || "Modo actual"}
           >
             <Database
-              className={`h-3.5 w-3.5 ${backendMode === "sql" ? "text-emerald-500" : "text-amber-500"}`}
+              className={`h-3.5 w-3.5 ${backendMode === "sql" ? "text-success" : "text-warning"}`}
             />
             <span
-              className={`h-2 w-2 rounded-full ${backendMode === "sql" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`}
+              className={`h-2 w-2 rounded-full ${backendMode === "sql" ? "bg-success animate-pulse" : "bg-warning"}`}
             />
             <span>
               {backendMode === "sql" ? "Conectado" : "Sin conexión"}
@@ -418,7 +418,7 @@ export function Topbar({
               onClick={handleOpenPortalMda}
               aria-label="Abrir Portal MDA"
               title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
-              className="text-xs font-semibold gap-1.5 cursor-pointer text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+              className="text-xs font-semibold gap-1.5 cursor-pointer text-link hover:text-link"
             >
               <ExternalLink className="h-4 w-4" />
               <span>Portal MDA</span>

@@ -156,12 +156,12 @@ export function SubnetScannerDrawer({
       {/* Drawer Panel */}
       <aside
         aria-label="Escáner de Subred"
-        className="relative z-10 w-80 md:w-96 h-full bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+        className="relative z-10 w-80 md:w-96 h-full bg-card border-l border-border flex flex-col animate-in slide-in-from-right duration-200"
       >
         {/* Header */}
         <div className="h-12 border-b border-border px-3.5 flex items-center justify-between shrink-0 bg-muted/40">
           <div className="flex items-center gap-2">
-            <div className="p-1 rounded-md bg-primary/10 text-primary">
+            <div className="p-1 rounded-md bg-primary/10 text-link">
               <Network className="h-3.5 w-3.5" />
 
             </div>
@@ -187,15 +187,15 @@ export function SubnetScannerDrawer({
             <span className="text-[11px] font-medium text-foreground flex items-center gap-1.5">
               {isScanning ? (
                 <>
-                  <Loader2 className="h-3 w-3 text-primary animate-spin" />
+                  <Loader2 className="h-3 w-3 text-link animate-spin" />
                   Escaneando hosts...
                 </>
               ) : isPaused ? (
-                <span className="text-amber-500 font-medium flex items-center gap-1">
+                <span className="text-warning font-medium flex items-center gap-1">
                   <Pause className="h-3 w-3" /> Escaneo en pausa
                 </span>
               ) : (
-                <span className="text-emerald-500 font-medium flex items-center gap-1">
+                <span className="text-success font-medium flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3" /> Escaneo finalizado
                 </span>
               )}
@@ -209,7 +209,7 @@ export function SubnetScannerDrawer({
           <div className="w-full bg-muted/80 rounded-full h-1.5 overflow-hidden">
             <div
               className={`h-full transition-all duration-300 rounded-full ${
-                isScanning ? 'bg-primary' : isPaused ? 'bg-amber-500' : 'bg-emerald-500'
+                isScanning ? 'bg-primary' : isPaused ? 'bg-warning' : 'bg-success'
               }`}
               style={{ width: `${percentage}%` }}
             />
@@ -234,17 +234,17 @@ export function SubnetScannerDrawer({
             <div className="h-48 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
               {isScanning ? (
                 <>
-                  <Radio className="h-8 w-8 text-primary/40 animate-pulse mb-2" />
+                  <Radio className="h-8 w-8 text-link/40 animate-pulse mb-2" />
                   <p className="text-xs font-medium">Detectando respuestas ICMP/SMB...</p>
-                  <p className="text-[10px] text-muted-foreground/80 mt-1">
+                  <p className="text-[10px] text-muted-foreground mt-1">
                     Los equipos activos irán apareciendo en tiempo real
                   </p>
                 </>
               ) : isPaused ? (
                 <>
-                  <Pause className="h-8 w-8 text-amber-500/40 mb-2" />
+                  <Pause className="h-8 w-8 text-warning/40 mb-2" />
                   <p className="text-xs font-medium text-foreground">Escaneo en pausa</p>
-                  <p className="text-[10px] text-muted-foreground/80 mt-1">
+                  <p className="text-[10px] text-muted-foreground mt-1">
                     Presiona Reanudar para continuar detectando equipos
                   </p>
                 </>
@@ -252,7 +252,7 @@ export function SubnetScannerDrawer({
                 <>
                   <Laptop className="h-8 w-8 text-muted-foreground/30 mb-2" />
                   <p className="text-xs font-medium">No se encontraron equipos activos</p>
-                  <p className="text-[10px] text-muted-foreground/80 mt-1">
+                  <p className="text-[10px] text-muted-foreground mt-1">
                     Verifica conectividad o segmento de red
                   </p>
                 </>
@@ -268,7 +268,7 @@ export function SubnetScannerDrawer({
               return (
                 <Card
                   key={host.ip}
-                  className="flex-row items-stretch gap-0 border-border/80 p-0 hover:border-border hover:shadow-xs hover:bg-muted/30 transition-all overflow-hidden group"
+                  className="flex-row items-stretch gap-0 border-border/80 p-0 hover:border-border hover:bg-muted/30 transition-all overflow-hidden group"
                 >
                   {/* Porción principal: Información y selección de terminal */}
                   <button
@@ -279,7 +279,7 @@ export function SubnetScannerDrawer({
                     className="flex-1 min-w-0 p-2.5 text-left flex flex-col justify-center cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="h-2 w-2 rounded-full bg-success shrink-0" />
                       <span className="text-xs font-bold text-foreground font-mono truncate transition-colors">
                         {displayName}
                       </span>
@@ -287,7 +287,7 @@ export function SubnetScannerDrawer({
                     <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono text-muted-foreground">
                       {hostname && <span>{host.ip}</span>}
                       {host.latency !== null && (
-                        <span className="text-muted-foreground/70">{host.latency}ms</span>
+                        <span className="text-muted-foreground">{host.latency}ms</span>
                       )}
                     </div>
                   </button>
@@ -326,7 +326,7 @@ export function SubnetScannerDrawer({
               <Button
                 size="sm"
                 variant="outline"
-                className="h-7 px-2.5 text-xs text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+                className="h-7 px-2.5 text-xs text-warning border-warning/30 hover:bg-warning/10 cursor-pointer"
                 onClick={handlePause}
                 aria-label="Pausar escaneo"
                 title="Pausar escaneo de subred"

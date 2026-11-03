@@ -15,7 +15,10 @@ import { dirname, resolve } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const cssPath = resolve(here, "../src/index.css");
-const css = readFileSync(cssPath, "utf8");
+const css = readFileSync(cssPath, "utf8")
+  // Quita comentarios de bloque (también multilínea) y de línea antes de parsear.
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/^\s*\/\/.*$/gm, "");
 
 // ---------------------------------------------------------------- color math
 const toLinear = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
@@ -82,7 +85,9 @@ function parseBlock(selector) {
   const close = css.indexOf("}", open);
   const body = css.slice(open + 1, close);
   const tokens = {};
-  for (const line of body.split("\n")) {
+  for (const rawLine of body.split("\n")) {
+    // Red de seguridad para comentarios inline que hayan quedado en la línea.
+    const line = rawLine.replace(/\/\*.*?\*\//g, "");
     const token = line.match(/^\s*--([\w-]+)\s*:\s*(.+?);\s*$/);
     if (!token) continue;
     const color = parseColor(token[2]);
@@ -111,8 +116,24 @@ const pairs = [
     label: "Chip uptime (muted/50)",
   },
   { t: "light", fg: "primary-foreground", bg: "primary", kind: "text", label: "CTA primaria" },
-  { t: "light", fg: "primary", bg: "card", kind: "text", label: "Link / acento" },
-  { t: "light", fg: "destructive", bg: "card", kind: "text", label: "Texto de error" },
+  { t: "light", fg: "link", bg: "card", kind: "text", label: "Link / acento" },
+  {
+    // Restricción: link sobre muted solo se modela en claro (4.82:1). En oscuro
+    // da 4.02:1 y no se usa como texto: los labels de Topbar pasaron a foreground.
+    t: "light",
+    fg: "link",
+    bg: "muted",
+    kind: "text",
+    label: "Link sobre muted",
+  },
+  { t: "light", fg: "success-foreground", bg: "success", kind: "text", label: "Éxito sólido" },
+  {
+    t: "light",
+    fg: "destructive-foreground",
+    bg: "destructive",
+    kind: "text",
+    label: "Destructivo sólido",
+  },
   {
     t: "light",
     fg: "destructive",
@@ -122,22 +143,61 @@ const pairs = [
     kind: "text",
     label: "Botón destructive (10%)",
   },
+  {
+    t: "light",
+    fg: "destructive",
+    bg: "destructive",
+    bgAlpha: 0.15,
+    bgOver: "card",
+    kind: "text",
+    label: "Destructivo sobre tinte 15",
+  },
+  { t: "light", fg: "success", bg: "card", kind: "text", label: "Texto success" },
+  { t: "light", fg: "warning", bg: "card", kind: "text", label: "Texto warning" },
+  { t: "light", fg: "info", bg: "card", kind: "text", label: "Texto info" },
+  { t: "light", fg: "destructive", bg: "card", kind: "text", label: "Texto destructivo" },
+  {
+    t: "light",
+    fg: "success",
+    bg: "success",
+    bgAlpha: 0.15,
+    bgOver: "card",
+    kind: "text",
+    label: "Tinte success/15",
+  },
+  {
+    t: "light",
+    fg: "warning",
+    bg: "warning",
+    bgAlpha: 0.15,
+    bgOver: "card",
+    kind: "text",
+    label: "Tinte warning/15",
+  },
   { t: "light", fg: "border", bg: "card", kind: "ui", label: "Borde de control" },
   { t: "light", fg: "input", bg: "card", kind: "ui", label: "Borde de input" },
 
   { t: "dark", fg: "foreground", bg: "background", kind: "text", label: "Texto base" },
   { t: "dark", fg: "muted-foreground", bg: "card", kind: "text", label: "Labels sobre card" },
   { t: "dark", fg: "primary-foreground", bg: "primary", kind: "text", label: "CTA primaria" },
-  { t: "dark", fg: "primary", bg: "card", kind: "text", label: "Texto primary sobre card" },
-  { t: "dark", fg: "primary", bg: "background", kind: "text", label: "Texto primary sobre fondo" },
+  { t: "dark", fg: "link", bg: "card", kind: "text", label: "Texto link sobre card" },
+  { t: "dark", fg: "link", bg: "background", kind: "text", label: "Texto link sobre fondo" },
+  { t: "dark", fg: "success-foreground", bg: "success", kind: "text", label: "Éxito sólido" },
   {
     t: "dark",
-    fg: "primary",
-    bg: "primary",
-    bgAlpha: 0.1,
+    fg: "destructive-foreground",
+    bg: "destructive",
+    kind: "text",
+    label: "Destructivo sólido",
+  },
+  {
+    t: "dark",
+    fg: "destructive",
+    bg: "destructive",
+    bgAlpha: 0.15,
     bgOver: "card",
     kind: "text",
-    label: "Primary sobre tinte primary/10",
+    label: "Destructivo sobre tinte 15",
   },
   {
     t: "dark",
@@ -148,38 +208,59 @@ const pairs = [
     kind: "text",
     label: "Botón destructive (20%)",
   },
+  { t: "dark", fg: "success", bg: "card", kind: "text", label: "Texto success" },
+  { t: "dark", fg: "warning", bg: "card", kind: "text", label: "Texto warning" },
+  { t: "dark", fg: "info", bg: "card", kind: "text", label: "Texto info" },
+  { t: "dark", fg: "destructive", bg: "card", kind: "text", label: "Texto destructivo" },
+  {
+    t: "dark",
+    fg: "success",
+    bg: "success",
+    bgAlpha: 0.15,
+    bgOver: "card",
+    kind: "text",
+    label: "Tinte success/15",
+  },
+  {
+    t: "dark",
+    fg: "warning",
+    bg: "warning",
+    bgAlpha: 0.15,
+    bgOver: "card",
+    kind: "text",
+    label: "Tinte warning/15",
+  },
   { t: "dark", fg: "border", bg: "card", kind: "ui", label: "Borde de control" },
+
+  // La consola es oscura en ambos temas: sus colores de log viven solo en :root.
+  { t: "light", fg: "console-fg", bg: "console-bg", kind: "text", label: "Consola texto" },
+  { t: "light", fg: "console-muted", bg: "console-bg", kind: "text", label: "Consola muted" },
+  { t: "light", fg: "console-success", bg: "console-bg", kind: "text", label: "Consola success" },
+  { t: "light", fg: "console-warning", bg: "console-bg", kind: "text", label: "Consola warning" },
+  { t: "light", fg: "console-info", bg: "console-bg", kind: "text", label: "Consola info" },
+  {
+    t: "light",
+    fg: "console-destructive",
+    bg: "console-bg",
+    kind: "text",
+    label: "Consola destructivo",
+  },
+  { t: "dark", fg: "console-fg", bg: "console-bg", kind: "text", label: "Consola texto" },
+  { t: "dark", fg: "console-muted", bg: "console-bg", kind: "text", label: "Consola muted" },
+  { t: "dark", fg: "console-success", bg: "console-bg", kind: "text", label: "Consola success" },
+  { t: "dark", fg: "console-warning", bg: "console-bg", kind: "text", label: "Consola warning" },
+  { t: "dark", fg: "console-info", bg: "console-bg", kind: "text", label: "Consola info" },
+  {
+    t: "dark",
+    fg: "console-destructive",
+    bg: "console-bg",
+    kind: "text",
+    label: "Consola destructivo",
+  },
 ];
 
-// Pares conocidos que fallan con los tokens del sitio y resuelven en Fase 2
-// (mapeo de colores por significado). Cada excepción cita el pendiente.
-const EXCEPTIONS = [
-  {
-    label: "light Labels sobre muted",
-    ratio: 4.34,
-    reason: "Chips con bg-muted y --muted-foreground del sitio (4.34:1). Fase 2: pasar esos chips a bg-card.",
-  },
-  {
-    label: "light Botón destructive (10%)",
-    ratio: 3.99,
-    reason: "variant destructive sobre tinte 10% (3.99:1). Fase 2: fondo sólido con destructive-foreground.",
-  },
-  {
-    label: "dark Texto primary sobre card",
-    ratio: 2.03,
-    reason: "--primary oscuro del sitio (2.03:1) no sirve como texto. Fase 2: mover text-primary a --sidebar-primary.",
-  },
-  {
-    label: "dark Texto primary sobre fondo",
-    ratio: 2.24,
-    reason: "Mismo caso sobre background (2.24:1). Fase 2: idem.",
-  },
-  {
-    label: "dark Primary sobre tinte primary/10",
-    ratio: 1.95,
-    reason: "Tinte de primary en oscuro (1.95:1). Fase 2: idem.",
-  },
-];
+// Fase 2 completada: sin excepciones. Los pares de texto deben cumplir 4.5:1.
+const EXCEPTIONS = [];
 
 const pairLabels = pairs.map((p) => `${p.t} ${p.label}`);
 const duplicated = pairLabels.filter((label, index) => pairLabels.indexOf(label) !== index);
@@ -205,13 +286,21 @@ const rows = [];
 for (const pair of pairs) {
   const rowLabel = `${pair.t} ${pair.label}`;
   const tokens = themes[pair.t];
-  const fg = tokens[pair.fg];
-  const bg = tokens[pair.bg];
-  if (!fg || !bg) {
-    rows.push([rowLabel, "token ausente", "—", "—", "SKIP"]);
+  // Solo los tokens de consola pueden resolver desde :root en el tema oscuro.
+  const fixed = (name) => name.startsWith("console-");
+  const fg = tokens[pair.fg] ?? (fixed(pair.fg) ? themes.light[pair.fg] : undefined);
+  const bg = tokens[pair.bg] ?? (fixed(pair.bg) ? themes.light[pair.bg] : undefined);
+  const base = pair.bgOver
+    ? tokens[pair.bgOver]?.rgb ??
+      (fixed(pair.bgOver) ? themes.light[pair.bgOver]?.rgb : undefined)
+    : null;
+  const missing = !fg ? pair.fg : !bg ? pair.bg : pair.bgOver && !base ? pair.bgOver : null;
+  if (missing) {
+    // Un token ausente es una falla real: el gate no puede pasar por omisión.
+    pair.kind === "text" ? textFailures++ : uiFailures++;
+    rows.push([rowLabel, "—", "—", "—", `FALLA (token ausente: ${missing})`]);
     continue;
   }
-  const base = pair.bgOver ? tokens[pair.bgOver]?.rgb ?? themes[pair.t].card.rgb : null;
   const bgRgb = pair.bgAlpha
     ? composite(bg.rgb, bg.alpha * pair.bgAlpha, base)
     : composite(bg.rgb, bg.alpha, themes[pair.t].card.rgb);

@@ -43,7 +43,7 @@ export function Sidebar({
     >
       <div className={`space-y-1 ${collapsed ? 'p-1' : 'p-2'}`}>
         {!collapsed && (
-          <div className="px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-muted-foreground/80">
+          <div className="px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
             Navegación
           </div>
         )}
@@ -63,7 +63,7 @@ export function Sidebar({
                   : 'w-full gap-2.5 px-3 py-2'
               } ${
                 isActive
-                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
@@ -75,8 +75,8 @@ export function Sidebar({
                 <span
                   className={
                     collapsed
-                      ? 'absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-destructive text-white text-[9px] font-bold flex items-center justify-center border-2 border-background shadow-xs'
-                      : 'text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-destructive text-white ml-auto'
+                      ? 'absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center border-2 border-background'
+                      : 'text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-destructive text-destructive-foreground ml-auto'
                   }
                 >
                   {item.badge}
