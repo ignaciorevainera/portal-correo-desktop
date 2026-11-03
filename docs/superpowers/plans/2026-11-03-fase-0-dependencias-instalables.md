@@ -120,7 +120,7 @@ describe("Configuración shadcn: base Radix declarada", () => {
 - [ ] **Step 2: Correrlo para verlo fallar**
 
 Run: `npx vitest run src/test/shadcnConfig.test.ts`
-Expected: **5 tests, 5 failed**. Los mensajes deben ser: `expected 'default' to match /^radix-/`, `expected [...] to deeply equal []` (vacío vs `radix-ui`), `expected undefined to be truthy`, `expected '^4.22.1' to be undefined`, `expected '^0.4.6' to be undefined`.
+Expected: **4 failed | 1 passed**. La aserción “no hay dependencias de Base UI” **ya pasa en el baseline**: el commit `d77753c` retiró Base UI de `package.json`, así que funciona como guard de regresión, no como defecto pendiente. Los 4 rojos son: `expected 'default' to match /^radix-/`, `expected undefined to be truthy` (radix-ui), `expected '^4.22.1' to be undefined` (shadcn en dependencies) y `expected '^0.4.6' to be undefined` (next-themes).
 
 - [ ] **Step 3: Commit del test en rojo**
 
@@ -494,7 +494,7 @@ Entregar: salida de `git log --oneline main..HEAD`, conteo de `ui/*.tsx` (26), y
 
 - [ ] `npx shadcn@latest info --json` devuelve `base: radix` y `style: radix-vega`.
 - [ ] `npx shadcn@latest add <cualquiera> --dry-run` resuelve (ya no hay 404).
-- [ ] `npm test` verde, incluido `src/test/shadcnConfig.test.ts` (5/5).
+- [ ] `npm test` verde, incluido `src/test/shadcnConfig.test.ts` (5/5; 4 llegan en rojo y el de Base UI es guard de regresión ya verde).
 - [ ] `npm run build` verde y `dist/assets/geist-mono-*.woff2` presente.
 - [ ] `src/components/ui/` tiene **26** archivos.
 - [ ] `package.json`: sin `@base-ui*`, sin `next-themes`, `radix-ui` presente, `shadcn` solo en dev.
