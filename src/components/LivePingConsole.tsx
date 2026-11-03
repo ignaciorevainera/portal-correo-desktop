@@ -327,7 +327,7 @@ export function LivePingConsole({
         data-testid="terminal-scroll-container"
         className={`${
           fill ? "flex-1 min-h-0" : "h-[clamp(24rem,55vh,48rem)] min-h-[24rem]"
-        } overflow-y-auto overflow-x-auto p-3.5 bg-console-bg font-mono text-[11.5px] leading-relaxed text-console-muted select-text scrollbar-thin`}
+        } overflow-y-auto overflow-x-auto p-3.5 bg-console-bg font-mono text-[11.5px] leading-relaxed text-console-muted select-text`}
       >
         {logs.length === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
