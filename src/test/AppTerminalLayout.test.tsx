@@ -57,19 +57,37 @@ describe("App terminal layout", () => {
   it("orders identity, console, details and activity", async () => {
     await renderLoadedApp();
 
-    const ordered = [
-      screen.getByTestId("terminal-identity"),
-      screen.getByTestId("terminal-scroll-container"),
-      screen.getByTestId("terminal-details"),
-      screen.getByTestId("activity-panel"),
-    ];
+    const assertOrder = (testIds: string[]) => {
+      const ordered = testIds.map((id) => screen.getByTestId(id));
 
-    for (let index = 0; index < ordered.length - 1; index += 1) {
-      const relation = ordered[index].compareDocumentPosition(
-        ordered[index + 1],
-      );
-      expect(relation & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      for (let index = 0; index < ordered.length - 1; index += 1) {
+        const relation = ordered[index].compareDocumentPosition(
+          ordered[index + 1],
+        );
+        expect(relation & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      }
+    };
+
+    assertOrder([
+      "terminal-identity",
+      "live-ping-console",
+      "terminal-details",
+      "activity-panel",
+    ]);
+
+    // El viewport conserva la posición de la consola también al expandirla.
+    // La búsqueda dispara el ping automático, así que puede estar ya abierta.
+    const consoleTrigger = screen.getByRole("button", { name: /consola/i });
+    if (consoleTrigger.getAttribute("aria-expanded") !== "true") {
+      fireEvent.click(consoleTrigger);
     }
+
+    assertOrder([
+      "terminal-identity",
+      "terminal-scroll-container",
+      "terminal-details",
+      "activity-panel",
+    ]);
   });
 
   it("does not hijack the native context menu inside the search input", async () => {

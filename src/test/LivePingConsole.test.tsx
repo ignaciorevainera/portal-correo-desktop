@@ -306,6 +306,9 @@ describe('LivePingConsole Component', () => {
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
 
+    // La consola arranca colapsada: expandir para inspeccionar el viewport
+    fireEvent.click(screen.getByRole('button', { name: /consola/i }));
+
     // Console terminal has adaptive height (24rem-48rem, ~55vh)
     const terminalBox = container.querySelector('[data-testid="terminal-scroll-container"]');
     expect(terminalBox?.className).toContain('h-[clamp(24rem,55vh,48rem)]');
@@ -387,6 +390,9 @@ describe('LivePingConsole Component', () => {
     );
 
     expect(screen.getByText(/Cuenta AD · jperez/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /consola de cuenta ad · jperez/i }),
+    ).toBeInTheDocument();
 
     act(() => {
       push?.('Miembro de grupos globales  *GRUPO-SOPORTE  *GRUPO-OPERADORES\n');
@@ -418,6 +424,10 @@ describe('LivePingConsole Component', () => {
       />,
     );
 
+    // Cerrada no reclama altura; al expandir, el layout fill la estira
+    expect((container.firstChild as HTMLElement).className).not.toContain('h-full');
+    fireEvent.click(screen.getByRole('button', { name: /consola/i }));
+
     const root = container.firstChild as HTMLElement;
     expect(root.className).toContain('h-full');
 
@@ -428,5 +438,116 @@ describe('LivePingConsole Component', () => {
     expect(
       screen.queryByRole('button', { name: /cerrar consulta/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it("arranca colapsada y no renderiza el viewport", () => {
+    render(
+      <LivePingConsole ip="10.0.0.5" isPinging={false} onTogglePing={vi.fn()} />,
+    );
+    expect(screen.queryByTestId("terminal-scroll-container")).toBeNull();
+    expect(screen.getByRole("button", { name: /consola/i })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+  });
+
+  it("se expande al hacer click en el encabezado", () => {
+    render(
+      <LivePingConsole ip="10.0.0.5" isPinging={false} onTogglePing={vi.fn()} />,
+    );
+    const trigger = screen.getByRole("button", { name: /consola/i });
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(
+      document.querySelector('[data-slot="collapsible-content"]'),
+    ).not.toBeNull();
+    expect(screen.getByTestId("terminal-scroll-container")).toBeInTheDocument();
+  });
+
+  it("mantiene el colapso manual al re-renderizar con el mismo comando", () => {
+    vi.spyOn(electronClient, 'subscribeToDiagnosticCommand').mockImplementation(
+      () => () => {},
+    );
+    const command = {
+      id: "diag-1",
+      command: "netuser" as const,
+      target: "jperez",
+      argsText: "net user jperez /domain",
+      timestamp: "10:00:00",
+    };
+
+    const { rerender } = render(
+      <LivePingConsole
+        mode="account"
+        targetLabel="jperez"
+        ip=""
+        isPinging={false}
+        activeCommand={command}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    // La ejecución la abrió; el operador la cierra
+    fireEvent.click(screen.getByRole("button", { name: /consola/i }));
+
+    rerender(
+      <LivePingConsole
+        mode="account"
+        targetLabel="jperez"
+        ip=""
+        isPinging={false}
+        activeCommand={{ ...command, timestamp: "11:00:00" }}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /consola/i })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    expect(screen.queryByTestId("terminal-scroll-container")).toBeNull();
+  });
+
+  it("permanece colapsada al re-renderizar sin ejecución activa", () => {
+    vi.spyOn(electronClient, 'subscribeToDiagnosticCommand').mockImplementation(
+      () => () => {},
+    );
+    const command = {
+      id: "diag-1",
+      command: "netuser" as const,
+      target: "jperez",
+      argsText: "net user jperez /domain",
+      timestamp: "10:00:00",
+    };
+
+    const { rerender } = render(
+      <LivePingConsole
+        mode="account"
+        targetLabel="jperez"
+        ip=""
+        isPinging={false}
+        activeCommand={command}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /consola/i }));
+
+    rerender(
+      <LivePingConsole
+        mode="account"
+        targetLabel="jperez"
+        ip=""
+        isPinging={false}
+        activeCommand={null}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /consola/i })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    expect(screen.queryByTestId("terminal-scroll-container")).toBeNull();
   });
 });

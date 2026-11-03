@@ -1,11 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Square, Trash2, Copy, Check, Activity, UserRound, RefreshCw } from "lucide-react";
+import {
+  Square,
+  Trash2,
+  Copy,
+  Check,
+  Activity,
+  UserRound,
+  RefreshCw,
+  ChevronRight,
+} from "lucide-react";
 import {
   subscribeToPing,
   subscribeToDiagnosticCommand,
 } from "../services/electronClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export interface DiagnosticCommandEvent {
   id: string;
@@ -63,18 +77,25 @@ export function LivePingConsole({
   const [logs, setLogs] = useState<string[]>([]);
   const [copiedAll, setCopiedAll] = useState(false);
   const [copiedLast, setCopiedLast] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const onPingCompleteRef = useRef(onPingComplete);
   onPingCompleteRef.current = onPingComplete;
   const onDiagnosticCompleteRef = useRef(onDiagnosticComplete);
   onDiagnosticCompleteRef.current = onDiagnosticComplete;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const activeCommandId = activeCommand?.id;
+
+  // Cualquier ejecución abre la consola; el colapso manual se respeta
+  useEffect(() => {
+    if (isPinging || activeCommandId) setIsOpen(true);
+  }, [isPinging, activeCommandId]);
 
   // Auto-desplazamiento exclusivo dentro del contenedor de la terminal ante nuevas líneas
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
-  }, [logs]);
+  }, [logs, isOpen]);
 
   // Ping subscription (backward-compatible)
   useEffect(() => {
@@ -223,155 +244,189 @@ export function LivePingConsole({
   let insideGlobalGroups = false;
 
   return (
-    <Card
-      className={`w-full gap-0 overflow-hidden py-0 shadow-xs ${
-        fill ? "flex h-full min-h-0 flex-col" : "shrink-0"
-      }`}
-    >
-      {/* Barra de Controles Superior: Sin botón Iniciar redundante */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
-        <div className="flex items-center gap-2">
-          <HeaderIcon className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-          <span className="font-mono text-xs font-bold text-foreground dark:text-zinc-100">
-            {headerLabel}
-          </span>
-        </div>
-
-        {/* Controles: Detener (solo cuando activo), Limpiar, Copiar Último Bloque y Copiar Todos los Logs */}
-        <div className="flex items-center gap-1.5">
-          {isAnyRunning && (
-            <Button
+    <Collapsible asChild open={isOpen} onOpenChange={setIsOpen}>
+      <Card
+        data-testid="live-ping-console"
+        data-slot="card"
+        className={`w-full gap-0 overflow-hidden py-0 shadow-xs ${
+          fill && isOpen ? "flex h-full min-h-0 flex-col" : "shrink-0"
+        }`}
+      >
+        {/* Barra de Controles Superior: cabecera colapsable y acciones */}
+        <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
+          <CollapsibleTrigger asChild>
+            <button
               type="button"
-              variant="destructive"
-              size="xs"
-              onClick={handleStop}
-              aria-label="Detener ping en vivo"
-              className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer"
+              aria-label={`Consola de ${headerLabel}`}
+              className="flex min-w-0 items-center gap-2 cursor-pointer focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
             >
-              <Square className="h-3 w-3" />
-              <span>Detener</span>
-            </Button>
-          )}
+              <ChevronRight
+                className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${
+                  isOpen ? "rotate-90" : ""
+                }`}
+              />
+              <HeaderIcon className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span className="font-mono text-xs font-bold text-foreground dark:text-zinc-100">
+                {headerLabel}
+              </span>
+            </button>
+          </CollapsibleTrigger>
 
-          {onRerun && (
+          {/* Controles: Detener (solo cuando activo), Limpiar, Copiar Último Bloque y Copiar Todos los Logs */}
+          <div className="flex items-center gap-1.5">
+            {isAnyRunning && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="xs"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleStop();
+                }}
+                aria-label="Detener ping en vivo"
+                className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer"
+              >
+                <Square className="h-3 w-3" />
+                <span>Detener</span>
+              </Button>
+            )}
+
+            {onRerun && (
+              <Button
+                type="button"
+                variant="outline"
+                size="xs"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onRerun?.();
+                }}
+                disabled={isAnyRunning}
+                aria-label="Re-ejecutar consulta"
+                title="Volver a ejecutar net user"
+                className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer disabled:opacity-40"
+              >
+                <RefreshCw className="h-3 w-3" />
+                <span>Re-ejecutar</span>
+              </Button>
+            )}
+
             <Button
               type="button"
               variant="outline"
               size="xs"
-              onClick={onRerun}
-              disabled={isAnyRunning}
-              aria-label="Re-ejecutar consulta"
-              title="Volver a ejecutar net user"
-              className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer disabled:opacity-40"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleClear();
+              }}
+              aria-label="Limpiar logs de ping"
+              title="Limpiar pantalla de logs"
+              className="h-7 px-2 text-[11px] font-sans flex items-center gap-1 cursor-pointer"
             >
-              <RefreshCw className="h-3 w-3" />
-              <span>Re-ejecutar</span>
+              <Trash2 className="h-3 w-3" />
+              <span>Limpiar</span>
             </Button>
-          )}
 
-          <Button
-            type="button"
-            variant="outline"
-            size="xs"
-            onClick={handleClear}
-            aria-label="Limpiar logs de ping"
-            title="Limpiar pantalla de logs"
-            className="h-7 px-2 text-[11px] font-sans flex items-center gap-1 cursor-pointer"
-          >
-            <Trash2 className="h-3 w-3" />
-            <span>Limpiar</span>
-          </Button>
+            {/* Copiar Último Bloque */}
+            <Button
+              type="button"
+              variant={copiedLast ? "secondary" : "outline"}
+              size="xs"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleCopyLastBlock();
+              }}
+              disabled={logs.length === 0}
+              aria-label="Copiar último bloque de logs"
+              title="Copiar únicamente el último comando y su respuesta al portapapeles"
+              className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+            >
+              {copiedLast ? (
+                <Check className="h-3 w-3 text-emerald-500" />
+              ) : (
+                <Copy className="h-3 w-3 text-muted-foreground" />
+              )}
+              <span>{copiedLast ? "Bloque copiado" : "Copiar Último"}</span>
+            </Button>
 
-          {/* Copiar Último Bloque */}
-          <Button
-            type="button"
-            variant={copiedLast ? "secondary" : "outline"}
-            size="xs"
-            onClick={handleCopyLastBlock}
-            disabled={logs.length === 0}
-            aria-label="Copiar último bloque de logs"
-            title="Copiar únicamente el último comando y su respuesta al portapapeles"
-            className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
-          >
-            {copiedLast ? (
-              <Check className="h-3 w-3 text-emerald-500" />
-            ) : (
-              <Copy className="h-3 w-3 text-muted-foreground" />
-            )}
-            <span>{copiedLast ? "Bloque copiado" : "Copiar Último"}</span>
-          </Button>
-
-          {/* Copiar Todos los Logs */}
-          <Button
-            type="button"
-            variant={copiedAll ? "secondary" : "outline"}
-            size="xs"
-            onClick={handleCopyLogs}
-            disabled={logs.length === 0}
-            aria-label="Copiar logs de ping"
-            title="Copiar logs completos al portapapeles"
-            className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
-          >
-            {copiedAll ? (
-              <Check className="h-3 w-3 text-emerald-500" />
-            ) : (
-              <Copy className="h-3 w-3 text-muted-foreground" />
-            )}
-            <span>{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Pantalla Contigua estilo Windows Terminal: bg-console-bg, altura adaptable (24rem–48rem, ~55vh), auto-scroll interno por línea */}
-      <div
-        ref={scrollContainerRef}
-        data-testid="terminal-scroll-container"
-        className={`${
-          fill ? "flex-1 min-h-0" : "h-[clamp(24rem,55vh,48rem)] min-h-[24rem]"
-        } overflow-y-auto overflow-x-auto p-3.5 bg-console-bg font-mono text-[11.5px] leading-relaxed text-console-muted select-text`}
-      >
-        {logs.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
-            {isAccountMode
-              ? "Consultá una cuenta para ver la salida de net user."
-              : "Selecciona una acción (Ping, Ping -t, Nbtstat, Tracert, ARP) en la barra superior para iniciar diagnóstico."}
+            {/* Copiar Todos los Logs */}
+            <Button
+              type="button"
+              variant={copiedAll ? "secondary" : "outline"}
+              size="xs"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleCopyLogs();
+              }}
+              disabled={logs.length === 0}
+              aria-label="Copiar logs de ping"
+              title="Copiar logs completos al portapapeles"
+              className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+            >
+              {copiedAll ? (
+                <Check className="h-3 w-3 text-emerald-500" />
+              ) : (
+                <Copy className="h-3 w-3 text-muted-foreground" />
+              )}
+              <span>{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
+            </Button>
           </div>
-        ) : (
-          logs.map((line, idx) => {
-            const isGroupHeader = /grupos globales|global group memberships/i.test(
-              line,
-            );
-            if (isGroupHeader) insideGlobalGroups = true;
+        </div>
 
-            const isGroupItem = insideGlobalGroups && /^\s*\*/.test(line);
-            if (insideGlobalGroups && line.trim() === "") {
-              insideGlobalGroups = false;
-            }
-
-            const tone = isGroupHeader
-              ? "text-cyan-300 font-semibold"
-              : isGroupItem
-                ? "text-cyan-300"
-                : line.startsWith("[") && line.includes(">")
-                  ? "text-cyan-400 font-bold"
-                  : line.includes("Iniciando") || line.includes("Ejecutando")
-                    ? "text-amber-400 font-semibold"
-                    : line.includes("finalizado")
-                      ? "text-emerald-400 font-semibold"
-                      : line.includes("Error") ||
-                          line.includes("cerrado") ||
-                          line.includes("inaccesible")
-                        ? "text-red-400 font-semibold"
-                        : "text-console-fg";
-
-            return (
-              <div key={idx} className={`whitespace-pre font-mono ${tone}`}>
-                {line}
+        <CollapsibleContent
+          className={fill ? "flex min-h-0 flex-1 flex-col" : undefined}
+        >
+          {/* Pantalla Contigua estilo Windows Terminal: bg-console-bg, altura adaptable (24rem–48rem, ~55vh), auto-scroll interno por línea */}
+          <div
+            ref={scrollContainerRef}
+            data-testid="terminal-scroll-container"
+            className={`${
+              fill ? "flex-1 min-h-0" : "h-[clamp(24rem,55vh,48rem)] min-h-[24rem]"
+            } overflow-y-auto overflow-x-auto p-3.5 bg-console-bg font-mono text-[11.5px] leading-relaxed text-console-muted select-text`}
+          >
+            {logs.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-muted-foreground font-sans text-xs">
+                {isAccountMode
+                  ? "Consultá una cuenta para ver la salida de net user."
+                  : "Selecciona una acción (Ping, Ping -t, Nbtstat, Tracert, ARP) en la barra superior para iniciar diagnóstico."}
               </div>
-            );
-          })
-        )}
-      </div>
-    </Card>
+            ) : (
+              logs.map((line, idx) => {
+                const isGroupHeader = /grupos globales|global group memberships/i.test(
+                  line,
+                );
+                if (isGroupHeader) insideGlobalGroups = true;
+
+                const isGroupItem = insideGlobalGroups && /^\s*\*/.test(line);
+                if (insideGlobalGroups && line.trim() === "") {
+                  insideGlobalGroups = false;
+                }
+
+                const tone = isGroupHeader
+                  ? "text-cyan-300 font-semibold"
+                  : isGroupItem
+                    ? "text-cyan-300"
+                    : line.startsWith("[") && line.includes(">")
+                      ? "text-cyan-400 font-bold"
+                      : line.includes("Iniciando") || line.includes("Ejecutando")
+                        ? "text-amber-400 font-semibold"
+                        : line.includes("finalizado")
+                          ? "text-emerald-400 font-semibold"
+                          : line.includes("Error") ||
+                              line.includes("cerrado") ||
+                              line.includes("inaccesible")
+                            ? "text-red-400 font-semibold"
+                            : "text-console-fg";
+
+                return (
+                  <div key={idx} className={`whitespace-pre font-mono ${tone}`}>
+                    {line}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 }
