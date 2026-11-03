@@ -8,9 +8,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { isValidUsername } from "@/lib/usernames";
+
+const NET_USER_INPUT_ID = "net-user-input";
+const NET_USER_INPUT_ERROR_ID = "net-user-input-error";
+const NET_USER_OPTION_ID_PREFIX = "net-user-option-";
 
 interface NetUserChooserDialogProps {
   open: boolean;
@@ -54,49 +65,64 @@ export function NetUserChooserDialog({
         </DialogHeader>
 
         <form
-          className="space-y-3"
           onSubmit={(event) => {
             event.preventDefault();
             submit();
           }}
         >
           {users.length > 0 && (
-            <div className="space-y-1.5">
-              {users.map((user) => (
-                <label key={user} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="radio"
-                    name="net-user"
-                    value={user}
-                    checked={value === user}
-                    onChange={() => setValue(user)}
-                    className="accent-primary"
-                  />
-                  <span className="font-mono">{user}</span>
-                </label>
-              ))}
-            </div>
+            <FieldSet className="gap-2">
+              <FieldLegend variant="label">Usuarios sugeridos</FieldLegend>
+              <FieldGroup className="gap-3">
+                {users.map((user, index) => (
+                  <div key={user} className="flex items-center gap-2">
+                    <input
+                      id={`${NET_USER_OPTION_ID_PREFIX}${index}`}
+                      type="radio"
+                      name="net-user"
+                      value={user}
+                      checked={value === user}
+                      onChange={() => setValue(user)}
+                      className="accent-primary"
+                    />
+                    <FieldLabel
+                      htmlFor={`${NET_USER_OPTION_ID_PREFIX}${index}`}
+                      className="font-mono text-sm"
+                    >
+                      {user}
+                    </FieldLabel>
+                  </div>
+                ))}
+              </FieldGroup>
+            </FieldSet>
           )}
 
-          <div className="space-y-1">
-            <Label htmlFor="net-user-input" className="text-xs">
-              Usuario
-            </Label>
+          <Field className="gap-1.5" data-invalid={!valid && value.length > 0}>
+            <FieldLabel htmlFor={NET_USER_INPUT_ID}>Usuario</FieldLabel>
             <Input
-              id="net-user-input"
+              id={NET_USER_INPUT_ID}
               value={value}
               onChange={(event) => setValue(event.target.value)}
               maxLength={64}
               placeholder="Solo letras y números"
-              className="h-9 font-mono text-sm"
+              aria-invalid={!valid && value.length > 0}
+              aria-describedby={
+                !valid && value.length > 0
+                  ? NET_USER_INPUT_ERROR_ID
+                  : undefined
+              }
+              className="font-mono text-sm"
               autoFocus
             />
             {!valid && value.length > 0 && (
-              <p className="text-xs text-destructive">
+              <FieldError
+                id={NET_USER_INPUT_ERROR_ID}
+                className="text-xs"
+              >
                 Usá solo letras y números, sin dominio ni símbolos.
-              </p>
+              </FieldError>
             )}
-          </div>
+          </Field>
         </form>
 
         <DialogFooter className="gap-2">

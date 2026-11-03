@@ -8,13 +8,28 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   DEFAULT_OPERATOR,
   DEFAULT_RESET_REASON,
 } from "@/lib/constants";
+
+const TITLE_ID = "new-alert-title";
+const TITLE_HELP_ID = "new-alert-title-help";
+const TITLE_ERROR_ID = "new-alert-title-error";
+const DESCRIPTION_ID = "new-alert-description";
+const OPERATOR_ID = "new-alert-operator";
+const OPERATOR_HELP_ID = "new-alert-operator-help";
+const RESET_REASON_ID = "reset-reason";
+const CLOSE_RESOLUTION_ID = "close-alert-resolution";
 
 interface NewAlertDialogProps {
   open: boolean;
@@ -38,6 +53,14 @@ export function NewAlertDialog({
     title.trim().length > 0 &&
     description.trim().length > 0 &&
     operator.trim().length > 0;
+  // El título necesita al menos 3 caracteres para servir como encabezado.
+  const titleError =
+    title.length > 0 && title.trim().length < 3
+      ? "El título debe tener al menos 3 caracteres."
+      : null;
+  const titleDescribedBy = titleError
+    ? `${TITLE_HELP_ID} ${TITLE_ERROR_ID}`
+    : TITLE_HELP_ID;
 
   const resetForm = (): void => {
     setTitle("");
@@ -72,51 +95,59 @@ export function NewAlertDialog({
         </DialogHeader>
 
         <form
-          className="space-y-3"
           onSubmit={(event) => {
             event.preventDefault();
             submit();
           }}
         >
-          <div className="space-y-1">
-            <Label htmlFor="new-alert-title" className="text-xs">
-              Título
-            </Label>
-            <Input
-              id="new-alert-title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="Título breve del incidente"
-              className="h-9 text-sm"
-              autoFocus
-            />
-          </div>
+          <FieldGroup className="gap-3">
+            <Field className="gap-1.5" data-invalid={Boolean(titleError)}>
+              <FieldLabel htmlFor={TITLE_ID}>Título</FieldLabel>
+              <Input
+                id={TITLE_ID}
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                aria-invalid={Boolean(titleError)}
+                aria-describedby={titleDescribedBy}
+                placeholder="Título breve del incidente"
+                className="text-sm"
+                autoFocus
+              />
+              <FieldDescription id={TITLE_HELP_ID} className="text-xs">
+                Se muestra como encabezado de la alerta en el panel de
+                actividad.
+              </FieldDescription>
+              {titleError && (
+                <FieldError id={TITLE_ERROR_ID}>{titleError}</FieldError>
+              )}
+            </Field>
 
-          <div className="space-y-1">
-            <Label htmlFor="new-alert-description" className="text-xs">
-              Descripción
-            </Label>
-            <Textarea
-              id="new-alert-description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Detalle de la falla o del pedido"
-              rows={3}
-              className="resize-none text-sm"
-            />
-          </div>
+            <Field className="gap-1.5">
+              <FieldLabel htmlFor={DESCRIPTION_ID}>Descripción</FieldLabel>
+              <Textarea
+                id={DESCRIPTION_ID}
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                placeholder="Detalle de la falla o del pedido"
+                rows={3}
+                className="resize-none text-sm"
+              />
+            </Field>
 
-          <div className="space-y-1">
-            <Label htmlFor="new-alert-operator" className="text-xs">
-              Operador
-            </Label>
-            <Input
-              id="new-alert-operator"
-              value={operator}
-              onChange={(event) => setOperator(event.target.value)}
-              className="h-9 font-mono text-sm"
-            />
-          </div>
+            <Field className="gap-1.5">
+              <FieldLabel htmlFor={OPERATOR_ID}>Operador</FieldLabel>
+              <Input
+                id={OPERATOR_ID}
+                value={operator}
+                onChange={(event) => setOperator(event.target.value)}
+                aria-describedby={OPERATOR_HELP_ID}
+                className="font-mono text-sm"
+              />
+              <FieldDescription id={OPERATOR_HELP_ID} className="text-xs">
+                Cuenta de dominio del operador.
+              </FieldDescription>
+            </Field>
+          </FieldGroup>
         </form>
 
         <DialogFooter className="gap-2">
@@ -174,25 +205,26 @@ export function RequestResetDialog({
         </DialogHeader>
 
         <form
-          className="space-y-3"
           onSubmit={(event) => {
             event.preventDefault();
             submit();
           }}
         >
-          <div className="space-y-1">
-            <Label htmlFor="reset-reason" className="text-xs">
-              Motivo del reseteo
-            </Label>
-            <Textarea
-              id="reset-reason"
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
-              rows={3}
-              className="resize-none text-sm"
-              autoFocus
-            />
-          </div>
+          <FieldGroup className="gap-3">
+            <Field className="gap-1.5">
+              <FieldLabel htmlFor={RESET_REASON_ID}>
+                Motivo del reseteo
+              </FieldLabel>
+              <Textarea
+                id={RESET_REASON_ID}
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+                rows={3}
+                className="resize-none text-sm"
+                autoFocus
+              />
+            </Field>
+          </FieldGroup>
         </form>
 
         <DialogFooter className="gap-2">
@@ -250,26 +282,27 @@ export function CloseAlertDialog({
         </DialogHeader>
 
         <form
-          className="space-y-3"
           onSubmit={(event) => {
             event.preventDefault();
             submit();
           }}
         >
-          <div className="space-y-1">
-            <Label htmlFor="close-alert-resolution" className="text-xs">
-              Resolución
-            </Label>
-            <Textarea
-              id="close-alert-resolution"
-              value={resolution}
-              onChange={(event) => setResolution(event.target.value)}
-              placeholder="Cómo se resolvió la alerta"
-              rows={3}
-              className="resize-none text-sm"
-              autoFocus
-            />
-          </div>
+          <FieldGroup className="gap-3">
+            <Field className="gap-1.5">
+              <FieldLabel htmlFor={CLOSE_RESOLUTION_ID}>
+                Resolución
+              </FieldLabel>
+              <Textarea
+                id={CLOSE_RESOLUTION_ID}
+                value={resolution}
+                onChange={(event) => setResolution(event.target.value)}
+                placeholder="Cómo se resolvió la alerta"
+                rows={3}
+                className="resize-none text-sm"
+                autoFocus
+              />
+            </Field>
+          </FieldGroup>
         </form>
 
         <DialogFooter className="gap-2">
