@@ -30,6 +30,7 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-info: var(--info);
+  --color-link: var(--link);
   --color-category-aplicaciones: var(--category-aplicaciones);
   --color-category-hardware: var(--category-hardware);
   --color-category-conectividad: var(--category-conectividad);
@@ -101,6 +102,9 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
 
+  /* Texto de acento: enlaces, acciones remotas, iconos interactivos */
+  --link: oklch(0.546 0.245 262.881);
+
   /* Superficie de log: oscura en ambos temas, nunca sigue al tema */
   --console-bg: oklch(0.154 0 0);    /* #0C0C0C exacto */
   --console-fg: oklch(0.922 0 0);    /* #E5E5E5, color por defecto de cada línea */
@@ -165,6 +169,7 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  --link: oklch(0.623 0.214 259.815);
   --chart-1: oklch(0.837 0.128 66.29);
   --chart-2: oklch(0.705 0.213 47.604);
   --chart-3: oklch(0.646 0.222 41.116);

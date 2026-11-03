@@ -60,6 +60,12 @@ describe("Configuración shadcn: base Radix declarada", () => {
     expect(offending).toEqual([]);
   });
 
+  it("expone el token link en ambos temas", () => {
+    const css = fs.readFileSync(path.resolve(root, "src/index.css"), "utf-8");
+    expect(css.match(/--link:\s*oklch\(/g)?.length).toBe(2);
+    expect(css).toContain("--color-link: var(--link);");
+  });
+
   it("cmdk y la fuente mono siguen declaradas", () => {
     const deps = allDeps();
     expect(deps["cmdk"]).toBeTruthy();
