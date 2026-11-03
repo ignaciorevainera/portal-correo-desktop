@@ -512,7 +512,9 @@ Expected: **5 passed** (4 existentes + el nuevo).
 - [ ] **Step 2.6: Follow-ups de dependencias que salieron de las revisiones**
 
 1. **Fijar la versión del CLI**: `"shadcn": "4.23.0"` exacto (hoy `^4.23.0`; todo `npx shadcn@latest` ignora el pin). Agregar al guard una aserción de versión exacta.
-2. **Actualizar la documentación que dice 4.22.1**: `docs/ui-slop-audit-2026-11-02.md` (§7.1 y §7.4) y `docs/shadcn-preset-decode.md` (fila `CLI`) — el repo ya corre 4.23.0.
+2. **Actualizar la documentación que quedó desfasada**: `docs/ui-slop-audit-2026-11-02.md` (§7.1 y §7.4) y `docs/shadcn-preset-decode.md` (fila `CLI`). Dos correcciones de fondo:
+   - el repo ya **no** pinnea 4.22.1 (hoy `^4.23.0`, y hay que fijarlo exacto en `4.23.0`).
+   - el ahorro del instalador está **subestimado**: medido antes/después con `electron-builder --dir` y parseo del asar, es **−5.884 archivos / −38,9 MB** (122,0 → 83,1 MB), no 4.741 / 33,3 MB. El peso real es el subárbol dev (`@ts-morph/common` 10,55 MB, `zod` 5,51 MB, `@modelcontextprotocol/sdk` 3,01 MB, `@babel/*` ~5 MB), no la carpeta del CLI (0,61 MB).
 3. **Mover `@fontsource-variable/*` a devDependencies**: son de build (Vite copia los woff2 a `dist/assets`), pero hoy viajan en el asar (~498 KB: geist 174, geist-mono 165, roboto-slab 159).
 4. **`eject` de shadcn**: inlinea `shadcn/tailwind.css` en `index.css` y permite borrar la dependencia. **Bloqueado hoy** por `src/test/ShadcnPreset.test.tsx:47`, que exige el `@import "shadcn/tailwind.css"`. Hacerlo **después** de Tasks 5-6 (si no, la copia congelada puede no tener los `@utility` que necesitan las primitivas nuevas) y reescribir esa aserción en el mismo commit.
 
