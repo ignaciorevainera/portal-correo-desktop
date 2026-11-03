@@ -26,7 +26,7 @@ describe("Configuración shadcn: base Radix declarada", () => {
     expect(allDeps()["radix-ui"]).toBeTruthy();
   });
 
-  it("el CLI de shadcn no viaja como dependencia de producción", () => {
+  it("el CLI de shadcn está en devDependencies y no en producción", () => {
     const pkg = readJson("package.json");
     expect(pkg.dependencies?.shadcn).toBeUndefined();
     expect(pkg.devDependencies?.shadcn).toBeTruthy();
