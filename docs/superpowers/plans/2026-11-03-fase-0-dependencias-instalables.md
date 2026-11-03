@@ -507,6 +507,8 @@ git commit -m "fix(ui): corregir imports y placeholders de los componentes insta
 
 ### Task 8: Cierre de fase
 
+> **Estado (2026-11-03):** ejecutada. Guard 6/6 · suite 329/329 · build verde · `shadcn` pinneado a 4.23.0 · `docs/ui-slop-audit-2026-11-02.md` y `docs/shadcn-preset-decode.md` actualizados · `skills-lock.json` ignorado.
+
 **Files:**
 - Modify: `docs/ui-slop-audit-2026-11-02.md` (§5, Fase 0)
 
