@@ -249,29 +249,29 @@ h1, h2, h3, h4 {
       transition: none;
     }
   }
-}
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklab, var(--foreground) 22%, transparent) transparent;
-}
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--foreground) 22%, transparent) transparent;
+  }
 
-*::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-*::-webkit-scrollbar-thumb {
-  background-color: color-mix(in oklab, var(--foreground) 22%, transparent);
-  border-radius: 9999px;
-}
+  *::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--foreground) 22%, transparent);
+    border-radius: 9999px;
+  }
 
-*::-webkit-scrollbar-thumb:hover {
-  background-color: color-mix(in oklab, var(--foreground) 35%, transparent);
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in oklab, var(--foreground) 35%, transparent);
+  }
 }
 
 .scrollbar-slim {
