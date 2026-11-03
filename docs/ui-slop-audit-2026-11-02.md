@@ -276,6 +276,8 @@ El motivo por el que estos patrones persisten no es falta de criterio: es que **
 
 ### 7.1 Qué hay hoy (verificado en el repo, no en la documentación)
 
+> **Estado tras Fase 0 (2026-11-03):** esta tabla es la foto del 2/11. Hoy: `radix-ui` unificado instalado, cero paquetes `@radix-ui/*` en `package.json`, `shadcn` en devDependencies y `Card`/`Alert` siguen sin uso en la app (eso no cambió).
+
 | Comprobación | Resultado |
 |---|---|
 | Primitivas Radix instaladas | **4**: `@radix-ui/react-dialog`, `react-label`, `react-separator`, `react-slot` (+ transitivas) |
@@ -342,14 +344,14 @@ Reglas para este repo:
 
 - **Nunca `shadcn init` sobre el repo.** Si alguna vez hace falta, `-b radix` explícito y jamás `--defaults`.
 - `components.json` nunca queda sin `style`. Si migran a un preset v4, tiene que llevar prefijo: `"style": "radix-nova"` es la única forma de declarar la base.
-- Antes de sumar los 9 componentes, correr `npx shadcn@4.22.1 migrate radix` para pasar los imports `@radix-ui/react-*` al paquete unificado `radix-ui` (o `npm i radix-ui` si prefieren migrar después). Si no, `ui/` queda con dos estilos de import y el primer ítem nuevo no resuelve.
+- Antes de sumar los 9 componentes, correr `npx shadcn@4.23.0 migrate radix` para pasar los imports `@radix-ui/react-*` al paquete unificado `radix-ui` (o `npm i radix-ui` si prefieren migrar después). Si no, `ui/` queda con dos estilos de import y el primer ítem nuevo no resuelve.
 - Después de cada `add`, revisar `package.json` y los imports del archivo nuevo: un `@base-ui-components/react` es el síntoma exacto del desvío.
 - El primer `add` conviene hacerlo con `--dry-run`: `"style": "default"` es un style v1, y si el registry v4 no lo resuelve, el síntoma va a ser markup viejo o un 404, no un mensaje claro.
 
 Comando para el set completo de §7.2 (sin `ScrollArea`):
 
 ```bash
-npx shadcn@4.22.1 add command popover context-menu sheet tooltip switch radio-group progress collapsible alert-dialog
+npx shadcn@4.23.0 add command popover context-menu sheet tooltip switch radio-group progress collapsible alert-dialog
 ```
 
 ### 7.4 El CLI viaja dentro del instalador
@@ -360,10 +362,11 @@ npx shadcn@4.22.1 add command popover context-menu sheet tooltip switch radio-gr
 |---|---:|
 | Tamaño del asar | 122,0 MB |
 | Archivos en el asar | 19.507 |
-| Árbol del CLI shadcn (`shadcn`, `@shadcn/*`, `@babel/*`, `@ts-morph/*`, `@modelcontextprotocol/sdk`, `@dotenvx/*`, `execa`, `hono`, `browserslist`, `caniuse-lite`, `zod`, `recast`, `diff`, …) | **33,3 MB · 4.741 archivos** |
+| Árbol del CLI shadcn (`shadcn`, `@shadcn/*`, `@babel/*`, `@ts-morph/*`, `@modelcontextprotocol/sdk`, `@dotenvx/*`, `execa`, `hono`, `browserslist`, `caniuse-lite`, `zod`, `recast`, `diff`, …) | **38,9 MB · 5.884 archivos** |
 | Instalador NSIS resultante | 98,6 MB |
+| Asar después de mover el CLI | 83,1 MB · 11.645 archivos |
 
-Mover `shadcn` (y `next-themes`, que no se usa) a `devDependencies` recorta ~33 MB y ~4.700 archivos del paquete entregado, sin tocar una línea de UI.
+**Medido (2026-11-03):** empaquetando ambos estados con `electron-builder --dir` y parseando el asar, el ahorro es de **−5.884 archivos y −38,9 MB** (122,0 → 83,1 MB), mayor que la estimación inicial de 33,3 MB / 4.741 archivos. El peso no estaba en la carpeta del CLI (0,61 MB) sino en su subárbol dev: `@ts-morph/common` 10,55 MB, `zod` 5,51 MB, `@modelcontextprotocol/sdk` 3,01 MB y `@babel/*` ~5 MB.
 
 ### 7.5 Lo que manda la skill oficial de shadcn (y en qué cambia este informe)
 
