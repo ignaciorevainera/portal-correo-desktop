@@ -105,7 +105,7 @@ describe("Configuración shadcn: base Radix declarada", () => {
     expect(allDeps()["radix-ui"]).toBeTruthy();
   });
 
-  it("el CLI de shadcn no viaja como dependencia de producción", () => {
+  it("el CLI de shadcn está en devDependencies y no en producción", () => {
     const pkg = readJson("package.json");
     expect(pkg.dependencies?.shadcn).toBeUndefined();
     expect(pkg.devDependencies?.shadcn).toBeTruthy();
@@ -178,7 +178,7 @@ Expected: incluye `"base": "radix"` y `"style": "radix-vega"`. Si devuelve 404 o
 - [ ] **Step 6: Correr el guard**
 
 Run: `npx vitest run src/test/shadcnConfig.test.ts`
-Expected: **4 failed, 1 passed** (pasa “style con prefijo radix-”).
+Expected: **3 failed | 2 passed** (pasan “style con prefijo radix-” y el guard de Base UI).
 
 - [ ] **Step 7: Commit**
 
@@ -226,7 +226,7 @@ Expected: `tsc` sin errores y `vite build` con `dist/assets/index-*.js` y `index
 - [ ] **Step 6: Correr el guard**
 
 Run: `npx vitest run src/test/shadcnConfig.test.ts`
-Expected: **3 failed, 2 passed**.
+Expected: **2 failed | 3 passed** (pasan “style”, Base UI y `radix-ui`).
 
 - [ ] **Step 7: Commit**
 
@@ -302,7 +302,7 @@ Expected: 1..6 archivos (subset por alfabeto). Si no hay ninguno, el `@import` n
 - [ ] **Step 6: Correr el guard**
 
 Run: `npx vitest run src/test/shadcnConfig.test.ts`
-Expected: **0 failed, 5 passed**.
+Expected: **0 failed | 5 passed**.
 
 - [ ] **Step 7: Commit**
 
