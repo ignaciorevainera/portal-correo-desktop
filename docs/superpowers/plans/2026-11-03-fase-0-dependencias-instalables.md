@@ -36,7 +36,8 @@
 | `components.json` | modificar | `"style": "radix-vega"` |
 | `package.json` / `package-lock.json` | modificar | `radix-ui` entra; `shadcn` pasa a dev; `next-themes` sale; `@fontsource-variable/geist-mono` entra |
 | `src/index.css` | modificar (2 líneas) | `@import` del mono + `--font-mono` con la familia real |
-| `docs/shadcn-preset-decode.txt` | **crear** | Salida de `preset decode` como evidencia para la Fase 1 |
+| `docs/shadcn-preset-decode.json` | **crear** | Salida cruda de `preset decode --json` (UTF-8, diffeable) |
+| `docs/shadcn-preset-decode.md` | **crear** | Procedencia y lectura humana del preset |
 | `src/components/ui/*.tsx` | **crear (14)** | `command`, `popover`, `context-menu`, `sheet`, `tooltip`, `switch`, `toggle-group`, `progress`, `collapsible`, `alert-dialog`, `empty`, `skeleton`, `field`, `input-group` |
 | `docs/ui-slop-audit-2026-11-02.md` | modificar (§5) | Registrar que la Fase 0 se ejecutó |
 
@@ -134,7 +135,7 @@ git commit -m "test(shadcn): guard de base radix, radix-ui y CLI fuera de produc
 ### Task 2: Inspeccionar el preset y declarar el style
 
 **Files:**
-- Create: `docs/shadcn-preset-decode.txt`
+- Create: `docs/shadcn-preset-decode.json`, `docs/shadcn-preset-decode.md`
 - Modify: `components.json`
 
 - [ ] **Step 1: Decodificar el preset con la CLI (nunca a mano)**
@@ -142,11 +143,15 @@ git commit -m "test(shadcn): guard de base radix, radix-ui y CLI fuera de produc
 Run: `npx shadcn@latest preset decode b5XRZYXrNg`
 Expected: JSON o tabla con `style`, `baseColor`, `theme`, `iconLibrary`, `font`, `radius`. Si el comando no existe o falla, correr `npx shadcn@latest preset --help` y reportar la salida antes de seguir; los valores de §8.2 del audit siguen siendo válidos como fuente.
 
-- [ ] **Step 2: Guardar la evidencia**
+- [ ] **Step 2: Guardar la evidencia en JSON UTF-8**
+
+`*>` de PowerShell 5.1 escribe UTF-16LE y mezcla stderr (Git lo trata como binario y el preámbulo parece un error). Capturar así:
 
 ```powershell
-npx shadcn@latest preset decode b5XRZYXrNg *> docs/shadcn-preset-decode.txt
+cmd /c "npx --yes shadcn@latest preset decode b5XRZYXrNg --json > docs\shadcn-preset-decode.json 2>nul"
 ```
+
+Verificar: primer byte `123` (`{`), sin BOM, `JSON.parse` OK y sin `NativeCommandError` en el archivo. Después crear `docs/shadcn-preset-decode.md` con la procedencia (comando, versión del CLI, fecha, valores y la aclaración de que `style: vega` + base `radix` = `radix-vega`).
 
 - [ ] **Step 3: Confirmar qué detecta hoy el CLI en el proyecto**
 
@@ -183,7 +188,7 @@ Expected: **3 failed | 2 passed** (pasan “style con prefijo radix-” y el gua
 - [ ] **Step 7: Commit**
 
 ```bash
-git add components.json docs/shadcn-preset-decode.txt
+git add components.json docs/shadcn-preset-decode.json docs/shadcn-preset-decode.md
 git commit -m "chore(shadcn): declarar base radix explicita con style radix-vega"
 ```
 
@@ -211,7 +216,11 @@ Expected: reescribe los imports a `from "radix-ui"` y actualiza `package.json` (
 node -e "const p=require('./package.json');const d={...p.dependencies,...p.devDependencies};console.log({radixUi:d['radix-ui'],scoped:Object.keys(d).filter(k=>k.startsWith('@radix-ui/'))})"
 ```
 
-Expected: `radixUi` con una versión (`^1.…`), `scoped: []`. Si `radixUi` es `undefined`, correr `npm i radix-ui` y repetir.
+Expected: `radixUi` con una **versión semver** (`^1.…`), `scoped: []`. Dos casos a corregir:
+- Si `radixUi` es `undefined`: correr `npm i radix-ui` y repetir.
+- Si `radixUi` es exactamente `"latest"`: el CLI con `add` inyecta ese tag flotante. Fijarlo con `npm i radix-ui` (reescribe a `^x.y.z`) y volver a verificar. Un `latest` en `dependencies` rompe la reproducibilidad del release.
+
+> **Secuencia obligatoria:** Task 3 cierra antes de Task 5. Con `radix-ui` ausente, un `add` deja archivos que importan un paquete no instalado y el build rompe.
 
 - [ ] **Step 4: Verificar los imports reescritos**
 
@@ -319,6 +328,8 @@ git commit -m "chore(deps): geist mono instalada, shadcn a devDependencies y nex
 - Create: `src/components/ui/command.tsx`, `popover.tsx`, `context-menu.tsx`, `sheet.tsx`, `tooltip.tsx`, `switch.tsx`, `toggle-group.tsx`, `progress.tsx`, `collapsible.tsx`, `alert-dialog.tsx`
 
 - [ ] **Step 1: Dry-run y revisión de colisiones**
+
+**Precondición:** `node -e "const p=require('./package.json');console.log(p.dependencies['radix-ui'])"` debe devolver una versión semver (no `undefined` ni `latest`). Si no, volver a Task 3.
 
 Run: `npx shadcn@latest add command popover context-menu sheet tooltip switch toggle-group progress collapsible alert-dialog --dry-run`
 Expected: lista de archivos nuevos bajo `src/components/ui/`.
