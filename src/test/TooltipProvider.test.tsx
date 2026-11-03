@@ -9,17 +9,33 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+// jsdom no implementa ResizeObserver y el posicionamiento de Radix lo requiere
+// apenas el contenido se monta abierto.
+if (!("ResizeObserver" in globalThis)) {
+  class ResizeObserverStub {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  Object.defineProperty(globalThis, "ResizeObserver", {
+    writable: true,
+    configurable: true,
+    value: ResizeObserverStub,
+  });
+}
+
 describe("TooltipProvider", () => {
-  it("permite renderizar un Tooltip completo", () => {
+  it("renderiza el contenido del tooltip dentro del provider", () => {
     render(
       <TooltipProvider>
-        <Tooltip>
+        <Tooltip open>
           <TooltipTrigger>Copiar</TooltipTrigger>
           <TooltipContent>Copiar IP</TooltipContent>
         </Tooltip>
       </TooltipProvider>,
     );
     expect(screen.getByText("Copiar")).toBeInTheDocument();
+    expect(screen.getByText("Copiar IP")).toBeInTheDocument();
   });
 
   it("main.tsx envuelve App con TooltipProvider", () => {
@@ -27,6 +43,8 @@ describe("TooltipProvider", () => {
       path.resolve(process.cwd(), "src/main.tsx"),
       "utf-8",
     );
-    expect(source).toMatch(/TooltipProvider[\s\S]*<App \/>/);
+    expect(source).toMatch(
+      /<TooltipProvider\b[^>]*>\s*<App\s*\/>\s*<\/TooltipProvider>/,
+    );
   });
 });
