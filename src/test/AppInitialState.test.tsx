@@ -44,7 +44,7 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
     expect(screen.queryByRole('button', { name: /WS-DEMO-002/i })).not.toBeInTheDocument();
   });
 
-  it('el estado inicial usa la primitiva Empty', () => {
+  it('el estado inicial usa la primitiva Empty', async () => {
     (global as any).window.electronAPI = {
       checkStatus: vi.fn().mockResolvedValue({ connected: true, mode: 'sql', server: '192.0.2.50' }),
       searchTerminal: vi.fn(),
@@ -56,9 +56,16 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
 
     render(<App />);
 
-    expect(
-      screen.getByText(/Buscar una terminal/i).closest('[data-slot="empty"]'),
-    ).not.toBeNull();
+    const emptyTitle = await screen.findByText(/Buscar una terminal/i);
+
+    expect(emptyTitle.closest('[data-slot="empty"]')).not.toBeNull();
+    expect(document.querySelector('[data-slot="empty-title"]')).toHaveTextContent(
+      /Buscar una terminal/i,
+    );
+    expect(document.querySelector('[data-slot="empty-icon"] svg')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
   });
 
   it('la carga usa primitivas Skeleton y anuncia el estado', async () => {
@@ -79,9 +86,17 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
     fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
 
     await waitFor(() => {
-      expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
+      expect(screen.getByTestId('loading-state')).toBeInTheDocument();
     });
-    expect(screen.getByRole('status')).toHaveTextContent(/Consultando base de datos técnica/i);
+
+    // La live region persistente anuncia la consulta y el contenedor visible
+    // mantiene los dos skeletons del estado de carga.
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /Consultando base de datos técnica/i,
+    );
+    expect(
+      screen.getByTestId('loading-state').querySelectorAll('[data-slot="skeleton"]'),
+    ).toHaveLength(2);
   });
 
   it('loads terminal on search, resets main scroll to top, and shows quick actions', async () => {

@@ -66,10 +66,9 @@ describe("contrato de diseno", () => {
 
   it("la consola es invariante al tema (sin tokens --console- en .dark)", () => {
     const css = fs.readFileSync(CSS, "utf-8");
-    const start = css.indexOf(".dark {");
-    expect(start).toBeGreaterThanOrEqual(0);
-    const end = css.indexOf("}", start);
-    expect(end).toBeGreaterThan(start);
-    expect(css.slice(start, end)).not.toMatch(/--console-[\w-]+\s*:/);
+    // Todos los bloques .dark, no solo el primero: la consola es oscura en ambos temas.
+    const darkBlocks = css.match(/\.dark\s*\{[^}]*\}/g) ?? [];
+    expect(darkBlocks.length).toBeGreaterThan(0);
+    expect(darkBlocks.join("\n")).not.toMatch(/--console-[\w-]+\s*:/);
   });
 });

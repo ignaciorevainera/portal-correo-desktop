@@ -281,6 +281,8 @@ const strict = process.argv.includes("--strict");
 // --------------------------------------------------------------------- report
 let textFailures = 0;
 let uiFailures = 0;
+// Un token ausente es fatal sin importar el kind: el gate nunca pasa por omisión.
+let missingFailures = 0;
 const rows = [];
 
 for (const pair of pairs) {
@@ -297,7 +299,7 @@ for (const pair of pairs) {
   const missing = !fg ? pair.fg : !bg ? pair.bg : pair.bgOver && !base ? pair.bgOver : null;
   if (missing) {
     // Un token ausente es una falla real: el gate no puede pasar por omisión.
-    pair.kind === "text" ? textFailures++ : uiFailures++;
+    missingFailures++;
     rows.push([rowLabel, "—", "—", "—", `FALLA (token ausente: ${missing})`]);
     continue;
   }
@@ -347,7 +349,7 @@ for (const [label, fg, bg, value, verdict] of rows) {
 console.log(`\nExcepciones documentadas: ${EXCEPTIONS.length}${strict ? " (ignoradas por --strict)" : " (usar --strict para exigir 0)"}`);
 for (const e of EXCEPTIONS) console.log(`  - ${e.label}: ${e.reason}`);
 console.log(
-  `\nTexto: ${textFailures} par(es) bajo 4.5:1 · UI: ${uiFailures} borde(s) bajo 3:1.\n`,
+  `\nTexto: ${textFailures} par(es) bajo 4.5:1 · UI: ${uiFailures} borde(s) bajo 3:1 · Tokens ausentes: ${missingFailures}.\n`,
 );
 
-process.exit(textFailures > 0 ? 1 : 0);
+process.exit(textFailures > 0 || missingFailures > 0 ? 1 : 0);

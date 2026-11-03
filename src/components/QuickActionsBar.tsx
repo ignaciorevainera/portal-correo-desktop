@@ -298,7 +298,9 @@ export function QuickActionsBar({
         <div className="flex rounded-md flex-1 min-w-[110px] grow">
           <Button
             type="button"
-            variant="outline"
+            // En oscuro el tinte del variant outline gana sobre bg-destructive:
+            // el estado activo usa el variant destructive, que ya define su tinte.
+            variant={isPinging ? "destructive" : "outline"}
             size="sm"
             onClick={onTogglePing}
             aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
@@ -306,7 +308,7 @@ export function QuickActionsBar({
             title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
             className={`flex-1 min-w-0 rounded-r-none h-8 px-2.5 text-xs font-semibold cursor-pointer justify-between border-border transition-colors ${
               isPinging
-                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 animate-pulse"
+                ? "animate-pulse"
                 : "bg-muted text-foreground hover:bg-muted/80"
             }`}
           >

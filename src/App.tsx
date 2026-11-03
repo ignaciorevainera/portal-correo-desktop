@@ -669,6 +669,7 @@ export default function App(): React.JSX.Element {
         {/* Layout Unificado: El desplazamiento / scroll vertical es exclusivo sobre este contenedor <main> */}
         <main
           ref={mainRef}
+          aria-busy={isLoading}
           className={
             isAccountView
               ? "flex-1 min-h-0 p-3.5 overflow-hidden flex flex-col"
@@ -678,10 +679,14 @@ export default function App(): React.JSX.Element {
                 )
           }
         >
+          {/* Live region persistente: los lectores de pantalla solo anuncian cambios
+              si el nodo ya existe antes de que aparezca el texto. */}
+          <span role="status" aria-live="polite" className="sr-only">
+            {isLoading ? "Consultando base de datos técnica..." : ""}
+          </span>
           {isLoading ? (
             <div
-              role="status"
-              aria-live="polite"
+              data-testid="loading-state"
               className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-6 space-y-3"
             >
               <Skeleton className="h-7 w-7 rounded-full" />
