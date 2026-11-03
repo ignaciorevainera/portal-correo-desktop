@@ -1,4 +1,5 @@
 import * as React from "react"
+// radix-ui exporta el namespace: Slot se usa como SlotPrimitive.Slot
 import { Slot as SlotPrimitive } from "radix-ui"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
