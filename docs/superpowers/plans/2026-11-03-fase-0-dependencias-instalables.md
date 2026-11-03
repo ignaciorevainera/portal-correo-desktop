@@ -481,6 +481,34 @@ node -e "const p=require('./package.json');const d={...p.dependencies,...p.devDe
 
 Expected: `radixUi` con versión · `baseUi: []` · `shadcnDep: undefined` · `shadcnDev` con versión · `nextThemes: undefined` · `mono` con versión · `cmdk` con versión (lo trajo `command`).
 
+- [ ] **Step 2.5: Endurecer el guard de la migración de Slot**
+
+Sale de la revisión de Task 3: ningún test ejercita `asChild`, que es justo lo que la migración a `radix-ui` podía romper. En `src/test/ShadcnPreset.test.tsx`, dentro del `describe` existente (ya importa `Button`, `Badge`, `render` y `screen`):
+
+```tsx
+it("asChild renderiza el hijo sin wrapper y conserva sus props", () => {
+  const { container } = render(
+    <Button asChild variant="outline" size="sm">
+      <a href="/terminales">Abrir</a>
+    </Button>,
+  );
+  const link = screen.getByRole("link", { name: "Abrir" });
+  expect(container.querySelectorAll("a")).toHaveLength(1);
+  expect(link).toHaveAttribute("data-slot", "button");
+  expect(link).toHaveAttribute("href", "/terminales");
+  expect(container.querySelector("slot")).toBeNull();
+});
+```
+
+Y agregar el comentario de una línea en `src/components/ui/button.tsx:2` y `badge.tsx:2`:
+
+```ts
+// radix-ui exporta el namespace: Slot se usa como SlotPrimitive.Slot
+```
+
+Run: `npx vitest run src/test/ShadcnPreset.test.tsx`
+Expected: **5 passed** (4 existentes + el nuevo).
+
 - [ ] **Step 3: Registrar la ejecución en el audit**
 
 En `docs/ui-slop-audit-2026-11-02.md`, debajo del título de la Fase 0, agregar:
