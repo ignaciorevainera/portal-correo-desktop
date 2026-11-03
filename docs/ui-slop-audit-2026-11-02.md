@@ -220,6 +220,8 @@ El orden no es por impacto visual, es por **dependencia**: casi todo lo demás n
 
 ### Fase 1 · Tema, tokens y contrato (≈ 7 h)
 
+> **Estado (2026-11-03):** ejecutada en `feat/fase-1-tema` (T0-T8 + T10; T9 `eject` queda para Fase 3). Tokens del preset heredados (0 desvíos, 20 tokens nuevos) · `--console-*` fijas y consumidas · `theme-transition` cableado · scrollbars webkit-only en `@layer base` · overlays y textos alineados · `TooltipProvider` montado · guard 10/10 · ratchet con baseline 95/18/9/5 · fuentes en devDependencies. Suite 341/341, build verde, contraste con 5 excepciones documentadas.
+
 | # | Acción | Cierra |
 |---|---|---|
 | 1.1 | Reemplazar `@theme inline` + `:root` + `.dark` por los del sitio (§8.2), conservando `.app-drag-region` y `h1..h4` | S1, §8.3 |

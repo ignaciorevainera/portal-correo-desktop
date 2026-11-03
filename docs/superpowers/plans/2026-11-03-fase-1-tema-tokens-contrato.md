@@ -10,6 +10,8 @@
 
 **Prerrequisito:** la Fase 0 mergeada en `main` (o encadenar: `git switch -c feat/fase-1-tema chore/fase-0-dependencias`). Estado medido al escribir esto: `ui/` con 27 archivos, guard 6/6, suite 329/329, build verde, `style: radix-vega`, `radix-ui@1.8.1`, `shadcn@4.23.0` en devDependencies.
 
+> **Estado (2026-11-03):** T0-T8 y T10 ejecutadas en `feat/fase-1-tema`. Tokens del sitio heredados (11 desvíos corregidos, 20 tokens nuevos) · `--console-*` fijas y consumidas · `theme-transition` cableado en `ThemeContext` · scrollbars webkit-only en `@layer base` · overlays alineados y textos en español · `TooltipProvider` montado con test · guard 10/10 · ratchet con baseline real 95/18/9/5 · fuentes en devDependencies. Suite **341/341**, build verde, `audit:contrast` exit 0 con 5 excepciones documentadas. **T9 (`eject`) no ejecutada:** es opcional y su gate exige reescribir la aserción de `ShadcnPreset.test.tsx`; queda para Fase 3.
+
 ---
 
 ## Estado de partida (verificado)
@@ -563,7 +565,7 @@ git commit -m "test(shadcn): guard de estilo exacto, dependencias y fuentes"
 **Files:**
 - Create: `src/test/designContract.test.ts`
 
-El test congela los conteos actuales y falla si crecen. No se puede exigir cero todavía: las 106 clases de paleta y las 18 sombras propias son trabajo de Fase 2. Un ratchet deja el número bajar y nunca subir.
+El test congela los conteos actuales y falla si crecen. No se puede exigir cero todavía: las **95** clases de paleta fija en código de app (106 si se cuenta `ui/**`) y las **18** sombras propias son trabajo de Fase 2. Un ratchet deja el número bajar y nunca subir.
 
 - [ ] **Step 1: Escribir el test con el baseline real**
 
@@ -598,9 +600,10 @@ function count(pattern: RegExp): number {
 
 // Ratchet: bajar estos numeros a medida que Fase 2 limpia. Nunca subirlos.
 const BASELINE = {
-  palette: 106,   // bg/text/blue-600, emerald-500, etc.
-  shadow: 18,     // sombras en codigo propio (las de ui/** no cuentan)
-  rounded: 8,     // rounded-[...] o rounded pelado
+  palette: 95,   // medido 2026-11-03 sobre app (ui/** excluido); 106 incluyendo ui
+  shadow: 18,    // sombras en codigo propio (las de ui/** no cuentan)
+  rounded: 9,    // rounded-[...] o rounded pelado
+  zIndex: 5,     // z-50 manuales en overlays propios
 };
 
 describe("contrato de diseno", () => {
@@ -797,7 +800,7 @@ git commit -m "docs(audit): registrar ejecucion de la fase 1"
 
 | Pendiente | Por qué |
 |---|---|
-| Mapear los 106 colores fijos a `--success`/`--warning`/`--destructive`/`category-*`/`office-type-*` | El baseline del ratchet solo puede bajar; este es el trabajo que lo baja |
+| Mapear los 106 colores fijos a `--success`/`--warning`/`--destructive`/`category-*`/`office-type-*` | El baseline del ratchet solo puede bajar; este es el trabajo que lo baja (95 en app + 11 en `ui/**`) |
 | `Sheet`/`AlertDialog` necesitan `Title` del consumidor | Radix avisa en dev si falta |
 | `Field` + `aria-invalid`/`aria-describedby` | `field.tsx` no cablea nada; receta en el plan de Fase 0 §Task 7 |
 | `Label` local fija `text-xs`/`text-foreground` y bloquea el color de inválido de `Field` | Al adoptar formularios |
