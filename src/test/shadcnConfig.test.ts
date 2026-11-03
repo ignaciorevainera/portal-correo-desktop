@@ -41,4 +41,28 @@ describe("Configuración shadcn: base Radix declarada", () => {
     expect(pkg.devDependencies.shadcn).toMatch(/^\d+\.\d+\.\d+$/);
     expect(pkg.devDependencies.shadcn).toBe("4.23.0");
   });
+
+  it("el style es exactamente radix-vega", () => {
+    const config = readJson("components.json");
+    expect(config.style).toBe("radix-vega");
+  });
+
+  it("radix-ui vive en dependencies, no en devDependencies", () => {
+    const pkg = readJson("package.json");
+    expect(pkg.dependencies["radix-ui"]).toBeTruthy();
+    expect(pkg.devDependencies?.["radix-ui"]).toBeUndefined();
+  });
+
+  it("no queda ningún paquete @radix-ui/* declarado", () => {
+    const offending = Object.keys(allDeps()).filter((dep) =>
+      dep.startsWith("@radix-ui/"),
+    );
+    expect(offending).toEqual([]);
+  });
+
+  it("cmdk y la fuente mono siguen declaradas", () => {
+    const deps = allDeps();
+    expect(deps["cmdk"]).toBeTruthy();
+    expect(deps["@fontsource-variable/geist-mono"]).toBeTruthy();
+  });
 });
