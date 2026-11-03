@@ -216,7 +216,7 @@ El orden no es por impacto visual, es por **dependencia**: casi todo lo demás n
 | 0.7 | `add empty skeleton field input-group` (con `npx shadcn view` previo de cada uno) | Son las que faltaban en la primera pasada (§7.5) | 10 min |
 | 0.8 | Leer cada archivo instalado y verificar composición, imports e `iconLibrary` | Workflow de la skill, paso 7: el registry no garantiza que el archivo llegue correcto | 20 min |
 
-**Criterio de salida:** `npm run build` verde · `package.json` con `radix-ui` y **sin** `@base-ui*` ni `next-themes` · `src/components/ui/` con los 14 archivos nuevos · `shadcn add` deja de devolver 404 · cada archivo nuevo leído y anotado.
+**Criterio de salida:** `npm run build` verde · `package.json` con `radix-ui` y **sin** `@base-ui*` ni `next-themes` · `src/components/ui/` con los **15** archivos nuevos (12 en Task 5 + 3 en Task 6; `toggle` e `input-group` llegaron como registryDependencies) · `shadcn add` deja de devolver 404 · cada archivo nuevo leído y anotado.
 
 ### Fase 1 · Tema, tokens y contrato (≈ 7 h)
 
@@ -334,11 +334,13 @@ function getBase(style) { return style === undefined ? "base" : parsePresetStyle
 
 Consecuencias, en orden de riesgo:
 
-1. **Hoy cae en Radix por fallback, no por declaración.** `components.json` dice `"style": "default"`, que no lleva prefijo ⇒ la base resuelve a `radix`. Si el campo `style` desaparece, el base pasa a **`base`** (Base UI). Ese fallback decide la base, pero no salva el 404 del punto 4.
+> **Estado tras Fase 0 (2026-11-03):** los cinco puntos de abajo describen el estado del 2/11. Hoy: `components.json` declara `"style": "radix-vega"`, el CLI resuelve, `radix-ui` está instalado y el CLI quedó fijado en `4.23.0` como devDependency.
+
+1. **Caía en Radix por fallback, no por declaración.** `components.json` decía `"style": "default"`, que no lleva prefijo ⇒ la base resolvía a `radix`. Si el campo `style` desaparece, el base pasa a **`base`** (Base UI). Ese fallback decide la base, pero no salvaba el 404 del punto 4.
 2. **`add` no permite forzarla.** Verificado con `add --help` en 4.22.1: no existe `-b`; la base sale siempre del `style` del proyecto. El flag sí existe en `init|create` y en `docs`, no en `add`.
 3. **El default del propio CLI es Base UI.** `init --defaults` equivale a `--preset=base-nova`, y el prompt ofrece `Base UI (Recommended)` antes que `Radix UI`.
-4. **Hoy `add` no funciona, literalmente.** `shadcn view combobox` resuelve `https://ui.shadcn.com/r/styles/default/combobox.json` y devuelve **404**: *"The item ... was not found"*. El CLI arma la URL con el `style` tal cual y `default` no existe en el registry v4. Poner `"style": "radix-vega"` no es cosmético: es lo que hace que el CLI resuelva.
-5. **Los ítems importan el paquete unificado.** `sheet` hace `import { Dialog } from "radix-ui"`, pero su `dependencies` solo declara `cn`: asume que el proyecto ya tiene `radix-ui`. Este proyecto tiene solo los paquetes scoped, así que el primer `add` importaría algo que no está instalado. Antes: `npm i radix-ui` o `migrate radix`.
+4. **Con `style: "default"` el `add` no funcionaba, literalmente.** `shadcn view combobox` resolvía `https://ui.shadcn.com/r/styles/default/combobox.json` y devolvía **404**: *"The item ... was not found"*. El CLI arma la URL con el `style` tal cual y `default` no existe en el registry v4. Poner `"style": "radix-vega"` no fue cosmético: es lo que hace que el CLI resuelva.
+5. **Los ítems importan el paquete unificado.** `sheet` hace `import { Dialog } from "radix-ui"`, pero su `dependencies` solo declara `cn`: asume que el proyecto ya tiene `radix-ui`. Este proyecto tenía solo los paquetes scoped, así que el primer `add` habría importado algo no instalado. Por eso la Fase 0 corrió `migrate radix` antes de instalar.
 
 Reglas para este repo:
 

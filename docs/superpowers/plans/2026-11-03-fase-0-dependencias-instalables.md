@@ -615,7 +615,7 @@ Salen de las revisiones de Task 5 y no bloquean el cierre, pero se pierden si no
 ## Criterios de aceptación
 - [ ] `npx shadcn@latest info --json` devuelve `base: radix` y `style: radix-vega`.
 - [ ] `npx shadcn@latest add <cualquiera> --dry-run` resuelve (ya no hay 404).
-- [ ] `npm test` verde, incluido `src/test/shadcnConfig.test.ts` (5/5; 4 llegan en rojo y el de Base UI es guard de regresión ya verde).
+- [ ] `npm test` verde, incluido `src/test/shadcnConfig.test.ts` (**6/6**; 4 llegaron en rojo, el de Base UI es guard de regresión y el del pin exacto se sumó al cierre).
 - [ ] `npm run build` verde y `dist/assets/geist-mono-*.woff2` presente.
 - [ ] `src/components/ui/` tiene **27** archivos.
 - [ ] `package.json`: sin `@base-ui*`, sin `next-themes`, `radix-ui` presente, `shadcn` solo en dev.
