@@ -477,6 +477,32 @@ git add src/components/ui
 git commit -m "fix(ui): corregir imports y placeholders de los componentes instalados"
 ```
 
+**Resultado real (2026-11-03): sin cambios, sin commit.** Cero defectos en los 15 archivos. Números corregidos tras la verificación independiente:
+
+- **10 de los 15** importan una primitiva de `"radix-ui"` (no 13): `command` usa `cmdk`, y `input-group`, `empty`, `skeleton`, `field` son composición pura. Sobre los 27 archivos, 15 importan Radix.
+- **1 solo archivo es byte-idéntico al registry** (`skeleton.tsx`). Los demás difieren por la normalización global del CLI (`"use client"` fuera, rutas `@/registry/radix-vega/ui/*` → `@/components/ui/*`) y, además, por estas desviaciones aceptadas: `font-heading` en vez de `cn-font-heading` (`alert-dialog`, `sheet`, `empty`), `progress` con `value={value}`, `input-group` con `data-slot="input-group-text"`, y `command` con **cuatro** cambios (lucide en vez de `IconPlaceholder`, rutas locales, `[&>button]:hidden` en lugar de `showCloseButton={false}`, y las dos clases de foco `has-[[data-slot=command-input]:focus-visible]`).
+- `context-menu` quedó una revisión atrás del registry (le faltan `cn-menu-target`/`cn-menu-translucent`/`cn-rtl-flip`): no se toca, es actualización de registry.
+
+| Archivo | Primitiva | `data-slot` | Ajustes |
+|---|---|---|---|
+| `alert-dialog` | `radix-ui` AlertDialog + Button | sí | `font-heading` |
+| `collapsible` | `radix-ui` Collapsible | sí | ninguno (passthrough, sin `cn`) |
+| `command` | `cmdk` + Dialog/InputGroup locales | sí | 4 (ver arriba) |
+| `context-menu` | `radix-ui` ContextMenu | sí | ninguno |
+| `input-group` | composición (Button/Input/Textarea + cva) | sí | `data-slot="input-group-text"` |
+| `popover` | `radix-ui` Popover | sí | ninguno |
+| `progress` | `radix-ui` Progress | sí | `value={value}` |
+| `sheet` | `radix-ui` Dialog + Button | sí | `font-heading` |
+| `switch` | `radix-ui` Switch | sí | ninguno |
+| `toggle` | `radix-ui` Toggle + cva | sí | ninguno |
+| `toggle-group` | `radix-ui` ToggleGroup + `toggleVariants` | sí | ninguno |
+| `tooltip` | `radix-ui` Tooltip | sí | ninguno |
+| `empty` | composición (cva) | sí | `font-heading` |
+| `skeleton` | ninguna | sí | ninguno (byte-idéntico) |
+| `field` | composición (Label, Separator) | sí | ninguno |
+
+**A11y que queda a cargo del consumidor:** `SheetContent` y `AlertDialogContent` **no** renderizan Title (hay que pasar `SheetTitle`/`AlertDialogTitle` dentro); `CommandDialog` sí lo trae sr-only; `Field` no cablea `data-invalid`/`aria-invalid`/`aria-describedby`; y no hay `TooltipProvider` montado.
+
 ---
 
 ### Task 8: Cierre de fase
