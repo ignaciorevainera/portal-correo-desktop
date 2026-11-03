@@ -39,10 +39,10 @@ describe("TooltipProvider", () => {
   });
 
   it("main.tsx envuelve App con TooltipProvider", () => {
-    const source = fs.readFileSync(
-      path.resolve(process.cwd(), "src/main.tsx"),
-      "utf-8",
-    );
+    const source = fs
+      .readFileSync(path.resolve(process.cwd(), "src/main.tsx"), "utf-8")
+      .replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
+
     expect(source).toMatch(
       /<TooltipProvider\b[^>]*>\s*<App\s*\/>\s*<\/TooltipProvider>/,
     );
