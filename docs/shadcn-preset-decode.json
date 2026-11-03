@@ -1,0 +1,18 @@
+{
+  "code": "b5XRZYXrNg",
+  "version": "b",
+  "values": {
+    "menuColor": "default",
+    "menuAccent": "bold",
+    "radius": "small",
+    "font": "geist",
+    "iconLibrary": "lucide",
+    "theme": "blue",
+    "baseColor": "neutral",
+    "style": "vega",
+    "chartColor": "orange",
+    "fontHeading": "roboto-slab"
+  },
+  "derived": [],
+  "url": "https://ui.shadcn.com/create?preset=b5XRZYXrNg"
+}
