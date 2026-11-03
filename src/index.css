@@ -53,6 +53,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-console-bg: var(--console-bg);
+  --color-console-fg: var(--console-fg);
+  --color-console-muted: var(--console-muted);
   --radius-md: var(--radius);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -97,6 +100,12 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+
+  /* Superficie de log: oscura en ambos temas, nunca sigue al tema */
+  --console-bg: oklch(0.154 0 0);    /* #0C0C0C exacto */
+  --console-fg: oklch(0.922 0 0);    /* #E5E5E5, color de línea por defecto */
+  --console-muted: oklch(0.845 0 0); /* #CCCCCC, el texto base actual */
+
   --radius: 0.45rem;
   --chart-1: oklch(0.837 0.128 66.29);
   --chart-2: oklch(0.705 0.213 47.604);

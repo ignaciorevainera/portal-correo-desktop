@@ -283,7 +283,7 @@ describe('LivePingConsole Component', () => {
     expect(screen.getByText(/Máximo = 14ms/i)).toBeInTheDocument();
 
     // Check terminal styling
-    const terminalBox = container.querySelector('.bg-\\[\\#0C0C0C\\]');
+    const terminalBox = container.querySelector('[data-testid="terminal-scroll-container"]');
     expect(terminalBox).not.toBeNull();
     expect(terminalBox?.className).toContain('overflow-x-auto');
   });
@@ -306,7 +306,7 @@ describe('LivePingConsole Component', () => {
     expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
 
     // Console terminal has adaptive height (24rem-48rem, ~55vh)
-    const terminalBox = container.querySelector('.bg-\\[\\#0C0C0C\\]');
+    const terminalBox = container.querySelector('[data-testid="terminal-scroll-container"]');
     expect(terminalBox?.className).toContain('h-[clamp(24rem,55vh,48rem)]');
   });
 
