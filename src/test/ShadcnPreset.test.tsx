@@ -135,4 +135,17 @@ describe("Shadcn Preset b5XRZYXrNg & UI Primitives", () => {
       container.querySelectorAll('[data-slot="input"]').length,
     ).toBeGreaterThanOrEqual(1);
   });
+
+  it("asChild renderiza el hijo sin wrapper y conserva sus props", () => {
+    const { container } = render(
+      <Button asChild variant="outline" size="sm">
+        <a href="/terminales">Abrir</a>
+      </Button>,
+    );
+    const link = screen.getByRole("link", { name: "Abrir" });
+    expect(container.querySelectorAll("a")).toHaveLength(1);
+    expect(link).toHaveAttribute("data-slot", "button");
+    expect(link).toHaveAttribute("href", "/terminales");
+    expect(container.querySelector("slot")).toBeNull();
+  });
 });
