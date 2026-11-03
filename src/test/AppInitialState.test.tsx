@@ -44,6 +44,46 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
     expect(screen.queryByRole('button', { name: /WS-DEMO-002/i })).not.toBeInTheDocument();
   });
 
+  it('el estado inicial usa la primitiva Empty', () => {
+    (global as any).window.electronAPI = {
+      checkStatus: vi.fn().mockResolvedValue({ connected: true, mode: 'sql', server: '192.0.2.50' }),
+      searchTerminal: vi.fn(),
+      ping: vi.fn(),
+      stopPing: vi.fn(),
+      onPingData: vi.fn().mockReturnValue(() => {}),
+      onPingEnd: vi.fn().mockReturnValue(() => {}),
+    };
+
+    render(<App />);
+
+    expect(
+      screen.getByText(/Buscar una terminal/i).closest('[data-slot="empty"]'),
+    ).not.toBeNull();
+  });
+
+  it('la carga usa primitivas Skeleton y anuncia el estado', async () => {
+    (global as any).window.electronAPI = {
+      checkStatus: vi.fn().mockResolvedValue({ connected: true, mode: 'sql', server: '192.0.2.50' }),
+      // Promesa pendiente: mantiene el estado de carga mientras dura la consulta.
+      searchTerminal: vi.fn().mockReturnValue(new Promise(() => {})),
+      ping: vi.fn(),
+      stopPing: vi.fn(),
+      onPingData: vi.fn().mockReturnValue(() => {}),
+      onPingEnd: vi.fn().mockReturnValue(() => {}),
+    };
+
+    render(<App />);
+
+    const searchInput = screen.getByPlaceholderText(/buscar terminal/i);
+    fireEvent.change(searchInput, { target: { value: 'WS-CORP-100' } });
+    fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
+    });
+    expect(screen.getByRole('status')).toHaveTextContent(/Consultando base de datos técnica/i);
+  });
+
   it('loads terminal on search, resets main scroll to top, and shows quick actions', async () => {
     const startPingMock = vi.fn();
     (global as any).window.electronAPI = {

@@ -41,10 +41,19 @@ import {
   checkIsAdmin,
 } from "./services/electronClient";
 import { TerminalData } from "./types/terminal";
-import { Search, SearchX, RotateCcw, Loader2 } from "lucide-react";
+import { Search, SearchX, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { Kbd } from "@/components/ui/kbd";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { RESET_QUEUE_MESSAGE } from "@/lib/constants";
@@ -670,8 +679,13 @@ export default function App(): React.JSX.Element {
           }
         >
           {isLoading ? (
-            <div className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-6 space-y-3">
-              <Loader2 className="h-7 w-7 text-link animate-spin" />
+            <div
+              role="status"
+              aria-live="polite"
+              className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-6 space-y-3"
+            >
+              <Skeleton className="h-7 w-7 rounded-full" />
+              <Skeleton className="h-3 w-64" />
               <p className="text-xs text-muted-foreground font-mono">
                 Consultando base de datos técnica...
               </p>
@@ -694,51 +708,53 @@ export default function App(): React.JSX.Element {
               />
             </div>
           ) : notFoundTerm ? (
-            <div className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-card/30 space-y-3">
-              <div className="p-3 rounded-full bg-muted/70 text-muted-foreground">
-                <SearchX className="h-8 w-8 text-warning/80" />
-              </div>
-              <div className="space-y-1 max-w-md">
-                <h3 className="text-sm font-semibold font-heading text-foreground">
+            <Empty className="flex-1 min-h-80 border border-dashed">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <SearchX aria-hidden="true" className="text-warning/80" />
+                </EmptyMedia>
+                <EmptyTitle role="heading" aria-level={2}>
                   No se encontró la terminal &ldquo;
                   <span className="font-mono font-bold text-foreground">
                     {notFoundTerm}
                   </span>
                   &rdquo;
-                </h3>
-                <p className="text-xs text-muted-foreground">
+                </EmptyTitle>
+                <EmptyDescription>
                   No existe un registro técnico para este equipo o dirección IP
                   en la base corporativa. Verificá la ortografía del Hostname o
                   el alcance de red.
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="xs"
-                onClick={handleClearSearch}
-                aria-label="Limpiar búsqueda"
-                className="text-xs font-sans gap-1.5 h-7 px-3 border-border bg-background/50 hover:bg-muted cursor-pointer"
-              >
-                <RotateCcw className="h-3 w-3" />
-                <span>Limpiar búsqueda</span>
-              </Button>
-            </div>
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={handleClearSearch}
+                  aria-label="Limpiar búsqueda"
+                  className="text-xs font-sans gap-1.5 h-7 px-3 border-border bg-background/50 hover:bg-muted cursor-pointer"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  <span>Limpiar búsqueda</span>
+                </Button>
+              </EmptyContent>
+            </Empty>
           ) : !terminal ? (
-            <div className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-lg bg-card/30 space-y-3">
-              <div className="p-3 rounded-full bg-muted/70 text-muted-foreground">
-                <Search className="h-8 w-8 text-link/70" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold font-heading text-foreground">
+            <Empty className="flex-1 min-h-80 border border-dashed">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Search aria-hidden="true" className="text-link/70" />
+                </EmptyMedia>
+                <EmptyTitle role="heading" aria-level={2}>
                   Buscar una terminal para comenzar
-                </h3>
-                <p className="text-xs text-muted-foreground max-w-sm">
+                </EmptyTitle>
+                <EmptyDescription>
                   Ingresá el Hostname o IP en la barra superior (presioná{" "}
                   <Kbd>Ctrl</Kbd>+<Kbd>F</Kbd>) para consultar el inventario
                   técnico y monitoreo en vivo.
-                </p>
-              </div>
-            </div>
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <>
               {/* 1° Identidad: hostname, IP, sede y usuario */}
