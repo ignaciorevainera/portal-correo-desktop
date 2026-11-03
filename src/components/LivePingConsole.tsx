@@ -62,9 +62,9 @@ function sanitizePingText(text: string): string {
 }
 
 /**
- * Consola de ping/diagnóstico colapsable. Arranca cerrada: sólo la abre una
- * acción del operador (`openSignal`) o un comando de diagnóstico (`activeCommand`).
- * La cabecera con Detener/limpiar/copiar queda visible aunque esté colapsada.
+ * Consola de ping/diagnóstico colapsable. Arranca abierta; el operador puede
+ * colapsarla desde la cabecera. Una acción posterior (`openSignal`) o un comando
+ * de diagnóstico (`activeCommand`) la vuelven a abrir.
  */
 export function LivePingConsole({
   ip,
@@ -85,7 +85,7 @@ export function LivePingConsole({
   const [logs, setLogs] = useState<string[]>([]);
   const [copiedAll, setCopiedAll] = useState(false);
   const [copiedLast, setCopiedLast] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const onPingCompleteRef = useRef(onPingComplete);
   onPingCompleteRef.current = onPingComplete;
   const onDiagnosticCompleteRef = useRef(onDiagnosticComplete);

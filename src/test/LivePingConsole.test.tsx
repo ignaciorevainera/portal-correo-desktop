@@ -3,10 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LivePingConsole } from '../components/LivePingConsole';
 import * as electronClient from '../services/electronClient';
 
-function openConsole(): void {
-  fireEvent.click(screen.getByRole('button', { name: /consola/i }));
-}
-
 describe('LivePingConsole Component', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -58,7 +54,6 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
-    openConsole();
 
     act(() => {
       capturedCallback?.('Respuesta desde 192.0.2.100: bytes=32 tiempo=1ms');
@@ -115,7 +110,6 @@ describe('LivePingConsole Component', () => {
         onTogglePing={onTogglePing}
       />
     );
-    openConsole();
 
     // Simulate arriving logs
     act(() => {
@@ -166,7 +160,6 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
-    openConsole();
 
     // Command 1 output
     act(() => {
@@ -223,7 +216,6 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
-    openConsole();
 
     const scrollBox = container.querySelector('[data-testid="terminal-scroll-container"]') as HTMLDivElement;
     expect(scrollBox).not.toBeNull();
@@ -260,7 +252,6 @@ describe('LivePingConsole Component', () => {
         onPingComplete={onPingComplete}
       />
     );
-    openConsole();
 
     act(() => {
       doneHandler?.(0);
@@ -284,7 +275,6 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
-    openConsole();
 
     // Feed raw Windows ping text with CP850/CP1252 corrupted characters
     act(() => {
@@ -320,9 +310,6 @@ describe('LivePingConsole Component', () => {
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
 
-    // La consola arranca colapsada: expandir para inspeccionar el viewport
-    fireEvent.click(screen.getByRole('button', { name: /consola/i }));
-
     // Console terminal has adaptive height (24rem-48rem, ~55vh)
     const terminalBox = container.querySelector('[data-testid="terminal-scroll-container"]');
     expect(terminalBox?.className).toContain('h-[clamp(24rem,55vh,48rem)]');
@@ -347,7 +334,6 @@ describe('LivePingConsole Component', () => {
         onTogglePing={vi.fn()}
       />
     );
-    openConsole();
 
     // Initial mount and log replacement
     scrollMock.mockClear();
@@ -439,11 +425,17 @@ describe('LivePingConsole Component', () => {
       />,
     );
 
-    // Cerrada no reclama altura; al expandir, el layout fill la estira
-    expect((container.firstChild as HTMLElement).className).not.toContain('h-full');
-    fireEvent.click(screen.getByRole('button', { name: /consola/i }));
-
+    // Abierta reclama altura; al colapsar la libera y al reabrir la recupera
     const root = container.firstChild as HTMLElement;
+    expect(root.className).toContain('h-full');
+
+    const trigger = screen.getByRole('button', { name: /consola/i });
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(root.className).not.toContain('h-full');
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
     expect(root.className).toContain('h-full');
 
     fireEvent.click(
@@ -455,18 +447,21 @@ describe('LivePingConsole Component', () => {
     ).not.toBeInTheDocument();
   });
 
-  it("arranca colapsada y no renderiza el viewport", () => {
+  it("arranca abierta y se puede colapsar", () => {
     render(
       <LivePingConsole ip="10.0.0.5" isPinging={false} onTogglePing={vi.fn()} />,
     );
+    const trigger = screen.getByRole("button", { name: /consola/i });
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByTestId("terminal-scroll-container")).toBeInTheDocument();
+
+    fireEvent.click(trigger);
+
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByTestId("terminal-scroll-container")).toBeNull();
-    expect(screen.getByRole("button", { name: /consola/i })).toHaveAttribute(
-      "aria-expanded",
-      "false",
-    );
   });
 
-  it("no se abre con una señal vieja al montarse y sí con un incremento", () => {
+  it("mantiene el colapso ante una señal ya procesada y reabre con un incremento", () => {
     const { rerender } = render(
       <LivePingConsole
         ip="10.0.0.5"
@@ -477,6 +472,20 @@ describe('LivePingConsole Component', () => {
     );
 
     const trigger = screen.getByRole("button", { name: /consola/i });
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    // El operador la colapsa: una señal que ya fue procesada no la reabre.
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+    rerender(
+      <LivePingConsole
+        ip="10.0.0.5"
+        isPinging={false}
+        openSignal={2}
+        onTogglePing={vi.fn()}
+      />,
+    );
     expect(trigger).toHaveAttribute("aria-expanded", "false");
 
     rerender(
@@ -491,16 +500,25 @@ describe('LivePingConsole Component', () => {
     expect(trigger).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("se expande al hacer click en el encabezado", () => {
+  it("se colapsa y se vuelve a expandir con el encabezado", () => {
     render(
       <LivePingConsole ip="10.0.0.5" isPinging={false} onTogglePing={vi.fn()} />,
     );
     const trigger = screen.getByRole("button", { name: /consola/i });
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(
+      document.querySelector('[data-slot="collapsible-content"]'),
+    ).toHaveAttribute("data-state", "closed");
+    expect(screen.queryByTestId("terminal-scroll-container")).toBeNull();
+
     fireEvent.click(trigger);
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(
       document.querySelector('[data-slot="collapsible-content"]'),
-    ).not.toBeNull();
+    ).toHaveAttribute("data-state", "open");
     expect(screen.getByTestId("terminal-scroll-container")).toBeInTheDocument();
   });
 

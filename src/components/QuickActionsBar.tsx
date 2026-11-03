@@ -18,7 +18,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Kbd } from "@/components/ui/kbd";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Popover,
   PopoverContent,
@@ -31,15 +30,6 @@ import {
 } from "../services/electronClient";
 import { deriveSiteTargets } from "@/utils/siteTargets";
 
-export interface ActionFeedbackState {
-  type: "success" | "error" | "warning" | "info";
-  message: string;
-  fallbackAction?: {
-    label: string;
-    onClick: () => void;
-  };
-}
-
 export interface QuickActionsBarProps {
   onOpenSubnetScanner?: () => void;
   onRefreshUptime?: () => void;
@@ -49,7 +39,6 @@ export interface QuickActionsBarProps {
   pingMode?: "standard" | "infinite";
   pingTarget?: string;
   pingLinePrefix?: string;
-  actionFeedback?: ActionFeedbackState | null;
   onLaunchVnc: () => void;
   onLaunchMsra: () => void;
   onTogglePing: () => void;
@@ -74,7 +63,6 @@ export function QuickActionsBar({
   pingMode = "standard",
   pingTarget,
   pingLinePrefix,
-  actionFeedback,
   onLaunchVnc,
   onLaunchMsra,
   onTogglePing,
@@ -153,7 +141,6 @@ export function QuickActionsBar({
 
   const siteTargets = deriveSiteTargets(terminal.ip);
   const diagnosticSectionId = useId();
-  const siteSectionId = useId();
 
   return (
     <div className="w-full flex flex-col gap-1">
@@ -340,6 +327,67 @@ export function QuickActionsBar({
           </Button>
         </div>
 
+        {/* Enlaces del sitio: se usan a diario, por eso quedan siempre visibles */}
+        {siteTargets.isValid && onLaunchSitePing && (
+          <>
+            <div className="flex rounded-md shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("router", "standard")}
+                aria-label="Hacer ping al router .250"
+                title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
+                className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1"
+              >
+                <Wifi className="h-3.5 w-3.5 shrink-0 text-link" />
+                <span className="font-mono text-[11px]">.250</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("router", "infinite")}
+                aria-label="Ping continuo -t router .250"
+                title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
+                className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
+              >
+                <span className="font-mono text-[11px] font-semibold text-link">
+                  -t
+                </span>
+              </Button>
+            </div>
+
+            <div className="flex rounded-md shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("server", "standard")}
+                aria-label="Hacer ping al servidor .231"
+                title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
+                className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1"
+              >
+                <Layers className="h-3.5 w-3.5 shrink-0 text-warning" />
+                <span className="font-mono text-[11px]">.231</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("server", "infinite")}
+                aria-label="Ping continuo -t servidor .231"
+                title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
+                className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
+              >
+                <span className="font-mono text-[11px] font-semibold text-warning">
+                  -t
+                </span>
+              </Button>
+            </div>
+          </>
+        )}
+
         {/* Menú "Más": acciones secundarias agrupadas sin competir con las primarias */}
         <Popover open={isMoreOpen} onOpenChange={setIsMoreOpen}>
           <PopoverTrigger asChild>
@@ -425,99 +473,6 @@ export function QuickActionsBar({
               </Button>
             </div>
 
-            {siteTargets.isValid && onLaunchSitePing && (
-              <div
-                role="group"
-                aria-labelledby={siteSectionId}
-                className="flex flex-col gap-1"
-              >
-                <div
-                  id={siteSectionId}
-                  className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Enlaces del sitio
-                </div>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    handleMoreAction(() => onLaunchSitePing("router", "standard"))
-                  }
-                  aria-label="Hacer ping al router .250"
-                  title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
-                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
-                >
-                  <span className="flex items-center gap-2">
-                    <Wifi className="h-3.5 w-3.5 text-link" />
-                    <span className="font-mono text-[11px]">.250</span>
-                    <span className="text-[10px] text-muted-foreground">
-                      router
-                    </span>
-                  </span>
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    handleMoreAction(() => onLaunchSitePing("router", "infinite"))
-                  }
-                  aria-label="Ping continuo -t router .250"
-                  title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
-                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] font-semibold text-link">
-                      -t
-                    </span>
-                    <span className="font-mono text-[11px]">.250</span>
-                  </span>
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    handleMoreAction(() => onLaunchSitePing("server", "standard"))
-                  }
-                  aria-label="Hacer ping al servidor .231"
-                  title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
-                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
-                >
-                  <span className="flex items-center gap-2">
-                    <Layers className="h-3.5 w-3.5 text-warning" />
-                    <span className="font-mono text-[11px]">.231</span>
-                    <span className="text-[10px] text-muted-foreground">
-                      servidor
-                    </span>
-                  </span>
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    handleMoreAction(() => onLaunchSitePing("server", "infinite"))
-                  }
-                  aria-label="Ping continuo -t servidor .231"
-                  title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
-                  className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] font-semibold text-warning">
-                      -t
-                    </span>
-                    <span className="font-mono text-[11px]">.231</span>
-                  </span>
-                </Button>
-              </div>
-            )}
-
             {(onOpenSubnetScanner || onRefreshUptime) && (
               <>
                 <Separator className="my-1" />
@@ -582,45 +537,6 @@ export function QuickActionsBar({
           </span>
         </div>
       </div>
-
-      {actionFeedback && (
-        <div role="status" aria-live="polite" className="w-full">
-          <Alert
-            variant={
-              actionFeedback.type === "error"
-                ? "destructive"
-                : actionFeedback.type === "warning"
-                  ? "warning"
-                  : actionFeedback.type === "success"
-                    ? "success"
-                    : "default"
-            }
-          >
-            <AlertTitle>
-              {actionFeedback.type === "error"
-                ? "Error"
-                : actionFeedback.type === "warning"
-                  ? "Para revisar"
-                  : actionFeedback.type === "success"
-                    ? "Listo"
-                    : "Información"}
-            </AlertTitle>
-            <AlertDescription className="flex flex-wrap items-center gap-2">
-              <span>{actionFeedback.message}</span>
-              {actionFeedback.fallbackAction && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="xs"
-                  onClick={actionFeedback.fallbackAction.onClick}
-                >
-                  {actionFeedback.fallbackAction.label}
-                </Button>
-              )}
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
     </div>
   );
 }

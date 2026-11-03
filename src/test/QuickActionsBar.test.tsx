@@ -4,7 +4,7 @@ import { QuickActionsBar } from '../components/QuickActionsBar';
 import { getAllTerminals } from '../services/terminalService';
 import { RemoteProbeResult } from '../services/electronClient';
 
-describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
+describe('QuickActionsBar & Shortcut Keys', () => {
   const terminal = getAllTerminals()[0];
 
   it('renders default quick actions and Uptime metric including Ping and secondary Ping -t', () => {
@@ -69,34 +69,6 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
     const vncBtn = screen.getByRole('button', { name: /conectar por vnc viewer/i });
     fireEvent.click(vncBtn);
     expect(onLaunchVnc).toHaveBeenCalledTimes(1);
-  });
-
-  it('muestra el feedback warning con título y acción de respaldo', () => {
-    const onFallback = vi.fn();
-
-    render(
-      <QuickActionsBar
-        terminal={terminal}
-        isPinging={false}
-        actionFeedback={{
-          type: 'warning',
-          message: 'Puertos VNC (5901/5900) cerrados en 192.0.2.10.',
-          fallbackAction: {
-            label: 'Conectar por MSRA',
-            onClick: onFallback,
-          },
-        }}
-        onLaunchVnc={vi.fn()}
-        onLaunchMsra={vi.fn()}
-        onTogglePing={vi.fn()}
-      />
-    );
-
-    expect(screen.getByText(/puertos vnc \(5901\/5900\) cerrados/i)).toBeInTheDocument();
-    expect(screen.getByText('Para revisar')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Conectar por MSRA' }));
-    expect(onFallback).toHaveBeenCalledTimes(1);
   });
 
   it('usa destructive sólido en el control de detener sin tintes de hover', () => {
@@ -311,7 +283,7 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
     });
   });
 
-  it('muestra las dos acciones primarias y oculta los comandos secundarios', () => {
+  it('muestra las acciones primarias y los pings del sitio, y deja los secundarios en Más', () => {
     render(
       <QuickActionsBar
         terminal={terminal}
@@ -330,13 +302,68 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
     expect(screen.getByRole('button', { name: /^iniciar ping$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /más acciones/i })).toBeInTheDocument();
 
-    // Ningún comando movido al menú debe quedar visible en la barra
+    // Los pings de los enlaces del sitio están siempre visibles, sin abrir el menú.
+    expect(screen.queryByRole('dialog')).toBeNull();
+    const sitePings = [
+      'Hacer ping al router .250',
+      'Ping continuo -t router .250',
+      'Hacer ping al servidor .231',
+      'Ping continuo -t servidor .231',
+    ];
+    for (const name of sitePings) {
+      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    }
+    expect(screen.getByRole('button', { name: 'Hacer ping al router .250' }).className).toContain('rounded-r-none');
+    expect(screen.getByRole('button', { name: 'Ping continuo -t router .250' }).className).toContain('rounded-l-none');
+
+    // Ningún comando secundario queda visible en la barra.
     expect(screen.queryByRole('button', { name: /escanear subred/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /menú de diagnóstico de red/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /hacer ping al router \.250/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /hacer ping al servidor \.231/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /ejecutar nbtstat/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /refrescar uptime/i })).toBeNull();
+  });
+
+  it('dispara los pings de los enlaces del sitio desde la barra visible', () => {
+    const onLaunchSitePing = vi.fn();
+    render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={false}
+        onLaunchSitePing={onLaunchSitePing}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hacer ping al router .250' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ping continuo -t router .250' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hacer ping al servidor .231' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ping continuo -t servidor .231' }));
+
+    expect(onLaunchSitePing.mock.calls).toEqual([
+      ['router', 'standard'],
+      ['router', 'infinite'],
+      ['server', 'standard'],
+      ['server', 'infinite'],
+    ]);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('no muestra los pings del sitio si no se pueden derivar los enlaces', () => {
+    render(
+      <QuickActionsBar
+        terminal={{ ...terminal, ip: 'sin-ip' }}
+        isPinging={false}
+        onLaunchSitePing={vi.fn()}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByRole('button', { name: /hacer ping al router/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /ping continuo -t router/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /hacer ping al servidor/i })).toBeNull();
   });
 
   it('el menú Más contiene las acciones secundarias en orden', () => {
@@ -362,10 +389,6 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
       'Ejecutar Nbtstat',
       'Ejecutar Tracert',
       'Ejecutar ARP',
-      'Hacer ping al router .250',
-      'Ping continuo -t router .250',
-      'Hacer ping al servidor .231',
-      'Ping continuo -t servidor .231',
       'Escanear Subred',
       'Refrescar Uptime',
     ]);
@@ -373,6 +396,25 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: /escanear subred/i }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByRole('button', { name: /más acciones/i })).toHaveFocus();
+  });
+
+  it('dispara onRefreshUptime desde el menú Más', () => {
+    const onRefreshUptime = vi.fn();
+    render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={false}
+        onRefreshUptime={onRefreshUptime}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /más acciones/i }));
+    fireEvent.click(screen.getByRole('button', { name: /refrescar uptime/i }));
+
+    expect(onRefreshUptime).toHaveBeenCalledTimes(1);
   });
 
   describe('Diagnostic Tools inside the Más menu (Nbtstat, Tracert, ARP)', () => {

@@ -69,18 +69,4 @@ describe('QuickActionsBar Polish: Subnet Scanner & Uptime Refresh', () => {
     fireEvent.click(refreshBtn);
     expect(onRefreshUptime).toHaveBeenCalledTimes(1);
   });
-
-  it('muestra el feedback inline cuando recibe actionFeedback', () => {
-    render(
-      <QuickActionsBar
-        terminal={terminal}
-        isPinging={false}
-        onLaunchVnc={vi.fn()}
-        onLaunchMsra={vi.fn()}
-        onTogglePing={vi.fn()}
-        actionFeedback={{ type: 'success', message: 'VNC iniciado hacia 10.0.0.5' }}
-      />
-    );
-    expect(screen.getByRole('status')).toHaveTextContent('VNC iniciado');
-  });
 });
