@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   startSubnetScanner,
   SubnetDiscoveredHost,
@@ -217,12 +218,12 @@ export function SubnetScannerDrawer({
           {/* Search Filter Inside Drawer */}
           <div className="relative pt-1">
             <Search className="absolute left-2.5 top-3.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-            <input
+            <Input
               type="text"
               value={filterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
               placeholder="Filtrar equipos detectados..."
-              className="w-full h-8 pl-8 pr-3 text-xs rounded-md bg-muted/60 border border-input text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-ring"
+              className="h-8 pl-8 pr-3 text-xs bg-muted/60 font-mono"
             />
           </div>
         </div>

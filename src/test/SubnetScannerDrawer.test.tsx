@@ -165,4 +165,19 @@ describe('SubnetScannerDrawer Component', () => {
 
     spyScanner.mockRestore();
   });
+
+  it('el filtro usa la primitiva Input', () => {
+    render(
+      <SubnetScannerDrawer
+        isOpen
+        onClose={vi.fn()}
+        targetIp="10.0.0.5"
+        onSelectTerminal={vi.fn()}
+      />,
+    );
+    expect(screen.getByPlaceholderText(/Filtrar equipos/i)).toHaveAttribute(
+      'data-slot',
+      'input',
+    );
+  });
 });
