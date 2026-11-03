@@ -234,6 +234,10 @@ El orden no es por impacto visual, es por **dependencia**: casi todo lo demás n
 
 ### Fase 2 · Superficies y densidad (≈ 9 h)
 
+> **Estado (2026-11-03):** ejecutada en `feat/fase-2-superficies` (T0-T9). `Card` en las 6 superficies · `Alert` inline y muerte del toast "Acción disparada" · consola colapsable con `Collapsible` (arranca cerrada y abre al ejecutar un comando) · barra con 2 acciones primarias + menú "Más" (`Popover`) · `Input` en el filtro del drawer · `Empty`/`Skeleton` en `App.tsx` · `Field` con label, descripción y `aria-invalid` en los cuatro diálogos. Paleta fija 95 → **0** clases (94 al abrir T6), sombras propias 15 → **0**, radios pelados 9 → **0**; ratchet en **0/0/0/4**. `--strict` en 0 con `EXCEPTIONS` vacío: las cinco excepciones se resolvieron con token (`--muted-foreground` 0.545, `--destructive` 0.49, `--success` 0.49, `--warning` 0.52, `--info` 0.50) y reescribiendo los pares que ya no describían la app. La consola estrena tokens fijos `--console-success/warning/info/destructive`, sin variante `.dark`, porque los semánticos del tema quedaban en 3,5-4,1:1 sobre el viewport oscuro. Suite 361/361, build verde, ambos comandos de contraste en exit 0.
+>
+> **Desvíos registrados:** (a) `--info` no se elimina: se conserva como semántica de diagnóstico y ahora tiene consumidores reales, así que el punto 6.1 se cumple igual; (b) `text-primary` deja de usarse como texto en favor de `--link`; (c) las sombras y radios de `src/components/ui/**` quedan exactamente como llegaron del registry, también en `alert`/`sonner`, donde sólo se mapearon colores.
+
 | # | Acción | Cierra |
 |---|---|---|
 | 2.1 | `Card` en las 6 superficies hechas a mano | S6 |
