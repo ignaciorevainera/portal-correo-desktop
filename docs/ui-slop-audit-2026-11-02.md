@@ -211,7 +211,7 @@ El orden no es por impacto visual, es por **dependencia**: casi todo lo demás n
 | 0.2 | `components.json` → `"style": "radix-vega"` (o `apply b5XRZYXrNg --only theme,font` una vez fijado el style) | Sin style con prefijo, **todo `add` da 404** y la base queda implícita (§7.3) | 10 min |
 | 0.3 | `npx shadcn@latest migrate radix` | Agrega el paquete unificado `radix-ui` y unifica imports; los ítems del registry lo dan por instalado | 20 min |
 | 0.4 | `npm i @fontsource-variable/geist-mono` | Es el mono del sitio; hoy cae en Cascadia | 5 min |
-| 0.5 | `npm i -D shadcn`, quitar `next-themes`, rebuild | −33,3 MB y −4.741 archivos del instalador (§7.4) | 10 min |
+| 0.5 | `npm i -D shadcn`, quitar `next-themes`, rebuild | −38,9 MB y −5.884 archivos (medido) (§7.4) | 10 min |
 | 0.6 | `add command popover context-menu sheet tooltip switch toggle-group progress collapsible alert-dialog` | Habilita las fases 2 y 3; ninguna otra decisión depende de esto | 10 min |
 | 0.7 | `add empty skeleton field input-group` (con `npx shadcn view` previo de cada uno) | Son las que faltaban en la primera pasada (§7.5) | 10 min |
 | 0.8 | Leer cada archivo instalado y verificar composición, imports e `iconLibrary` | Workflow de la skill, paso 7: el registry no garantiza que el archivo llegue correcto | 20 min |
@@ -356,15 +356,17 @@ npx shadcn@4.23.0 add command popover context-menu sheet tooltip switch radio-gr
 
 ### 7.4 El CLI viaja dentro del instalador
 
-`shadcn` está en `dependencies` (no en `devDependencies`), así que electron-builder lo empaqueta como dependencia de producción. Medido sobre el asar real (`release/win-unpacked/resources/app.asar`):
+`shadcn` está en `dependencies` (no en `devDependencies`), así que electron-builder lo empaqueta como dependencia de producción. Medido sobre el asar de un empaquetado `electron-builder --dir`, antes y después:
 
 | Métrica | Valor |
 |---|---:|
 | Tamaño del asar | 122,0 MB |
-| Archivos en el asar | 19.507 |
+| Archivos en el asar | 17.529 |
 | Árbol del CLI shadcn (`shadcn`, `@shadcn/*`, `@babel/*`, `@ts-morph/*`, `@modelcontextprotocol/sdk`, `@dotenvx/*`, `execa`, `hono`, `browserslist`, `caniuse-lite`, `zod`, `recast`, `diff`, …) | **38,9 MB · 5.884 archivos** |
 | Instalador NSIS resultante | 98,6 MB |
 | Asar después de mover el CLI | 83,1 MB · 11.645 archivos |
+
+> Los conteos de archivos provienen de un mismo empaquetado `electron-builder --dir` antes/después (17.529 → 11.645). El asar distribuido de la versión original registraba 19.507 archivos; la diferencia es del empaquetado, no del cambio.
 
 **Medido (2026-11-03):** empaquetando ambos estados con `electron-builder --dir` y parseando el asar, el ahorro es de **−5.884 archivos y −38,9 MB** (122,0 → 83,1 MB), mayor que la estimación inicial de 33,3 MB / 4.741 archivos. El peso no estaba en la carpeta del CLI (0,61 MB) sino en su subárbol dev: `@ts-morph/common` 10,55 MB, `zod` 5,51 MB, `@modelcontextprotocol/sdk` 3,01 MB y `@babel/*` ~5 MB.
 
@@ -633,6 +635,6 @@ function getBase(style){ return style === undefined ? "base" : parsePresetStyle(
 
 `shadcn view combobox` con el `components.json` actual falla: `https://ui.shadcn.com/r/styles/default/combobox.json` → 404.
 
-**Empaquetado:** `@electron/asar listPackage()` sobre `release/win-unpacked/resources/app.asar` → 19.507 archivos, 122,0 MB; 4.741 archivos / 33,3 MB del árbol del CLI; `release/Portal Correo Desktop Setup 1.0.0.exe` = 98,6 MB.
+**Empaquetado:** `@electron/asar listPackage()` sobre `release/win-unpacked/resources/app.asar` → 19.507 archivos, 122,0 MB; 38,9 MB / 5.884 archivos del árbol del CLI (medido sobre un empaquetado `electron-builder --dir`, ver §7.4); `release/Portal Correo Desktop Setup 1.0.0.exe` = 98,6 MB.
 
 **Tema del sitio:** diff token a token entre el CSS del sitio principal (`radix-vega`, preset `b5XRZYXrNg`) y `src/index.css`: 11 valores distintos, 20 tokens ausentes (`category-*`, `office-type-*`), 1 inventado (`--info`). Contraste de los tokens canónicos calculado con la misma matemática OKLCH→sRGB de `scripts/check-contrast.mjs`: 7 pares en falla (detalle en §8.4). Los hex de la §8.2 son la conversión sRGB de cada `oklch()`, no valores muestreados.
