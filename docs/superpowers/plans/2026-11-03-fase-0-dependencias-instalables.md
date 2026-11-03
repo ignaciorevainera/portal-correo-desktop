@@ -509,6 +509,13 @@ Y agregar el comentario de una línea en `src/components/ui/button.tsx:2` y `bad
 Run: `npx vitest run src/test/ShadcnPreset.test.tsx`
 Expected: **5 passed** (4 existentes + el nuevo).
 
+- [ ] **Step 2.6: Follow-ups de dependencias que salieron de las revisiones**
+
+1. **Fijar la versión del CLI**: `"shadcn": "4.23.0"` exacto (hoy `^4.23.0`; todo `npx shadcn@latest` ignora el pin). Agregar al guard una aserción de versión exacta.
+2. **Actualizar la documentación que dice 4.22.1**: `docs/ui-slop-audit-2026-11-02.md` (§7.1 y §7.4) y `docs/shadcn-preset-decode.md` (fila `CLI`) — el repo ya corre 4.23.0.
+3. **Mover `@fontsource-variable/*` a devDependencies**: son de build (Vite copia los woff2 a `dist/assets`), pero hoy viajan en el asar (~498 KB: geist 174, geist-mono 165, roboto-slab 159).
+4. **`eject` de shadcn**: inlinea `shadcn/tailwind.css` en `index.css` y permite borrar la dependencia. **Bloqueado hoy** por `src/test/ShadcnPreset.test.tsx:47`, que exige el `@import "shadcn/tailwind.css"`. Hacerlo **después** de Tasks 5-6 (si no, la copia congelada puede no tener los `@utility` que necesitan las primitivas nuevas) y reescribir esa aserción en el mismo commit.
+
 - [ ] **Step 3: Registrar la ejecución en el audit**
 
 En `docs/ui-slop-audit-2026-11-02.md`, debajo del título de la Fase 0, agregar:
