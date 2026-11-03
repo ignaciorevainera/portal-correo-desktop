@@ -222,9 +222,10 @@ for (const pair of pairs) {
   const candidate = strict
     ? undefined
     : EXCEPTIONS.find((e) => e.label === rowLabel);
-  const documented = candidate && value <= candidate.ratio + 0.05 ? candidate : undefined;
+  // El ratio documentado es el piso conocido: si el par empeora (baja), deja de estar cubierto.
+  const documented = candidate && value >= candidate.ratio - 0.05 ? candidate : undefined;
   const stale = candidate !== undefined && pass;
-  const drifted = candidate !== undefined && !pass && value > candidate.ratio + 0.05;
+  const drifted = candidate !== undefined && !pass && value < candidate.ratio - 0.05;
 
   if (stale || (!pass && !documented)) {
     pair.kind === "text" ? textFailures++ : uiFailures++;
@@ -254,9 +255,7 @@ for (const [label, fg, bg, value, verdict] of rows) {
     `${label.padEnd(width)}  ${fg.padEnd(9)} ${bg.padEnd(9)} ${String(value).padStart(6)}  ${verdict}`,
   );
 }
-if (!strict) {
-  console.log(`\nExcepciones documentadas: ${EXCEPTIONS.length} (usar --strict para exigir 0)`);
-}
+console.log(`\nExcepciones documentadas: ${EXCEPTIONS.length}${strict ? " (ignoradas por --strict)" : " (usar --strict para exigir 0)"}`);
 for (const e of EXCEPTIONS) console.log(`  - ${e.label}: ${e.reason}`);
 console.log(
   `\nTexto: ${textFailures} par(es) bajo 4.5:1 · UI: ${uiFailures} borde(s) bajo 3:1.\n`,
