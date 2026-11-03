@@ -6,7 +6,7 @@
 
 **Architecture:** La Fase 0 no modifica UI: solo configura el proyecto para que el registry resuelva (hoy devuelve 404), unifica la librería de primitivas y agrega los archivos que consumirán las Fases 2 y 3. El único cambio de CSS es el import de la fuente mono, para que la dependencia instalada no quede muerta.
 
-**Tech Stack:** React 19 · Vite 6 · TypeScript 5.7 · Tailwind 4 · shadcn CLI (`shadcn@4.22.1` instalado, se invoca `@latest`) · Vitest 3 · Electron 34.
+**Tech Stack:** React 19 · Vite 6 · TypeScript 5.7 · Tailwind 4 · shadcn CLI (`shadcn@4.23.0` exacto en devDependencies, se invoca `@latest`) · Vitest 3 · Electron 34.
 
 **Referencia:** `docs/ui-slop-audit-2026-11-02.md` §5 (Fase 0), §7.3 (por qué el style), §7.5 (skill oficial) y §8.2 (valores del preset).
 
@@ -208,7 +208,7 @@ Expected: **5 archivos**, no 4: `badge.tsx` y `button.tsx` (`react-slot`), `dial
 - [ ] **Step 2: Correr la migración oficial**
 
 Run: `npx shadcn@latest migrate radix`
-Expected: reescribe los imports a `from "radix-ui"` y actualiza `package.json` (sale `@radix-ui/*`, entra `radix-ui`). Si el comando no existe en `@latest`, usar el binario pinneado: `npx shadcn@4.22.1 migrate radix`.
+Expected: reescribe los imports a `from "radix-ui"` y actualiza `package.json` (sale `@radix-ui/*`, entra `radix-ui`). Si el comando no existe en `@latest`, usar el binario pinneado: `npx shadcn@4.23.0 migrate radix`.
 
 - [ ] **Step 3: Verificar que `radix-ui` quedó instalado**
 
@@ -507,7 +507,7 @@ git commit -m "fix(ui): corregir imports y placeholders de los componentes insta
 
 ### Task 8: Cierre de fase
 
-> **Estado (2026-11-03):** ejecutada. Guard 6/6 · suite 329/329 · build verde · `shadcn` pinneado a 4.23.0 · `docs/ui-slop-audit-2026-11-02.md` y `docs/shadcn-preset-decode.md` actualizados · `skills-lock.json` ignorado.
+> **Estado (2026-11-03):** ejecutada. Guard 6/6 · suite 329/329 · build verde · contraste sin cambios (0 fallas de texto, 3 de borde) · `shadcn` pinneado a `4.23.0` y lockfile sincronizado a mano (una línea; `npm ci --dry-run` verde, regenerar con red cuando se pueda) · `docs/ui-slop-audit-2026-11-02.md` y `docs/shadcn-preset-decode.md` actualizados · `skills-lock.json` ignorado.
 
 **Files:**
 - Modify: `docs/ui-slop-audit-2026-11-02.md` (§5, Fase 0)
@@ -638,4 +638,4 @@ Si ya se mergeó: `git revert --no-commit <sha-del-merge> && git commit -m "reve
 | `migrate radix` no cubre algún import | `tsc` falla tras la migración | Task 3 Step 5: compilar antes de seguir |
 | El registry sirve `IconPlaceholder` | Import roto a `@/app/(create)/…` | Task 7 Step 1: reemplazo por lucide |
 | `shadcn add` falla por style inválido | 404 en `/r/styles/…` | Task 2 Step 5: `info --json` antes de instalar |
-| `npm i -D shadcn` cambia la versión del CLI | Comportamiento distinto al verificado (4.22.1) | Anotar la versión resultante; si rompe, `npm i -D shadcn@4.22.1` |
+| `npm i -D shadcn` cambia la versión del CLI | Comportamiento distinto al verificado (4.23.0) | Anotar la versión resultante; si rompe, `npm i -D shadcn@4.23.0` |

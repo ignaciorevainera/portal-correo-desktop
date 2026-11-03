@@ -276,7 +276,7 @@ El motivo por el que estos patrones persisten no es falta de criterio: es que **
 
 ### 7.1 Qué hay hoy (verificado en el repo, no en la documentación)
 
-> **Estado tras Fase 0 (2026-11-03):** esta tabla es la foto del 2/11. Hoy: `radix-ui` unificado instalado, cero paquetes `@radix-ui/*` en `package.json`, `shadcn` en devDependencies y `Card`/`Alert` siguen sin uso en la app (eso no cambió).
+> **Estado tras Fase 0 (2026-11-03):** esta tabla es la foto del 2/11. Al 2026-11-03: `radix-ui` unificado instalado, cero paquetes `@radix-ui/*` en `package.json`, `shadcn` en devDependencies y `Card`/`Alert` siguen sin uso en la app (eso no cambió).
 
 | Comprobación | Resultado |
 |---|---|
@@ -354,9 +354,9 @@ Comando para el set completo de §7.2 (sin `ScrollArea`):
 npx shadcn@4.23.0 add command popover context-menu sheet tooltip switch radio-group progress collapsible alert-dialog
 ```
 
-### 7.4 El CLI viaja dentro del instalador
+### 7.4 El CLI viajaba dentro del instalador
 
-`shadcn` está en `dependencies` (no en `devDependencies`), así que electron-builder lo empaqueta como dependencia de producción. Medido sobre el asar de un empaquetado `electron-builder --dir`, antes y después:
+**Antes de la Fase 0**, `shadcn` estaba en `dependencies` (no en `devDependencies`), así que electron-builder lo empaquetaba como dependencia de producción. Tras la Fase 0 quedó en `devDependencies`, pinneado a `4.23.0`, y ya no viaja al cliente. Medido sobre el asar de un empaquetado `electron-builder --dir`, antes y después:
 
 | Métrica | Valor |
 |---|---:|
@@ -635,6 +635,6 @@ function getBase(style){ return style === undefined ? "base" : parsePresetStyle(
 
 `shadcn view combobox` con el `components.json` actual falla: `https://ui.shadcn.com/r/styles/default/combobox.json` → 404.
 
-**Empaquetado:** `@electron/asar listPackage()` sobre `release/win-unpacked/resources/app.asar` → 19.507 archivos, 122,0 MB; 38,9 MB / 5.884 archivos del árbol del CLI (medido sobre un empaquetado `electron-builder --dir`, ver §7.4); `release/Portal Correo Desktop Setup 1.0.0.exe` = 98,6 MB.
+**Empaquetado:** sobre el asar **distribuido** de la versión original (`release/win-unpacked/resources/app.asar`) había 19.507 archivos y 122,0 MB; la comparación antes/después se hizo con un empaquetado `electron-builder --dir` (17.529 → 11.645 archivos), donde el árbol del CLI medía 38,9 MB / 5.884 archivos y dejó de viajar tras la Fase 0 (ver §7.4). `release/Portal Correo Desktop Setup 1.0.0.exe` = 98,6 MB.
 
 **Tema del sitio:** diff token a token entre el CSS del sitio principal (`radix-vega`, preset `b5XRZYXrNg`) y `src/index.css`: 11 valores distintos, 20 tokens ausentes (`category-*`, `office-type-*`), 1 inventado (`--info`). Contraste de los tokens canónicos calculado con la misma matemática OKLCH→sRGB de `scripts/check-contrast.mjs`: 7 pares en falla (detalle en §8.4). Los hex de la §8.2 son la conversión sRGB de cada `oklch()`, no valores muestreados.

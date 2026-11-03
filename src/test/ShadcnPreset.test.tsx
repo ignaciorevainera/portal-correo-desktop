@@ -144,8 +144,8 @@ describe("Shadcn Preset b5XRZYXrNg & UI Primitives", () => {
     );
     const link = screen.getByRole("link", { name: "Abrir" });
     expect(container.querySelectorAll("a")).toHaveLength(1);
+    expect(container.firstChild).toBe(link);
     expect(link).toHaveAttribute("data-slot", "button");
     expect(link).toHaveAttribute("href", "/terminales");
-    expect(container.querySelector("slot")).toBeNull();
   });
 });
