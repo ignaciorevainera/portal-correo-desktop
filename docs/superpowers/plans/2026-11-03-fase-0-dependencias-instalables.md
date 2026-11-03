@@ -363,6 +363,8 @@ git add src/components/ui package.json package-lock.json
 git commit -m "feat(ui): primitivas de interaccion desde el registry radix-vega"
 ```
 
+**Resultado real (2026-11-03):** el gate se activó. El `add` arrastra `button`, `input`, `textarea` y `dialog` como registryDependencies y no hay flag para evitarlo, así que se instaló con `--overwrite` y se restauraron los cuatro con `git restore` (byte-idénticos). Eso dejó un único desajuste de tipos —`command.tsx` pasaba `showCloseButton` a un `DialogContent` local que no lo acepta— que se resolvió quitando el prop en el archivo **nuevo**. Entraron **12** archivos, no 10 (`toggle.tsx` y `input-group.tsx` son registryDependencies). La revisión de calidad encontró después 4 defectos reales, corregidos en un commit aparte: X del diálogo tapando el input del palette, foco invisible del input (WCAG 2.4.7), `value` no reenviado en `Progress` (sin `aria-valuenow`) y `size-4` en un ícono. **No** son código muerto las utilidades `data-open:`/`data-closed:`: `shadcn/tailwind.css` las mapea a `[data-state="open|closed"]` y el CSS compilado lo confirma.
+
 ---
 
 ### Task 6: Instalar las 4 primitivas de composición
@@ -542,8 +544,24 @@ Entregar: salida de `git log --oneline main..HEAD`, conteo de `ui/*.tsx` (26), y
 
 ---
 
-## Criterios de aceptación
+## Pendientes que Fase 0 difiere a Fase 1
 
+Salen de las revisiones de Task 5 y no bloquean el cierre, pero se pierden si no quedan escritos:
+
+| Pendiente | Por qué | Dónde |
+|---|---|---|
+| Montar `<TooltipProvider>` una vez | Sin provider, `<Tooltip>` lanza `must be used within TooltipProvider` y el `ErrorBoundary` blanquea la app. Va dentro del `ErrorBoundary`, envolviendo `App` (cubre también el early return de `gate`) | `src/main.tsx:21-22` |
+| Reconciliar el chrome de overlays | `alert-dialog`/`sheet` usan `bg-black/10` + `bg-popover ring-1`; el `dialog` local usa `bg-black/60` + `bg-card border`. Dos scrims conviviendo en Fase 2 | `alert-dialog.tsx:37,59`, `sheet.tsx:40`, `dialog.tsx:19,37` |
+| Defaults en español | `CommandDialog` trae "Command Palette"/"Search for a command to run..."; `Sheet` trae "Close" vs "Cerrar" del diálogo local | `command.tsx:35-36`, `sheet.tsx:80` |
+| `cn-*` utilities inexistentes | `cn-menu-target`, `cn-menu-translucent`, `cn-rtl-flip`, `cn-font-heading` no están en `shadcn@4.23.0/tailwind.css`: son no-ops silenciosos; aparecerán cuando Fase 3 sume menús | antes del `eject` |
+| `toggle-group` no pasa `orientation` a Radix | Se refleja en `data-orientation` pero no llega al Root: un grupo vertical tendrá flechas horizontales | `toggle-group.tsx:27,36-47` |
+| `PopoverTitle` tipado `h2` renderiza `div` | Cosmético; corregir al primer uso | `popover.tsx:55-63` |
+| Indicador de check de `command` | Keyea en `data-checked`, que cmdk 1.1.1 no emite (usa `data-selected`) | `command.tsx:159` |
+| `InputGroup` + `Textarea` local | Falta `field-sizing-content` y el textarea local es 12 px vs 14 px del input en el mismo grupo | al primer uso de `InputGroup` |
+
+---
+
+## Criterios de aceptación
 - [ ] `npx shadcn@latest info --json` devuelve `base: radix` y `style: radix-vega`.
 - [ ] `npx shadcn@latest add <cualquiera> --dry-run` resuelve (ya no hay 404).
 - [ ] `npm test` verde, incluido `src/test/shadcnConfig.test.ts` (5/5; 4 llegan en rojo y el de Base UI es guard de regresión ya verde).
