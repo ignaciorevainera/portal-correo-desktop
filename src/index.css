@@ -30,6 +30,26 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-info: var(--info);
+  --color-category-aplicaciones: var(--category-aplicaciones);
+  --color-category-hardware: var(--category-hardware);
+  --color-category-conectividad: var(--category-conectividad);
+  --color-category-instalaciones: var(--category-instalaciones);
+  --color-category-electoral: var(--category-electoral);
+  --color-category-externos: var(--category-externos);
+  --color-category-otros: var(--category-otros);
+  --color-office-type-administracion: var(--office-type-administracion);
+  --color-office-type-agencia: var(--office-type-agencia);
+  --color-office-type-cdd: var(--office-type-cdd);
+  --color-office-type-cdp: var(--office-type-cdp);
+  --color-office-type-ctp: var(--office-type-ctp);
+  --color-office-type-correo-colaborativo: var(--office-type-correo-colaborativo);
+  --color-office-type-especiales: var(--office-type-especiales);
+  --color-office-type-estafeta: var(--office-type-estafeta);
+  --color-office-type-general: var(--office-type-general);
+  --color-office-type-sucursal-automatizada: var(--office-type-sucursal-automatizada);
+  --color-office-type-sucursal-no-automatizada: var(--office-type-sucursal-no-automatizada);
+  --color-office-type-telegrafia: var(--office-type-telegrafia);
+  --color-office-type-unidad-postal: var(--office-type-unidad-postal);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -67,12 +87,12 @@
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.505 0 0);
+  --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.488 0.243 264.376);
   --accent-foreground: oklch(0.97 0.014 254.604);
-  --destructive: oklch(0.52 0.245 27.325);
-  --success: oklch(0.5 0.13 155);
-  --warning: oklch(0.55 0.14 75);
+  --destructive: oklch(0.577 0.245 27.325);
+  --success: oklch(0.508 0.118 165.612);
+  --warning: oklch(0.549 0.163 48.998);
   --info: oklch(0.52 0.16 255);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
@@ -87,10 +107,31 @@
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.546 0.245 262.881);
   --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-accent: oklch(0.9 0 0);
+  --sidebar-accent-foreground: oklch(0.145 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --category-aplicaciones: oklch(0.541 0.281 293.009);
+  --category-hardware: oklch(0.588 0.158 241.966);
+  --category-conectividad: oklch(0.627 0.194 149.214);
+  --category-instalaciones: oklch(0.646 0.222 41.116);
+  --category-electoral: oklch(0.577 0.245 27.325);
+  --category-externos: oklch(0.592 0.249 0.584);
+  --category-otros: oklch(0.439 0 0);
+  --office-type-administracion: oklch(0.446 0.043 257.281);
+  --office-type-agencia: oklch(0.546 0.245 262.881);
+  --office-type-cdd: oklch(0.541 0.281 293.009);
+  --office-type-cdp: oklch(0.511 0.262 276.966);
+  --office-type-ctp: oklch(0.52 0.105 223.128);
+  --office-type-correo-colaborativo: oklch(0.511 0.096 186.391);
+  --office-type-especiales: oklch(0.518 0.253 323.949);
+  --office-type-estafeta: oklch(0.549 0.163 48.998);
+  --office-type-general: oklch(0.444 0.011 73.639);
+  --office-type-sucursal-automatizada: oklch(0.508 0.118 165.612);
+  --office-type-sucursal-no-automatizada: oklch(0.522 0.157 131.589);
+  --office-type-telegrafia: oklch(0.514 0.222 16.935);
+  --office-type-unidad-postal: oklch(0.546 0.249 0.584);
 }
 
 .dark {
@@ -100,8 +141,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.707 0.165 254.624);
-  --primary-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.424 0.199 265.638);
+  --primary-foreground: oklch(0.97 0.014 254.604);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -109,8 +150,8 @@
   --accent: oklch(0.424 0.199 265.638);
   --accent-foreground: oklch(0.97 0.014 254.604);
   --destructive: oklch(0.704 0.191 22.216);
-  --success: oklch(0.72 0.14 155);
-  --warning: oklch(0.78 0.14 75);
+  --success: oklch(0.765 0.177 163.223);
+  --warning: oklch(0.828 0.189 84.429);
   --info: oklch(0.72 0.12 255);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -124,10 +165,31 @@
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.623 0.214 259.815);
   --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.3 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  --category-aplicaciones: oklch(0.702 0.183 293.541);
+  --category-hardware: oklch(0.746 0.16 232.661);
+  --category-conectividad: oklch(0.792 0.209 151.711);
+  --category-instalaciones: oklch(0.75 0.183 55.934);
+  --category-electoral: oklch(0.704 0.191 22.216);
+  --category-externos: oklch(0.718 0.202 349.761);
+  --category-otros: oklch(0.708 0 0);
+  --office-type-administracion: oklch(0.704 0.04 256.788);
+  --office-type-agencia: oklch(0.707 0.165 254.624);
+  --office-type-cdd: oklch(0.702 0.183 293.541);
+  --office-type-cdp: oklch(0.673 0.182 276.935);
+  --office-type-ctp: oklch(0.789 0.154 211.53);
+  --office-type-correo-colaborativo: oklch(0.777 0.152 181.912);
+  --office-type-especiales: oklch(0.74 0.238 322.16);
+  --office-type-estafeta: oklch(0.828 0.189 84.429);
+  --office-type-general: oklch(0.869 0.005 56.366);
+  --office-type-sucursal-automatizada: oklch(0.765 0.177 163.223);
+  --office-type-sucursal-no-automatizada: oklch(0.841 0.238 128.85);
+  --office-type-telegrafia: oklch(0.712 0.194 13.428);
+  --office-type-unidad-postal: oklch(0.718 0.202 349.761);
 }
 
 body {
