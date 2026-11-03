@@ -483,9 +483,10 @@ Expected: `radixUi` con versión · `baseUi: []` · `shadcnDep: undefined` · `s
 - [ ] **Step 3: Registrar la ejecución en el audit**
 
 En `docs/ui-slop-audit-2026-11-02.md`, debajo del título de la Fase 0, agregar:
-
 ```markdown
 > **Estado (2026-11-03):** ejecutada. `style: radix-vega` · `radix-ui` instalado · `shadcn` en devDependencies · 14 primitivas nuevas · guard `src/test/shadcnConfig.test.ts` en verde.
+
+Y en `docs/shadcn-preset-decode.md`, separar la fila `CLI` en `CLI (pin del repo)` y `CLI (captura)` (hoy la tabla muestra solo el pin 4.22.1 y la captura corrió con 4.23.0; el footnote lo aclara, la tabla no).
 ```
 
 - [ ] **Step 4: Commit final**
