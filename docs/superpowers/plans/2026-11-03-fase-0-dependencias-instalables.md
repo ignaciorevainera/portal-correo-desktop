@@ -367,7 +367,7 @@ git commit -m "feat(ui): primitivas de interaccion desde el registry radix-vega"
 
 ---
 
-### Task 6: Instalar las 4 primitivas de composición
+### Task 6: Instalar las 3 primitivas de composición
 
 **Files:**
 - Create: `src/components/ui/empty.tsx`, `skeleton.tsx`, `field.tsx` (`input-group` ya vino con `command` en Task 5)
@@ -406,8 +406,10 @@ Expected: toda la suite en verde, incluido `src/test/shadcnConfig.test.ts` y `Sh
 
 ```bash
 git add src/components/ui package.json package-lock.json
-git commit -m "feat(ui): empty, skeleton, field e input-group desde el registry"
+git commit -m "feat(ui): empty, skeleton y field desde el registry radix-vega"
 ```
+
+**Resultado real (2026-11-03):** entraron exactamente 3 archivos (`empty` 103, `field` 236, `skeleton` 13 líneas). El gate se activó con **`label` y `separator`** como registryDependencies: se instalaron con `--overwrite` y se restauraron al instante (blobs idénticos). `field` no toca `input`/`textarea`, solo `Label` + `Separator`. `package.json` no cambió (`cn` ya era dependencia). Única normalización sobre el registry: `empty.tsx:62` usa `font-heading` en vez de `cn-font-heading`, porque la utilidad `cn-*` no existe en `shadcn@4.23.0` y `--font-heading` sí está en `@theme inline` (los otros primitivos ya usan `font-heading`).
 
 ---
 
@@ -452,6 +454,21 @@ Expected: `data-slot: True` en todos; `cn: True` en todos menos `skeleton.tsx` (
 - [ ] **Step 5: Anotar el resultado en el reporte de la tarea**
 
 Tabla a entregar: archivo → primitiva importada → `data-slot` sí/no → ajustes hechos. Si no hubo ajustes, decirlo explícitamente.
+
+- [ ] **Step 5.5: Dejar escrita la receta de accesibilidad de `Field`**
+
+`field.tsx` no cablea nada solo: aporta ganchos de estilo y `role="alert"` en `FieldError`. El primer consumidor de Fase 2 debe:
+
+```tsx
+<Field data-invalid={hasError}>
+  <FieldLabel htmlFor="hostname">Hostname</FieldLabel>
+  <Input id="hostname" aria-invalid={hasError} aria-describedby="hostname-help hostname-error" />
+  <FieldDescription id="hostname-help">Sin dominio ni espacios.</FieldDescription>
+  {hasError && <FieldError id="hostname-error">Formato inválido.</FieldError>}
+</Field>
+```
+
+Anotarlo en el reporte de Task 7 y en el primer consumidor, con `getByLabelText` + `getByRole("alert")` como aserciones. Hoy la app tiene **cero** `aria-describedby` e `aria-invalid`.
 
 - [ ] **Step 6: Commit (solo si hubo cambios)**
 
@@ -526,7 +543,7 @@ Expected: **5 passed** (4 existentes + el nuevo).
 
 En `docs/ui-slop-audit-2026-11-02.md`, debajo del título de la Fase 0, agregar:
 ```markdown
-> **Estado (2026-11-03):** ejecutada. `style: radix-vega` · `radix-ui` instalado · `shadcn` en devDependencies · 14 primitivas nuevas · guard `src/test/shadcnConfig.test.ts` en verde.
+> **Estado (2026-11-03):** ejecutada. `style: radix-vega` · `radix-ui` instalado · `shadcn` en devDependencies · 15 primitivas nuevas (12 en Task 5 + 3 en Task 6) · guard `src/test/shadcnConfig.test.ts` en verde.
 
 Y en `docs/shadcn-preset-decode.md`, separar la fila `CLI` en `CLI (pin del repo)` y `CLI (captura)` (hoy la tabla muestra solo el pin 4.22.1 y la captura corrió con 4.23.0; el footnote lo aclara, la tabla no).
 ```
@@ -540,7 +557,7 @@ git commit -m "docs(audit): registrar ejecucion de la fase 0"
 
 - [ ] **Step 5: Reporte de cierre**
 
-Entregar: salida de `git log --oneline main..HEAD`, conteo de `ui/*.tsx` (26), y la tabla del Task 7 Step 5.
+Entregar: salida de `git log --oneline main..HEAD`, conteo de `ui/*.tsx` (27), y la tabla del Task 7 Step 5.
 
 ---
 
@@ -553,7 +570,13 @@ Salen de las revisiones de Task 5 y no bloquean el cierre, pero se pierden si no
 | Montar `<TooltipProvider>` una vez | Sin provider, `<Tooltip>` lanza `must be used within TooltipProvider` y el `ErrorBoundary` blanquea la app. Va dentro del `ErrorBoundary`, envolviendo `App` (cubre también el early return de `gate`) | `src/main.tsx:21-22` |
 | Reconciliar el chrome de overlays | `alert-dialog`/`sheet` usan `bg-black/10` + `bg-popover ring-1`; el `dialog` local usa `bg-black/60` + `bg-card border`. Dos scrims conviviendo en Fase 2 | `alert-dialog.tsx:37,59`, `sheet.tsx:40`, `dialog.tsx:19,37` |
 | Defaults en español | `CommandDialog` trae "Command Palette"/"Search for a command to run..."; `Sheet` trae "Close" vs "Cerrar" del diálogo local | `command.tsx:35-36`, `sheet.tsx:80` |
-| `cn-*` utilities inexistentes | `cn-menu-target`, `cn-menu-translucent`, `cn-rtl-flip`, `cn-font-heading` no están en `shadcn@4.23.0/tailwind.css`: son no-ops silenciosos; aparecerán cuando Fase 3 sume menús | antes del `eject` |
+| `cn-*` utilities inexistentes | `cn-menu-target`, `cn-menu-translucent`, `cn-rtl-flip` no están en `shadcn@4.23.0/tailwind.css`: son no-ops silenciosos; aparecerán cuando Fase 3 sume menús. (`cn-font-heading` ya se normalizó a `font-heading` en `empty.tsx`) | antes del `eject` |
+| `Field` no cablea accesibilidad solo | Da ganchos de estilo y `role="alert"`, pero **no** pone `data-invalid`/`aria-invalid` ni `aria-describedby`. El primer consumidor debe hacerlo (ver Task 7) | Fase 2 |
+| `Label` local choca con `Field` | `label.tsx` fija `text-xs` y `text-foreground`: el `data-[invalid=true]:text-destructive` del `Field` no llega al label, y queda 12 px vs 14 px de `FieldDescription` | Fase 2 |
+| `Skeleton` ignora `prefers-reduced-motion` | `animate-pulse` sin `motion-safe`; el preset solo protege su shimmer | Fase 1 (regla global) |
+| `EmptyDescription` tipa `p` y renderiza `div` | Misma familia que `PopoverTitle`; corregir al tocarlo | Fase 2 |
+| `Empty` al adoptar | Necesita `className="border"` (el root solo trae `border-dashed`), pierde el `<h3>` semántico de `App.tsx` y su `EmptyMedia` es 40 px vs el círculo de 56 px actual | Fase 2 |
+| `FieldError` con `children` | Si recibe `children`, descarta `errors` en silencio | Fase 2 |
 | `toggle-group` no pasa `orientation` a Radix | Se refleja en `data-orientation` pero no llega al Root: un grupo vertical tendrá flechas horizontales | `toggle-group.tsx:27,36-47` |
 | `PopoverTitle` tipado `h2` renderiza `div` | Cosmético; corregir al primer uso | `popover.tsx:55-63` |
 | Indicador de check de `command` | Keyea en `data-checked`, que cmdk 1.1.1 no emite (usa `data-selected`) | `command.tsx:159` |
@@ -566,7 +589,7 @@ Salen de las revisiones de Task 5 y no bloquean el cierre, pero se pierden si no
 - [ ] `npx shadcn@latest add <cualquiera> --dry-run` resuelve (ya no hay 404).
 - [ ] `npm test` verde, incluido `src/test/shadcnConfig.test.ts` (5/5; 4 llegan en rojo y el de Base UI es guard de regresión ya verde).
 - [ ] `npm run build` verde y `dist/assets/geist-mono-*.woff2` presente.
-- [ ] `src/components/ui/` tiene **26** archivos.
+- [ ] `src/components/ui/` tiene **27** archivos.
 - [ ] `package.json`: sin `@base-ui*`, sin `next-themes`, `radix-ui` presente, `shadcn` solo en dev.
 - [ ] Ningún archivo de `src/components/*.tsx` (código de producto) fue modificado.
 
