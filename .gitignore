@@ -26,3 +26,6 @@ release/
 # Bootstrap generado en build (rutas internas, no secretos)
 bootstrap.local.json
 electron/bootstrap.default.json
+
+# skills tooling lockfile
+skills-lock.json
