@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Kbd } from "@/components/ui/kbd";
-import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   RemoteProbeResult,
   DiagnosticCommandType,
@@ -105,9 +105,8 @@ export function QuickActionsBar({
     };
   }, [isDropdownOpen, isDiagOpen]);
 
-  const handleAction = (label: string, callback: () => void): void => {
+  const handleAction = (_label: string, callback: () => void): void => {
     callback();
-    toast.info(`Acción disparada: ${label} para ${terminal.pc}`);
   };
 
   const handlePrimaryRemoteClick = (): void => {
@@ -518,6 +517,25 @@ export function QuickActionsBar({
           )}
         </div>
       </div>
+
+      {actionFeedback && (
+        <div role="status" aria-live="polite" className="w-full">
+          <Alert
+            variant={
+              actionFeedback.type === "error"
+                ? "destructive"
+                : actionFeedback.type === "warning"
+                  ? "warning"
+                  : actionFeedback.type === "success"
+                    ? "success"
+                    : "default"
+            }
+          >
+            <AlertTitle>{actionFeedback.type === "error" ? "Error" : "Listo"}</AlertTitle>
+            <AlertDescription>{actionFeedback.message}</AlertDescription>
+          </Alert>
+        </div>
+      )}
     </div>
   );
 }

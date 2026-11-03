@@ -2,17 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { QuickActionsBar } from '../components/QuickActionsBar';
 import { getAllTerminals } from '../services/terminalService';
-import { toast } from 'sonner';
 import { RemoteProbeResult } from '../services/electronClient';
-
-vi.mock('sonner', () => ({
-  toast: {
-    info: vi.fn(),
-    success: vi.fn(),
-    error: vi.fn(),
-    warning: vi.fn(),
-  },
-}));
 
 describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
   const terminal = getAllTerminals()[0];
@@ -61,12 +51,13 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
     expect(onLaunchPingInfinite).toHaveBeenCalledTimes(1);
   });
 
-  it('triggers sonner toast notification when clicking action buttons', () => {
+  it('dispatches the action callback when clicking action buttons', () => {
+    const onLaunchVnc = vi.fn();
     render(
       <QuickActionsBar
         terminal={terminal}
         isPinging={false}
-        onLaunchVnc={vi.fn()}
+        onLaunchVnc={onLaunchVnc}
         onLaunchMsra={vi.fn()}
         onTogglePing={vi.fn()}
       />
@@ -77,7 +68,7 @@ describe('QuickActionsBar Inline Feedback & Shortcut Keys', () => {
 
     const vncBtn = screen.getByRole('button', { name: /conectar por vnc viewer/i });
     fireEvent.click(vncBtn);
-    expect(toast.info).toHaveBeenCalledWith(expect.stringContaining('VNC Viewer'));
+    expect(onLaunchVnc).toHaveBeenCalledTimes(1);
   });
 
   it('uses pulse animation (animate-pulse) instead of spin (animate-spin) while pinging', () => {
