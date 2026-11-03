@@ -35,4 +35,9 @@ describe("Configuración shadcn: base Radix declarada", () => {
   it("next-themes ya no está declarado", () => {
     expect(allDeps()["next-themes"]).toBeUndefined();
   });
+
+  it("el CLI de shadcn está pinneado a una versión exacta", () => {
+    const pkg = readJson("package.json");
+    expect(pkg.devDependencies.shadcn).toMatch(/^\d+\.\d+\.\d+$/);
+  });
 });
