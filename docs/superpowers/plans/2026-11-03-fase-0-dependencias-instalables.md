@@ -197,13 +197,13 @@ git commit -m "chore(shadcn): declarar base radix explicita con style radix-vega
 ### Task 3: Migrar al paquete unificado `radix-ui`
 
 **Files:**
-- Modify: `src/components/ui/*.tsx` (imports)
+- Modify: `src/components/ui/badge.tsx`, `button.tsx`, `dialog.tsx`, `label.tsx`, `separator.tsx` (imports)
 - Modify: `package.json`, `package-lock.json`
 
 - [ ] **Step 1: Ver los imports actuales**
 
 Run: `Select-String -Path src\components\ui\*.tsx -Pattern '@radix-ui/'`
-Expected: 4 archivos con imports scoped: `button.tsx` (`react-slot`), `dialog.tsx` (`react-dialog`), `label.tsx` (`react-label`), `separator.tsx` (`react-separator`).
+Expected: **5 archivos**, no 4: `badge.tsx` y `button.tsx` (`react-slot`), `dialog.tsx` (`react-dialog`), `label.tsx` (`react-label`), `separator.tsx` (`react-separator`).
 
 - [ ] **Step 2: Correr la migración oficial**
 
@@ -219,13 +219,14 @@ node -e "const p=require('./package.json');const d={...p.dependencies,...p.devDe
 Expected: `radixUi` con una **versión semver** (`^1.…`), `scoped: []`. Dos casos a corregir:
 - Si `radixUi` es `undefined`: correr `npm i radix-ui` y repetir.
 - Si `radixUi` es exactamente `"latest"`: el CLI con `add` inyecta ese tag flotante. Fijarlo con `npm i radix-ui` (reescribe a `^x.y.z`) y volver a verificar. Un `latest` en `dependencies` rompe la reproducibilidad del release.
+- Si `scoped` no está vacío: el CLI solo *lista* los paquetes scoped como “pueden removerse”, no los saca. Correr `npm uninstall @radix-ui/react-dialog @radix-ui/react-label @radix-ui/react-separator @radix-ui/react-slot`; siguen resolviendo como transitivas de `radix-ui`, con las mismas versiones.
 
 > **Secuencia obligatoria:** Task 3 cierra antes de Task 5. Con `radix-ui` ausente, un `add` deja archivos que importan un paquete no instalado y el build rompe.
 
 - [ ] **Step 4: Verificar los imports reescritos**
 
 Run: `Select-String -Path src\components\ui\*.tsx -Pattern 'from "radix-ui"'`
-Expected: 4 archivos. `button.tsx` debe seguir usando `Slot` (ahora `import { Slot } from "radix-ui"`).
+Expected: **5 archivos**, cero `@radix-ui/*` restantes. `Slot` llega como **namespace**, no como componente: el paquete declara `export { reactSlot as Slot }`, así que `button.tsx` y `badge.tsx` quedan con `import { Slot as SlotPrimitive } from "radix-ui"` y usan `<SlotPrimitive.Slot>`. Un `import { Slot }` plano compila pero renderiza un elemento inválido en cada `asChild`: no "corregirlo" a la forma literal.
 
 - [ ] **Step 5: Compilar**
 
