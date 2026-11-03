@@ -368,17 +368,17 @@ git commit -m "feat(ui): primitivas de interaccion desde el registry radix-vega"
 ### Task 6: Instalar las 4 primitivas de composición
 
 **Files:**
-- Create: `src/components/ui/empty.tsx`, `skeleton.tsx`, `field.tsx`, `input-group.tsx` (si `input-group` no vino con `command`, se agrega acá)
+- Create: `src/components/ui/empty.tsx`, `skeleton.tsx`, `field.tsx` (`input-group` ya vino con `command` en Task 5)
 
 - [ ] **Step 1: Verificar disponibilidad antes de instalar**
 
-Run: `npx shadcn@latest view empty skeleton field input-group`
+Run: `npx shadcn@latest view empty skeleton field`
 Expected: ficha de cada ítem (nombre, dependencias, archivos). Si alguno no existe en este registry, anotarlo, sacarlo del comando y reportar: su reemplazo queda pendiente para la Fase 2.
 
 - [ ] **Step 2: Instalar**
 
-Run: `npx shadcn@latest add empty skeleton field input-group`
-Expected: crea los que falten; para `input-group` puede responder “already exists” si vino como dependencia de `command`. Eso es correcto.
+Run: `npx shadcn@latest add empty skeleton field --overwrite`
+Expected: crea los que falten. **GATE:** si el dry-run (`--dry-run` antes) toca `button.tsx`, `input.tsx`, `dialog.tsx` o cualquier primitiva ya existente, restaurarla con `git restore` como en Task 5 y absorber el desajuste en los archivos nuevos.
 
 - [ ] **Step 3: Verificar el inventario final**
 
@@ -386,7 +386,7 @@ Expected: crea los que falten; para `input-group` puede responder “already exi
 (Get-ChildItem src\components\ui -Filter *.tsx).Count
 ```
 
-Expected: **26** (12 previos + 14 nuevos). Si el número es menor, listar qué falta:
+Expected: **27** (24 tras Task 5 + `empty`, `skeleton`, `field`). `input-group` y `toggle` ya llegaron como registryDependencies en Task 5: no volver a pedirlos. Si el `add` de `field` arrastra más archivos, anotarlos y ajustar el número.
 
 ```powershell
 Get-ChildItem src\components\ui -Filter *.tsx | Select-Object -ExpandProperty Name | Sort-Object
@@ -415,6 +415,8 @@ git commit -m "feat(ui): empty, skeleton, field e input-group desde el registry"
 - Modify: los archivos nuevos que lo necesiten (solo imports)
 
 La skill oficial (workflow, paso 7) exige leer lo que el registry escribe: no garantiza que llegue correcto.
+
+> **No "corregir" `data-open:` / `data-closed:`**: se reportó como utilidades muertas, pero `node_modules/shadcn/dist/tailwind.css` define `@custom-variant data-open { &:where([data-state="open"]), … }` y el CSS compilado emite `.data-open\:animate-in:where([data-state=open])`. Funcionan con Radix. Reescribirlas a `data-[state=open]` sería trabajo inútil y risk de romper las transiciones.
 
 - [ ] **Step 1: Buscar restos del entorno del registry**
 
