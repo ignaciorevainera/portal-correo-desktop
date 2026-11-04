@@ -82,6 +82,27 @@ estado deshabilitado y el texto visible son la única ayuda, y es aceptado.
 Deuda declarada: quedan `title` interactivos en `Sidebar`, `HardwareCard` y
 `NetworkAdCard`; se convierten o se borran en Fase 4.
 
+## Overlays y controles
+
+- **Buscador**: `InputGroup` + `Popover` + `Command`. El input vive en la barra
+  superior, el panel se ancla con `PopoverAnchor` y no roba foco; las filas son
+  `CommandItem` (rol `option`) y las acciones por fila son botones hermanos,
+  nunca hijos de la opción. El `Command` se remonta por consulta (`key={query}`)
+  para que cmdk no auto-seleccione al filtrar.
+- **Menú contextual**: `ContextMenu` anclado a `<main>`, no al documento, para
+  que el buscador y los inputs conserven el menú nativo. El trigger lleva
+  `select-text` porque Radix agrega `select-none` y el operador necesita
+  seleccionar y copiar texto.
+- **Drawer**: `Sheet` con `SheetTitle` y `SheetDescription` obligatorios. Las
+  barras de progreso son `Progress` con `aria-valuenow`, nunca un `div` con
+  `style={{ width }}`.
+- **Diálogos destructivos**: `AlertDialog`. La acción que valida un formulario
+  usa un `Button` propio (no `AlertDialogAction`), porque Radix cierra antes de
+  validar.
+- **Booleanos de configuración**: `Switch` con `aria-label`; **sets de 2–7
+  opciones**: `ToggleGroup` con estado seleccionado visible
+  (`data-[state=on]:bg-primary`), no botones con `variant` manual.
+
 ## Gates
 
 Todo cambio de superficies, tokens o componentes debe pasar, con salida real:
@@ -90,7 +111,7 @@ Todo cambio de superficies, tokens o componentes debe pasar, con salida real:
 - `npm run build` — TypeScript y bundle sin errores.
 - `npm run audit:contrast` — contraste de tokens en verde.
 - `node scripts/check-contrast.mjs --strict` — sin excepciones, exit 0.
-- `npx vitest run src/test/designContract.test.ts` — ratchet en **0/0/0/4**
+- `npx vitest run src/test/designContract.test.ts` — ratchet en **0/0/0/1**
   (paleta fija, sombras propias, radios pelados y `z-index` manual). El ratchet
   sólo puede bajar: si un cambio sube cualquiera de esos conteos, no entra.
 

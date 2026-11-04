@@ -27,12 +27,14 @@ function count(pattern: RegExp): number {
   }, 0);
 }
 
-// Ratchet: solo puede bajar. Fase 2 completa el mapeo: paleta, elevación y radios en 0.
+// Ratchet: solo puede bajar. Fase 3 elimina los últimos overlays propios (menú,
+// drawer y buscador); el único `z-50` manual que queda es el desplegable de
+// conexión remota de la barra de acciones.
 const BASELINE = {
   palette: 0,
   shadow: 0,
   rounded: 0,
-  zIndex: 4,
+  zIndex: 1,
 };
 
 describe("contrato de diseno", () => {
