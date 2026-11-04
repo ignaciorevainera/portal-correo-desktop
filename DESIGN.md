@@ -34,6 +34,33 @@ agrega un clic a una tarea frecuente. A anchos reducidos la fila envuelve con
 `aria-label`, el `title` nativo y el estilo de split (`rounded-r-none` /
 `rounded-l-none border-l-0`) de cada ping se conservan.
 
+## Comportamiento automático
+
+Al cargar una terminal se ejecuta un único ping automático al equipo buscado,
+con el modo predeterminado de Ajustes (`pcd_pref_ping_mode`: estándar de 4
+paquetes o `-t`). La preferencia se lee en cada carga, así que un cambio en
+Ajustes aplica a la búsqueda siguiente sin recargar la ventana. No se encadenan
+pings automáticos a `.250` ni `.231`: esos enlaces se disparan sólo desde la
+barra.
+
+El botón «Ping» y la tecla F4 siguen siendo siempre el ping estándar de 4
+paquetes; el modo continuo tiene su propio botón `-t`.
+
+## Secciones de `<main>`
+
+Las tres secciones del contenido —Datos del equipo, consola y Alertas y
+reseteos— comparten un único chrome: la `Card` del preset (`bg-card`,
+`ring-1 ring-foreground/10`, `rounded-xl`, `shadow-xs`) con cabecera interna
+`border-b border-border` y gutter `px-3 py-2.5`. El cuerpo de la consola usa
+`p-3` y la tabla de alertas alinea su primera y última celda a 12 px. El chrome
+no se sobrescribe con `bg-*`, `border`, `rounded` ni `shadow-*` propios; un
+tinte de estado va adentro, como contenido. Toda sección nueva de `<main>` se
+envuelve en `Card` con este tratamiento.
+
+El margen lateral de la ventana es uno solo: **14 px** (`px-3.5` en la Topbar y
+en la barra de acciones, `p-3.5` en `<main>`). Las tres superficies arrancan en
+la misma coordenada.
+
 ## Consola
 
 La consola arranca abierta y se puede colapsar desde su encabezado. El colapso
@@ -68,6 +95,10 @@ los reporta como «decorativo» y no bloquean el exit.
 
 Tampoco se admiten colores literales de paleta (`text-blue-600`,
 `bg-emerald-500`, …) ni `z-50` manual fuera del baseline del contrato.
+
+En la Topbar, el atajo Portal MDA usa texto neutro (`text-muted-foreground` con
+`hover:text-foreground`), igual que el resto de botones de su grupo: sin acento
+de enlace.
 
 ## Tipografía
 
@@ -107,7 +138,10 @@ conservan.
   nunca hijos de la opción. El `Command` se remonta por consulta (`key={query}`)
   para que cmdk no auto-seleccione al filtrar. Cada fila muestra sólo el valor y
   un icono; no se etiqueta el tipo de resultado. El panel no anima la entrada
-  (`data-open:animate-none`).
+  (`data-open:animate-none`). El panel sólo se renderiza cuando hay
+  coincidencias: al filtrar no hay encabezado ni conteo, y sin coincidencias no
+  aparece leyenda ni estado vacío. Al vaciar la consulta vuelve el encabezado
+  «Búsquedas recientes».
 - **Menú contextual**: `ContextMenu` anclado a `<main>`, no al documento, para
   que el buscador y los inputs conserven el menú nativo. El trigger lleva
   `select-text` porque Radix agrega `select-none` y el operador necesita
