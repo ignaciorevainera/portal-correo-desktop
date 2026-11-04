@@ -258,7 +258,7 @@ El orden no es por impacto visual, es por **dependencia**: casi todo lo demás n
 
 ### Fase 4 · Limpieza (≈ 2 h)
 
-Borrar `HardwareCard`, `NetworkAdCard` y `Sidebar`; repuntar los 3 tests que los sostienen; borrar el import de `Card` que queda muerto.
+> **Estado (2026-11-04):** ejecutada en `feat/fase-4-limpieza`. Se borraron `Sidebar` (107 líneas), `HardwareCard` (151) y `NetworkAdCard` (139) con sus 4 archivos de test; `ShadcnPreset` dejó de renderizarlos y conserva la cobertura de `Card` en el test de catálogo, y se restauró en `QuickActionsBar.test.tsx` la única aserción de cableado MSRA que vivía en `TerminalCards.test.tsx`. Se retiró la infraestructura de tooltips (`TooltipProvider`, `ui/tooltip.tsx` y su guard). Se corrigieron tres deudas de Fase 3: ids IDREF válidos y reset de `aria-activedescendant` en el buscador, `onDirectPing`/`handleDirectPing` y `onFocusSearch` eliminadas, y `aria-label` en el menú contextual con test de flechas. Suite 388/388, build verde, `--strict` 0, ratchet **0/0/0/1**.
 
 ### Fase 5 · Tipografía y adornos (≈ 6 h)
 

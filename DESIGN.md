@@ -73,12 +73,11 @@ Se probó una capa de tooltips (`Hint` sobre Radix `Tooltip`) y se descartó: no
 reemplazaba al `aria-label`, pero agregaba animación y ruido a controles que no la
 necesitan, y el contenido flotante interfería con el clic en otras secciones.
 
-`TooltipProvider` y `src/components/ui/tooltip.tsx` siguen instalados pero **sin
-consumidores**; no se usa ningún tooltip en la aplicación.
+La infraestructura de tooltips se retiró por completo: no hay `TooltipProvider`,
+ni `src/components/ui/tooltip.tsx`, ni consumidores.
 
 Los `title` de superficies informativas (chip de uptime, badge de conexión) se
-conservan. Deuda declarada: `Sidebar`, `HardwareCard` y `NetworkAdCard` todavía
-tienen `title` interactivos; se convierten o se borran en Fase 4.
+conservan.
 
 ## Overlays y controles
 
@@ -92,7 +91,9 @@ tienen `title` interactivos; se convierten o se borran en Fase 4.
 - **Menú contextual**: `ContextMenu` anclado a `<main>`, no al documento, para
   que el buscador y los inputs conserven el menú nativo. El trigger lleva
   `select-text` porque Radix agrega `select-none` y el operador necesita
-  seleccionar y copiar texto.
+  seleccionar y copiar texto. El menú lleva `aria-label="Acciones del operador"`
+  para tener nombre accesible además del label visible, y Radix resuelve flechas,
+  Escape y foco.
 - **Drawer**: `Sheet` con `SheetTitle` y `SheetDescription` obligatorios. Las
   barras de progreso son `Progress` con `aria-valuenow`, nunca un `div` con
   `style={{ width }}`.
