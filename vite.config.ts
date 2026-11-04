@@ -19,4 +19,15 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     exclude: ['**/node_modules/**', '**/dist/**', '**/.agents/**'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react')) return 'react';
+          if (id.includes('node_modules/radix-ui') || id.includes('node_modules/@radix-ui')) return 'radix';
+          if (id.includes('node_modules/cmdk')) return 'cmdk';
+        },
+      },
+    },
+  },
 });
