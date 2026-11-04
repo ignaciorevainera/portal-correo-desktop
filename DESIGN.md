@@ -61,7 +61,7 @@ sombras propias (`shadow-*`) ni degradados (`bg-gradient-*`); las sombras y
 radios de `src/components/ui/**` quedan tal como llegaron de la primitiva.
 
 Los tokens semánticos son los del preset corporativo. La app no los oscurece
-para AA: los pares de texto sobre tintes quedan entre 3.64:1 y 4.76:1 y están
+para AA: los pares de texto sobre tintes quedan entre 3.64:1 y 4.34:1 y están
 documentados como excepciones medidas en `scripts/check-contrast.mjs`. `--info`
 se conserva como semántica de diagnóstico. Los bordes son decorativos: el script
 los reporta como «decorativo» y no bloquean el exit.
@@ -130,7 +130,7 @@ Todo cambio de superficies, tokens o componentes debe pasar, con salida real:
 
 - `npm test` — suite completa en verde.
 - `npm run build` — TypeScript y bundle sin errores.
-- `npm run audit:contrast` — contraste de tokens en verde.
+- `npm run audit:contrast` — contraste de tokens con las excepciones documentadas.
 - `node scripts/check-contrast.mjs` — exit 0 con las excepciones medidas.
   `--strict` es diagnóstico: ignora las excepciones y falla a propósito con los
   pares aceptados de tintes.

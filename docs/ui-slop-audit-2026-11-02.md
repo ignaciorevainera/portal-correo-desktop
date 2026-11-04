@@ -190,7 +190,7 @@ Medido contra la skill oficial (§7.5), no contra gusto:
 
 ## 4. Lo que ya está bien (no tocar)
 
-- Tokens OKLCH completos y tema oscuro/claro real; los pares de texto pasan AA (script del repo).
+- Tokens OKLCH completos y tema oscuro/claro real; los pares de texto pasaban AA al momento de esta auditoría (tras el cierre del 2026-11-04, cinco pares de tinte quedan documentados bajo 4.5:1 por decisión de producto).
 - shadcn adoptado de verdad en los diálogos y formularios: `data-slot`, `focus-visible:ring-3`, `aria-invalid`, `sr-only` en los controles de icono.
 - `aria-label` + `aria-pressed` + `aria-expanded` + `title` están, sin excepción, en los botones de icono que revisé.
 - Existen los estados de carga, vacío, "no encontrado", error (`ErrorBoundary`) y bloqueo por seguridad (`BlockedScreen`) con recuperación.
@@ -268,7 +268,7 @@ Escala 18/14/12/11, overlines, iconos en cuadrado teñido, estados vacíos con a
 
 ### Cierre técnico (2026-11-04)
 
-> Ejecutado en `chore/cierre-tecnico`. **Decisión de producto:** se restauraron los valores del preset en `--muted-foreground`, `--destructive`, `--success` y `--warning`, aceptando que los pares de texto sobre tintes queden entre 3.64:1 y 4.76:1; esas cinco fallas se documentan como excepciones medidas y `--strict` pasa a ser diagnóstico (exit 1 esperado). `--info` se conserva. Además: tests de `QuickActionsBar` consolidados en `src/test/` (de 3 archivos a 2, sin perder tests), bordes no-texto reportados como decorativos, bundle partido en `entry`/`react`/`radix`/`cmdk` y commit del fix de guardas en `electron/main.cjs`. Suite 399/399, build verde, ratchet 0/0/0/1.
+> Ejecutado en `chore/cierre-tecnico`. **Decisión de producto:** se restauraron los valores del preset en `--muted-foreground`, `--destructive`, `--success` y `--warning`, aceptando que los pares de texto sobre tintes queden entre 3.64:1 y 4.34:1; esas cinco fallas se documentan como excepciones medidas y `--strict` pasa a ser diagnóstico (exit 1 esperado). `--info` se conserva. Además: tests de `QuickActionsBar` consolidados en `src/test/` (de 3 archivos a 2, sin perder tests), bordes no-texto reportados como decorativos, bundle partido en `entry`/`react`/`radix`/`cmdk` y commit del fix de guardas en `electron/main.cjs`. Suite 399/399, build verde, ratchet 0/0/0/1.
 
 > **Total:** ≈ 4,5 días de trabajo, con la regla de que ninguna fase arranca si la anterior no dejó el build verde.
 
@@ -532,6 +532,8 @@ Valores exactos del sitio. El hex es la conversión sRGB para usar en Figma o en
 ### 8.3 Diferencias con lo que hay hoy
 
 Comparación token por token entre el CSS del sitio y `src/index.css`. **11 valores distintos, 20 tokens ausentes, 1 inventado.**
+
+> **Nota de cierre (2026-11-04):** la columna «Proyecto» de esta tabla es **histórica**. Los cuatro tokens tuneados (`--muted-foreground`, `--destructive`, `--success`, `--warning`) volvieron a los valores del sitio en el cierre técnico; `--info` se conserva como semántica de diagnóstico.
 
 | Token | Sitio | Proyecto | Clasificación |
 |---|---|---|---|
