@@ -15,6 +15,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Hint } from './Hint';
 import {
   startSubnetScanner,
@@ -147,90 +156,97 @@ export function SubnetScannerDrawer({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end select-none">
-      {/* Backdrop overlay */}
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      {/* Drawer Panel */}
-      <aside
-        aria-label="Escáner de Subred"
-        className="relative z-10 w-80 md:w-96 h-full bg-card border-l border-border flex flex-col animate-in slide-in-from-right duration-200"
+    <Sheet
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        className="gap-0 p-0 data-[side=right]:w-80 data-[side=right]:md:w-96 data-[side=right]:sm:max-w-none"
       >
-        {/* Header */}
-        <div className="h-12 border-b border-border px-3.5 flex items-center justify-between shrink-0 bg-muted/40">
+        <SheetHeader className="h-12 shrink-0 flex-row items-center justify-between gap-2 border-b border-border bg-muted/40 p-0 px-3.5">
           <div className="flex items-center gap-2">
-            <div className="p-1 rounded-md bg-primary/10 text-link">
-              <Network className="h-3.5 w-3.5" />
-
+            <div className="rounded-md bg-primary/10 p-1 text-link">
+              <Network className="h-3.5 w-3.5" aria-hidden="true" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-foreground tracking-tight">Escáner de Subred</h3>
-              <p className="text-[10px] text-muted-foreground font-mono">{subnetPrefix}</p>
+              <SheetTitle className="text-xs font-bold tracking-tight">
+                Escáner de Subred
+              </SheetTitle>
+              <SheetDescription className="font-mono text-[10px] text-muted-foreground">
+                {subnetPrefix}
+              </SheetDescription>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={onClose}
-            aria-label="Cerrar panel de escáner"
-            className="h-6 w-6 text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
-          >
-            <X className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+          <SheetClose asChild>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label="Cerrar panel de escáner"
+              className="h-6 w-6 rounded-md text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </SheetClose>
+        </SheetHeader>
 
-        {/* Progress Bar & Status */}
-        <div className="p-3 border-b border-border/80 bg-muted/20 space-y-2">
+        {/* Progreso del escaneo */}
+        <div className="shrink-0 space-y-2 border-b border-border/80 bg-muted/20 p-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-[11px] font-medium text-foreground flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-foreground">
               {isScanning ? (
                 <>
-                  <Loader2 className="h-3 w-3 text-link animate-spin" />
+                  <Loader2 className="h-3 w-3 animate-spin text-link" />
                   Escaneando hosts...
                 </>
               ) : isPaused ? (
-                <span className="text-warning font-medium flex items-center gap-1">
+                <span className="flex items-center gap-1 font-medium text-warning">
                   <Pause className="h-3 w-3" /> Escaneo en pausa
                 </span>
               ) : (
-                <span className="text-success font-medium flex items-center gap-1">
+                <span className="flex items-center gap-1 font-medium text-success">
                   <CheckCircle2 className="h-3 w-3" /> Escaneo finalizado
                 </span>
               )}
             </span>
-            <span className="font-mono text-[11px] text-muted-foreground font-semibold">
+            <span className="font-mono text-[11px] font-semibold text-muted-foreground">
               {progress.scanned} / {progress.total} ({percentage}%)
             </span>
           </div>
 
-          {/* Progress track */}
-          <div className="w-full bg-muted/80 rounded-full h-1.5 overflow-hidden">
-            <div
-              className={`h-full transition-all duration-300 rounded-full ${
-                isScanning ? 'bg-primary' : isPaused ? 'bg-warning' : 'bg-success'
-              }`}
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
+          <Progress
+            value={percentage}
+            aria-label="Progreso del escaneo de subred"
+            className={`h-1.5 [&_[data-slot=progress-indicator]]:transition-all ${
+              isScanning
+                ? ''
+                : isPaused
+                  ? '[&_[data-slot=progress-indicator]]:bg-warning'
+                  : '[&_[data-slot=progress-indicator]]:bg-success'
+            }`}
+          />
 
-          {/* Search Filter Inside Drawer */}
           <div className="relative pt-1">
-            <Search className="absolute left-2.5 top-3.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            <Search
+              className="pointer-events-none absolute left-2.5 top-3.5 h-3.5 w-3.5 text-muted-foreground"
+              aria-hidden="true"
+            />
             <Input
               type="text"
               value={filterQuery}
-              onChange={(e) => setFilterQuery(e.target.value)}
+              onChange={(event) => setFilterQuery(event.target.value)}
               placeholder="Filtrar equipos detectados..."
-              className="h-8 pl-8 pr-3 text-xs bg-muted/60 font-mono"
+              aria-label="Filtrar equipos detectados"
+              className="h-8 bg-muted/60 pl-8 pr-3 font-mono text-xs"
             />
           </div>
         </div>
 
-        {/* List of Discovered Hosts */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+        {/* Lista de equipos detectados */}
+        <div className="flex-1 space-y-1.5 overflow-y-auto p-3">
           {filteredHosts.length === 0 ? (
             <div className="h-48 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
               {isScanning ? (
@@ -272,26 +288,27 @@ export function SubnetScannerDrawer({
                   className="flex-row items-stretch gap-0 border-border/80 p-0 hover:border-border hover:bg-muted/30 transition-all overflow-hidden group"
                 >
                   {/* Porción principal: Información y selección de terminal */}
-                  <button
-                    type="button"
-                    onClick={() => onSelectTerminal(lookupTarget)}
-                    aria-label={`Consultar terminal ${displayName}`}
-                    title={`Consultar terminal ${displayName}`}
-                    className="flex-1 min-w-0 p-2.5 text-left flex flex-col justify-center cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-success shrink-0" />
-                      <span className="text-xs font-bold text-foreground font-mono truncate transition-colors">
-                        {displayName}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono text-muted-foreground">
-                      {hostname && <span>{host.ip}</span>}
-                      {host.latency !== null && (
-                        <span className="text-muted-foreground">{host.latency}ms</span>
-                      )}
-                    </div>
-                  </button>
+                  <Hint label={`Consultar terminal ${displayName}`}>
+                    <button
+                      type="button"
+                      onClick={() => onSelectTerminal(lookupTarget)}
+                      aria-label={`Consultar terminal ${displayName}`}
+                      className="flex-1 min-w-0 p-2.5 text-left flex flex-col justify-center cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-success shrink-0" />
+                        <span className="text-xs font-bold text-foreground font-mono truncate transition-colors">
+                          {displayName}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono text-muted-foreground">
+                        {hostname && <span>{host.ip}</span>}
+                        {host.latency !== null && (
+                          <span className="text-muted-foreground">{host.latency}ms</span>
+                        )}
+                      </div>
+                    </button>
+                  </Hint>
 
                   {/* Divisor vertical sutil entre porciones */}
                   <div className="w-px bg-border/60 self-stretch my-1" />
@@ -318,8 +335,8 @@ export function SubnetScannerDrawer({
           )}
         </div>
 
-        {/* Footer Info & Controls */}
-        <div className="p-2.5 border-t border-border/80 bg-muted/20 flex items-center justify-between text-[11px] text-muted-foreground shrink-0">
+        {/* Footer con controles del escaneo */}
+        <div className="flex shrink-0 items-center justify-between border-t border-border/80 bg-muted/20 p-2.5 text-[11px] text-muted-foreground">
           <span className="text-[10px] font-mono">
             {hosts.length} {hosts.length === 1 ? 'equipo' : 'equipos'}
           </span>
@@ -376,7 +393,7 @@ export function SubnetScannerDrawer({
             )}
           </div>
         </div>
-      </aside>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }

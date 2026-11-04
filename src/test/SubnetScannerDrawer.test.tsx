@@ -180,4 +180,48 @@ describe('SubnetScannerDrawer Component', () => {
       'input',
     );
   });
+
+  it("se expone como dialog con título y descripción accesibles", () => {
+    vi.spyOn(electronClient, "startSubnetScanner").mockImplementation(
+      () => vi.fn(),
+    );
+
+    render(
+      <SubnetScannerDrawer
+        isOpen
+        onClose={vi.fn()}
+        targetIp="192.0.2.50"
+        onSelectTerminal={vi.fn()}
+        onLaunchRemote={vi.fn()}
+      />,
+    );
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveAccessibleName("Escáner de Subred");
+    expect(screen.getByPlaceholderText(/filtrar equipos/i)).toBeInTheDocument();
+  });
+
+  it("la barra de progreso expone aria-valuenow", () => {
+    vi.spyOn(electronClient, "startSubnetScanner").mockImplementation(
+      (_targetIp, _onHostFound, onProgress) => {
+        onProgress({ scanned: 3, total: 10 });
+        return vi.fn();
+      },
+    );
+
+    render(
+      <SubnetScannerDrawer
+        isOpen
+        onClose={vi.fn()}
+        targetIp="192.0.2.50"
+        onSelectTerminal={vi.fn()}
+        onLaunchRemote={vi.fn()}
+      />,
+    );
+
+    const bar = screen.getByRole("progressbar", {
+      name: /progreso del escaneo/i,
+    });
+    expect(bar).toHaveAttribute("aria-valuenow", "30");
+  });
 });

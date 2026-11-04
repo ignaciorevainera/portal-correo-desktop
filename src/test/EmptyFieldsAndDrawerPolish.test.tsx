@@ -41,8 +41,8 @@ describe('Terminal identity, details grid & SubnetScannerDrawer polish', () => {
     expect(screen.getByText('Sin sesión')).toBeInTheDocument();
   });
 
-  it('renders SubnetScannerDrawer with backdrop', () => {
-    const { container } = render(
+  it('renders SubnetScannerDrawer como dialog con overlay', () => {
+    render(
       <SubnetScannerDrawer
         isOpen={true}
         onClose={vi.fn()}
@@ -52,7 +52,7 @@ describe('Terminal identity, details grid & SubnetScannerDrawer polish', () => {
       />,
     );
 
-    expect(container.querySelector('aside')).not.toBeNull();
-    expect(container.querySelector('.fixed.inset-0.z-50')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(document.querySelector('[data-slot="sheet-overlay"]')).toBeInTheDocument();
   });
 });
