@@ -618,4 +618,44 @@ describe('Topbar Search and Keyboard Navigation', () => {
     fireEvent.keyDown(window, { key: "F10" });
     expect(onOpenSettings).toHaveBeenCalledTimes(1);
   });
+
+  it("mantiene los resultados al volver a enfocar el buscador", async () => {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(["SUC10-PC01", "jperez"]));
+
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const input = screen.getByRole("combobox", { name: /buscar terminal/i });
+    fireEvent.focus(input);
+    expect(await screen.findByRole("listbox")).toBeInTheDocument();
+
+    // Radix escucha `focusin` en el documento: el foco del propio buscador no
+    // debe contar como "focus outside" y cerrar el panel recién abierto.
+    fireEvent.focusIn(input);
+    fireEvent.focusIn(input);
+
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+  });
+
+  it("no anima la entrada ni la salida del panel de resultados", async () => {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(["SUC10-PC01"]));
+
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    fireEvent.focus(screen.getByRole("combobox", { name: /buscar terminal/i }));
+
+    const panel = await screen.findByRole("dialog", {
+      name: /resultados de búsqueda/i,
+    });
+
+    expect(panel.className).toContain("data-open:animate-none");
+    expect(panel.className).toContain("data-closed:animate-none");
+  });
 });

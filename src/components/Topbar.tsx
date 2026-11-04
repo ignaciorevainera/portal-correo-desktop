@@ -358,8 +358,18 @@ export function Topbar({
               align="start"
               sideOffset={4}
               aria-label="Resultados de búsqueda"
-              className="w-[var(--radix-popover-trigger-width)] p-0 data-open:animate-none"
+              className="w-[var(--radix-popover-trigger-width)] p-0 data-open:animate-none data-closed:animate-none"
               onOpenAutoFocus={(event) => event.preventDefault()}
+              onFocusOutside={(event) => {
+                // El panel se abre con el foco en el buscador (que vive fuera del
+                // contenido); Radix interpreta ese mismo foco como "focus outside"
+                // y cerraría el panel recién abierto. Sólo se ignora ese caso: si el
+                // foco se va a otro control, el panel se cierra normalmente.
+                const target = event.target as Node | null;
+                if (target && searchGroupRef.current?.contains(target)) {
+                  event.preventDefault();
+                }
+              }}
               onPointerDownOutside={(event) => {
                 const target = event.target as Node | null;
                 if (target && searchGroupRef.current?.contains(target)) {
