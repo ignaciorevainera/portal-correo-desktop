@@ -273,7 +273,10 @@ export function LivePingConsole({
         }`}
       >
         {/* Barra de Controles Superior: cabecera colapsable y acciones */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
+        <div
+          data-testid="console-header"
+          className="flex items-center justify-between border-b border-border px-3 py-2.5"
+        >
           <CollapsibleTrigger asChild>
             <button
               type="button"
@@ -401,7 +404,7 @@ export function LivePingConsole({
             data-testid="terminal-scroll-container"
             className={`${
               fill ? "flex-1 min-h-0" : "h-[clamp(24rem,55vh,48rem)] min-h-[24rem]"
-            } overflow-y-auto overflow-x-auto p-3.5 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
+            } overflow-y-auto overflow-x-auto p-3 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
           >
             {logs.length === 0 ? (
               <div className="h-full flex items-center justify-center text-console-muted font-sans text-xs">

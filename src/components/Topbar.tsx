@@ -27,7 +27,6 @@ import { Separator } from "@/components/ui/separator";
 import { Kbd } from "@/components/ui/kbd";
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandList,
@@ -142,6 +141,10 @@ export function Topbar({
   const activeIndex = filteredMatches.findIndex(
     (item) => item.value === activeValue,
   );
+
+  // Sin coincidencias no hay panel: no se renderiza ni encabezado ni estado
+  // vacío; sólo las filas que coinciden con lo escrito.
+  const showResults = isOpen && filteredMatches.length > 0;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
@@ -275,7 +278,7 @@ export function Topbar({
 
   return (
     <>
-      <header className="h-14 bg-card/90 backdrop-blur px-4 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
+      <header className="h-14 bg-card/90 backdrop-blur px-3.5 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
         {/* Identidad / Brand (Arrastrable junto al header para mover la ventana con el mouse) */}
         <div className="flex items-center gap-2.5 shrink-0 cursor-default select-none">
           <IconWell size="sm" className="p-1.5 pointer-events-none">
@@ -292,7 +295,7 @@ export function Topbar({
 
         {/* Buscador Rápido Centralizado */}
         <div className="relative flex-1 max-w-md app-no-drag">
-          <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <Popover open={showResults} onOpenChange={setIsOpen}>
             <PopoverAnchor>
               <InputGroup ref={searchGroupRef} className="h-10 border-input bg-muted/70">
                 <InputGroupAddon>
@@ -328,10 +331,10 @@ export function Topbar({
                   placeholder="Buscar terminal, IP o usuario"
                   aria-label="Buscar terminal, IP o usuario"
                   role="combobox"
-                  aria-expanded={isOpen}
-                  aria-controls="terminal-search-list"
+                  aria-expanded={showResults}
+                  aria-controls={showResults ? "terminal-search-list" : undefined}
                   aria-activedescendant={
-                    isOpen && activeIndex >= 0
+                    showResults && activeIndex >= 0
                       ? toOptionId(activeIndex)
                       : undefined
                   }
@@ -386,12 +389,9 @@ export function Topbar({
                 className="rounded-none! bg-transparent p-1"
               >
                 <CommandList ref={assignListId} label="Resultados de búsqueda">
-                  <CommandEmpty>Sin coincidencias en el historial.</CommandEmpty>
                   <CommandGroup
                     heading={
-                      query.trim()
-                        ? `Coincidencias (${filteredMatches.length})`
-                        : "Búsquedas recientes"
+                      query.trim() ? undefined : "Búsquedas recientes"
                     }
                   >
                     {filteredMatches.map((item, index) => {
@@ -498,7 +498,7 @@ export function Topbar({
               onClick={handleOpenPortalMda}
               aria-label="Abrir Portal MDA"
               title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
-              className="text-xs font-semibold gap-1.5 cursor-pointer text-link hover:text-link"
+              className="text-xs font-semibold gap-1.5 cursor-pointer text-muted-foreground hover:text-foreground"
             >
               <ExternalLink className="h-4 w-4" />
               <span>Portal MDA</span>

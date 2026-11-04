@@ -138,12 +138,16 @@ export function ActivityPanel({
   const activeAlerts = terminal.alerts.filter((alert) => alert.active).length;
 
   return (
-    <section
+    <Card
       data-testid="activity-panel"
+      role="region"
       aria-labelledby="activity-panel-title"
-      className="space-y-2"
+      className="gap-0 py-0"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+      <div
+        data-testid="activity-header"
+        className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2.5"
+      >
         <div className="min-w-0">
           <h2
             id="activity-panel-title"
@@ -181,119 +185,117 @@ export function ActivityPanel({
       </div>
 
       {rows.length === 0 ? (
-        <div className="flex items-center gap-2 rounded-lg border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
-          <CheckCircle2 className="h-4 w-4 text-success" />
+        <div className="flex items-center gap-2 px-3 py-2.5 text-xs text-muted-foreground">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
           Sin alertas ni reseteos registrados.
         </div>
       ) : (
-        <Card className="gap-0 overflow-hidden py-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-20">Tipo</TableHead>
-                <TableHead className="w-24">Estado</TableHead>
-                <TableHead>Detalle</TableHead>
-                <TableHead className="w-24">Operador</TableHead>
-                <TableHead className="w-28">Fecha</TableHead>
-                <TableHead className="w-16 text-right">Acción</TableHead>
-              </TableRow>
-            </TableHeader>
+        <Table className="[&_th:first-child]:pl-3 [&_td:first-child]:pl-3 [&_th:last-child]:pr-3 [&_td:last-child]:pr-3">
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-20">Tipo</TableHead>
+              <TableHead className="w-24">Estado</TableHead>
+              <TableHead>Detalle</TableHead>
+              <TableHead className="w-24">Operador</TableHead>
+              <TableHead className="w-28">Fecha</TableHead>
+              <TableHead className="w-16 text-right">Acción</TableHead>
+            </TableRow>
+          </TableHeader>
 
-            <TableBody>
-              {rows.map((row) => {
-                const isExpanded = expandedId === row.id;
-                const detailId = `activity-detail-${row.id}`;
+          <TableBody>
+            {rows.map((row) => {
+              const isExpanded = expandedId === row.id;
+              const detailId = `activity-detail-${row.id}`;
 
-                return (
-                  <React.Fragment key={`${row.kind}-${row.id}`}>
-                    <TableRow>
-                      <TableCell>
-                        <StatusBadge
-                          tone={row.kind === "alert" ? "warning" : "info"}
-                        >
-                          {row.kind === "alert" ? "Alerta" : "Reseteo"}
-                        </StatusBadge>
-                      </TableCell>
+              return (
+                <React.Fragment key={`${row.kind}-${row.id}`}>
+                  <TableRow>
+                    <TableCell>
+                      <StatusBadge
+                        tone={row.kind === "alert" ? "warning" : "info"}
+                      >
+                        {row.kind === "alert" ? "Alerta" : "Reseteo"}
+                      </StatusBadge>
+                    </TableCell>
 
-                      <TableCell>
-                        <StatusBadge tone={STATUS_TONE[row.status]}>
-                          {row.status}
-                        </StatusBadge>
-                      </TableCell>
+                    <TableCell>
+                      <StatusBadge tone={STATUS_TONE[row.status]}>
+                        {row.status}
+                      </StatusBadge>
+                    </TableCell>
 
-                      <TableCell className="max-w-0">
-                        <button
+                    <TableCell className="max-w-0">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedId(isExpanded ? null : row.id)
+                        }
+                        aria-expanded={isExpanded}
+                        aria-controls={detailId}
+                        className="flex w-full items-center gap-1.5 text-left"
+                      >
+                        <ChevronRight
+                          className={cn(
+                            "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform",
+                            isExpanded && "rotate-90",
+                          )}
+                          aria-hidden="true"
+                        />
+                        <span className="truncate text-sm font-medium text-foreground">
+                          {row.title}
+                        </span>
+                      </button>
+                    </TableCell>
+
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {row.operator}
+                    </TableCell>
+
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {row.date}
+                    </TableCell>
+
+                    <TableCell className="text-right">
+                      {row.kind === "alert" && row.status === "Activa" ? (
+                        <Button
                           type="button"
-                          onClick={() =>
-                            setExpandedId(isExpanded ? null : row.id)
-                          }
-                          aria-expanded={isExpanded}
-                          aria-controls={detailId}
-                          className="flex w-full items-center gap-1.5 text-left"
+                          variant="outline"
+                          size="xs"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => {
+                            const alert = terminal.alerts.find(
+                              (item) => item.id === row.id,
+                            );
+                            if (alert) setClosingAlert(alert);
+                          }}
                         >
-                          <ChevronRight
-                            className={cn(
-                              "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform",
-                              isExpanded && "rotate-90",
-                            )}
-                            aria-hidden="true"
-                          />
-                          <span className="truncate text-sm font-medium text-foreground">
-                            {row.title}
-                          </span>
-                        </button>
-                      </TableCell>
+                          Cerrar
+                        </Button>
+                      ) : null}
+                    </TableCell>
+                  </TableRow>
 
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {row.operator}
-                      </TableCell>
-
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {row.date}
-                      </TableCell>
-
-                      <TableCell className="text-right">
-                        {row.kind === "alert" && row.status === "Activa" ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="xs"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => {
-                              const alert = terminal.alerts.find(
-                                (item) => item.id === row.id,
-                              );
-                              if (alert) setClosingAlert(alert);
-                            }}
-                          >
-                            Cerrar
-                          </Button>
-                        ) : null}
+                  {isExpanded && (
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell
+                        id={detailId}
+                        colSpan={6}
+                        className="bg-muted/30 px-3 py-2 text-sm leading-relaxed text-foreground"
+                      >
+                        <p>{row.description}</p>
+                        {row.resolution && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Resolución: {row.resolution}
+                          </p>
+                        )}
                       </TableCell>
                     </TableRow>
-
-                    {isExpanded && (
-                      <TableRow className="hover:bg-transparent">
-                        <TableCell
-                          id={detailId}
-                          colSpan={6}
-                          className="bg-muted/30 px-3 py-2 text-sm leading-relaxed text-foreground"
-                        >
-                          <p>{row.description}</p>
-                          {row.resolution && (
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              Resolución: {row.resolution}
-                            </p>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </React.Fragment>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Card>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </TableBody>
+        </Table>
       )}
 
       <NewAlertDialog
@@ -317,6 +319,6 @@ export function ActivityPanel({
           setClosingAlert(null);
         }}
       />
-    </section>
+    </Card>
   );
 }

@@ -446,7 +446,7 @@ describe('Topbar Search and Keyboard Navigation', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('muestra el estado vacío cuando el historial no coincide', () => {
+  it('no renderiza panel, encabezado ni leyenda cuando la consulta no coincide', () => {
     localStorage.setItem(RECENT_KEY, JSON.stringify(['PC-A']));
 
     render(
@@ -457,12 +457,41 @@ describe('Topbar Search and Keyboard Navigation', () => {
 
     const searchInput = screen.getByPlaceholderText(/buscar terminal/i);
     fireEvent.focus(searchInput);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+
     fireEvent.change(searchInput, { target: { value: 'ZZZ' } });
 
-    expect(
-      screen.getByText('Sin coincidencias en el historial.'),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(screen.queryAllByRole('option')).toHaveLength(0);
+    expect(screen.queryByText(/sin coincidencias/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/coincidencias/i)).not.toBeInTheDocument();
+    expect(searchInput).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('vuelve a mostrar sólo las filas cuando la consulta coincide y el historial al limpiarla', () => {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(['PC-A', 'PC-B']));
+
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const searchInput = screen.getByPlaceholderText(/buscar terminal/i);
+    fireEvent.focus(searchInput);
+
+    fireEvent.change(searchInput, { target: { value: 'ZZZ' } });
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+
+    fireEvent.change(searchInput, { target: { value: 'PC' } });
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(2);
+    // Mientras se filtra no hay encabezado ni conteo: sólo las coincidencias.
+    expect(screen.queryByText(/búsquedas recientes/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/coincidencias/i)).not.toBeInTheDocument();
+
+    fireEvent.change(searchInput, { target: { value: '' } });
+    expect(screen.getByText('Búsquedas recientes')).toBeInTheDocument();
   });
 
   it('cierra el historial al hacer click fuera', async () => {

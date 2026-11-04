@@ -35,6 +35,10 @@ describe("Topbar & Compact Unified Titlebar component", () => {
 
     const portalBtn = screen.getByRole("button", { name: /portal mda/i });
     expect(portalBtn).toBeInTheDocument();
+    // Texto neutro como el resto de botones del grupo: sin acento de enlace.
+    expect(portalBtn.className).toContain("text-muted-foreground");
+    expect(portalBtn.className).toContain("hover:text-foreground");
+    expect(portalBtn.className).not.toContain("text-link");
 
     fireEvent.click(portalBtn);
     expect(openSpy).toHaveBeenCalledWith(
@@ -127,6 +131,8 @@ describe("Topbar & Compact Unified Titlebar component", () => {
 
     const header = container.querySelector("header");
     expect(header?.className).toContain("h-14");
+    // Gutter lateral único: 14 px, igual que la barra de acciones y <main>.
+    expect(header?.className).toContain("px-3.5");
 
     const input = screen.getByPlaceholderText(/buscar terminal/i);
     // La altura vive en el InputGroup que agrupa el control de búsqueda.
