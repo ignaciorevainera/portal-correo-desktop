@@ -4,7 +4,8 @@
  *
  * Reads the real tokens from src/index.css (light :root and .dark), converts
  * OKLCH to sRGB and reports WCAG 2.1 contrast for the pairs that matter to the
- * operator workflow. Exit code 1 when a *text* pair is below 4.5:1.
+ * operator workflow. Sin `--strict`, el exit code es 1 sólo si un par de texto
+ * queda por debajo de 4.5:1 y no está documentado en `EXCEPTIONS`.
  *
  * Usage: node scripts/check-contrast.mjs [--strict]
  *   --strict ignora las excepciones y exige 0 fallas de texto.
@@ -343,27 +344,27 @@ const EXCEPTIONS = [
   {
     label: "light Labels sobre muted",
     ratio: 4.34,
-    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado sobre tintes.",
+    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado en el par sobre tinte o muted.",
   },
   {
     label: "light Botón destructive (10%)",
     ratio: 3.99,
-    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado sobre tintes.",
+    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado en el par sobre tinte o muted.",
   },
   {
     label: "light Destructivo sobre tinte 15",
     ratio: 3.64,
-    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado sobre tintes.",
+    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado en el par sobre tinte o muted.",
   },
   {
     label: "light Tinte success/15",
     ratio: 4.34,
-    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado sobre tintes.",
+    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado en el par sobre tinte o muted.",
   },
   {
     label: "light Tinte warning/15",
     ratio: 4.18,
-    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado sobre tintes.",
+    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado en el par sobre tinte o muted.",
   },
 ];
 
@@ -456,7 +457,9 @@ for (const [label, fg, bg, value, verdict] of rows) {
 console.log(`\nExcepciones documentadas: ${EXCEPTIONS.length}${strict ? " (ignoradas por --strict)" : " (usar --strict para exigir 0)"}`);
 for (const e of EXCEPTIONS) console.log(`  - ${e.label}: ${e.reason}`);
 console.log(
-  `\nTexto: ${textFailures} par(es) bajo 4.5:1 · UI: ${uiFailures} borde(s) bajo 3:1 · Tokens ausentes: ${missingFailures}.\n`,
+  `\nTexto: ${textFailures} par(es) sin documentar bajo 4.5:1 · ${
+    strict ? 0 : EXCEPTIONS.length
+  } documentado(s) por excepción · UI: ${uiFailures} borde(s) decorativos bajo 3:1 · Tokens ausentes: ${missingFailures}.\n`,
 );
 
 process.exit(textFailures > 0 || missingFailures > 0 ? 1 : 0);
