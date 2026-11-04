@@ -157,6 +157,10 @@ conservan.
 - **Booleanos de configuración**: `Switch` con `aria-label`; **sets de 2–7
   opciones**: `ToggleGroup` con estado seleccionado visible
   (`data-[state=on]:bg-primary`), no botones con `variant` manual.
+- **Acciones sobre un dato**: si un icono dispara una acción —por ejemplo
+  consultar la cuenta AD del usuario NT— el icono mismo es el `Button`
+  (`icon-xs` con `bg-secondary`), con `aria-label` y `title`; no se deja un
+  icono decorativo con un botón chico al lado.
 
 ## Gates
 

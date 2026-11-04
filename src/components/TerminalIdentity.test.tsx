@@ -48,9 +48,23 @@ describe("TerminalIdentity", () => {
       />,
     );
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Consultar cuenta AD" }),
-    );
+    const button = screen.getByRole("button", { name: "Consultar cuenta AD" });
+
+    // Un único botón: el icono de la izquierda del usuario es la acción, con
+    // fondo propio para leerse como clicable.
+    expect(
+      screen.getAllByRole("button", { name: "Consultar cuenta AD" }),
+    ).toHaveLength(1);
+    expect(button).toHaveClass("bg-secondary");
+    expect(button.querySelector("svg")).not.toBeNull();
+
+    const userLabel = screen.getByText("jperez");
+    expect(
+      button.compareDocumentPosition(userLabel) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    fireEvent.click(button);
     expect(onQueryAccount).toHaveBeenCalledTimes(1);
   });
 

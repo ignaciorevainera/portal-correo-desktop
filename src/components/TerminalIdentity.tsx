@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, User, Users } from "lucide-react";
+import { MapPin, User } from "lucide-react";
 import { TerminalData } from "../types/terminal";
 import { CopyValueButton } from "./CopyValueButton";
 import { Button } from "@/components/ui/button";
@@ -55,14 +55,12 @@ export function TerminalIdentity({
           </span>
         </span>
         <span className="inline-flex min-w-0 items-center gap-1.5">
-          <User className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className="truncate font-mono">
-            {terminal.userNt?.trim() || "Sin sesión"}
-          </span>
-          {terminal.userNt?.trim() && (
+          {terminal.userNt?.trim() ? (
+            // El icono del usuario es la acción: un solo botón visible en lugar
+            // de un icono decorativo más un botón chico a su derecha.
             <Button
               type="button"
-              variant="ghost"
+              variant="secondary"
               size="icon-xs"
               aria-label="Consultar cuenta AD"
               title={
@@ -72,11 +70,16 @@ export function TerminalIdentity({
               }
               disabled={validUsers.length === 0}
               onClick={() => onQueryAccount?.()}
-              className="text-muted-foreground hover:text-foreground"
+              className="shrink-0"
             >
-              <Users className="h-3.5 w-3.5" />
+              <User className="h-3.5 w-3.5" />
             </Button>
+          ) : (
+            <User className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           )}
+          <span className="truncate font-mono">
+            {terminal.userNt?.trim() || "Sin sesión"}
+          </span>
         </span>
       </div>
     </section>
