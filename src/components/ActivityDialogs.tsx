@@ -284,7 +284,7 @@ export function CloseAlertDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Cerrar alerta</AlertDialogTitle>
           <AlertDialogDescription>{alertTitle}</AlertDialogDescription>
@@ -315,7 +315,7 @@ export function CloseAlertDialog({
         </form>
 
         <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel variant="ghost" size="sm">Cancelar</AlertDialogCancel>
           <Button type="button" size="sm" disabled={!valid} onClick={submit}>
             Confirmar cierre
           </Button>
