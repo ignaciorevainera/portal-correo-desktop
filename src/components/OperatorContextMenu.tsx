@@ -6,7 +6,6 @@ import {
   HelpCircle,
   Copy,
   ExternalLink,
-  Search,
   Users,
 } from "lucide-react";
 import { splitUsernames } from "@/lib/usernames";
@@ -25,7 +24,6 @@ interface OperatorContextMenuProps {
   onTogglePing: () => void;
   onLaunchMsra: () => void;
   onOpenPortalMda: () => void;
-  onFocusSearch?: () => void;
   onQueryAccount?: () => void;
 }
 
@@ -36,7 +34,6 @@ export function OperatorContextMenu({
   onTogglePing,
   onLaunchMsra,
   onOpenPortalMda,
-  onFocusSearch,
   onQueryAccount,
 }: OperatorContextMenuProps): React.JSX.Element {
   const copyText = async (text: string): Promise<void> => {
@@ -49,7 +46,7 @@ export function OperatorContextMenu({
 
   if (!terminal) {
     return (
-      <ContextMenuContent className="w-56">
+      <ContextMenuContent className="w-56" aria-label="Acciones del operador">
         <ContextMenuItem onSelect={onOpenPortalMda} aria-label="Abrir Portal MDA">
           <ExternalLink className="h-3.5 w-3.5 text-link" />
           Abrir Portal MDA
@@ -61,7 +58,7 @@ export function OperatorContextMenu({
   const accountCount = splitUsernames(terminal.userNt).length;
 
   return (
-    <ContextMenuContent className="w-56">
+    <ContextMenuContent className="w-56" aria-label="Acciones del operador">
       <ContextMenuLabel>Acciones · {terminal.pc}</ContextMenuLabel>
       <ContextMenuSeparator />
 
@@ -113,13 +110,6 @@ export function OperatorContextMenu({
         <ExternalLink className="h-3.5 w-3.5 text-link" />
         Abrir Portal MDA
       </ContextMenuItem>
-      {onFocusSearch && (
-        <ContextMenuItem onSelect={onFocusSearch} aria-label="Buscar otra terminal">
-          <Search className="h-3.5 w-3.5 text-muted-foreground" />
-          Buscar Terminal
-          <ContextMenuShortcut>Ctrl+F</ContextMenuShortcut>
-        </ContextMenuItem>
-      )}
     </ContextMenuContent>
   );
 }
