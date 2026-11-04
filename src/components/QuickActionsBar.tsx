@@ -191,14 +191,14 @@ export function QuickActionsBar({
           {isDropdownOpen && (
             <div className="absolute top-full left-0 mt-1 w-72 p-2 bg-popover border border-border rounded-md ring-1 ring-foreground/10 z-50 flex flex-col gap-2 text-popover-foreground">
               {/* Resumen de puertos */}
-              <div className="flex items-center justify-between gap-1 text-[11px] p-1.5 rounded-md bg-muted/60 border border-border">
+              <div className="flex items-center justify-between gap-1 text-micro p-1.5 rounded-md bg-muted/60 border border-border">
                 <div className="flex items-center gap-1">
                   <span className="text-muted-foreground font-medium">
                     5901/5900:
                   </span>
                   <Badge
                     variant={vncPortOpen ? "default" : "secondary"}
-                    className="text-[10px] px-1 py-0 h-4"
+                    className="text-micro px-1 py-0 h-4"
                   >
                     {remoteProbe
                       ? vncPortOpen
@@ -213,7 +213,7 @@ export function QuickActionsBar({
                   </span>
                   <Badge
                     variant={msraOpen ? "default" : "secondary"}
-                    className="text-[10px] px-1 py-0 h-4"
+                    className="text-micro px-1 py-0 h-4"
                   >
                     {remoteProbe
                       ? msraOpen
@@ -321,7 +321,7 @@ export function QuickActionsBar({
             title="Ejecutar Ping infinito / continuo (-t)"
             className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center text-xs font-semibold cursor-pointer shrink-0 border-border bg-muted text-foreground hover:bg-muted/80 transition-colors"
           >
-            <span className="font-mono text-[11px] font-semibold text-success">
+            <span className="font-mono text-micro font-semibold text-success">
               -t
             </span>
           </Button>
@@ -341,7 +341,7 @@ export function QuickActionsBar({
                 className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1"
               >
                 <Wifi className="h-3.5 w-3.5 shrink-0 text-link" />
-                <span className="font-mono text-[11px]">.250</span>
+                <span className="font-mono text-micro">.250</span>
               </Button>
               <Button
                 type="button"
@@ -352,7 +352,7 @@ export function QuickActionsBar({
                 title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
                 className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
               >
-                <span className="font-mono text-[11px] font-semibold text-link">
+                <span className="font-mono text-micro font-semibold text-link">
                   -t
                 </span>
               </Button>
@@ -369,7 +369,7 @@ export function QuickActionsBar({
                 className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1"
               >
                 <Layers className="h-3.5 w-3.5 shrink-0 text-warning" />
-                <span className="font-mono text-[11px]">.231</span>
+                <span className="font-mono text-micro">.231</span>
               </Button>
               <Button
                 type="button"
@@ -380,7 +380,7 @@ export function QuickActionsBar({
                 title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
                 className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
               >
-                <span className="font-mono text-[11px] font-semibold text-warning">
+                <span className="font-mono text-micro font-semibold text-warning">
                   -t
                 </span>
               </Button>
@@ -416,7 +416,7 @@ export function QuickActionsBar({
             >
               <div
                 id={diagnosticSectionId}
-                className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                className="px-2 py-1 text-micro font-bold uppercase tracking-wider text-muted-foreground"
               >
                 Diagnóstico
               </div>
@@ -431,8 +431,8 @@ export function QuickActionsBar({
               >
                 <span className="flex items-center gap-2 w-full">
                   <Layers className="h-3.5 w-3.5 text-warning" />
-                  <span className="font-mono text-[11px]">nbtstat -A</span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">
+                  <span className="font-mono text-micro">nbtstat -A</span>
+                  <span className="text-micro text-muted-foreground ml-auto">
                     (NetBIOS)
                   </span>
                 </span>
@@ -448,8 +448,8 @@ export function QuickActionsBar({
               >
                 <span className="flex items-center gap-2 w-full">
                   <Route className="h-3.5 w-3.5 text-success" />
-                  <span className="font-mono text-[11px]">tracert -d</span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">
+                  <span className="font-mono text-micro">tracert -d</span>
+                  <span className="text-micro text-muted-foreground ml-auto">
                     (6 saltos)
                   </span>
                 </span>
@@ -465,8 +465,8 @@ export function QuickActionsBar({
               >
                 <span className="flex items-center gap-2 w-full">
                   <Network className="h-3.5 w-3.5 text-info" />
-                  <span className="font-mono text-[11px]">arp -a</span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">
+                  <span className="font-mono text-micro">arp -a</span>
+                  <span className="text-micro text-muted-foreground ml-auto">
                     (Física)
                   </span>
                 </span>
@@ -531,7 +531,7 @@ export function QuickActionsBar({
             <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
           )}
           <span
-            className="font-mono font-semibold text-foreground truncate max-w-[100px] text-[11px]"
+            className="font-mono font-semibold text-foreground truncate max-w-[100px] text-micro"
           >
             {terminal.uptimeText || "N/D"}
           </span>

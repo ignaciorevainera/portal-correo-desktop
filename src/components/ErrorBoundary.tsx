@@ -52,7 +52,7 @@ export class ErrorBoundary extends Component<Props, State> {
               abruptamente. Podés recargar la ventana para reanudar el estado.
             </p>
             {this.state.error && (
-              <pre className="max-h-40 overflow-auto rounded-md bg-muted/80 p-3 font-mono text-[11px] text-destructive leading-tight border border-border">
+              <pre className="max-h-40 overflow-auto rounded-md bg-muted/80 p-3 font-mono text-micro text-destructive leading-tight border border-border">
                 {this.state.error.toString()}
                 {this.state.errorInfo?.componentStack}
               </pre>

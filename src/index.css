@@ -723,6 +723,13 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Escala tipográfica del producto: 18 / 14 / 12 / 11 px.
+   `text-micro` es el cuarto paso y el piso permitido. */
+@theme {
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.4;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

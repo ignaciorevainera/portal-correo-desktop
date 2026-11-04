@@ -175,7 +175,7 @@ export function SubnetScannerDrawer({
               <SheetTitle className="text-xs font-bold tracking-tight">
                 Escáner de Subred
               </SheetTitle>
-              <SheetDescription className="font-mono text-[10px] text-muted-foreground">
+              <SheetDescription className="font-mono text-micro text-muted-foreground">
                 {subnetPrefix}
               </SheetDescription>
             </div>
@@ -195,7 +195,7 @@ export function SubnetScannerDrawer({
         {/* Progreso del escaneo */}
         <div className="shrink-0 space-y-2 border-b border-border/80 bg-muted/20 p-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-foreground">
+            <span className="flex items-center gap-1.5 text-micro font-medium text-foreground">
               {isScanning ? (
                 <>
                   <Loader2 className="h-3 w-3 animate-spin text-link" />
@@ -211,7 +211,7 @@ export function SubnetScannerDrawer({
                 </span>
               )}
             </span>
-            <span className="font-mono text-[11px] font-semibold text-muted-foreground">
+            <span className="font-mono text-micro font-semibold text-muted-foreground">
               {progress.scanned} / {progress.total} ({percentage}%)
             </span>
           </div>
@@ -252,7 +252,7 @@ export function SubnetScannerDrawer({
                 <>
                   <Radio className="h-8 w-8 text-link/40 animate-pulse mb-2" />
                   <p className="text-xs font-medium">Detectando respuestas ICMP/SMB...</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-micro text-muted-foreground mt-1">
                     Los equipos activos irán apareciendo en tiempo real
                   </p>
                 </>
@@ -260,7 +260,7 @@ export function SubnetScannerDrawer({
                 <>
                   <Pause className="h-8 w-8 text-warning/40 mb-2" />
                   <p className="text-xs font-medium text-foreground">Escaneo en pausa</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-micro text-muted-foreground mt-1">
                     Presiona Reanudar para continuar detectando equipos
                   </p>
                 </>
@@ -268,7 +268,7 @@ export function SubnetScannerDrawer({
                 <>
                   <Laptop className="h-8 w-8 text-muted-foreground/30 mb-2" />
                   <p className="text-xs font-medium">No se encontraron equipos activos</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-micro text-muted-foreground mt-1">
                     Verifica conectividad o segmento de red
                   </p>
                 </>
@@ -300,7 +300,7 @@ export function SubnetScannerDrawer({
                         {displayName}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono text-muted-foreground">
+                    <div className="flex items-center gap-2 mt-0.5 text-micro font-mono text-muted-foreground">
                       {hostname && <span>{host.ip}</span>}
                       {host.latency !== null && (
                         <span className="text-muted-foreground">{host.latency}ms</span>
@@ -333,8 +333,8 @@ export function SubnetScannerDrawer({
         </div>
 
         {/* Footer con controles del escaneo */}
-        <div className="flex shrink-0 items-center justify-between border-t border-border/80 bg-muted/20 p-2.5 text-[11px] text-muted-foreground">
-          <span className="text-[10px] font-mono">
+        <div className="flex shrink-0 items-center justify-between border-t border-border/80 bg-muted/20 p-2.5 text-micro text-muted-foreground">
+          <span className="text-micro font-mono">
             {hosts.length} {hosts.length === 1 ? 'equipo' : 'equipos'}
           </span>
           <div className="flex items-center gap-1.5">

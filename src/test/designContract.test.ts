@@ -58,6 +58,10 @@ describe("contrato de diseno", () => {
     ).toBeLessThanOrEqual(BASELINE.rounded);
   });
 
+  it("no usa tamaños de fuente arbitrarios", () => {
+    expect(count(/text-\[\d+(?:\.\d+)?px\]/g)).toBe(0);
+  });
+
   it("no hay degradados ni Base UI", () => {
     expect(count(/\bbg-gradient-|\b@base-ui\b/g)).toBe(0);
   });

@@ -29,7 +29,7 @@ export function BlockedScreen({ gate, onRetry, isRetrying }: BlockedScreenProps)
         <p className="text-sm text-muted-foreground">{gate.message}</p>
       </div>
 
-      <div className="w-full max-w-md rounded-md border border-border/70 bg-muted/30 p-3 text-left font-mono text-[11px] text-muted-foreground">
+      <div className="w-full max-w-md rounded-md border border-border/70 bg-muted/30 p-3 text-left font-mono text-micro text-muted-foreground">
         <div>
           <span className="font-semibold">Código:</span> {gate.code}
         </div>

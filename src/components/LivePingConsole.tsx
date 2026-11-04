@@ -304,7 +304,7 @@ export function LivePingConsole({
                   handleStop();
                 }}
                 aria-label="Detener ping en vivo"
-                className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90"
+                className="h-7 px-2.5 text-micro font-sans font-medium flex items-center gap-1 cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90"
               >
                 <Square className="h-3 w-3" />
                 <span>Detener</span>
@@ -323,7 +323,7 @@ export function LivePingConsole({
                 disabled={isAnyRunning}
                 aria-label="Re-ejecutar consulta"
                 title="Volver a ejecutar net user"
-                className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer disabled:opacity-40"
+                className="h-7 px-2.5 text-micro font-sans font-medium flex items-center gap-1 cursor-pointer disabled:opacity-40"
               >
                 <RefreshCw className="h-3 w-3" />
                 <span>Re-ejecutar</span>
@@ -340,7 +340,7 @@ export function LivePingConsole({
               }}
               aria-label="Limpiar logs de ping"
               title="Limpiar pantalla de logs"
-              className="h-7 px-2 text-[11px] font-sans flex items-center gap-1 cursor-pointer"
+              className="h-7 px-2 text-micro font-sans flex items-center gap-1 cursor-pointer"
             >
               <Trash2 className="h-3 w-3" />
               <span>Limpiar</span>
@@ -358,7 +358,7 @@ export function LivePingConsole({
               disabled={logs.length === 0}
               aria-label="Copiar último bloque de logs"
               title="Copiar únicamente el último comando y su respuesta al portapapeles"
-              className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+              className="h-7 px-2.5 text-micro font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
             >
               {copiedLast ? (
                 <Check className="h-3 w-3 text-success" />
@@ -380,7 +380,7 @@ export function LivePingConsole({
               disabled={logs.length === 0}
               aria-label="Copiar logs de ping"
               title="Copiar logs completos al portapapeles"
-              className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+              className="h-7 px-2.5 text-micro font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
             >
               {copiedAll ? (
                 <Check className="h-3 w-3 text-success" />
@@ -401,7 +401,7 @@ export function LivePingConsole({
             data-testid="terminal-scroll-container"
             className={`${
               fill ? "flex-1 min-h-0" : "h-[clamp(24rem,55vh,48rem)] min-h-[24rem]"
-            } overflow-y-auto overflow-x-auto p-3.5 bg-console-bg font-mono text-[11.5px] leading-relaxed text-console-muted select-text`}
+            } overflow-y-auto overflow-x-auto p-3.5 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
           >
             {logs.length === 0 ? (
               <div className="h-full flex items-center justify-center text-console-muted font-sans text-xs">

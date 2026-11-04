@@ -196,7 +196,7 @@ export function SettingsModal({
                   <div className="text-xs font-medium text-foreground">
                     Versión actual: v{currentVersion}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-micro text-muted-foreground">
                     Canal de versiones estables de GitHub Releases
                   </div>
                 </div>
@@ -224,7 +224,7 @@ export function SettingsModal({
                   <div className="font-semibold">
                     Estás utilizando la última versión disponible
                   </div>
-                  <div className="text-[11px] opacity-80">
+                  <div className="text-micro opacity-80">
                     No hay actualizaciones pendientes para Portal Correo
                     Desktop.
                   </div>
@@ -304,7 +304,7 @@ export function SettingsModal({
                       <RefreshCw className="h-4 w-4" />
                       <span>Reiniciar e instalar ahora</span>
                     </Button>
-                    <p className="text-[11px] text-muted-foreground text-center">
+                    <p className="text-micro text-muted-foreground text-center">
                       Si preferís no reiniciar ahora, la actualización se
                       aplicará automáticamente en el próximo arranque.
                     </p>
@@ -334,7 +334,7 @@ export function SettingsModal({
                       ? "default"
                       : "secondary"
                   }
-                  className="text-[11px] font-mono"
+                  className="text-micro font-mono"
                 >
                   {backendConnected || connTestResult?.connected
                     ? "SQL Online"
@@ -347,7 +347,7 @@ export function SettingsModal({
                   La configuración se lee de la red corporativa en cada arranque.
                   No se guarda en este equipo.
                 </p>
-                <div className="mt-2 p-2.5 rounded-md bg-background/60 border border-border/60 font-mono text-[11px] space-y-1">
+                <div className="mt-2 p-2.5 rounded-md bg-background/60 border border-border/60 font-mono text-micro space-y-1">
                   <div>
                     <span className="text-muted-foreground">Estado:</span>{" "}
                     <strong>{diagnostics?.gate.status || "desconocido"}</strong>
@@ -399,7 +399,7 @@ export function SettingsModal({
                   <Label htmlFor="minimize-to-tray" className="text-xs font-medium text-foreground">
                     Minimizar a la bandeja al cerrar
                   </Label>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-micro text-muted-foreground">
                     Mantiene la aplicación en segundo plano en el área de
                     notificación de Windows para reapertura instantánea.
                   </p>
@@ -422,7 +422,7 @@ export function SettingsModal({
                   <Label htmlFor="global-hotkey" className="text-xs font-medium text-foreground">
                     Atajo Global Ctrl + Espacio
                   </Label>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-micro text-muted-foreground">
                     Trae el aplicativo al frente y enfoca el buscador pegando
                     automáticamente el texto seleccionado del portapapeles.
                   </p>
@@ -440,7 +440,7 @@ export function SettingsModal({
               <div className="text-xs font-bold text-foreground">
                 Modo de Ping Predeterminado
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-micro text-muted-foreground">
                 Tipo de ping enviado automáticamente al cargar una terminal
               </div>
               <ToggleGroup

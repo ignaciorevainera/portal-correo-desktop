@@ -75,7 +75,7 @@ export function InfoModal({
                 </DialogTitle>
                 <Badge
                   variant="secondary"
-                  className="text-[10px] font-mono px-1.5 py-0 h-4 font-semibold"
+                  className="text-micro font-mono px-1.5 py-0 h-4 font-semibold"
                 >
                   {appVersion}
                 </Badge>
@@ -90,7 +90,7 @@ export function InfoModal({
         {/* Contenido / Capacidades Principales (sin márgenes verticales y con espaciado amplio entre items) */}
         <div className="px-6 py-0 text-xs">
           <div className="py-5 space-y-3">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
+            <span className="text-micro font-semibold uppercase tracking-wider text-muted-foreground block">
               Capacidades Principales
             </span>
             <Card className="space-y-3 gap-0 bg-muted/20 p-4">
@@ -108,7 +108,7 @@ export function InfoModal({
                       </span>
                     </div>
                     {item.shortcut && (
-                      <Kbd className="text-[9px] px-1.5 py-0.5 h-4 shrink-0">
+                      <Kbd className="text-micro px-1.5 py-0.5 h-4 shrink-0">
                         {item.shortcut}
                       </Kbd>
                     )}
