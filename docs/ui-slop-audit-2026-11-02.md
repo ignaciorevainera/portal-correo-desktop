@@ -258,7 +258,7 @@ El orden no es por impacto visual, es por **dependencia**: casi todo lo demás n
 
 ### Fase 4 · Limpieza (≈ 2 h)
 
-> **Estado (2026-11-04):** ejecutada en `feat/fase-4-limpieza`. Se borraron `Sidebar` (107 líneas), `HardwareCard` (151) y `NetworkAdCard` (139) con sus 4 archivos de test; `ShadcnPreset` dejó de renderizarlos y conserva la cobertura de `Card` en el test de catálogo, y se restauró en `QuickActionsBar.test.tsx` la única aserción de cableado MSRA que vivía en `TerminalCards.test.tsx`. Se retiró la infraestructura de tooltips (`TooltipProvider`, `ui/tooltip.tsx` y su guard). Se corrigieron tres deudas de Fase 3: ids IDREF válidos y reset de `aria-activedescendant` en el buscador, `onDirectPing`/`handleDirectPing` y `onFocusSearch` eliminadas, y `aria-label` en el menú contextual con test de flechas. Suite 388/388, build verde, `--strict` 0, ratchet **0/0/0/1**.
+> **Estado (2026-11-04):** ejecutada en `feat/fase-4-limpieza`. Se borraron `Sidebar` (107 líneas), `HardwareCard` (151) y `NetworkAdCard` (139) con 3 de sus archivos de test (`Sidebar.test`, `TerminalCards.test`, `CardsContrastCopy.test`) y se ajustó el cuarto (`ShadcnPreset`), que dejó de renderizarlos y conserva la cobertura de `Card` en el test de catálogo; se restauró en `QuickActionsBar.test.tsx` la única aserción de cableado MSRA que vivía en `TerminalCards.test.tsx`. Se retiró la infraestructura de tooltips (`TooltipProvider`, `ui/tooltip.tsx` y su guard). Se corrigieron tres deudas de Fase 3: ids IDREF válidos y reset de `aria-activedescendant` en el buscador, `onDirectPing`/`handleDirectPing` y `onFocusSearch` eliminadas, y `aria-label` en el menú contextual con test de flechas. Suite 388/388, build verde, `--strict` 0, ratchet **0/0/0/1**.
 
 ### Fase 5 · Tipografía y adornos (≈ 6 h)
 
@@ -295,7 +295,7 @@ El motivo por el que estos patrones persisten no es falta de criterio: es que **
 | Primitivas Radix instaladas | **4**: `@radix-ui/react-dialog`, `react-label`, `react-separator`, `react-slot` (+ transitivas) |
 | Base UI | **0**: no está `@base-ui-components/react` ni el `radix-ui` unificado; `package-lock.json` no la menciona en ninguna línea; `node_modules/@base-ui` existe pero es una **carpeta vacía**, sin `package.json` ni entrada en el lockfile |
 | Componentes shadcn | 12, copiados al repo en `src/components/ui/` (no son un paquete instalado) |
-| Instaladas **sin uso en la app** | **2**: `Card` (solo la importan `HardwareCard` y `NetworkAdCard`, ambos muertos) y `Alert` (solo `ShadcnPreset.test.tsx`) |
+| Instaladas **sin uso en la app** | **2**: `Card` (ya sin `HardwareCard`/`NetworkAdCard`, que se borraron en Fase 4; sólo lo ejercita el test de catálogo de `ShadcnPreset.test.tsx`) y `Alert` (sólo `ShadcnPreset.test.tsx`) |
 | Instalada y esquivada | `Input`: se usa en 3 lugares y se reemplaza a mano en `SubnetScannerDrawer.tsx:219-225` |
 | Primitiva visual reimplementada | El "card" (`rounded-lg border border-border bg-card`) aparece **6 veces**: `TerminalDetailsGrid.tsx:46`, `LivePingConsole.tsx:226`, `ActivityPanel.tsx:188`, `InfoModal.tsx:95`, `OperatorContextMenu.tsx:79`, `SubnetScannerDrawer.tsx:269` |
 | Dependencia muerta | `next-themes` no se importa en ningún archivo: `ui/sonner.tsx:8` ya usa el `ThemeContext` propio |
