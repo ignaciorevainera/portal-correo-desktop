@@ -108,6 +108,30 @@ describe("ActivityDialogs accesibilidad", () => {
     expect(resolution).toBeInTheDocument();
     expect(resolution).not.toHaveAttribute("aria-describedby");
   });
+
+  it("el cierre de alerta usa el diálogo de confirmación", () => {
+    const onConfirm = vi.fn();
+    render(
+      <CloseAlertDialog
+        open
+        alertTitle="Disco lleno"
+        onOpenChange={vi.fn()}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    const dialog = screen.getByRole("alertdialog");
+    expect(dialog).toHaveAccessibleName("Cerrar alerta");
+
+    const confirm = screen.getByRole("button", { name: /confirmar cierre/i });
+    expect(confirm).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText("Resolución"), {
+      target: { value: "Se liberó espacio" },
+    });
+    fireEvent.click(confirm);
+    expect(onConfirm).toHaveBeenCalledWith("Se liberó espacio");
+  });
 });
 
 describe("NetUserChooserDialog accesibilidad", () => {

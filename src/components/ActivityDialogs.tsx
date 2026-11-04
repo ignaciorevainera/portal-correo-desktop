@@ -1,4 +1,13 @@
 import React, { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -274,12 +283,12 @@ export function CloseAlertDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Cerrar alerta</DialogTitle>
-          <DialogDescription>{alertTitle}</DialogDescription>
-        </DialogHeader>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
+      <AlertDialogContent className="max-w-md">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Cerrar alerta</AlertDialogTitle>
+          <AlertDialogDescription>{alertTitle}</AlertDialogDescription>
+        </AlertDialogHeader>
 
         <form
           onSubmit={(event) => {
@@ -305,20 +314,13 @@ export function CloseAlertDialog({
           </FieldGroup>
         </form>
 
-        <DialogFooter className="gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenChange(false)}
-          >
-            Cancelar
-          </Button>
+        <AlertDialogFooter className="gap-2">
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <Button type="button" size="sm" disabled={!valid} onClick={submit}>
             Confirmar cierre
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
