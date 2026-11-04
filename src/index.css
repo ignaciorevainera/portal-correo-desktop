@@ -742,18 +742,16 @@
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.97 0 0);
-  /* Ajustes de contraste sobre el preset: labels 4.54:1 en muted */
-  --muted-foreground: oklch(0.545 0 0);
+  /* Valor del preset corporativo: 4.34:1 sobre muted (bajo AA por decisión de producto). */
+  --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.488 0.243 264.376);
   --accent-foreground: oklch(0.97 0.014 254.604);
-  /* Oscurecido para llegar a 5.10:1 sobre el tinte destructive/10 y 4.63:1 sobre destructive/15 */
-  --destructive: oklch(0.49 0.245 27.325);
+  /* Valores del preset: sobre sus tintes quedan entre 3.99:1 y 4.63:1 (aceptado). */
+  --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
-  /* Oscurecido para llegar a 4.63:1 sobre el tinte success/15 */
-  --success: oklch(0.49 0.118 165.612);
+  --success: oklch(0.508 0.118 165.612);
   --success-foreground: oklch(1 0 0);
-  /* Oscurecido para llegar a 5.04:1 sobre el tinte warning/10 y 4.67:1 sobre warning/15 */
-  --warning: oklch(0.52 0.163 48.998);
+  --warning: oklch(0.549 0.163 48.998);
   /* Sin tinte en la app: solo texto e iconos sobre card */
   --info: oklch(0.50 0.16 255);
   --border: oklch(0.922 0 0);
