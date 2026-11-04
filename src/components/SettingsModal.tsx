@@ -395,7 +395,7 @@ export function SettingsModal({
                 Comportamiento de Ventana y Bandeja
               </div>
               <div className="flex items-start justify-between gap-3">
-                <div className="space-y-0.5">
+                <div className="cursor-pointer space-y-0.5">
                   <Label htmlFor="minimize-to-tray" className="text-xs font-medium text-foreground">
                     Minimizar a la bandeja al cerrar
                   </Label>
@@ -418,7 +418,7 @@ export function SettingsModal({
                 Atajo Global de Teclado
               </div>
               <div className="flex items-start justify-between gap-3">
-                <div className="space-y-0.5">
+                <div className="cursor-pointer space-y-0.5">
                   <Label htmlFor="global-hotkey" className="text-xs font-medium text-foreground">
                     Atajo Global Ctrl + Espacio
                   </Label>
@@ -458,14 +458,14 @@ export function SettingsModal({
                 <ToggleGroupItem
                   value="standard"
                   aria-label="Estándar (4 paquetes)"
-                  className="text-xs"
+                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   Estándar (4 paquetes)
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="infinite"
                   aria-label="Continuo (-t)"
-                  className="text-xs"
+                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   Continuo (-t)
                 </ToggleGroupItem>

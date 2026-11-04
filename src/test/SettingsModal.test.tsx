@@ -165,6 +165,27 @@ describe('SettingsModal Component', () => {
     expect(standard).toHaveAttribute('aria-checked', 'false');
   });
 
+  it('mantiene la opción de ping seleccionada al volver a clickearla', () => {
+    renderSettings();
+
+    const group = screen.getByRole('radiogroup', {
+      name: /modo de ping predeterminado/i,
+    });
+    const standard = within(group).getByRole('radio', {
+      name: /estándar \(4 paquetes\)/i,
+    });
+    const infinite = within(group).getByRole('radio', {
+      name: /continuo \(-t\)/i,
+    });
+
+    fireEvent.click(standard);
+
+    expect(standard).toHaveAttribute('aria-checked', 'true');
+    expect(infinite).toHaveAttribute('aria-checked', 'false');
+    expect(localStorage.getItem('pcd_pref_ping_mode')).toBe('standard');
+    expect(localStorage.getItem('pcd_pref_ping_mode')).not.toBe('');
+  });
+
   it('renders corporate diagnostics panel with gate status, code and bootstrap info', async () => {
     (window as any).electronAPI = {
       getDiagnostics: vi.fn().mockResolvedValue({
