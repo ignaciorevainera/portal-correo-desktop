@@ -3,7 +3,6 @@ import {
   X,
   Network,
   Search,
-  Radio,
   CheckCircle2,
   Laptop,
   Loader2,
@@ -17,6 +16,7 @@ import { IconWell } from './IconWell';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Sheet,
   SheetClose,
@@ -250,13 +250,21 @@ export function SubnetScannerDrawer({
           {filteredHosts.length === 0 ? (
             <div className="h-48 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
               {isScanning ? (
-                <>
-                  <Radio className="h-8 w-8 text-link/40 animate-pulse mb-2" />
-                  <p className="text-xs font-medium">Detectando respuestas ICMP/SMB...</p>
-                  <p className="text-micro text-muted-foreground mt-1">
-                    Los equipos activos irán apareciendo en tiempo real
+                <div className="w-full space-y-2" aria-hidden="true">
+                  {[0, 1, 2].map((row) => (
+                    <div
+                      key={row}
+                      className="flex items-center gap-2 rounded-md border border-border/60 p-3"
+                    >
+                      <Skeleton className="h-2 w-2 rounded-full" />
+                      <Skeleton className="h-3 w-28" />
+                      <Skeleton className="ml-auto h-3 w-12" />
+                    </div>
+                  ))}
+                  <p role="status" className="sr-only">
+                    Detectando respuestas ICMP/SMB...
                   </p>
-                </>
+                </div>
               ) : isPaused ? (
                 <>
                   <Pause className="h-8 w-8 text-warning/40 mb-2" />

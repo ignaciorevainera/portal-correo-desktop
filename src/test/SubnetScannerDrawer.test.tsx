@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import React from 'react';
 import { SubnetScannerDrawer } from '../components/SubnetScannerDrawer';
 import * as electronClient from '../services/electronClient';
@@ -223,5 +223,41 @@ describe('SubnetScannerDrawer Component', () => {
       name: /progreso del escaneo/i,
     });
     expect(bar).toHaveAttribute("aria-valuenow", "30");
+  });
+
+  it('muestra skeletons mientras escanea y ninguno al terminar', async () => {
+    let finish:
+      | ((result: { aborted: boolean; totalFound: number }) => void)
+      | null = null;
+    vi.spyOn(electronClient, 'startSubnetScanner').mockImplementation(
+      (_targetIp, _onHostFound, _onProgress, onDone) => {
+        finish = onDone;
+        return () => {};
+      },
+    );
+
+    render(
+      <SubnetScannerDrawer
+        isOpen
+        onClose={vi.fn()}
+        targetIp="192.0.2.50"
+        onSelectTerminal={vi.fn()}
+        onLaunchRemote={vi.fn()}
+      />,
+    );
+
+    expect(
+      document.querySelectorAll('[data-slot="skeleton"]').length,
+    ).toBeGreaterThanOrEqual(3);
+
+    act(() => {
+      finish?.({ aborted: false, totalFound: 0 });
+    });
+
+    await waitFor(() =>
+      expect(
+        document.querySelectorAll('[data-slot="skeleton"]').length,
+      ).toBe(0),
+    );
   });
 });
