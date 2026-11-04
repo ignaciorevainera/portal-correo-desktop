@@ -24,7 +24,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Hint } from './Hint';
 import {
   startSubnetScanner,
   SubnetDiscoveredHost,
@@ -288,47 +287,45 @@ export function SubnetScannerDrawer({
                   className="flex-row items-stretch gap-0 border-border/80 p-0 hover:border-border hover:bg-muted/30 transition-all overflow-hidden group"
                 >
                   {/* Porción principal: Información y selección de terminal */}
-                  <Hint label={`Consultar terminal ${displayName}`}>
-                    <button
-                      type="button"
-                      onClick={() => onSelectTerminal(lookupTarget)}
-                      aria-label={`Consultar terminal ${displayName}`}
-                      className="flex-1 min-w-0 p-2.5 text-left flex flex-col justify-center cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-success shrink-0" />
-                        <span className="text-xs font-bold text-foreground font-mono truncate transition-colors">
-                          {displayName}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono text-muted-foreground">
-                        {hostname && <span>{host.ip}</span>}
-                        {host.latency !== null && (
-                          <span className="text-muted-foreground">{host.latency}ms</span>
-                        )}
-                      </div>
-                    </button>
-                  </Hint>
+                  <button
+                    type="button"
+                    onClick={() => onSelectTerminal(lookupTarget)}
+                    aria-label={`Consultar terminal ${displayName}`}
+                    title={`Consultar terminal ${displayName}`}
+                    className="flex-1 min-w-0 p-2.5 text-left flex flex-col justify-center cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-success shrink-0" />
+                      <span className="text-xs font-bold text-foreground font-mono truncate transition-colors">
+                        {displayName}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono text-muted-foreground">
+                      {hostname && <span>{host.ip}</span>}
+                      {host.latency !== null && (
+                        <span className="text-muted-foreground">{host.latency}ms</span>
+                      )}
+                    </div>
+                  </button>
 
                   {/* Divisor vertical sutil entre porciones */}
                   <div className="w-px bg-border/60 self-stretch my-1" />
 
                   {/* Última porción reservada exclusivamente para el botón de conexión remota */}
-                  <Hint label="Conexión remota rápida (VNC / MSRA)">
-                    <button
-                      type="button"
-                      onClick={(e) => handleRemoteClick(e, lookupTarget)}
-                      disabled={isConnectingThis}
-                      aria-label={`Conexión remota rápida con ${displayName}`}
-                      className="w-10 flex items-center justify-center shrink-0 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    >
-                      {isConnectingThis ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                      ) : (
-                        <Monitor className="h-4 w-4" />
-                      )}
-                    </button>
-                  </Hint>
+                  <button
+                    type="button"
+                    onClick={(e) => handleRemoteClick(e, lookupTarget)}
+                    disabled={isConnectingThis}
+                    aria-label={`Conexión remota rápida con ${displayName}`}
+                    title="Conexión remota rápida (VNC / MSRA)"
+                    className="w-10 flex items-center justify-center shrink-0 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    {isConnectingThis ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Monitor className="h-4 w-4" />
+                    )}
+                  </button>
                 </Card>
               );
             })
@@ -342,54 +339,50 @@ export function SubnetScannerDrawer({
           </span>
           <div className="flex items-center gap-1.5">
             {isScanning ? (
-              <Hint label="Pausar escaneo de subred">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 px-2.5 text-xs text-warning border-warning/30 hover:bg-warning/10 cursor-pointer"
-                  onClick={handlePause}
-                  aria-label="Pausar escaneo"
-                >
-                  <Pause className="h-3 w-3 mr-1" /> Pausar
-                </Button>
-              </Hint>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2.5 text-xs text-warning border-warning/30 hover:bg-warning/10 cursor-pointer"
+                onClick={handlePause}
+                aria-label="Pausar escaneo"
+                title="Pausar escaneo de subred"
+              >
+                <Pause className="h-3 w-3 mr-1" /> Pausar
+              </Button>
             ) : isPaused ? (
               <>
-                <Hint label="Reiniciar escaneo desde el inicio">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                    onClick={handleRestart}
-                    aria-label="Reiniciar escaneo"
-                  >
-                    <RotateCw className="h-3 w-3 mr-1" /> Reiniciar
-                  </Button>
-                </Hint>
-                <Hint label="Reanudar escaneo de subred">
-                  <Button
-                    size="sm"
-                    variant="default"
-                    className="h-7 px-2.5 text-xs font-medium cursor-pointer"
-                    onClick={handleResume}
-                    aria-label="Reanudar escaneo"
-                  >
-                    <Play className="h-3 w-3 mr-1" /> Reanudar
-                  </Button>
-                </Hint>
-              </>
-            ) : (
-              <Hint label="Volver a escanear toda la subred">
                 <Button
                   size="sm"
                   variant="ghost"
                   className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                   onClick={handleRestart}
-                  aria-label="Escanear nuevamente"
+                  aria-label="Reiniciar escaneo"
+                  title="Reiniciar escaneo desde el inicio"
                 >
-                  <RotateCw className="h-3 w-3 mr-1" /> Escanear de nuevo
+                  <RotateCw className="h-3 w-3 mr-1" /> Reiniciar
                 </Button>
-              </Hint>
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="h-7 px-2.5 text-xs font-medium cursor-pointer"
+                  onClick={handleResume}
+                  aria-label="Reanudar escaneo"
+                  title="Reanudar escaneo de subred"
+                >
+                  <Play className="h-3 w-3 mr-1" /> Reanudar
+                </Button>
+              </>
+            ) : (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                onClick={handleRestart}
+                aria-label="Escanear nuevamente"
+                title="Volver a escanear toda la subred"
+              >
+                <RotateCw className="h-3 w-3 mr-1" /> Escanear de nuevo
+              </Button>
             )}
           </div>
         </div>

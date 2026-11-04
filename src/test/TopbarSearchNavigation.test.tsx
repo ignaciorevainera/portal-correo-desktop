@@ -513,4 +513,37 @@ describe('Topbar Search and Keyboard Navigation', () => {
       expect(screen.getByRole('listbox')).toBeInTheDocument();
     }
   });
+
+  it('no distingue el tipo con texto y no anima la entrada del panel', async () => {
+    localStorage.setItem(
+      RECENT_KEY,
+      JSON.stringify(['SUC10-PC01', 'jperez']),
+    );
+
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} onSelectAccount={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const input = screen.getByRole('combobox', { name: /buscar terminal/i });
+    fireEvent.focus(input);
+    fireEvent.click(input);
+
+    const listbox = await screen.findByRole('listbox');
+    expect(within(listbox).queryByText(/^cuenta$/i)).toBeNull();
+    expect(within(listbox).queryByText(/^equipo$/i)).toBeNull();
+    expect(
+      within(listbox).getAllByRole('option')[0].querySelector('svg'),
+    ).not.toBeNull();
+
+    const panel = screen.getByRole('dialog', {
+      name: /resultados de búsqueda/i,
+    });
+    expect(panel.className).toContain('data-open:animate-none');
+    // `cn` no descarta `data-open:animate-in` porque es una utilidad de
+    // tw-animate-css ajena a su tabla; la anulación se resuelve en el CSS
+    // compilado, donde `animation: none` aparece después y gana por cascada.
+    expect(panel.className).toContain('data-closed:animate-out');
+  });
 });

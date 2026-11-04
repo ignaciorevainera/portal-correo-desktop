@@ -62,10 +62,9 @@ describe("TerminalIdentity", () => {
       />,
     );
 
-    const button = screen.getByRole("button", {
-      name: /consultar cuenta ad: el usuario nt contiene caracteres no permitidos/i,
-    });
-    expect(button).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Consultar cuenta AD" }),
+    ).toBeDisabled();
   });
 
   it("does not render the account button without a user", () => {

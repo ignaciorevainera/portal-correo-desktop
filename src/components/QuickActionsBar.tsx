@@ -18,7 +18,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Kbd } from "@/components/ui/kbd";
-import { Hint } from "./Hint";
 import {
   Popover,
   PopoverContent,
@@ -153,41 +152,39 @@ export function QuickActionsBar({
           ref={dropdownRef}
         >
           <div className="flex w-full rounded-md">
-            <Hint label="Conectar automáticamente según puertos disponibles (Atajo F2)">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handlePrimaryRemoteClick}
-                aria-label="Conexión Remota Inteligente"
-                className="flex-1 min-w-0 rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2.5 bg-muted text-foreground border-border hover:bg-muted/80 justify-between"
-              >
-                <span className="flex items-center truncate mr-1 min-w-0">
-                  {ctaIcon}
-                  <span className="truncate">{ctaLabel}</span>
-                </span>
-                {!isProbingRemote && (
-                  <Kbd className="hidden md:inline-block ml-auto shrink-0">F2</Kbd>
-                )}
-              </Button>
-            </Hint>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handlePrimaryRemoteClick}
+              aria-label="Conexión Remota Inteligente"
+              title="Conectar automáticamente según puertos disponibles (Atajo F2)"
+              className="flex-1 min-w-0 rounded-r-none text-xs font-semibold cursor-pointer h-8 px-2.5 bg-muted text-foreground border-border hover:bg-muted/80 justify-between"
+            >
+              <span className="flex items-center truncate mr-1 min-w-0">
+                {ctaIcon}
+                <span className="truncate">{ctaLabel}</span>
+              </span>
+              {!isProbingRemote && (
+                <Kbd className="hidden md:inline-block ml-auto shrink-0">F2</Kbd>
+              )}
+            </Button>
 
-            <Hint label="Opciones manuales y estado de puertos">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                aria-label="Opciones de conexión remota"
-                className="rounded-l-none px-1.5 cursor-pointer border-l-0 h-8 bg-muted text-foreground border-border hover:bg-muted/80 shrink-0"
-              >
-                <ChevronDown
-                  className={`h-3.5 w-3.5 transition-transform ${
-                    isDropdownOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </Button>
-            </Hint>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              aria-label="Opciones de conexión remota"
+              title="Opciones manuales y estado de puertos"
+              className="rounded-l-none px-1.5 cursor-pointer border-l-0 h-8 bg-muted text-foreground border-border hover:bg-muted/80 shrink-0"
+            >
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </Button>
           </div>
 
           {/* Menú Desplegable con Diagnóstico en Vivo y Opciones Forzadas */}
@@ -286,134 +283,127 @@ export function QuickActionsBar({
 
         {/* Split Button: Ping del equipo consultado con grow (Único botón con estado de activación) */}
         <div className="flex rounded-md flex-1 min-w-[110px] grow">
-          <Hint label="Iniciar Ping estándar (4 paquetes) (Atajo F4)">
-            <Button
-              type="button"
-              // El estado activo fuerza destructive sólido (AA también en hover) sobre el variant.
-              variant={isPinging ? "destructive" : "outline"}
-              size="sm"
-              onClick={onTogglePing}
-              aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
-              aria-pressed={isPinging}
-              className={`flex-1 min-w-0 rounded-r-none h-8 px-2.5 text-xs font-semibold cursor-pointer justify-between border-border transition-colors ${
-                isPinging
-                  ? "animate-pulse bg-destructive text-destructive-foreground hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90"
-                  : "bg-muted text-foreground hover:bg-muted/80"
-              }`}
-            >
-              <span className="flex items-center truncate mr-1 min-w-0">
-                <Activity
-                  className={`h-3.5 w-3.5 shrink-0 mr-1.5 ${
-                    isPinging
-                      ? "animate-pulse"
-                      : "text-success font-bold"
-                  }`}
-                />
-                <span className="truncate">{isPinging ? "Detener" : "Ping"}</span>
-              </span>
-              {!isPinging && (
-                <Kbd className="hidden md:inline-block ml-auto shrink-0">F4</Kbd>
-              )}
-            </Button>
-          </Hint>
-          <Hint label="Ejecutar Ping infinito / continuo (-t)">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onLaunchPingInfinite?.()}
-              aria-label="Iniciar Ping continuo -t"
-              className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center text-xs font-semibold cursor-pointer shrink-0 border-border bg-muted text-foreground hover:bg-muted/80 transition-colors"
-            >
-              <span className="font-mono text-[11px] font-semibold text-success">
-                -t
-              </span>
-            </Button>
-          </Hint>
+          <Button
+            type="button"
+            // El estado activo fuerza destructive sólido (AA también en hover) sobre el variant.
+            variant={isPinging ? "destructive" : "outline"}
+            size="sm"
+            onClick={onTogglePing}
+            aria-label={isPinging ? "Detener Ping en vivo" : "Iniciar Ping"}
+            title="Iniciar Ping estándar (4 paquetes) (Atajo F4)"
+            aria-pressed={isPinging}
+            className={`flex-1 min-w-0 rounded-r-none h-8 px-2.5 text-xs font-semibold cursor-pointer justify-between border-border transition-colors ${
+              isPinging
+                ? "animate-pulse bg-destructive text-destructive-foreground hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90"
+                : "bg-muted text-foreground hover:bg-muted/80"
+            }`}
+          >
+            <span className="flex items-center truncate mr-1 min-w-0">
+              <Activity
+                className={`h-3.5 w-3.5 shrink-0 mr-1.5 ${
+                  isPinging
+                    ? "animate-pulse"
+                    : "text-success font-bold"
+                }`}
+              />
+              <span className="truncate">{isPinging ? "Detener" : "Ping"}</span>
+            </span>
+            {!isPinging && (
+              <Kbd className="hidden md:inline-block ml-auto shrink-0">F4</Kbd>
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onLaunchPingInfinite?.()}
+            aria-label="Iniciar Ping continuo -t"
+            title="Ejecutar Ping infinito / continuo (-t)"
+            className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center text-xs font-semibold cursor-pointer shrink-0 border-border bg-muted text-foreground hover:bg-muted/80 transition-colors"
+          >
+            <span className="font-mono text-[11px] font-semibold text-success">
+              -t
+            </span>
+          </Button>
         </div>
 
         {/* Enlaces del sitio: se usan a diario, por eso quedan siempre visibles */}
         {siteTargets.isValid && onLaunchSitePing && (
           <>
             <div className="flex rounded-md shrink-0">
-              <Hint label={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onLaunchSitePing("router", "standard")}
-                  aria-label="Hacer ping al router .250"
-                  className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1"
-                >
-                  <Wifi className="h-3.5 w-3.5 shrink-0 text-link" />
-                  <span className="font-mono text-[11px]">.250</span>
-                </Button>
-              </Hint>
-              <Hint label={`Ping continuo (-t) a ${siteTargets.routerIp}`}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onLaunchSitePing("router", "infinite")}
-                  aria-label="Ping continuo -t router .250"
-                  className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
-                >
-                  <span className="font-mono text-[11px] font-semibold text-link">
-                    -t
-                  </span>
-                </Button>
-              </Hint>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("router", "standard")}
+                aria-label="Hacer ping al router .250"
+                title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
+                className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1"
+              >
+                <Wifi className="h-3.5 w-3.5 shrink-0 text-link" />
+                <span className="font-mono text-[11px]">.250</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("router", "infinite")}
+                aria-label="Ping continuo -t router .250"
+                title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
+                className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
+              >
+                <span className="font-mono text-[11px] font-semibold text-link">
+                  -t
+                </span>
+              </Button>
             </div>
 
             <div className="flex rounded-md shrink-0">
-              <Hint label={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onLaunchSitePing("server", "standard")}
-                  aria-label="Hacer ping al servidor .231"
-                  className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1"
-                >
-                  <Layers className="h-3.5 w-3.5 shrink-0 text-warning" />
-                  <span className="font-mono text-[11px]">.231</span>
-                </Button>
-              </Hint>
-              <Hint label={`Ping continuo (-t) a ${siteTargets.serverIp}`}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onLaunchSitePing("server", "infinite")}
-                  aria-label="Ping continuo -t servidor .231"
-                  className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
-                >
-                  <span className="font-mono text-[11px] font-semibold text-warning">
-                    -t
-                  </span>
-                </Button>
-              </Hint>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("server", "standard")}
+                aria-label="Hacer ping al servidor .231"
+                title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
+                className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1"
+              >
+                <Layers className="h-3.5 w-3.5 shrink-0 text-warning" />
+                <span className="font-mono text-[11px]">.231</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onLaunchSitePing("server", "infinite")}
+                aria-label="Ping continuo -t servidor .231"
+                title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
+                className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
+              >
+                <span className="font-mono text-[11px] font-semibold text-warning">
+                  -t
+                </span>
+              </Button>
             </div>
           </>
         )}
 
         {/* Menú "Más": acciones secundarias agrupadas sin competir con las primarias */}
         <Popover open={isMoreOpen} onOpenChange={setIsMoreOpen}>
-          <Hint label="Más acciones">
-            <PopoverTrigger asChild>
-              <Button
-                ref={moreTriggerRef}
-                type="button"
-                variant="outline"
-                size="sm"
-                aria-label="Más acciones"
-                className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0"
-              >
-                <MoreHorizontal className="h-3.5 w-3.5" />
-                <span>Más</span>
-              </Button>
-            </PopoverTrigger>
-          </Hint>
+          <PopoverTrigger asChild>
+            <Button
+              ref={moreTriggerRef}
+              type="button"
+              variant="outline"
+              size="sm"
+              aria-label="Más acciones"
+              title="Más acciones"
+              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0"
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+              <span>Más</span>
+            </Button>
+          </PopoverTrigger>
           <PopoverContent
             align="end"
             aria-label="Más acciones"
@@ -488,42 +478,40 @@ export function QuickActionsBar({
                 <Separator className="my-1" />
                 <div className="flex flex-col gap-1">
                   {onOpenSubnetScanner && (
-                    <Hint label="Escanear toda la subred de esta terminal">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          handleMoreAction(onOpenSubnetScanner)
-                        }
-                        aria-label="Escanear Subred"
-                        className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
-                      >
-                        <Network className="h-3.5 w-3.5 text-link" />
-                        <span>Escanear Subred</span>
-                      </Button>
-                    </Hint>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        handleMoreAction(onOpenSubnetScanner)
+                      }
+                      aria-label="Escanear Subred"
+                      title="Escanear toda la subred de esta terminal"
+                      className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                    >
+                      <Network className="h-3.5 w-3.5 text-link" />
+                      <span>Escanear Subred</span>
+                    </Button>
                   )}
 
                   {onRefreshUptime && (
-                    <Hint label="Refrescar tiempo de actividad">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleMoreAction(onRefreshUptime)}
-                        disabled={isRefreshingUptime}
-                        aria-label="Refrescar Uptime"
-                        className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
-                      >
-                        <RotateCcw
-                          className={`h-3.5 w-3.5 text-muted-foreground ${
-                            isRefreshingUptime ? "animate-spin" : ""
-                          }`}
-                        />
-                        <span>Refrescar Uptime</span>
-                      </Button>
-                    </Hint>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleMoreAction(onRefreshUptime)}
+                      disabled={isRefreshingUptime}
+                      aria-label="Refrescar Uptime"
+                      title="Refrescar tiempo de actividad"
+                      className="justify-start text-xs w-full cursor-pointer h-8 px-2 hover:bg-muted"
+                    >
+                      <RotateCcw
+                        className={`h-3.5 w-3.5 text-muted-foreground ${
+                          isRefreshingUptime ? "animate-spin" : ""
+                        }`}
+                      />
+                      <span>Refrescar Uptime</span>
+                    </Button>
                   )}
                 </div>
               </>

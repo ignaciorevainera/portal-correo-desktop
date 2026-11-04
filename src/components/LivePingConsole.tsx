@@ -15,7 +15,6 @@ import {
 } from "../services/electronClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Hint } from "./Hint";
 import {
   Collapsible,
   CollapsibleContent,
@@ -313,87 +312,83 @@ export function LivePingConsole({
             )}
 
             {onRerun && (
-              <Hint label="Volver a ejecutar net user">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="xs"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onRerun?.();
-                  }}
-                  disabled={isAnyRunning}
-                  aria-label="Re-ejecutar consulta"
-                  className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer disabled:opacity-40"
-                >
-                  <RefreshCw className="h-3 w-3" />
-                  <span>Re-ejecutar</span>
-                </Button>
-              </Hint>
-            )}
-
-            <Hint label="Limpiar pantalla de logs">
               <Button
                 type="button"
                 variant="outline"
                 size="xs"
                 onClick={(event) => {
                   event.stopPropagation();
-                  handleClear();
+                  onRerun?.();
                 }}
-                aria-label="Limpiar logs de ping"
-                className="h-7 px-2 text-[11px] font-sans flex items-center gap-1 cursor-pointer"
+                disabled={isAnyRunning}
+                aria-label="Re-ejecutar consulta"
+                title="Volver a ejecutar net user"
+                className="h-7 px-2.5 text-[11px] font-sans font-medium flex items-center gap-1 cursor-pointer disabled:opacity-40"
               >
-                <Trash2 className="h-3 w-3" />
-                <span>Limpiar</span>
+                <RefreshCw className="h-3 w-3" />
+                <span>Re-ejecutar</span>
               </Button>
-            </Hint>
+            )}
+
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleClear();
+              }}
+              aria-label="Limpiar logs de ping"
+              title="Limpiar pantalla de logs"
+              className="h-7 px-2 text-[11px] font-sans flex items-center gap-1 cursor-pointer"
+            >
+              <Trash2 className="h-3 w-3" />
+              <span>Limpiar</span>
+            </Button>
 
             {/* Copiar Último Bloque */}
-            <Hint label="Copiar únicamente el último comando y su respuesta al portapapeles">
-              <Button
-                type="button"
-                variant={copiedLast ? "secondary" : "outline"}
-                size="xs"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleCopyLastBlock();
-                }}
-                disabled={logs.length === 0}
-                aria-label="Copiar último bloque de logs"
-                className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
-              >
-                {copiedLast ? (
-                  <Check className="h-3 w-3 text-success" />
-                ) : (
-                  <Copy className="h-3 w-3 text-muted-foreground" />
-                )}
-                <span>{copiedLast ? "Bloque copiado" : "Copiar Último"}</span>
-              </Button>
-            </Hint>
+            <Button
+              type="button"
+              variant={copiedLast ? "secondary" : "outline"}
+              size="xs"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleCopyLastBlock();
+              }}
+              disabled={logs.length === 0}
+              aria-label="Copiar último bloque de logs"
+              title="Copiar únicamente el último comando y su respuesta al portapapeles"
+              className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+            >
+              {copiedLast ? (
+                <Check className="h-3 w-3 text-success" />
+              ) : (
+                <Copy className="h-3 w-3 text-muted-foreground" />
+              )}
+              <span>{copiedLast ? "Bloque copiado" : "Copiar Último"}</span>
+            </Button>
 
             {/* Copiar Todos los Logs */}
-            <Hint label="Copiar logs completos al portapapeles">
-              <Button
-                type="button"
-                variant={copiedAll ? "secondary" : "outline"}
-                size="xs"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleCopyLogs();
-                }}
-                disabled={logs.length === 0}
-                aria-label="Copiar logs de ping"
-                className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
-              >
-                {copiedAll ? (
-                  <Check className="h-3 w-3 text-success" />
-                ) : (
-                  <Copy className="h-3 w-3 text-muted-foreground" />
-                )}
-                <span>{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
-              </Button>
-            </Hint>
+            <Button
+              type="button"
+              variant={copiedAll ? "secondary" : "outline"}
+              size="xs"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleCopyLogs();
+              }}
+              disabled={logs.length === 0}
+              aria-label="Copiar logs de ping"
+              title="Copiar logs completos al portapapeles"
+              className="h-7 px-2.5 text-[11px] font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+            >
+              {copiedAll ? (
+                <Check className="h-3 w-3 text-success" />
+              ) : (
+                <Copy className="h-3 w-3 text-muted-foreground" />
+              )}
+              <span>{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
+            </Button>
           </div>
         </div>
 
