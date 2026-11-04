@@ -246,25 +246,30 @@ export function SubnetScannerDrawer({
         </div>
 
         {/* Lista de equipos detectados */}
-        <div className="flex-1 space-y-1.5 overflow-y-auto p-3">
+        <div
+          className="flex-1 space-y-1.5 overflow-y-auto p-3"
+          aria-busy={isScanning}
+        >
           {filteredHosts.length === 0 ? (
             <div className="h-48 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
               {isScanning ? (
-                <div className="w-full space-y-2" aria-hidden="true">
-                  {[0, 1, 2].map((row) => (
-                    <div
-                      key={row}
-                      className="flex items-center gap-2 rounded-md border border-border/60 p-3"
-                    >
-                      <Skeleton className="h-2 w-2 rounded-full" />
-                      <Skeleton className="h-3 w-28" />
-                      <Skeleton className="ml-auto h-3 w-12" />
-                    </div>
-                  ))}
+                <>
+                  <div className="w-full space-y-2" aria-hidden="true">
+                    {[0, 1, 2].map((row) => (
+                      <div
+                        key={row}
+                        className="flex items-center gap-2 rounded-md border border-border/60 p-3"
+                      >
+                        <Skeleton className="h-2 w-2 rounded-full" />
+                        <Skeleton className="h-3 w-28" />
+                        <Skeleton className="ml-auto h-3 w-12" />
+                      </div>
+                    ))}
+                  </div>
                   <p role="status" className="sr-only">
                     Detectando respuestas ICMP/SMB...
                   </p>
-                </div>
+                </>
               ) : isPaused ? (
                 <>
                   <Pause className="h-8 w-8 text-warning/40 mb-2" />

@@ -25,7 +25,7 @@ export function BlockedScreen({ gate, onRetry, isRetrying }: BlockedScreenProps)
       </div>
 
       <div className="max-w-md space-y-2">
-        <h1 className="font-heading text-xl font-bold text-foreground">{titulo}</h1>
+        <h1 className="font-heading text-lg font-bold text-foreground">{titulo}</h1>
         <p className="text-sm text-muted-foreground">{gate.message}</p>
       </div>
 

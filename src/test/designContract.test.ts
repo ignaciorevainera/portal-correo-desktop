@@ -62,6 +62,12 @@ describe("contrato de diseno", () => {
     expect(count(/text-\[\d+(?:\.\d+)?px\]/g)).toBe(0);
   });
 
+  it("no usa pasos fuera de la escala 18/14/12/11", () => {
+    expect(
+      count(/\btext-(?:base|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)\b/g),
+    ).toBe(0);
+  });
+
   it("usa una sola utilidad de overline y no más de cinco", () => {
     expect(count(/\buppercase\b/g)).toBe(0);
     expect(count(/\boverline-label\b/g)).toBeLessThanOrEqual(5);

@@ -147,7 +147,7 @@ export function ActivityPanel({
         <div className="min-w-0">
           <h2
             id="activity-panel-title"
-            className="font-heading text-base font-semibold text-foreground"
+            className="font-heading text-lg font-semibold text-foreground"
           >
             Alertas y reseteos
           </h2>

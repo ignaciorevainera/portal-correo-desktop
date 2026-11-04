@@ -15,7 +15,7 @@ describe("IconWell", () => {
     expect(well.className).toContain("bg-primary/10");
     expect(well.className).toContain("text-link");
     expect(well.className).toContain("rounded-md");
-    expect(well.className).toContain("p-1");
+    expect(well.className.split(/\s+/)).toContain("p-1");
     expect(well.querySelector("svg")).not.toBeNull();
   });
 

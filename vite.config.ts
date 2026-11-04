@@ -8,9 +8,10 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: './',
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+    alias: [
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+      { find: /^cn$/, replacement: path.resolve(__dirname, './src/lib/cn.ts') },
+    ],
   },
   test: {
     globals: true,

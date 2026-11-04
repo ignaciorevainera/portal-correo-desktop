@@ -172,7 +172,7 @@ export function SettingsModal({
                 <Settings className="h-5 w-5" />
               </IconWell>
               <div>
-                <DialogTitle className="text-base font-bold text-foreground">
+                <DialogTitle className="text-lg font-bold text-foreground">
                   Ajustes y Configuración
                 </DialogTitle>
               </div>

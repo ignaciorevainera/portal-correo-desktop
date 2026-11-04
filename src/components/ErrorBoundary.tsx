@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="max-w-md w-full rounded-lg border border-destructive/40 bg-card p-6 space-y-4">
             <div className="flex items-center gap-3 text-destructive">
               <AlertTriangle className="h-6 w-6 shrink-0" />
-              <h2 className="text-base font-bold font-heading">
+              <h2 className="text-lg font-bold font-heading">
                 Ocurrió un error inesperado
               </h2>
             </div>
