@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import logoIcon from "../assets/icon.png";
 import {
   Search,
   Monitor,
   UserRound,
-  Terminal as TerminalIcon,
   Database,
   HelpCircle,
   ExternalLink,
@@ -12,7 +11,6 @@ import {
   Power,
   MonitorPlay,
   Settings,
-  History,
   X,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
@@ -24,10 +22,27 @@ import {
   openExternalUrl,
 } from "../services/electronClient";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Kbd } from "@/components/ui/kbd";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { classifySearch } from "@/lib/usernames";
 import {
   loadRecentSearches,
@@ -49,6 +64,10 @@ interface TopbarProps {
 
 const PORTAL_MDA_URL = "https://mda.correo.local/inventario-terminales";
 
+// cmdk selecciona el primer ítem cuando su `value` es vacío; usar un valor
+// centinela conserva el estado "sin opción activa" hasta que el usuario navega.
+const NO_ACTIVE_VALUE = "__sin_seleccion__";
+
 export function Topbar({
   onSelectTerminal,
   onSelectAccount,
@@ -60,13 +79,19 @@ export function Topbar({
 }: TopbarProps): React.JSX.Element {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const [activeValue, setActiveValue] = useState<string>("");
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() =>
     loadRecentSearches(),
   );
   const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchGroupRef = useRef<HTMLDivElement>(null);
+
+  // cmdk sobrescribe el id de la lista con el suyo; el `aria-controls` del
+  // input necesita un id estable, así que lo fijamos al montarse la lista.
+  const assignListId = useCallback((node: HTMLDivElement | null) => {
+    node?.setAttribute("id", "terminal-search-list");
+  }, []);
 
   useEffect(
     () =>
@@ -131,22 +156,6 @@ export function Topbar({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Cerrar dropdown al hacer click fuera
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const commitSearch = (value: string, kind: RecentSearch["kind"]): void => {
     const clean = value.trim();
     if (!clean) return;
@@ -158,8 +167,8 @@ export function Topbar({
       onSelectTerminal(clean);
     }
     setQuery("");
+    setActiveValue("");
     setIsOpen(false);
-    setSelectedIndex(-1);
   };
 
   const handleSubmit = (value: string): void => {
@@ -170,52 +179,86 @@ export function Topbar({
     commitSearch(item.value, item.kind);
   };
 
-  const handleDirectAction = (
-    event: React.MouseEvent,
-    item: RecentSearch,
-    action: (value: string) => void,
-  ): void => {
-    event.stopPropagation();
-    commitSearch(item.value, "terminal");
-    action(item.value);
-  };
-
-  const removeRecent = (event: React.MouseEvent, value: string): void => {
-    event.stopPropagation();
-    setRecentSearches(removeRecentSearch(value));
-  };
-
   const handleKeyDownInput = (
-    e: React.KeyboardEvent<HTMLInputElement>,
+    event: React.KeyboardEvent<HTMLInputElement>,
   ): void => {
-    if (isOpen && filteredMatches.length > 0) {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev < filteredMatches.length - 1 ? prev + 1 : 0,
-        );
-        return;
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev > 0 ? prev - 1 : filteredMatches.length - 1,
-        );
-        return;
-      }
-      if (e.key === "Enter") {
-        e.preventDefault();
-        if (selectedIndex >= 0 && selectedIndex < filteredMatches.length) {
-          handleActivate(filteredMatches[selectedIndex]);
-          return;
-        }
-        if (query.trim()) {
-          handleSubmit(query.trim());
+    if (!isOpen) {
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        if (filteredMatches.length > 0) {
+          event.preventDefault();
+          const index =
+            event.key === "ArrowDown" ? 0 : filteredMatches.length - 1;
+          setActiveValue(filteredMatches[index].value);
+          setIsOpen(true);
         }
         return;
       }
-    } else if (e.key === "Enter" && query.trim()) {
-      handleSubmit(query.trim());
+      if (event.key === "Enter" && query.trim()) {
+        event.preventDefault();
+        handleSubmit(query.trim());
+      }
+      return;
+    }
+
+    if (filteredMatches.length === 0) {
+      if (event.key === "Enter" && query.trim()) {
+        event.preventDefault();
+        handleSubmit(query.trim());
+      }
+      return;
+    }
+
+    const currentIndex = filteredMatches.findIndex(
+      (item) => item.value === activeValue,
+    );
+    const activeItem = filteredMatches.find(
+      (item) => item.value === activeValue,
+    );
+
+    if (event.key === "Delete") {
+      if (activeItem) {
+        event.preventDefault();
+        setRecentSearches(removeRecentSearch(activeItem.value));
+        setActiveValue("");
+      }
+      return;
+    }
+
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      if (activeItem?.kind === "terminal" && onDirectVnc) {
+        event.preventDefault();
+        setRecentSearches(saveRecentSearch(activeItem.value, "terminal"));
+        onSelectTerminal(activeItem.value);
+        onDirectVnc(activeItem.value);
+        setQuery("");
+        setActiveValue("");
+        setIsOpen(false);
+      }
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      const next = (currentIndex + 1) % filteredMatches.length;
+      setActiveValue(filteredMatches[next].value);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      const previous =
+        currentIndex <= 0 ? filteredMatches.length - 1 : currentIndex - 1;
+      setActiveValue(filteredMatches[previous].value);
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (activeItem) {
+        handleActivate(activeItem);
+      } else if (query.trim()) {
+        handleSubmit(query.trim());
+      }
     }
   };
 
@@ -242,151 +285,174 @@ export function Topbar({
 
         {/* Buscador Rápido Centralizado */}
         <div className="relative flex-1 max-w-md app-no-drag">
-          <div className="relative flex items-center">
-            <Input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setIsOpen(true);
-                setSelectedIndex(-1);
-              }}
-              onKeyDown={handleKeyDownInput}
-              onFocus={() => {
-                if (recentSearches.length > 0 || query.trim()) {
-                  setIsOpen(true);
-                  setSelectedIndex(-1);
+          <Popover open={isOpen} onOpenChange={setIsOpen}>
+            <PopoverAnchor>
+              <InputGroup ref={searchGroupRef} className="h-10 border-input bg-muted/70">
+                <InputGroupAddon>
+                  <Search
+                    className="h-4 w-4 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                </InputGroupAddon>
+                <InputGroupInput
+                  ref={inputRef}
+                  value={query}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setActiveValue("");
+                    setIsOpen(true);
+                  }}
+                  onFocus={() => {
+                    if (recentSearches.length > 0 || query.trim()) {
+                      setActiveValue("");
+                      setIsOpen(true);
+                    }
+                  }}
+                  onClick={() => {
+                    if (
+                      !isOpen &&
+                      (recentSearches.length > 0 || query.trim())
+                    ) {
+                      setActiveValue("");
+                      setIsOpen(true);
+                    }
+                  }}
+                  onKeyDown={handleKeyDownInput}
+                  placeholder="Buscar terminal, IP o usuario"
+                  aria-label="Buscar terminal, IP o usuario"
+                  role="combobox"
+                  aria-expanded={isOpen}
+                  aria-controls="terminal-search-list"
+                  aria-activedescendant={
+                    isOpen && activeValue
+                      ? `terminal-search-option-${activeValue}`
+                      : undefined
+                  }
+                  aria-autocomplete="list"
+                  aria-keyshortcuts="Delete Control+Enter"
+                  className="font-mono text-xs md:text-sm"
+                />
+                <InputGroupAddon align="inline-end">
+                  <span className="hidden items-center gap-1 md:flex">
+                    <Kbd>Ctrl</Kbd>+<Kbd>F</Kbd>
+                  </span>
+                  <InputGroupButton
+                    size="icon-xs"
+                    onClick={() => query.trim() && handleSubmit(query.trim())}
+                    disabled={!query.trim()}
+                    aria-label="Buscar terminal, IP o usuario"
+                  >
+                    <Search className="h-4 w-4" />
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
+            </PopoverAnchor>
+
+            <PopoverContent
+              align="start"
+              sideOffset={4}
+              aria-label="Resultados de búsqueda"
+              className="w-[var(--radix-popover-trigger-width)] p-0"
+              onOpenAutoFocus={(event) => event.preventDefault()}
+              onPointerDownOutside={(event) => {
+                const target = event.target as Node | null;
+                if (target && searchGroupRef.current?.contains(target)) {
+                  event.preventDefault();
                 }
               }}
-              placeholder="Buscar terminal, IP o usuario"
-              className="w-full h-10 pl-3.5 pr-20 text-xs rounded-md bg-muted/70 border-input focus-visible:bg-background text-foreground font-mono transition-colors md:text-sm"
-            />
-            <div className="absolute right-1.5 flex items-center gap-1.5">
-              <div className="pointer-events-none text-[10px] hidden md:block">
-                <Kbd>Ctrl</Kbd>+<Kbd>F</Kbd>
-              </div>
-              <Hint label="Buscar terminal, IP o usuario (o Enter)">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => query.trim() && handleSubmit(query.trim())}
-                  disabled={!query.trim()}
-                  aria-label="Buscar terminal, IP o usuario"
-                  className="h-7 w-7 text-link hover:text-link hover:bg-muted/80 cursor-pointer disabled:opacity-30 rounded-md shrink-0"
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              </Hint>
-            </div>
-          </div>
-
-          {/* Menú de resultados de búsqueda: Historial de las últimas terminales y coincidencias */}
-          {isOpen && filteredMatches.length > 0 && (
-            <div
-              ref={dropdownRef}
-              className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md ring-1 ring-foreground/10 overflow-hidden z-50 animate-fade-in"
             >
-              <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border bg-muted/40 flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-foreground">
-                  {query.trim()
-                    ? `Coincidencias (${filteredMatches.length})`
-                    : "Búsquedas recientes"}
-                </span>
-                <span className="text-[9px] text-muted-foreground lowercase flex items-center gap-1">
-                  <Kbd className="text-[9px] px-1 py-0 h-4">↓</Kbd>
-                  <Kbd className="text-[9px] px-1 py-0 h-4">↑</Kbd>
-                  <span>navegar</span>
-                  <Kbd className="text-[9px] px-1 py-0 h-4 ml-0.5">↵</Kbd>
-                </span>
-              </div>
-              <ul className="max-h-60 overflow-y-auto divide-y divide-border/40">
-                {filteredMatches.map((item, index) => {
-                  const isSelected = index === selectedIndex;
-                  const isAccount = item.kind === "account";
-
-                  return (
-                    <li
-                      key={item.value}
-                      className={`flex items-center justify-between px-2.5 py-1.5 transition-colors group cursor-pointer ${
-                        isSelected
-                          ? "text-foreground dark:bg-muted/80"
-                          : "hover:bg-accent/10"
-                      }`}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleActivate(item)}
-                        className="flex-1 text-left flex items-center gap-2 cursor-pointer py-0.5 outline-none"
-                      >
-                        {isAccount ? (
-                          <UserRound
-                            className={`h-3.5 w-3.5 shrink-0 transition-colors ${
-                              isSelected
-                                ? "text-link"
-                                : "text-muted-foreground group-hover:text-link"
-                            }`}
-                          />
-                        ) : (
-                          <Monitor
-                            className={`h-3.5 w-3.5 shrink-0 transition-colors ${
-                              isSelected
-                                ? "text-link"
-                                : "text-muted-foreground group-hover:text-link"
-                            }`}
-                          />
-                        )}
-                        <span
-                          className={`font-mono text-xs font-semibold ${
-                            isSelected
-                              ? "text-foreground font-bold"
-                              : "text-foreground"
-                          }`}
+              <Command
+                key={query}
+                shouldFilter={false}
+                value={activeValue || NO_ACTIVE_VALUE}
+                onValueChange={setActiveValue}
+                className="rounded-none! bg-transparent p-1"
+              >
+                <CommandList ref={assignListId} label="Resultados de búsqueda">
+                  <CommandEmpty>Sin coincidencias en el historial.</CommandEmpty>
+                  <CommandGroup
+                    heading={
+                      query.trim()
+                        ? `Coincidencias (${filteredMatches.length})`
+                        : "Búsquedas recientes"
+                    }
+                  >
+                    {filteredMatches.map((item) => {
+                      const isAccount = item.kind === "account";
+                      return (
+                        <div
+                          key={item.value}
+                          className="flex items-center gap-1 rounded-sm px-1"
                         >
-                          {item.value}
-                        </span>
-                      </button>
-
-                      {/* Acciones directas en 1 clic y botón para quitar del historial */}
-                      <div className="flex items-center gap-1 shrink-0">
-                        {!isAccount && (
-                          <Hint label={`Lanzar VNC Viewer a ${item.value}`}>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-xs"
-                              onClick={(e) =>
-                                onDirectVnc &&
-                                handleDirectAction(e, item, onDirectVnc)
-                              }
-                              aria-label={`Conectar VNC a ${item.value}`}
-                              className="bg-primary/10 hover:bg-primary/20 text-link cursor-pointer"
-                            >
-                              <MonitorPlay className="h-3 w-3" />
-                            </Button>
-                          </Hint>
-                        )}
-                        <Hint label="Quitar del historial">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-xs"
-                            onClick={(e) => removeRecent(e, item.value)}
-                            aria-label={`Quitar ${item.value} del historial`}
-                            className="h-5 w-5 text-muted-foreground hover:text-destructive cursor-pointer opacity-60 hover:opacity-100"
+                          <CommandItem
+                            ref={(node) => {
+                              node?.setAttribute(
+                                "id",
+                                `terminal-search-option-${item.value}`,
+                              );
+                            }}
+                            value={item.value}
+                            onSelect={() => handleActivate(item)}
+                            className="flex min-w-0 flex-1 items-center gap-2 px-1.5 py-1.5 data-[selected=true]:bg-muted"
                           >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </Hint>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
+                            {isAccount ? (
+                              <UserRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            ) : (
+                              <Monitor className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            )}
+                            <span className="truncate font-mono text-xs font-semibold">
+                              {item.value}
+                            </span>
+                            <span className="ml-auto text-[10px] text-muted-foreground">
+                              {isAccount ? "cuenta" : "equipo"}
+                            </span>
+                          </CommandItem>
+
+                          <div className="flex shrink-0 items-center gap-1">
+                            {!isAccount && onDirectVnc && (
+                              <Hint label={`Lanzar VNC Viewer a ${item.value}`}>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-xs"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    commitSearch(item.value, "terminal");
+                                    onDirectVnc(item.value);
+                                  }}
+                                  aria-label={`Conectar VNC a ${item.value}`}
+                                  className="bg-primary/10 text-link hover:bg-primary/20"
+                                >
+                                  <MonitorPlay className="h-3 w-3" />
+                                </Button>
+                              </Hint>
+                            )}
+                            <Hint label="Quitar del historial">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-xs"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setRecentSearches(
+                                    removeRecentSearch(item.value),
+                                  );
+                                }}
+                                aria-label={`Quitar ${item.value} del historial`}
+                                className="h-5 w-5 text-muted-foreground opacity-60 hover:text-destructive hover:opacity-100"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </Hint>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Indicadores de Estado y Acciones Rápidas */}

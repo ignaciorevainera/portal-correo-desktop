@@ -14,3 +14,9 @@ if (!('ResizeObserver' in globalThis)) {
     value: ResizeObserverStub,
   });
 }
+
+// jsdom tampoco implementa scrollIntoView; cmdk lo llama al montar una lista
+// que ya tiene una opción activa (por ejemplo al reabrir con una flecha).
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}

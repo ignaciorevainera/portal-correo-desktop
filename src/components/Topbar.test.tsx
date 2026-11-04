@@ -129,7 +129,10 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     expect(header?.className).toContain("h-14");
 
     const input = screen.getByPlaceholderText(/buscar terminal/i);
-    expect(input.className).toContain("h-10");
+    // La altura vive en el InputGroup que agrupa el control de búsqueda.
+    expect(
+      input.closest('[data-slot="input-group"]')?.className,
+    ).toContain("h-10");
 
     const portalBtn = screen.getByRole("button", { name: /portal mda/i });
     expect(portalBtn).toBeInTheDocument();
@@ -165,7 +168,11 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     const handleAccount = vi.fn();
     render(
       <ThemeProvider>
-        <Topbar onSelectTerminal={vi.fn()} onSelectAccount={handleAccount} />
+        <Topbar
+          onSelectTerminal={vi.fn()}
+          onSelectAccount={handleAccount}
+          onDirectVnc={vi.fn()}
+        />
       </ThemeProvider>,
     );
 
@@ -187,7 +194,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
       screen.queryByRole("button", { name: /consultar cuenta ad a jperez/i }),
     ).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "jperez" }));
+    fireEvent.click(screen.getByRole("option", { name: /jperez/i }));
     expect(handleAccount).toHaveBeenCalledWith("jperez");
   });
 });

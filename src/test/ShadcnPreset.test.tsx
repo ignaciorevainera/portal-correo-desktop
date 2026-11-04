@@ -132,7 +132,7 @@ describe("Shadcn Preset b5XRZYXrNg & UI Primitives", () => {
       container.querySelectorAll('[data-slot="badge"]').length,
     ).toBeGreaterThanOrEqual(2);
     expect(
-      container.querySelectorAll('[data-slot="input"]').length,
+      container.querySelectorAll('[data-slot="input-group-control"]').length,
     ).toBeGreaterThanOrEqual(1);
   });
 
