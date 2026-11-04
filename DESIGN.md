@@ -66,21 +66,20 @@ Tampoco se admiten colores literales de paleta (`text-blue-600`,
 
 ## Ayuda contextual
 
-Los controles interactivos usan `Hint` (Tooltip de Radix), no `title=`. El
-`aria-label` del control se conserva como nombre accesible; el tooltip aporta la
-descripción (`aria-describedby`) y sólo existe mientras está abierto. Se agrega
-`Hint` únicamente cuando el texto dice algo que el nombre accesible no dice ya.
+Los controles interactivos usan `title` nativo. El `aria-label` es el nombre
+accesible y el `title` sólo agrega una frase de ayuda, sin capas, sin animación y
+sin bloquear el puntero.
 
-`Hint` monta su propio `TooltipProvider delayDuration={0}` para poder renderizarse
-aislado (tests y superficies sueltas); el provider global de `main.tsx` sigue
-existiendo. Si algún día se ajusta la demora global, hay que quitar ese pin.
+Se probó una capa de tooltips (`Hint` sobre Radix `Tooltip`) y se descartó: no
+reemplazaba al `aria-label`, pero agregaba animación y ruido a controles que no la
+necesitan, y el contenido flotante interfería con el clic en otras secciones.
+
+`TooltipProvider` y `src/components/ui/tooltip.tsx` siguen instalados pero **sin
+consumidores**; no se usa ningún tooltip en la aplicación.
 
 Los `title` de superficies informativas (chip de uptime, badge de conexión) se
-conservan. Radix no abre tooltips en controles deshabilitados: en esos casos el
-estado deshabilitado y el texto visible son la única ayuda, y es aceptado.
-
-Deuda declarada: quedan `title` interactivos en `Sidebar`, `HardwareCard` y
-`NetworkAdCard`; se convierten o se borran en Fase 4.
+conservan. Deuda declarada: `Sidebar`, `HardwareCard` y `NetworkAdCard` todavía
+tienen `title` interactivos; se convierten o se borran en Fase 4.
 
 ## Overlays y controles
 
@@ -88,7 +87,9 @@ Deuda declarada: quedan `title` interactivos en `Sidebar`, `HardwareCard` y
   superior, el panel se ancla con `PopoverAnchor` y no roba foco; las filas son
   `CommandItem` (rol `option`) y las acciones por fila son botones hermanos,
   nunca hijos de la opción. El `Command` se remonta por consulta (`key={query}`)
-  para que cmdk no auto-seleccione al filtrar.
+  para que cmdk no auto-seleccione al filtrar. Cada fila muestra sólo el valor y
+  un icono; no se etiqueta el tipo de resultado. El panel no anima la entrada
+  (`data-open:animate-none`).
 - **Menú contextual**: `ContextMenu` anclado a `<main>`, no al documento, para
   que el buscador y los inputs conserven el menú nativo. El trigger lleva
   `select-text` porque Radix agrega `select-none` y el operador necesita
