@@ -9,6 +9,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group";
 import {
   checkAppUpdates,
   startDownloadUpdate,
@@ -274,12 +281,11 @@ export function SettingsModal({
                         MB
                       </span>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                      <div
-                        className="bg-primary h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${downloadProgress.percent}%` }}
-                      />
-                    </div>
+                    <Progress
+                      value={downloadProgress.percent}
+                      aria-label="Progreso de la descarga de la actualización"
+                      className="h-2"
+                    />
                   </div>
                 )}
 
@@ -388,46 +394,46 @@ export function SettingsModal({
               <div className="text-xs font-bold text-foreground">
                 Comportamiento de Ventana y Bandeja
               </div>
-              <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={minimizeToTray}
-                  onChange={(e) => setMinimizeToTray(e.target.checked)}
-                  className="mt-0.5 border-border accent-link focus-visible:ring-ring h-4 w-4"
-                />
-                <div>
-                  <span className="font-medium text-foreground">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="minimize-to-tray" className="text-xs font-medium text-foreground">
                     Minimizar a la bandeja al cerrar
-                  </span>
+                  </Label>
                   <p className="text-[11px] text-muted-foreground">
                     Mantiene la aplicación en segundo plano en el área de
                     notificación de Windows para reapertura instantánea.
                   </p>
                 </div>
-              </label>
+                <Switch
+                  id="minimize-to-tray"
+                  checked={minimizeToTray}
+                  onCheckedChange={setMinimizeToTray}
+                  aria-label="Minimizar a la bandeja al cerrar"
+                />
+              </div>
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
               <div className="text-xs font-bold text-foreground">
                 Atajo Global de Teclado
               </div>
-              <label className="flex items-start gap-2.5 text-xs cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={globalHotkeyEnabled}
-                  onChange={(e) => setGlobalHotkeyEnabled(e.target.checked)}
-                  className="mt-0.5 border-border accent-link focus-visible:ring-ring h-4 w-4"
-                />
-                <div>
-                  <span className="font-medium text-foreground">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="global-hotkey" className="text-xs font-medium text-foreground">
                     Atajo Global Ctrl + Espacio
-                  </span>
+                  </Label>
                   <p className="text-[11px] text-muted-foreground">
                     Trae el aplicativo al frente y enfoca el buscador pegando
                     automáticamente el texto seleccionado del portapapeles.
                   </p>
                 </div>
-              </label>
+                <Switch
+                  id="global-hotkey"
+                  checked={globalHotkeyEnabled}
+                  onCheckedChange={setGlobalHotkeyEnabled}
+                  aria-label="Atajo Global Ctrl + Espacio"
+                />
+              </div>
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">
@@ -437,30 +443,33 @@ export function SettingsModal({
               <div className="text-[11px] text-muted-foreground">
                 Tipo de ping enviado automáticamente al cargar una terminal
               </div>
-              <div className="flex items-center gap-2 pt-1">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={
-                    defaultPingMode === "standard" ? "default" : "outline"
-                  }
-                  onClick={() => setDefaultPingMode("standard")}
-                  className="text-xs font-semibold h-8 cursor-pointer"
+              <ToggleGroup
+                type="single"
+                value={defaultPingMode}
+                onValueChange={(value) => {
+                  if (value === "standard" || value === "infinite")
+                    setDefaultPingMode(value);
+                }}
+                variant="outline"
+                size="sm"
+                aria-label="Modo de ping predeterminado"
+                className="pt-1"
+              >
+                <ToggleGroupItem
+                  value="standard"
+                  aria-label="Estándar (4 paquetes)"
+                  className="text-xs"
                 >
                   Estándar (4 paquetes)
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={
-                    defaultPingMode === "infinite" ? "default" : "outline"
-                  }
-                  onClick={() => setDefaultPingMode("infinite")}
-                  className="text-xs font-semibold h-8 cursor-pointer"
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="infinite"
+                  aria-label="Continuo (-t)"
+                  className="text-xs"
                 >
                   Continuo (-t)
-                </Button>
-              </div>
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
           </section>
 

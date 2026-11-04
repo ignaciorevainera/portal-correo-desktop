@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import { SettingsModal } from '../components/SettingsModal';
 import * as electronClient from '../services/electronClient';
@@ -112,23 +112,57 @@ describe('SettingsModal Component', () => {
     });
   });
 
+  function renderSettings(): void {
+    render(<SettingsModal isOpen onClose={vi.fn()} currentVersion="1.0.0" />);
+  }
+
   it('renders preferences section and toggles local preferences', () => {
-    render(
-      <SettingsModal
-        isOpen={true}
-        onClose={vi.fn()}
-        currentVersion="1.0.0"
-      />
-    );
+    renderSettings();
 
     expect(screen.getByText(/minimizar a la bandeja al cerrar/i)).toBeInTheDocument();
     expect(screen.getByText(/atajo global ctrl \+ espacio/i)).toBeInTheDocument();
     expect(screen.getByText(/modo de ping predeterminado/i)).toBeInTheDocument();
 
-    const trayCheckbox = screen.getByLabelText(/minimizar a la bandeja al cerrar/i);
-    expect(trayCheckbox).toBeChecked();
-    fireEvent.click(trayCheckbox);
-    expect(trayCheckbox).not.toBeChecked();
+    const traySwitch = screen.getByRole('switch', {
+      name: /minimizar a la bandeja al cerrar/i,
+    });
+    expect(traySwitch).toBeChecked();
+    fireEvent.click(traySwitch);
+    expect(traySwitch).not.toBeChecked();
+  });
+
+  it('las preferencias booleanas usan switches accesibles', () => {
+    renderSettings();
+
+    const minimize = screen.getByRole('switch', {
+      name: /minimizar a la bandeja al cerrar/i,
+    });
+    expect(minimize).toHaveAttribute('data-state', 'checked');
+
+    const hotkey = screen.getByRole('switch', {
+      name: /atajo global ctrl \+ espacio/i,
+    });
+    fireEvent.click(hotkey);
+    expect(hotkey).toHaveAttribute('data-state', 'unchecked');
+  });
+
+  it('el modo de ping es un grupo de opciones excluyentes', () => {
+    renderSettings();
+
+    const group = screen.getByRole('radiogroup', {
+      name: /modo de ping predeterminado/i,
+    });
+    const standard = within(group).getByRole('radio', {
+      name: /estándar \(4 paquetes\)/i,
+    });
+    const infinite = within(group).getByRole('radio', {
+      name: /continuo \(-t\)/i,
+    });
+
+    expect(standard).toHaveAttribute('aria-checked', 'true');
+    fireEvent.click(infinite);
+    expect(infinite).toHaveAttribute('aria-checked', 'true');
+    expect(standard).toHaveAttribute('aria-checked', 'false');
   });
 
   it('renders corporate diagnostics panel with gate status, code and bootstrap info', async () => {
