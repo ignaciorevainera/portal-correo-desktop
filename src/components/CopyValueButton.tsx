@@ -3,6 +3,7 @@ import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { cn } from "@/lib/utils";
+import { Hint } from "./Hint";
 
 interface CopyValueButtonProps {
   value: string;
@@ -19,25 +20,26 @@ export function CopyValueButton({
   const copied = copiedKey === "value";
 
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon-xs"
-      aria-label={label}
-      title={label}
-      onClick={() => {
-        void copy("value", value);
-      }}
-      className={cn(
-        "shrink-0 text-muted-foreground hover:text-foreground",
-        className,
-      )}
-    >
-      {copied ? (
-        <Check className="text-success" />
-      ) : (
-        <Copy />
-      )}
-    </Button>
+    <Hint label={label}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        aria-label={label}
+        onClick={() => {
+          void copy("value", value);
+        }}
+        className={cn(
+          "shrink-0 text-muted-foreground hover:text-foreground",
+          className,
+        )}
+      >
+        {copied ? (
+          <Check className="text-success" />
+        ) : (
+          <Copy />
+        )}
+      </Button>
+    </Hint>
   );
 }

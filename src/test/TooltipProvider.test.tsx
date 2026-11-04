@@ -9,21 +9,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// jsdom no implementa ResizeObserver y el posicionamiento de Radix lo requiere
-// apenas el contenido se monta abierto.
-if (!("ResizeObserver" in globalThis)) {
-  class ResizeObserverStub {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  }
-  Object.defineProperty(globalThis, "ResizeObserver", {
-    writable: true,
-    configurable: true,
-    value: ResizeObserverStub,
-  });
-}
-
 describe("TooltipProvider", () => {
   it("renderiza el contenido del tooltip dentro del provider", () => {
     render(

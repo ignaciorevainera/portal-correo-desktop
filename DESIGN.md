@@ -31,8 +31,9 @@ de opciones), el ping del equipo (con `-t`) y los pings a los enlaces del sitio
 El motivo es operativo: los enlaces del sitio se consultan a diario y esconderlos
 agrega un clic a una tarea frecuente. A anchos reducidos la fila envuelve con
 `flex-wrap`; no se ocultan acciones primarias detrás de un menú. Los
-`aria-label`, los `title` y el estilo de split (`rounded-r-none` /
-`rounded-l-none border-l-0`) de cada ping se conservan.
+`aria-label`, la ayuda contextual (`Hint`) y el estilo de split (`rounded-r-none`
+/ `rounded-l-none border-l-0`) de cada ping se conservan; los `title` quedan sólo
+en superficies informativas, nunca en controles.
 
 ## Consola
 
@@ -62,6 +63,24 @@ radios de `src/components/ui/**` quedan tal como llegaron de la primitiva.
 
 Tampoco se admiten colores literales de paleta (`text-blue-600`,
 `bg-emerald-500`, …) ni `z-50` manual fuera del baseline del contrato.
+
+## Ayuda contextual
+
+Los controles interactivos usan `Hint` (Tooltip de Radix), no `title=`. El
+`aria-label` del control se conserva como nombre accesible; el tooltip aporta la
+descripción (`aria-describedby`) y sólo existe mientras está abierto. Se agrega
+`Hint` únicamente cuando el texto dice algo que el nombre accesible no dice ya.
+
+`Hint` monta su propio `TooltipProvider delayDuration={0}` para poder renderizarse
+aislado (tests y superficies sueltas); el provider global de `main.tsx` sigue
+existiendo. Si algún día se ajusta la demora global, hay que quitar ese pin.
+
+Los `title` de superficies informativas (chip de uptime, badge de conexión) se
+conservan. Radix no abre tooltips en controles deshabilitados: en esos casos el
+estado deshabilitado y el texto visible son la única ayuda, y es aceptado.
+
+Deuda declarada: quedan `title` interactivos en `Sidebar`, `HardwareCard` y
+`NetworkAdCard`; se convierten o se borran en Fase 4.
 
 ## Gates
 

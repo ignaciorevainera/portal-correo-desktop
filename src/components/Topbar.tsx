@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { InfoModal } from "./InfoModal";
+import { Hint } from "./Hint";
 import {
   minimizeWindow,
   hideToTray,
@@ -265,18 +266,19 @@ export function Topbar({
               <div className="pointer-events-none text-[10px] hidden md:block">
                 <Kbd>Ctrl</Kbd>+<Kbd>F</Kbd>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => query.trim() && handleSubmit(query.trim())}
-                disabled={!query.trim()}
-                aria-label="Buscar terminal, IP o usuario"
-                title="Buscar terminal, IP o usuario (o Enter)"
-                className="h-7 w-7 text-link hover:text-link hover:bg-muted/80 cursor-pointer disabled:opacity-30 rounded-md shrink-0"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
+              <Hint label="Buscar terminal, IP o usuario (o Enter)">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => query.trim() && handleSubmit(query.trim())}
+                  disabled={!query.trim()}
+                  aria-label="Buscar terminal, IP o usuario"
+                  className="h-7 w-7 text-link hover:text-link hover:bg-muted/80 cursor-pointer disabled:opacity-30 rounded-md shrink-0"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </Hint>
             </div>
           </div>
 
@@ -350,32 +352,34 @@ export function Topbar({
                       {/* Acciones directas en 1 clic y botón para quitar del historial */}
                       <div className="flex items-center gap-1 shrink-0">
                         {!isAccount && (
+                          <Hint label={`Lanzar VNC Viewer a ${item.value}`}>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={(e) =>
+                                onDirectVnc &&
+                                handleDirectAction(e, item, onDirectVnc)
+                              }
+                              aria-label={`Conectar VNC a ${item.value}`}
+                              className="bg-primary/10 hover:bg-primary/20 text-link cursor-pointer"
+                            >
+                              <MonitorPlay className="h-3 w-3" />
+                            </Button>
+                          </Hint>
+                        )}
+                        <Hint label="Quitar del historial">
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon-xs"
-                            onClick={(e) =>
-                              onDirectVnc &&
-                              handleDirectAction(e, item, onDirectVnc)
-                            }
-                            aria-label={`Conectar VNC a ${item.value}`}
-                            title={`Lanzar VNC Viewer a ${item.value}`}
-                            className="bg-primary/10 hover:bg-primary/20 text-link cursor-pointer"
+                            onClick={(e) => removeRecent(e, item.value)}
+                            aria-label={`Quitar ${item.value} del historial`}
+                            className="h-5 w-5 text-muted-foreground hover:text-destructive cursor-pointer opacity-60 hover:opacity-100"
                           >
-                            <MonitorPlay className="h-3 w-3" />
+                            <X className="h-3 w-3" />
                           </Button>
-                        )}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={(e) => removeRecent(e, item.value)}
-                          aria-label={`Quitar ${item.value} del historial`}
-                          title="Quitar del historial"
-                          className="h-5 w-5 text-muted-foreground hover:text-destructive cursor-pointer opacity-60 hover:opacity-100"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
+                        </Hint>
                       </div>
                     </li>
                   );
@@ -411,44 +415,47 @@ export function Topbar({
             className="inline-flex items-center rounded-md border border-border/60 bg-muted/20 p-0.5 -space-x-px"
           >
             {/* Botón Portal MDA */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="default"
-              onClick={handleOpenPortalMda}
-              aria-label="Abrir Portal MDA"
-              title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
-              className="text-xs font-semibold gap-1.5 cursor-pointer text-link hover:text-link"
-            >
-              <ExternalLink className="h-4 w-4" />
-              <span>Portal MDA</span>
-            </Button>
+            <Hint label="Ir a Portal MDA (Inventario de Terminales en la red corporativa)">
+              <Button
+                type="button"
+                variant="ghost"
+                size="default"
+                onClick={handleOpenPortalMda}
+                aria-label="Abrir Portal MDA"
+                className="text-xs font-semibold gap-1.5 cursor-pointer text-link hover:text-link"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>Portal MDA</span>
+              </Button>
+            </Hint>
 
             {/* Settings Modal Trigger */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenSettings?.()}
-              aria-label="Abrir ajustes y configuración"
-              title="Configuración y Actualizaciones (Atajo F10)"
-              className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
+            <Hint label="Configuración y Actualizaciones (Atajo F10)">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onOpenSettings?.()}
+                aria-label="Abrir ajustes y configuración"
+                className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            </Hint>
 
             {/* Info Modal Trigger */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsInfoOpen(true)}
-              aria-label="Abrir información del sistema"
-              title="Información y características del aplicativo"
-              className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
-            >
-              <HelpCircle className="h-4 w-4" />
-            </Button>
+            <Hint label="Información y características del aplicativo">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsInfoOpen(true)}
+                aria-label="Abrir información del sistema"
+                className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </Button>
+            </Hint>
 
             <ThemeToggle />
 
@@ -456,30 +463,32 @@ export function Topbar({
             <Separator orientation="vertical" className="h-5 mx-1" />
 
             {/* Minimizar ventana */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={minimizeWindow}
-              aria-label="Minimizar ventana"
-              title="Minimizar a barra de tareas"
-              className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
+            <Hint label="Minimizar a barra de tareas">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={minimizeWindow}
+                aria-label="Minimizar ventana"
+                className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+            </Hint>
 
             {/* Apagado / Minimizar a bandeja del sistema */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={hideToTray}
-              aria-label="Minimizar a bandeja del sistema"
-              title="Ocultar en bandeja del sistema (Turn Off)"
-              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer px-2"
-            >
-              <Power className="h-4 w-4" />
-            </Button>
+            <Hint label="Ocultar en bandeja del sistema (Turn Off)">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={hideToTray}
+                aria-label="Minimizar a bandeja del sistema"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer px-2"
+              >
+                <Power className="h-4 w-4" />
+              </Button>
+            </Hint>
           </div>
         </div>
       </header>
