@@ -50,7 +50,7 @@ export function TerminalDetailsGrid({
       <h2
         id="terminal-details-title"
         data-slot="card-title"
-        className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+        className="overline-label text-muted-foreground"
       >
         Datos del equipo
       </h2>

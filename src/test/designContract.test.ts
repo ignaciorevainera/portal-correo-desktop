@@ -62,6 +62,11 @@ describe("contrato de diseno", () => {
     expect(count(/text-\[\d+(?:\.\d+)?px\]/g)).toBe(0);
   });
 
+  it("usa una sola utilidad de overline y no más de cinco", () => {
+    expect(count(/\buppercase\b/g)).toBe(0);
+    expect(count(/\boverline-label\b/g)).toBeLessThanOrEqual(5);
+  });
+
   it("no hay degradados ni Base UI", () => {
     expect(count(/\bbg-gradient-|\b@base-ui\b/g)).toBe(0);
   });

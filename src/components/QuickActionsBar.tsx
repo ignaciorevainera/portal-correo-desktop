@@ -416,7 +416,7 @@ export function QuickActionsBar({
             >
               <div
                 id={diagnosticSectionId}
-                className="px-2 py-1 text-micro font-bold uppercase tracking-wider text-muted-foreground"
+                className="overline-label px-2 py-1 text-muted-foreground"
               >
                 Diagnóstico
               </div>

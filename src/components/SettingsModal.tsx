@@ -185,7 +185,7 @@ export function SettingsModal({
           <section className="space-y-3">
             <div className="flex items-center gap-2 border-b border-border/60 pb-2">
               <RefreshCw className="h-4 w-4 text-link" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+              <h3 className="overline-label text-foreground">
                 Actualizaciones del Sistema
               </h3>
             </div>
@@ -318,7 +318,7 @@ export function SettingsModal({
           <section className="space-y-3">
             <div className="flex items-center gap-2 border-b border-border/60 pb-2">
               <Database className="h-4 w-4 text-link" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+              <h3 className="overline-label text-foreground">
                 Conexión Corporativa SQL Server
               </h3>
             </div>
@@ -385,7 +385,7 @@ export function SettingsModal({
           <section className="space-y-3">
             <div className="flex items-center gap-2 border-b border-border/60 pb-2">
               <Sliders className="h-4 w-4 text-link" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+              <h3 className="overline-label text-foreground">
                 Preferencias de la Aplicación
               </h3>
             </div>

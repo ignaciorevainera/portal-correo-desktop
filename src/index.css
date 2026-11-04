@@ -952,3 +952,12 @@ h1, h2, h3, h4 {
 .scrollbar-slim {
   scrollbar-gutter: stable;
 }
+
+/* Etiqueta de sección: 11 px, mayúsculas y tracking corto. Máximo 5 por app. */
+@utility overline-label {
+  font-size: var(--text-micro);
+  line-height: 1.4;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
