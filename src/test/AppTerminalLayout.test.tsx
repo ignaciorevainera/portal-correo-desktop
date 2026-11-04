@@ -146,7 +146,9 @@ describe("App terminal layout", () => {
 
     fireEvent.contextMenu(input);
 
-    expect(screen.queryByText("Copiar IP")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: /copiar ip/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps the operator context menu outside editable fields", async () => {
@@ -154,12 +156,20 @@ describe("App terminal layout", () => {
 
     fireEvent.contextMenu(screen.getByTestId("terminal-identity"));
 
-    expect(screen.getByText("Copiar IP")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("menuitem", { name: /copiar ip/i }),
+    ).toBeInTheDocument();
   });
 
   it("does not disable text selection globally", async () => {
     const { container } = await renderLoadedApp();
 
     expect(container.firstChild).not.toHaveClass("select-none");
+
+    // El trigger de Radix no debe desactivar la selección dentro de <main>.
+    const main = container.querySelector("main");
+    expect(main).not.toBeNull();
+    expect(main).not.toHaveClass("select-none");
+    expect(main).toHaveClass("select-text");
   });
 });

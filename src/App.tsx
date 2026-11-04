@@ -11,6 +11,10 @@ import {
   DiagnosticCommandEvent,
 } from "./components/LivePingConsole";
 import { OperatorContextMenu } from "./components/OperatorContextMenu";
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { SubnetScannerDrawer } from "./components/SubnetScannerDrawer";
 import { SettingsModal } from "./components/SettingsModal";
 import { BlockedScreen } from "./components/BlockedScreen";
@@ -102,10 +106,6 @@ export default function App(): React.JSX.Element {
     null,
   );
   const [isProbingRemote, setIsProbingRemote] = useState<boolean>(false);
-  const [contextMenu, setContextMenu] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
   const [isSubnetDrawerOpen, setIsSubnetDrawerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [gate, setGate] = useState<GateStatus>({
@@ -612,17 +612,7 @@ export default function App(): React.JSX.Element {
 
   return (
     <ThemeProvider>
-      <div
-        onContextMenu={(e) => {
-          const target = e.target as HTMLElement | null;
-          if (target?.closest("input, textarea, [contenteditable='true']")) {
-            return;
-          }
-          e.preventDefault();
-          setContextMenu({ x: e.clientX, y: e.clientY });
-        }}
-        className="h-screen w-screen overflow-hidden bg-background text-foreground flex flex-col font-sans antialiased"
-      >
+      <div className="h-screen w-screen overflow-hidden bg-background text-foreground flex flex-col font-sans antialiased">
         <Topbar
           onSelectTerminal={handleSelectTerminal}
           onSelectAccount={handleOpenAccount}
@@ -662,18 +652,21 @@ export default function App(): React.JSX.Element {
         )}
 
         {/* Layout Unificado: El desplazamiento / scroll vertical es exclusivo sobre este contenedor <main> */}
-        <main
-          ref={mainRef}
-          aria-busy={isLoading}
-          className={
-            isAccountView
-              ? "flex-1 min-h-0 p-3.5 overflow-hidden flex flex-col"
-              : cn(
-                  "flex-1 p-3.5 overflow-y-auto space-y-4",
-                  !terminal || isLoading ? "flex flex-col" : "block",
-                )
-          }
-        >
+        <ContextMenu>
+          {/* El trigger de Radix trae select-none; el operador necesita seleccionar/copiar texto del contenido. */}
+          <ContextMenuTrigger asChild className="select-text">
+            <main
+              ref={mainRef}
+              aria-busy={isLoading}
+              className={
+                isAccountView
+                  ? "flex-1 min-h-0 p-3.5 overflow-hidden flex flex-col"
+                  : cn(
+                      "flex-1 p-3.5 overflow-y-auto space-y-4",
+                      !terminal || isLoading ? "flex flex-col" : "block",
+                    )
+              }
+            >
           {/* Live region persistente: los lectores de pantalla solo anuncian cambios
               si el nodo ya existe antes de que aparezca el texto. */}
           <span role="status" aria-live="polite" className="sr-only">
@@ -794,16 +787,12 @@ export default function App(): React.JSX.Element {
               )}
             </>
           )}
-        </main>
+            </main>
+          </ContextMenuTrigger>
 
-        {/* Custom Operator Context Menu */}
-        {contextMenu && (
           <OperatorContextMenu
-            x={contextMenu.x}
-            y={contextMenu.y}
             terminal={terminal}
             isPinging={isPinging}
-            onClose={() => setContextMenu(null)}
             onLaunchVnc={() => handleLaunchVnc()}
             onTogglePing={handleTogglePing}
             onLaunchMsra={() => handleLaunchMsra()}
@@ -812,7 +801,7 @@ export default function App(): React.JSX.Element {
             }
             onQueryAccount={handleQueryAccount}
           />
-        )}
+        </ContextMenu>
 
         {/* Panel Deslizable de Escaneo Asíncrono de Subred */}
         {terminal && (

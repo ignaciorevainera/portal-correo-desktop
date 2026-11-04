@@ -1,158 +1,253 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { OperatorContextMenu } from '../components/OperatorContextMenu';
-import { getAllTerminals } from '../services/terminalService';
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { OperatorContextMenu } from "../components/OperatorContextMenu";
+import { getAllTerminals } from "../services/terminalService";
 
-describe('OperatorContextMenu Component', () => {
-  const terminal = getAllTerminals()[0];
+describe("OperatorContextMenu", () => {
+  it("se abre como menu con las acciones del operador", async () => {
+    const terminal = getAllTerminals()[0];
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <main data-testid="menu-surface">contenido</main>
+        </ContextMenuTrigger>
+        <OperatorContextMenu
+          terminal={terminal}
+          isPinging={false}
+          onLaunchVnc={vi.fn()}
+          onTogglePing={vi.fn()}
+          onLaunchMsra={vi.fn()}
+          onOpenPortalMda={vi.fn()}
+          onFocusSearch={vi.fn()}
+          onQueryAccount={vi.fn()}
+        />
+      </ContextMenu>,
+    );
 
-  it('renders context menu at given position with operator shortcuts and actions when terminal is selected', () => {
-    const onClose = vi.fn();
+    fireEvent.contextMenu(screen.getByTestId("menu-surface"));
+
+    expect(await screen.findByRole("menu")).toBeInTheDocument();
+    expect(screen.getByText(/acciones ·/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: /conectar vnc viewer/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: /copiar ip/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("ejecuta la acción y cierra el menú", async () => {
     const onLaunchVnc = vi.fn();
-    const onTogglePing = vi.fn();
-    const onLaunchMsra = vi.fn();
-    const onOpenPortalMda = vi.fn();
-
+    const terminal = getAllTerminals()[0];
     render(
-      <OperatorContextMenu
-        x={120}
-        y={150}
-        terminal={terminal}
-        isPinging={false}
-        onClose={onClose}
-        onLaunchVnc={onLaunchVnc}
-        onTogglePing={onTogglePing}
-        onLaunchMsra={onLaunchMsra}
-        onOpenPortalMda={onOpenPortalMda}
-      />
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <main data-testid="menu-surface">contenido</main>
+        </ContextMenuTrigger>
+        <OperatorContextMenu
+          terminal={terminal}
+          isPinging={false}
+          onLaunchVnc={onLaunchVnc}
+          onTogglePing={vi.fn()}
+          onLaunchMsra={vi.fn()}
+          onOpenPortalMda={vi.fn()}
+        />
+      </ContextMenu>,
     );
 
-    expect(screen.getByText('Acciones')).toBeInTheDocument();
+    fireEvent.contextMenu(screen.getByTestId("menu-surface"));
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /conectar vnc viewer/i }),
+    );
 
-    const vncItem = screen.getByRole('button', { name: /conectar vnc/i });
-    const pingItem = screen.getByRole('button', { name: /iniciar ping/i });
-    const msraItem = screen.getByRole('button', { name: /asistencia msra/i });
-    const portalItem = screen.getByRole('button', { name: /abrir portal mda/i });
-
-    expect(vncItem).toBeInTheDocument();
-    expect(pingItem).toBeInTheDocument();
-    expect(msraItem).toBeInTheDocument();
-    expect(portalItem).toBeInTheDocument();
-
-    fireEvent.click(vncItem);
     expect(onLaunchVnc).toHaveBeenCalledTimes(1);
-    expect(onClose).toHaveBeenCalled();
-
-    fireEvent.click(pingItem);
-    expect(onTogglePing).toHaveBeenCalledTimes(1);
-
-    fireEvent.click(portalItem);
-    expect(onOpenPortalMda).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("menu")).toBeNull();
   });
 
-  it('renders ONLY Portal MDA when no terminal is located/selected (empty state)', () => {
+  it("sin terminal ofrece sólo el Portal MDA", async () => {
     const onOpenPortalMda = vi.fn();
-    const onClose = vi.fn();
-
     render(
-      <OperatorContextMenu
-        x={120}
-        y={150}
-        terminal={null}
-        isPinging={false}
-        onClose={onClose}
-        onLaunchVnc={vi.fn()}
-        onTogglePing={vi.fn()}
-        onLaunchMsra={vi.fn()}
-        onOpenPortalMda={onOpenPortalMda}
-      />
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <main data-testid="menu-surface">contenido</main>
+        </ContextMenuTrigger>
+        <OperatorContextMenu
+          terminal={null}
+          isPinging={false}
+          onLaunchVnc={vi.fn()}
+          onTogglePing={vi.fn()}
+          onLaunchMsra={vi.fn()}
+          onOpenPortalMda={onOpenPortalMda}
+        />
+      </ContextMenu>,
     );
 
-    // Debe mostrar únicamente el acceso a Portal MDA
-    const portalItem = screen.getByRole('button', { name: /abrir portal mda/i });
-    expect(portalItem).toBeInTheDocument();
+    fireEvent.contextMenu(screen.getByTestId("menu-surface"));
 
-    // No debe mostrar opciones de conexión remota, ping ni copiado
-    expect(screen.queryByRole('button', { name: /conectar vnc/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /ping/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /asistencia msra/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /copiar/i })).not.toBeInTheDocument();
-    expect(screen.queryByText('Acciones')).not.toBeInTheDocument();
+    const items = await screen.findAllByRole("menuitem");
+    expect(items).toHaveLength(1);
+    expect(items[0]).toHaveAccessibleName(/abrir portal mda/i);
 
-    fireEvent.click(portalItem);
+    fireEvent.click(items[0]);
     expect(onOpenPortalMda).toHaveBeenCalledTimes(1);
-    expect(onClose).toHaveBeenCalled();
+    expect(screen.queryByRole("menu")).toBeNull();
   });
 
-  it('allows copying IP and Hostname directly from context menu', async () => {
+  it("ejecuta MSRA, ping, portal y búsqueda desde el menú", async () => {
+    const onLaunchMsra = vi.fn();
+    const onTogglePing = vi.fn();
+    const onOpenPortalMda = vi.fn();
+    const onFocusSearch = vi.fn();
+    const terminal = getAllTerminals()[0];
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <main data-testid="menu-surface">contenido</main>
+        </ContextMenuTrigger>
+        <OperatorContextMenu
+          terminal={terminal}
+          isPinging={false}
+          onLaunchVnc={vi.fn()}
+          onTogglePing={onTogglePing}
+          onLaunchMsra={onLaunchMsra}
+          onOpenPortalMda={onOpenPortalMda}
+          onFocusSearch={onFocusSearch}
+        />
+      </ContextMenu>,
+    );
+
+    const openMenu = () =>
+      fireEvent.contextMenu(screen.getByTestId("menu-surface"));
+
+    openMenu();
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /asistencia msra/i }),
+    );
+    expect(onLaunchMsra).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("menu")).toBeNull();
+
+    openMenu();
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /iniciar ping/i }),
+    );
+    expect(onTogglePing).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("menu")).toBeNull();
+
+    openMenu();
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /abrir portal mda/i }),
+    );
+    expect(onOpenPortalMda).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("menu")).toBeNull();
+
+    openMenu();
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /buscar otra terminal/i }),
+    );
+    expect(onFocusSearch).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("menu")).toBeNull();
+  });
+
+  it("se cierra con Escape", async () => {
+    const terminal = getAllTerminals()[0];
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <main data-testid="menu-surface">contenido</main>
+        </ContextMenuTrigger>
+        <OperatorContextMenu
+          terminal={terminal}
+          isPinging={false}
+          onLaunchVnc={vi.fn()}
+          onTogglePing={vi.fn()}
+          onLaunchMsra={vi.fn()}
+          onOpenPortalMda={vi.fn()}
+        />
+      </ContextMenu>,
+    );
+
+    fireEvent.contextMenu(screen.getByTestId("menu-surface"));
+    await screen.findByRole("menu");
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    expect(screen.queryByRole("menu")).toBeNull();
+  });
+
+  it("copia IP y hostname al portapapeles", async () => {
     const writeTextMock = vi.fn().mockResolvedValue(undefined);
     Object.assign(navigator, {
-      clipboard: {
-        writeText: writeTextMock,
-      },
+      clipboard: { writeText: writeTextMock },
     });
+    const terminal = getAllTerminals()[0];
+    const renderMenu = () =>
+      render(
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+            <main data-testid="menu-surface">contenido</main>
+          </ContextMenuTrigger>
+          <OperatorContextMenu
+            terminal={terminal}
+            isPinging={false}
+            onLaunchVnc={vi.fn()}
+            onTogglePing={vi.fn()}
+            onLaunchMsra={vi.fn()}
+            onOpenPortalMda={vi.fn()}
+          />
+        </ContextMenu>,
+      );
 
-    render(
-      <OperatorContextMenu
-        x={100}
-        y={100}
-        terminal={terminal}
-        isPinging={false}
-        onClose={vi.fn()}
-        onLaunchVnc={vi.fn()}
-        onTogglePing={vi.fn()}
-        onLaunchMsra={vi.fn()}
-        onOpenPortalMda={vi.fn()}
-      />
+    const first = renderMenu();
+    fireEvent.contextMenu(screen.getByTestId("menu-surface"));
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /copiar ip/i }),
     );
-
-    const copyIpBtn = screen.getByRole('button', { name: /copiar ip/i });
-    fireEvent.click(copyIpBtn);
     expect(writeTextMock).toHaveBeenCalledWith(terminal.ip);
 
-    const copyHostBtn = screen.getByRole('button', { name: /copiar hostname/i });
-    fireEvent.click(copyHostBtn);
+    first.unmount();
+    renderMenu();
+    fireEvent.contextMenu(screen.getByTestId("menu-surface"));
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /copiar hostname/i }),
+    );
     expect(writeTextMock).toHaveBeenCalledWith(terminal.pc);
   });
 
-  it('shows the account action only for valid NT users', () => {
+  it("muestra la acción de cuenta sólo con usuarios NT válidos", async () => {
+    const terminal = getAllTerminals()[0];
     const onQueryAccount = vi.fn();
-
-    const { rerender } = render(
-      <OperatorContextMenu
-        x={10}
-        y={10}
-        terminal={{ ...terminal, userNt: 'jperez' }}
-        isPinging={false}
-        onClose={vi.fn()}
-        onLaunchVnc={vi.fn()}
-        onTogglePing={vi.fn()}
-        onLaunchMsra={vi.fn()}
-        onOpenPortalMda={vi.fn()}
-        onQueryAccount={onQueryAccount}
-      />,
+    const renderMenu = (userNt: string) => (
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <main data-testid="menu-surface">contenido</main>
+        </ContextMenuTrigger>
+        <OperatorContextMenu
+          terminal={{ ...terminal, userNt }}
+          isPinging={false}
+          onLaunchVnc={vi.fn()}
+          onTogglePing={vi.fn()}
+          onLaunchMsra={vi.fn()}
+          onOpenPortalMda={vi.fn()}
+          onQueryAccount={onQueryAccount}
+        />
+      </ContextMenu>
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /ver cuenta ad/i }));
+    const valid = render(renderMenu("jperez"));
+    fireEvent.contextMenu(screen.getByTestId("menu-surface"));
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /ver cuenta ad/i }),
+    );
     expect(onQueryAccount).toHaveBeenCalledTimes(1);
+    valid.unmount();
 
-    rerender(
-      <OperatorContextMenu
-        x={10}
-        y={10}
-        terminal={{ ...terminal, userNt: 'operador.demo01' }}
-        isPinging={false}
-        onClose={vi.fn()}
-        onLaunchVnc={vi.fn()}
-        onTogglePing={vi.fn()}
-        onLaunchMsra={vi.fn()}
-        onOpenPortalMda={vi.fn()}
-        onQueryAccount={onQueryAccount}
-      />,
-    );
-
+    render(renderMenu("operador.demo01"));
+    fireEvent.contextMenu(screen.getByTestId("menu-surface"));
+    expect(await screen.findByRole("menu")).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: /ver cuenta ad/i }),
+      screen.queryByRole("menuitem", { name: /ver cuenta ad/i }),
     ).not.toBeInTheDocument();
   });
 });

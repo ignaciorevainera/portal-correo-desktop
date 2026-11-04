@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { TerminalData } from "../types/terminal";
 import {
   MonitorPlay,
@@ -9,18 +9,18 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Kbd } from "@/components/ui/kbd";
 import { splitUsernames } from "@/lib/usernames";
+import {
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+} from "@/components/ui/context-menu";
 
 interface OperatorContextMenuProps {
-  x: number;
-  y: number;
   terminal?: TerminalData | null;
   isPinging: boolean;
-  onClose: () => void;
   onLaunchVnc: () => void;
   onTogglePing: () => void;
   onLaunchMsra: () => void;
@@ -30,11 +30,8 @@ interface OperatorContextMenuProps {
 }
 
 export function OperatorContextMenu({
-  x,
-  y,
   terminal,
   isPinging,
-  onClose,
   onLaunchVnc,
   onTogglePing,
   onLaunchMsra,
@@ -42,204 +39,87 @@ export function OperatorContextMenu({
   onFocusSearch,
   onQueryAccount,
 }: OperatorContextMenuProps): React.JSX.Element {
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-
-    window.addEventListener("mousedown", handleOutsideClick);
-    window.addEventListener("keydown", handleEsc);
-    return () => {
-      window.removeEventListener("mousedown", handleOutsideClick);
-      window.removeEventListener("keydown", handleEsc);
-    };
-  }, [onClose]);
-
-  const copyText = async (text: string) => {
+  const copyText = async (text: string): Promise<void> => {
     try {
       await navigator.clipboard.writeText(text);
-      onClose();
-    } catch {}
+    } catch {
+      // sin portapapeles disponible: el menú se cierra igual
+    }
   };
 
-  // Adjust bounds to avoid overflowing viewport
-  const adjustedX = Math.min(x, window.innerWidth - 240);
-  const adjustedY = Math.min(y, window.innerHeight - 300);
+  if (!terminal) {
+    return (
+      <ContextMenuContent className="w-56">
+        <ContextMenuItem onSelect={onOpenPortalMda} aria-label="Abrir Portal MDA">
+          <ExternalLink className="h-3.5 w-3.5 text-link" />
+          Abrir Portal MDA
+        </ContextMenuItem>
+      </ContextMenuContent>
+    );
+  }
+
+  const accountCount = splitUsernames(terminal.userNt).length;
 
   return (
-    <div
-      ref={menuRef}
-      style={{ top: `${adjustedY}px`, left: `${adjustedX}px` }}
-      className="fixed z-50 w-56 animate-fade-in"
-    >
-      <Card className="gap-0 bg-popover/95 p-1 text-popover-foreground backdrop-blur font-sans text-xs select-none">
-        {terminal ? (
-          <>
-            <div className="px-2.5 py-1.5 border-b border-border/60 text-[11px] font-bold text-muted-foreground flex items-center justify-between">
-              <span className="truncate">Acciones</span>
-            </div>
+    <ContextMenuContent className="w-56">
+      <ContextMenuLabel>Acciones · {terminal.pc}</ContextMenuLabel>
+      <ContextMenuSeparator />
 
-            <div className="py-1 space-y-0.5">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  onLaunchVnc();
-                  onClose();
-                }}
-                aria-label="Conectar VNC Viewer"
-                className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
-              >
-                <span className="flex items-center gap-2">
-                  <MonitorPlay className="h-3.5 w-3.5 text-link" /> Conectar VNC
-                </span>
-                <Kbd>F2</Kbd>
-              </Button>
+      <ContextMenuItem onSelect={onLaunchVnc} aria-label="Conectar VNC Viewer">
+        <MonitorPlay className="h-3.5 w-3.5 text-link" />
+        Conectar VNC
+        <ContextMenuShortcut>F2</ContextMenuShortcut>
+      </ContextMenuItem>
+      <ContextMenuItem onSelect={onLaunchMsra} aria-label="Asistencia MSRA">
+        <HelpCircle className="h-3.5 w-3.5 text-link" />
+        Asistencia MSRA
+        <ContextMenuShortcut>F3</ContextMenuShortcut>
+      </ContextMenuItem>
+      <ContextMenuItem
+        onSelect={onTogglePing}
+        aria-label={isPinging ? "Detener Ping" : "Iniciar Ping"}
+      >
+        <Activity
+          className={`h-3.5 w-3.5 ${isPinging ? "text-destructive" : "text-success"}`}
+        />
+        {isPinging ? "Detener Ping" : "Iniciar Ping"}
+        <ContextMenuShortcut>F4</ContextMenuShortcut>
+      </ContextMenuItem>
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  onLaunchMsra();
-                  onClose();
-                }}
-                aria-label="Asistencia MSRA"
-                className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
-              >
-                <span className="flex items-center gap-2">
-                  <HelpCircle className="h-3.5 w-3.5 text-link" /> Asistencia MSRA
-                </span>
-                <Kbd>F3</Kbd>
-              </Button>
+      <ContextMenuSeparator />
+      <ContextMenuItem
+        onSelect={() => void copyText(terminal.ip)}
+        aria-label="Copiar IP"
+      >
+        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+        Copiar IP
+      </ContextMenuItem>
+      <ContextMenuItem
+        onSelect={() => void copyText(terminal.pc)}
+        aria-label="Copiar Hostname"
+      >
+        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+        Copiar Hostname
+      </ContextMenuItem>
+      {accountCount > 0 && onQueryAccount && (
+        <ContextMenuItem onSelect={onQueryAccount} aria-label="Ver cuenta AD">
+          <Users className="h-3.5 w-3.5 text-muted-foreground" />
+          Ver cuenta AD
+        </ContextMenuItem>
+      )}
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  onTogglePing();
-                  onClose();
-                }}
-                aria-label={isPinging ? "Detener Ping" : "Iniciar Ping"}
-                className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
-              >
-                <span className="flex items-center gap-2">
-                  <Activity
-                    className={`h-3.5 w-3.5 ${isPinging ? "text-destructive" : "text-success font-bold"}`}
-                  />
-                  {isPinging ? "Detener Ping" : "Iniciar Ping"}
-                </span>
-                <Kbd>F4</Kbd>
-              </Button>
-            </div>
-
-            <Separator className="my-1" />
-            <div className="py-0.5 space-y-0.5">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => copyText(terminal.ip)}
-                aria-label="Copiar IP"
-                className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
-              >
-                <Copy className="h-3.5 w-3.5 text-muted-foreground" /> Copiar IP
-              </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => copyText(terminal.pc)}
-                aria-label="Copiar Hostname"
-                className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
-              >
-                <Copy className="h-3.5 w-3.5 text-muted-foreground" /> Copiar
-                Hostname
-              </Button>
-
-              {splitUsernames(terminal.userNt).length > 0 && onQueryAccount && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    onQueryAccount();
-                    onClose();
-                  }}
-                  aria-label="Ver cuenta AD"
-                  className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
-                >
-                  <Users className="h-3.5 w-3.5 text-muted-foreground" /> Ver cuenta AD
-                </Button>
-              )}
-            </div>
-
-            <Separator className="my-1" />
-            <div className="py-0.5 space-y-0.5">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  onOpenPortalMda();
-                  onClose();
-                }}
-                aria-label="Abrir Portal MDA"
-                className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
-              >
-                <ExternalLink className="h-3.5 w-3.5 text-link" /> Abrir Portal MDA
-              </Button>
-
-              {onFocusSearch && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    onFocusSearch();
-                    onClose();
-                  }}
-                  aria-label="Buscar otra terminal"
-                  className="w-full justify-between px-2.5 h-8 text-xs font-medium cursor-pointer"
-                >
-                  <span className="flex items-center gap-2">
-                    <Search className="h-3.5 w-3.5 text-muted-foreground" /> Buscar
-                    Terminal
-                  </span>
-                  <Kbd>Ctrl+F</Kbd>
-                </Button>
-              )}
-            </div>
-          </>
-        ) : (
-          /* Empty State: Sin terminal ubicada, únicamente acceso a Portal MDA */
-          <div className="py-0.5 space-y-0.5">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                onOpenPortalMda();
-                onClose();
-              }}
-              aria-label="Abrir Portal MDA"
-              className="w-full justify-start gap-2 px-2.5 h-8 text-xs font-medium cursor-pointer"
-            >
-              <ExternalLink className="h-3.5 w-3.5 text-link" /> Abrir Portal MDA
-            </Button>
-          </div>
-        )}
-      </Card>
-    </div>
+      <ContextMenuSeparator />
+      <ContextMenuItem onSelect={onOpenPortalMda} aria-label="Abrir Portal MDA">
+        <ExternalLink className="h-3.5 w-3.5 text-link" />
+        Abrir Portal MDA
+      </ContextMenuItem>
+      {onFocusSearch && (
+        <ContextMenuItem onSelect={onFocusSearch} aria-label="Buscar otra terminal">
+          <Search className="h-3.5 w-3.5 text-muted-foreground" />
+          Buscar Terminal
+          <ContextMenuShortcut>Ctrl+F</ContextMenuShortcut>
+        </ContextMenuItem>
+      )}
+    </ContextMenuContent>
   );
 }
