@@ -592,13 +592,6 @@ export default function App(): React.JSX.Element {
     }
   };
 
-  const handleDirectPing = (pc: string) => {
-    setSelectedPc(pc);
-    setPingMode("standard");
-    setIsPinging(true);
-    setConsoleOpenSignal((prev) => prev + 1);
-  };
-
   const isAccountView = !terminal && Boolean(accountQuery);
 
   if (gate.status !== "READY") {
@@ -617,7 +610,6 @@ export default function App(): React.JSX.Element {
           onSelectTerminal={handleSelectTerminal}
           onSelectAccount={handleOpenAccount}
           onDirectVnc={handleLaunchVnc}
-          onDirectPing={handleDirectPing}
           backendMode={status.mode}
           serverName={status.server}
           onOpenSettings={() => setIsSettingsOpen(true)}

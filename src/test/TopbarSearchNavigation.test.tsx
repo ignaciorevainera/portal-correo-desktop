@@ -546,4 +546,35 @@ describe('Topbar Search and Keyboard Navigation', () => {
     // compilado, donde `animation: none` aparece después y gana por cascada.
     expect(panel.className).toContain('data-closed:animate-out');
   });
+
+  it("usa ids válidos y limpia la opción activa al borrar una fila", async () => {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(["PC A", "SUC10-PC01"]));
+
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} onSelectAccount={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const input = screen.getByRole("combobox", { name: /buscar terminal/i });
+    fireEvent.focus(input);
+    fireEvent.click(input);
+
+    const listbox = await screen.findByRole("listbox");
+    const options = within(listbox).getAllByRole("option");
+
+    for (const option of options) {
+      expect(option.id).toMatch(/^terminal-search-option-[a-z0-9-]+$/i);
+      expect(option.id).not.toContain(" ");
+    }
+
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(input).toHaveAttribute("aria-activedescendant", options[0].id);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /quitar PC A del historial/i }),
+    );
+
+    expect(input).not.toHaveAttribute("aria-activedescendant");
+  });
 });

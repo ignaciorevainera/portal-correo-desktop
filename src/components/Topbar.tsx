@@ -55,7 +55,6 @@ interface TopbarProps {
   onSelectTerminal: (pc: string) => void;
   onSelectAccount?: (user: string) => void;
   onDirectVnc?: (pc: string) => void;
-  onDirectPing?: (pc: string) => void;
   backendMode?: "sql" | "mock";
   serverName?: string;
   onOpenSettings?: () => void;
@@ -67,11 +66,15 @@ const PORTAL_MDA_URL = "https://mda.correo.local/inventario-terminales";
 // centinela conserva el estado "sin opción activa" hasta que el usuario navega.
 const NO_ACTIVE_VALUE = "__sin_seleccion__";
 
+// El id de la opción alimenta `aria-activedescendant`: no admite espacios ni
+// caracteres fuera de IDREF, por eso el valor se normaliza.
+const toOptionId = (value: string): string =>
+  `terminal-search-option-${value.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+
 export function Topbar({
   onSelectTerminal,
   onSelectAccount,
   onDirectVnc,
-  onDirectPing,
   backendMode = "mock",
   serverName,
   onOpenSettings,
@@ -324,7 +327,7 @@ export function Topbar({
                   aria-controls="terminal-search-list"
                   aria-activedescendant={
                     isOpen && activeValue
-                      ? `terminal-search-option-${activeValue}`
+                      ? toOptionId(activeValue)
                       : undefined
                   }
                   aria-autocomplete="list"
@@ -385,10 +388,7 @@ export function Topbar({
                         >
                           <CommandItem
                             ref={(node) => {
-                              node?.setAttribute(
-                                "id",
-                                `terminal-search-option-${item.value}`,
-                              );
+                              node?.setAttribute("id", toOptionId(item.value));
                             }}
                             value={item.value}
                             onSelect={() => handleActivate(item)}
@@ -431,6 +431,7 @@ export function Topbar({
                                 setRecentSearches(
                                   removeRecentSearch(item.value),
                                 );
+                                setActiveValue("");
                               }}
                               aria-label={`Quitar ${item.value} del historial`}
                               title="Quitar del historial"
