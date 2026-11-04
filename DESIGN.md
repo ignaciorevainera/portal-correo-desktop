@@ -63,6 +63,20 @@ radios de `src/components/ui/**` quedan tal como llegaron de la primitiva.
 Tampoco se admiten colores literales de paleta (`text-blue-600`,
 `bg-emerald-500`, …) ni `z-50` manual fuera del baseline del contrato.
 
+## Tipografía
+
+Cuatro pasos, sin tamaños arbitrarios: **18** (`text-lg`, títulos), **14**
+(`text-sm`, cuerpo), **12** (`text-xs`, metadatos) y **11** (`text-micro`, piso
+para chips, ayudas y códigos). No se usa `text-[Npx]`; el contrato lo prohíbe.
+
+Las etiquetas de sección usan `overline-label` (11 px, mayúsculas, tracking
+corto) y hay como máximo **cinco** en toda la app. Los iconos de sección van en
+`IconWell` (`sm`/`md`), no en `div` con tinte escrito a mano.
+
+Las primitivas de `src/components/ui/**` conservan sus tamaños internos, salvo
+`Kbd`, alineado al piso de 11 px. Cuando una primitiva renderiza un título fuera
+de escala, se ajusta el consumidor (por ejemplo `DialogTitle` con `text-lg`).
+
 ## Ayuda contextual
 
 Los controles interactivos usan `title` nativo. El `aria-label` es el nombre

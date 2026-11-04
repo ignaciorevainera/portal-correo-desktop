@@ -262,6 +262,8 @@ El orden no es por impacto visual, es por **dependencia**: casi todo lo demás n
 
 ### Fase 5 · Tipografía y adornos (≈ 6 h)
 
+> **Estado (2026-11-04):** ejecutada en `feat/fase-5-tipografia`. Escala fijada en 18/14/12/11 con `text-micro`; **44** tamaños arbitrarios eliminados (0 restantes, contrato nuevo) y los pasos fuera de escala (`text-base`/`text-xl`) normalizados. El motor de merge (`cn`) se configuró para conocer `text-micro`, así el 11 px llega a las primitivas sin perder su color. Overlines unificadas en `overline-label` y recortadas de 6 a 5 (`uppercase` manual = 0, contrato nuevo). Cuadrados de icono unificados en `IconWell` (4 usos); `Kbd` quedó en el piso de 11 px y los tres títulos de diálogo fuera de escala pasaron a 18. El estado vacío inicial ganó la acción "Buscar terminal", que enfoca el buscador, y el escáner muestra skeletons mientras busca. Suite 399/399, build verde, `--strict` 0, ratchet **0/0/0/1**.
+
 Escala 18/14/12/11, overlines, iconos en cuadrado teñido, estados vacíos con acción, skeletons.
 
 > **Total:** ≈ 4,5 días de trabajo, con la regla de que ninguna fase arranca si la anterior no dejó el build verde.
