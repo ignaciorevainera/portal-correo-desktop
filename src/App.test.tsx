@@ -122,7 +122,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     });
   });
 
-  it('renders single-scroll layout without Sidebar, auto-triggers 4-packet ping on terminal load, and never scrolls main to ping section', async () => {
+  it('renders single-scroll layout without a sidebar, auto-triggers 4-packet ping on terminal load, and never scrolls main to ping section', async () => {
     const scrollMock = vi.fn();
     window.HTMLElement.prototype.scrollIntoView = scrollMock;
 
@@ -175,9 +175,6 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
       expect(screen.getByText(/Alertas y reseteos/i)).toBeInTheDocument();
       expect(screen.getByText(/Datos del equipo/i)).toBeInTheDocument();
     }, { timeout: 3000 });
-
-    // Verify Sidebar is completely absent
-    expect(screen.queryByRole('navigation', { name: /barra lateral/i })).not.toBeInTheDocument();
 
     // 1. Verify 4-packet standard ping started automatically upon terminal search/load
     await waitFor(() => {

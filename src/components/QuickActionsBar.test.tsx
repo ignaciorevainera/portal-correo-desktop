@@ -69,4 +69,26 @@ describe('QuickActionsBar Polish: Subnet Scanner & Uptime Refresh', () => {
     fireEvent.click(refreshBtn);
     expect(onRefreshUptime).toHaveBeenCalledTimes(1);
   });
+
+  it('dispara la asistencia MSRA desde el desplegable de conexión remota', async () => {
+    const onLaunchMsra = vi.fn();
+    render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={false}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={onLaunchMsra}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /opciones de conexión remota/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /iniciar asistencia msra/i }),
+    );
+
+    expect(onLaunchMsra).toHaveBeenCalledTimes(1);
+  });
 });
