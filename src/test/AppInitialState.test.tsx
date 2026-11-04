@@ -149,4 +149,27 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
     expect(screen.getByRole('button', { name: /Conectar por VNC Viewer/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Iniciar Asistencia MSRA/i })).toBeInTheDocument();
   });
+
+  it('enfoca el buscador desde la acción del estado vacío', async () => {
+    (global as any).window.electronAPI = {
+      checkStatus: vi
+        .fn()
+        .mockResolvedValue({ connected: true, mode: 'sql', server: 'srv' }),
+      searchTerminal: vi.fn(),
+      ping: vi.fn(),
+      stopPing: vi.fn(),
+      onPingData: vi.fn().mockReturnValue(() => {}),
+      onPingEnd: vi.fn().mockReturnValue(() => {}),
+    };
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Buscar terminal' }),
+    );
+
+    expect(
+      screen.getByRole('combobox', { name: /buscar terminal/i }),
+    ).toHaveFocus();
+  });
 });

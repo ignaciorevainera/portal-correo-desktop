@@ -739,6 +739,20 @@ export default function App(): React.JSX.Element {
                   técnico y monitoreo en vivo.
                 </EmptyDescription>
               </EmptyHeader>
+              <EmptyContent>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    window.dispatchEvent(
+                      new CustomEvent("pcd:app-autofocus-search"),
+                    );
+                  }}
+                >
+                  <Search data-icon="inline-start" aria-hidden="true" />
+                  Buscar terminal
+                </Button>
+              </EmptyContent>
             </Empty>
           ) : (
             <>
