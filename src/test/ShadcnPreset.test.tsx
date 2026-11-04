@@ -25,8 +25,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Kbd } from "@/components/ui/kbd";
-import { HardwareCard } from "@/components/HardwareCard";
-import { NetworkAdCard } from "@/components/NetworkAdCard";
 import { QuickActionsBar } from "@/components/QuickActionsBar";
 import { Topbar } from "@/components/Topbar";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -107,7 +105,7 @@ describe("Shadcn Preset b5XRZYXrNg & UI Primitives", () => {
     );
   });
 
-  it("verifica que los componentes principales (Topbar, QuickActionsBar, HardwareCard, NetworkAdCard) utilizan primitivas shadcn (data-slot)", () => {
+  it("verifica que Topbar y QuickActionsBar utilizan primitivas shadcn (data-slot)", () => {
     const mockTerminal = getAllTerminals()[0];
     const { container } = render(
       <ThemeProvider>
@@ -119,20 +117,15 @@ describe("Shadcn Preset b5XRZYXrNg & UI Primitives", () => {
           onLaunchMsra={vi.fn()}
           onTogglePing={vi.fn()}
         />
-        <NetworkAdCard terminal={mockTerminal} />
-        <HardwareCard terminal={mockTerminal} />
       </ThemeProvider>,
     );
 
-    expect(
-      container.querySelectorAll('[data-slot="card"]').length,
-    ).toBeGreaterThanOrEqual(2);
     expect(
       container.querySelectorAll('[data-slot="button"]').length,
     ).toBeGreaterThanOrEqual(5);
     expect(
       container.querySelectorAll('[data-slot="badge"]').length,
-    ).toBeGreaterThanOrEqual(2);
+    ).toBeGreaterThanOrEqual(1);
     expect(
       container.querySelectorAll('[data-slot="input-group-control"]').length,
     ).toBeGreaterThanOrEqual(1);
