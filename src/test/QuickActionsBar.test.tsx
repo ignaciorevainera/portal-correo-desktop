@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { QuickActionsBar } from '../components/QuickActionsBar';
 import { getAllTerminals } from '../services/terminalService';
 import { RemoteProbeResult } from '../services/electronClient';
+import { TerminalData } from '../types/terminal';
 
 describe('QuickActionsBar & Shortcut Keys', () => {
   const terminal = getAllTerminals()[0];
@@ -443,5 +444,92 @@ describe('QuickActionsBar & Shortcut Keys', () => {
       fireEvent.click(screen.getByRole('button', { name: /ejecutar tracert/i }));
       expect(onRunDiagnostic).toHaveBeenCalledWith('tracert');
     });
+  });
+});
+
+describe('QuickActionsBar Polish: Subnet Scanner & Uptime Refresh', () => {
+  const polishTerminal: TerminalData = {
+    pc: 'PC-TEST-001',
+    ip: '192.0.2.100',
+    mac: '00:11:22:33:44:55',
+    os: 'Windows 10',
+    servicePack: '21H2',
+    architecture: 'x64',
+    surveyDate: '2026-10-26',
+    cpuModel: 'Intel Core i5',
+    ram: '8 GB',
+    userNt: 'testuser',
+    location: 'Buenos Aires',
+    antivirusVersion: 'Defender 1.0',
+    ieVersion: '11.0',
+    uptimeText: '4 días, 6 horas',
+    alerts: [],
+    resetHistory: [],
+  };
+
+  it('renders "Escanear Subred" button and triggers callback on click', () => {
+    const onOpenSubnet = vi.fn();
+    render(
+      <QuickActionsBar
+        terminal={polishTerminal}
+        isPinging={false}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onOpenSubnetScanner={onOpenSubnet}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /más/i }));
+    const scanBtn = screen.getByRole('button', { name: /escanear subred/i });
+    expect(scanBtn).toBeInTheDocument();
+    fireEvent.click(scanBtn);
+    expect(onOpenSubnet).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders display-only Uptime chip and refreshes from the Más menu', () => {
+    const onRefreshUptime = vi.fn();
+    render(
+      <QuickActionsBar
+        terminal={polishTerminal}
+        isPinging={false}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onRefreshUptime={onRefreshUptime}
+        isRefreshingUptime={false}
+      />,
+    );
+
+    expect(screen.getByText(polishTerminal.uptimeText)).toBeInTheDocument();
+    expect(screen.getByTitle(/uptime:/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /más/i }));
+    const refreshBtn = screen.getByRole('button', { name: /refrescar uptime/i });
+    expect(refreshBtn).toBeInTheDocument();
+    fireEvent.click(refreshBtn);
+    expect(onRefreshUptime).toHaveBeenCalledTimes(1);
+  });
+
+  it('dispara la asistencia MSRA desde el desplegable de conexión remota', () => {
+    const onLaunchMsra = vi.fn();
+    render(
+      <QuickActionsBar
+        terminal={polishTerminal}
+        isPinging={false}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={onLaunchMsra}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /opciones de conexión remota/i }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: /iniciar asistencia msra/i }),
+    );
+
+    expect(onLaunchMsra).toHaveBeenCalledTimes(1);
   });
 });

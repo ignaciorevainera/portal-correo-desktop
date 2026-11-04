@@ -122,7 +122,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     });
   });
 
-  it('renders single-scroll layout without a sidebar, auto-triggers 4-packet ping on terminal load, and never scrolls main to ping section', async () => {
+  it('renderiza un layout de scroll único, dispara ping de 4 paquetes al cargar la terminal y no desplaza main a la sección de ping', async () => {
     const scrollMock = vi.fn();
     window.HTMLElement.prototype.scrollIntoView = scrollMock;
 
