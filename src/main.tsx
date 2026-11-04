@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { TooltipProvider } from './components/ui/tooltip';
 import './index.css';
 
 window.addEventListener('error', (event) => {
@@ -16,9 +15,7 @@ window.addEventListener('unhandledrejection', (event) => {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <TooltipProvider delayDuration={0}>
-        <App />
-      </TooltipProvider>
+      <App />
     </ErrorBoundary>
   </React.StrictMode>
 );
