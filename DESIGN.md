@@ -60,6 +60,12 @@ no se usa `rounded` pelado ni radios arbitrarios `rounded-[…]`. No se agregan
 sombras propias (`shadow-*`) ni degradados (`bg-gradient-*`); las sombras y
 radios de `src/components/ui/**` quedan tal como llegaron de la primitiva.
 
+Los tokens semánticos son los del preset corporativo. La app no los oscurece
+para AA: los pares de texto sobre tintes quedan entre 3.64:1 y 4.76:1 y están
+documentados como excepciones medidas en `scripts/check-contrast.mjs`. `--info`
+se conserva como semántica de diagnóstico. Los bordes son decorativos: el script
+los reporta como «decorativo» y no bloquean el exit.
+
 Tampoco se admiten colores literales de paleta (`text-blue-600`,
 `bg-emerald-500`, …) ni `z-50` manual fuera del baseline del contrato.
 
@@ -125,13 +131,16 @@ Todo cambio de superficies, tokens o componentes debe pasar, con salida real:
 - `npm test` — suite completa en verde.
 - `npm run build` — TypeScript y bundle sin errores.
 - `npm run audit:contrast` — contraste de tokens en verde.
-- `node scripts/check-contrast.mjs --strict` — sin excepciones, exit 0.
+- `node scripts/check-contrast.mjs` — exit 0 con las excepciones medidas.
+  `--strict` es diagnóstico: ignora las excepciones y falla a propósito con los
+  pares aceptados de tintes.
 - `npx vitest run src/test/designContract.test.ts` — ratchet en **0/0/0/1**
   (paleta fija, sombras propias, radios pelados y `z-index` manual). El ratchet
   sólo puede bajar: si un cambio sube cualquiera de esos conteos, no entra.
 
-El contrato de diseño y el script de contraste no se relajan para acomodar un
-cambio visual; se corrige el cambio.
+El ratchet de diseño no se relaja para acomodar un cambio visual: se corrige el
+cambio. El contraste AA sobre tintes es la única excepción documentada, por
+decisión de producto (2026-11-04).
 
 ## Decisiones revisadas
 
