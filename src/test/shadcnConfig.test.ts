@@ -26,20 +26,15 @@ describe("Configuración shadcn: base Radix declarada", () => {
     expect(allDeps()["radix-ui"]).toBeTruthy();
   });
 
-  it("el CLI de shadcn está en devDependencies y no en producción", () => {
+  it("el CLI de shadcn ya no está instalado", () => {
     const pkg = readJson("package.json");
     expect(pkg.dependencies?.shadcn).toBeUndefined();
-    expect(pkg.devDependencies?.shadcn).toBeTruthy();
+    expect(pkg.devDependencies?.shadcn).toBeUndefined();
+    expect(allDeps()["shadcn"]).toBeUndefined();
   });
 
   it("next-themes ya no está declarado", () => {
     expect(allDeps()["next-themes"]).toBeUndefined();
-  });
-
-  it("el CLI de shadcn está pinneado a una versión exacta", () => {
-    const pkg = readJson("package.json");
-    expect(pkg.devDependencies.shadcn).toMatch(/^\d+\.\d+\.\d+$/);
-    expect(pkg.devDependencies.shadcn).toBe("4.23.0");
   });
 
   it("el style es exactamente radix-vega", () => {

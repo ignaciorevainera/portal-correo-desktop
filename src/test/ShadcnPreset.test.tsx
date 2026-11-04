@@ -41,10 +41,12 @@ describe("Shadcn Preset b5XRZYXrNg & UI Primitives", () => {
     expect(config.aliases.ui).toBe("@/components/ui");
   });
 
-  it("verifica que src/index.css importa las fuentes y estilos del preset b5XRZYXrNg", () => {
+  it("verifica que src/index.css inlinea el preset b5XRZYXrNg y conserva las fuentes", () => {
     const cssPath = path.resolve(process.cwd(), "src/index.css");
     const cssContent = fs.readFileSync(cssPath, "utf-8");
-    expect(cssContent).toContain('@import "shadcn/tailwind.css";');
+    expect(cssContent).toContain("/* ejected from shadcn@4.23.0 */");
+    expect(cssContent).not.toContain('@import "shadcn/tailwind.css";');
+    expect(cssContent).toContain("@utility no-scrollbar {");
     expect(cssContent).toContain('@import "@fontsource-variable/geist";');
     expect(cssContent).toContain('@import "@fontsource-variable/roboto-slab";');
   });
