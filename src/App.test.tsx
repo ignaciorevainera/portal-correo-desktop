@@ -7,6 +7,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    localStorage.clear();
     delete (window as any).electronAPI;
   });
 
@@ -122,7 +123,7 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
     });
   });
 
-  it('renderiza un layout de scroll único, dispara ping de 4 paquetes al cargar la terminal y no desplaza main a la sección de ping', async () => {
+  it('renderiza un layout de scroll único, dispara un solo ping al equipo al cargar la terminal y no desplaza main a la sección de ping', async () => {
     const scrollMock = vi.fn();
     window.HTMLElement.prototype.scrollIntoView = scrollMock;
 
@@ -176,24 +177,21 @@ describe('App Smoke, Direct Console & Remote Tools Feedback Test', () => {
       expect(screen.getByText(/Datos del equipo/i)).toBeInTheDocument();
     }, { timeout: 3000 });
 
-    // 1. Verify 4-packet standard ping started automatically upon terminal search/load
+    // 1. Ping automático único al equipo buscado, con el modo de Ajustes (estándar).
     await waitFor(() => {
       expect(startPingMock).toHaveBeenCalledWith('192.0.2.101', false);
       expect(screen.getAllByRole('button', { name: /detener ping en vivo/i }).length).toBeGreaterThan(0);
     });
 
-    // 2. Verify sequence: first ping completes, triggers second ping to .250, then completes
-    (doneCallback as ((code: number) => void) | null)?.(0);
-
-    await waitFor(() => {
-      expect(startPingMock).toHaveBeenCalledWith('192.0.2.250', false);
-    });
-
+    // 2. Al completar no se encadena ningún ping automático a los enlaces del sitio.
     (doneCallback as ((code: number) => void) | null)?.(0);
 
     await waitFor(() => {
       expect(screen.getAllByRole('button', { name: /^iniciar ping$/i }).length).toBeGreaterThan(0);
     });
+
+    expect(startPingMock).not.toHaveBeenCalledWith('192.0.2.250', false);
+    expect(startPingMock).toHaveBeenCalledTimes(1);
 
     // 3. Verify clicking Ping or Ping -t does NOT scroll the main container to pingConsoleRef
     scrollMock.mockClear();

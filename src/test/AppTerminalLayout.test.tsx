@@ -40,6 +40,7 @@ async function renderLoadedApp() {
 describe("App terminal layout", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    localStorage.clear();
     (window as any).electronAPI = {
       checkStatus: vi
         .fn()
@@ -116,6 +117,31 @@ describe("App terminal layout", () => {
       expect(consoleTrigger).toHaveAttribute("aria-expanded", "true"),
     );
     expect(screen.getByTestId("terminal-scroll-container")).toBeInTheDocument();
+  });
+
+  it("comparte el mismo gutter lateral en topbar, barra de acciones y main", async () => {
+    const { container } = await renderLoadedApp();
+
+    const header = container.querySelector("header");
+    const actionBar = header?.nextElementSibling as HTMLElement | null;
+    const main = container.querySelector("main");
+
+    expect(header).toHaveClass("px-3.5");
+    expect(actionBar).not.toBeNull();
+    expect(actionBar).toHaveClass("px-3.5");
+    expect(main).toHaveClass("p-3.5");
+  });
+
+  it("respeta el modo de ping configurado al cargar la terminal", async () => {
+    localStorage.setItem("pcd_pref_ping_mode", "infinite");
+    const pingMock = (window as any).electronAPI.ping;
+
+    await renderLoadedApp();
+
+    await waitFor(() =>
+      expect(pingMock).toHaveBeenCalledWith("192.0.2.100", true),
+    );
+    expect(screen.getByText(/ping -t 192\.0\.2\.100/)).toBeInTheDocument();
   });
 
   it("refresca el uptime desde el menú Más y actualiza el chip", async () => {

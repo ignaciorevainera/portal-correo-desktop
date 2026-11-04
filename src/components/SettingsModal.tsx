@@ -38,6 +38,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { IconWell } from "./IconWell";
+import {
+  loadDefaultPingMode,
+  saveDefaultPingMode,
+  type PingMode,
+} from "@/lib/preferences";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -83,12 +88,8 @@ export function SettingsModal({
     },
   );
 
-  const [defaultPingMode, setDefaultPingMode] = useState<
-    "standard" | "infinite"
-  >(() => {
-    const saved = localStorage.getItem("pcd_pref_ping_mode");
-    return (saved as "standard" | "infinite") || "standard";
-  });
+  const [defaultPingMode, setDefaultPingMode] =
+    useState<PingMode>(loadDefaultPingMode);
 
   useEffect(() => {
     localStorage.setItem("pcd_pref_tray", String(minimizeToTray));
@@ -99,7 +100,7 @@ export function SettingsModal({
   }, [globalHotkeyEnabled]);
 
   useEffect(() => {
-    localStorage.setItem("pcd_pref_ping_mode", defaultPingMode);
+    saveDefaultPingMode(defaultPingMode);
   }, [defaultPingMode]);
 
   useEffect(() => {

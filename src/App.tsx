@@ -65,6 +65,7 @@ import {
   splitUsernames,
 } from "@/lib/usernames";
 import { updateRecentSearchKind } from "@/lib/recentSearches";
+import { loadDefaultPingMode } from "@/lib/preferences";
 import { deriveSiteTargets } from "@/utils/siteTargets";
 
 export default function App(): React.JSX.Element {
@@ -78,10 +79,6 @@ export default function App(): React.JSX.Element {
   const [pingMode, setPingMode] = useState<"standard" | "infinite">("standard");
   const [pingTarget, setPingTarget] = useState<string>("");
   const [pingLinePrefix, setPingLinePrefix] = useState<string | undefined>(undefined);
-  const [pendingSitePing, setPendingSitePing] = useState<{
-    ip: string;
-    prefix: string;
-  } | null>(null);
   const [activeDiagnostic, setActiveDiagnostic] =
     useState<DiagnosticCommandEvent | null>(null);
   const [isAccountChooserOpen, setIsAccountChooserOpen] = useState(false);
@@ -232,23 +229,15 @@ export default function App(): React.JSX.Element {
           mainRef.current.scrollTop = 0;
         }
         if (res.data.ip) {
-          setPingMode("standard");
+          // El modo sale de Ajustes en cada carga: cambiarlo aplica a la
+          // siguiente búsqueda sin recargar la ventana.
+          setPingMode(loadDefaultPingMode());
           setPingTarget(res.data.ip);
           setPingLinePrefix(undefined);
-          const targets = deriveSiteTargets(res.data.ip);
-          if (targets.isValid && !targets.isTargetRouter && targets.routerIp) {
-            setPendingSitePing({
-              ip: targets.routerIp,
-              prefix: "[ROUTER .250]",
-            });
-          } else {
-            setPendingSitePing(null);
-          }
           setIsPinging(true);
           handleProbeRemote(res.data.ip);
         } else {
           setRemoteProbe(null);
-          setPendingSitePing(null);
           setIsPinging(false);
         }
       })
@@ -277,7 +266,6 @@ export default function App(): React.JSX.Element {
     setSelectedPc("");
     setTerminal(null);
     setNotFoundTerm(null);
-    setPendingSitePing(null);
     setPingLinePrefix(undefined);
     setIsPinging(false);
     setActiveDiagnostic(null);
@@ -311,27 +299,16 @@ export default function App(): React.JSX.Element {
     if (!targetIp) return;
     if (isPinging && pingTarget === targetIp && pingMode === mode) {
       setIsPinging(false);
-      setPendingSitePing(null);
       return;
     }
-    setPendingSitePing(null); // Cancel automatic sequence if user manually triggers site ping
     const prefix =
       targetType === "router" ? "[ROUTER .250]" : "[SERVIDOR .231]";
     handleStartPing(mode, targetIp, prefix);
   };
 
+  // Sólo ping al equipo buscado: los enlaces del sitio se disparan desde la barra.
   const handlePingComplete = () => {
-    if (pendingSitePing) {
-      const nextPing = pendingSitePing;
-      setPendingSitePing(null);
-      setPingTarget(nextPing.ip);
-      setPingLinePrefix(nextPing.prefix);
-      setPingMode("standard");
-      // Keep isPinging true so next ping runs seamlessly in LivePingConsole
-      setIsPinging(true);
-    } else {
-      setIsPinging(false);
-    }
+    setIsPinging(false);
   };
 
   const handleRunDiagnostic = (cmd: DiagnosticCommandType) => {
@@ -381,7 +358,6 @@ export default function App(): React.JSX.Element {
 
   const handleTogglePing = () => {
     if (isPinging) {
-      setPendingSitePing(null);
       setIsPinging(false);
     } else {
       handleStartPing("standard", terminal?.ip, undefined);
