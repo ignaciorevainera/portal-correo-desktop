@@ -13,6 +13,7 @@ import {
   RotateCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { IconWell } from './IconWell';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -168,9 +169,9 @@ export function SubnetScannerDrawer({
       >
         <SheetHeader className="h-12 shrink-0 flex-row items-center justify-between gap-2 border-b border-border bg-muted/40 p-0 px-3.5">
           <div className="flex items-center gap-2">
-            <div className="rounded-md bg-primary/10 p-1 text-link">
+            <IconWell size="sm">
               <Network className="h-3.5 w-3.5" aria-hidden="true" />
-            </div>
+            </IconWell>
             <div>
               <SheetTitle className="text-xs font-bold tracking-tight">
                 Escáner de Subred

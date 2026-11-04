@@ -37,6 +37,7 @@ import {
   Database,
 } from "lucide-react";
 import { toast } from "sonner";
+import { IconWell } from "./IconWell";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -167,9 +168,9 @@ export function SettingsModal({
         <DialogHeader className="p-4 bg-muted/40 border-b border-border shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-primary/10 text-link">
+              <IconWell>
                 <Settings className="h-5 w-5" />
-              </div>
+              </IconWell>
               <div>
                 <DialogTitle className="text-base font-bold text-foreground">
                   Ajustes y Configuración

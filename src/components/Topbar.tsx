@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { IconWell } from "./IconWell";
 import { InfoModal } from "./InfoModal";
 import {
   minimizeWindow,
@@ -277,13 +278,13 @@ export function Topbar({
       <header className="h-14 bg-card/90 backdrop-blur px-4 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
         {/* Identidad / Brand (Arrastrable junto al header para mover la ventana con el mouse) */}
         <div className="flex items-center gap-2.5 shrink-0 cursor-default select-none">
-          <div className="p-1.5 rounded-md bg-primary/10 text-link pointer-events-none">
+          <IconWell size="sm" className="p-1.5 pointer-events-none">
             <img
               src={logoIcon}
               alt="Correo Argentino"
               className="h-5 w-5 object-contain"
             />
-          </div>
+          </IconWell>
           <h1 className="text-sm font-bold font-heading tracking-tight text-foreground whitespace-nowrap pointer-events-none">
             Portal Correo Desktop
           </h1>
