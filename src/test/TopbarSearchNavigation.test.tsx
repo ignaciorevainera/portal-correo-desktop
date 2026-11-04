@@ -348,7 +348,7 @@ describe('Topbar Search and Keyboard Navigation', () => {
     fireEvent.keyDown(searchInput, { key: 'ArrowDown' });
 
     const active = screen.getByRole('option', { name: /PC-A/i });
-    expect(active).toHaveAttribute('id', 'terminal-search-option-PC-A');
+    expect(active).toHaveAttribute('id', 'terminal-search-option-0');
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
       active.id,
@@ -564,7 +564,7 @@ describe('Topbar Search and Keyboard Navigation', () => {
     const options = within(listbox).getAllByRole("option");
 
     for (const option of options) {
-      expect(option.id).toMatch(/^terminal-search-option-[a-z0-9-]+$/i);
+      expect(option.id).toMatch(/^terminal-search-option-\d+$/);
       expect(option.id).not.toContain(" ");
     }
 
@@ -576,5 +576,46 @@ describe('Topbar Search and Keyboard Navigation', () => {
     );
 
     expect(input).not.toHaveAttribute("aria-activedescendant");
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+  });
+
+  it("no colisiona ids cuando dos valores se normalizan al mismo texto", async () => {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(["PC A", "PC-A"]));
+
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} onSelectAccount={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const input = screen.getByRole("combobox", { name: /buscar terminal/i });
+    fireEvent.focus(input);
+    fireEvent.click(input);
+
+    const listbox = await screen.findByRole("listbox");
+    const options = within(listbox).getAllByRole("option");
+    expect(options).toHaveLength(2);
+    expect(options[0].id).not.toBe(options[1].id);
+
+    const ids = options.map((option) => option.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("abre ajustes con F10 pero no con Shift+F10", () => {
+    const onOpenSettings = vi.fn();
+    render(
+      <ThemeProvider>
+        <Topbar
+          onSelectTerminal={vi.fn()}
+          onOpenSettings={onOpenSettings}
+        />
+      </ThemeProvider>,
+    );
+
+    fireEvent.keyDown(window, { key: "F10", shiftKey: true });
+    expect(onOpenSettings).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(window, { key: "F10" });
+    expect(onOpenSettings).toHaveBeenCalledTimes(1);
   });
 });

@@ -95,6 +95,9 @@ describe("OperatorContextMenu", () => {
     const items = await screen.findAllByRole("menuitem");
     expect(items).toHaveLength(1);
     expect(items[0]).toHaveAccessibleName(/abrir portal mda/i);
+    expect(screen.getByRole("menu")).toHaveAccessibleName(
+      "Acciones del operador",
+    );
 
     fireEvent.click(items[0]);
     expect(onOpenPortalMda).toHaveBeenCalledTimes(1);
@@ -276,9 +279,9 @@ describe("OperatorContextMenu", () => {
     });
     expect(menu).toBeInTheDocument();
 
-    // Radix enfoca el primer ítem al abrir con teclado; la flecha baja mueve
-    // el foco al segundo. Con apertura por mouse el foco queda en el menú,
-    // por eso la apertura se simula con Shift+F10.
+    // El keydown sólo prepara el flag de modalidad teclado de Radix; es
+    // `contextMenu` el que abre el menú. Con apertura por mouse el foco queda
+    // en el contenido del menú y Radix no enfoca el primer ítem.
     const items = screen.getAllByRole("menuitem");
     expect(items[0]).toHaveFocus();
     fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" });

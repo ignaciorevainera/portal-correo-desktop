@@ -66,10 +66,10 @@ const PORTAL_MDA_URL = "https://mda.correo.local/inventario-terminales";
 // centinela conserva el estado "sin opción activa" hasta que el usuario navega.
 const NO_ACTIVE_VALUE = "__sin_seleccion__";
 
-// El id de la opción alimenta `aria-activedescendant`: no admite espacios ni
-// caracteres fuera de IDREF, por eso el valor se normaliza.
-const toOptionId = (value: string): string =>
-  `terminal-search-option-${value.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+// El id de la opción alimenta `aria-activedescendant`: se deriva del índice
+// para que dos valores que normalizan al mismo texto no colisionen.
+const toOptionId = (index: number): string =>
+  `terminal-search-option-${index}`;
 
 export function Topbar({
   onSelectTerminal,
@@ -138,6 +138,10 @@ export function Topbar({
       : recentSearches
   ).slice(0, 5);
 
+  const activeIndex = filteredMatches.findIndex(
+    (item) => item.value === activeValue,
+  );
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
@@ -145,7 +149,7 @@ export function Topbar({
         inputRef.current?.focus();
         inputRef.current?.select();
       }
-      if (e.key === "F10") {
+      if (e.key === "F10" && !e.shiftKey) {
         e.preventDefault();
         onOpenSettings?.();
       }
@@ -326,8 +330,8 @@ export function Topbar({
                   aria-expanded={isOpen}
                   aria-controls="terminal-search-list"
                   aria-activedescendant={
-                    isOpen && activeValue
-                      ? toOptionId(activeValue)
+                    isOpen && activeIndex >= 0
+                      ? toOptionId(activeIndex)
                       : undefined
                   }
                   aria-autocomplete="list"
@@ -379,7 +383,7 @@ export function Topbar({
                         : "Búsquedas recientes"
                     }
                   >
-                    {filteredMatches.map((item) => {
+                    {filteredMatches.map((item, index) => {
                       const isAccount = item.kind === "account";
                       return (
                         <div
@@ -388,7 +392,7 @@ export function Topbar({
                         >
                           <CommandItem
                             ref={(node) => {
-                              node?.setAttribute("id", toOptionId(item.value));
+                              node?.setAttribute("id", toOptionId(index));
                             }}
                             value={item.value}
                             onSelect={() => handleActivate(item)}
