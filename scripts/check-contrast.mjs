@@ -335,8 +335,37 @@ const pairs = [
   },
 ];
 
-// Fase 2 completada: sin excepciones. Los pares de texto deben cumplir 4.5:1.
-const EXCEPTIONS = [];
+// Decisión de producto (2026-11-04): se restauraron los valores del preset
+// corporativo para --muted-foreground, --destructive, --success y --warning.
+// Los pares de texto sobre tintes quedan bajo 4.5:1 y se documentan acá con el
+// ratio medido; `--strict` deja de ser un gate verde y pasa a ser diagnóstico.
+const EXCEPTIONS = [
+  {
+    label: "light Labels sobre muted",
+    ratio: 4.34,
+    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado sobre tintes.",
+  },
+  {
+    label: "light Botón destructive (10%)",
+    ratio: 3.99,
+    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado sobre tintes.",
+  },
+  {
+    label: "light Destructivo sobre tinte 15",
+    ratio: 3.64,
+    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado sobre tintes.",
+  },
+  {
+    label: "light Tinte success/15",
+    ratio: 4.34,
+    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado sobre tintes.",
+  },
+  {
+    label: "light Tinte warning/15",
+    ratio: 4.18,
+    reason: "Valor del preset restaurado por decisión de producto; AA no garantizado sobre tintes.",
+  },
+];
 
 const pairLabels = pairs.map((p) => `${p.t} ${p.label}`);
 const duplicated = pairLabels.filter((label, index) => pairLabels.indexOf(label) !== index);
@@ -411,7 +440,9 @@ for (const pair of pairs) {
           ? "excepción documentada"
           : pass
             ? "ok"
-            : `FALLA (${threshold}:1)`,
+            : pair.kind === "text"
+              ? `FALLA (${threshold}:1)`
+              : `decorativo (${value.toFixed(2)}:1, no bloqueante)`,
   ]);
 }
 
