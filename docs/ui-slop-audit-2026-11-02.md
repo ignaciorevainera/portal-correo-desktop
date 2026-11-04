@@ -254,7 +254,7 @@ El orden no es por impacto visual, es por **dependencia**: casi todo lo demás n
 >
 > **Reversión (2026-11-04):** los tooltips (`Hint`) se descartaron y los controles volvieron al `title` nativo; el historial de búsquedas ya no etiqueta el tipo de resultado (conserva el icono) y su panel no anima la entrada.
 
-`Sheet` (drawer), `ContextMenu` (menú propio), `Tooltip` (los 44 `title=`), `Command` + `Popover` (buscador), `ToggleGroup` (modo de ping), `Progress` (las 2 barras), `AlertDialog` (cierre de alerta). Todo con `data-slot`; las sombras que traigan las primitivas quedan como vienen.
+`Sheet` (drawer), `ContextMenu` (menú propio), `title` nativo (los `title=` de los controles, sin capa de tooltips), `Command` + `Popover` (buscador), `ToggleGroup` (modo de ping), `Progress` (las 2 barras), `AlertDialog` (cierre de alerta). Todo con `data-slot`; las sombras que traigan las primitivas quedan como vienen.
 
 ### Fase 4 · Limpieza (≈ 2 h)
 
@@ -275,7 +275,7 @@ El motivo por el que estos patrones persisten no es falta de criterio: es que **
 1. **Un color por significado, y el significado viene del sitio.** Prohibido `blue|emerald|amber|cyan|red|slate|zinc` en `src/components/*.tsx`; solo `primary|success|warning|destructive|muted` y, donde haga falta semántica propia, `category-*` / `office-type-*`. Ningún componente inventa un hex ni un token (`--info` se elimina).
 2. **Piso tipográfico 11 px** y máximo 5 overlines en mayúsculas en toda la app.
 3. **Un breakpoint objetivo: 1020 px.** Si algo necesita `lg:` o `xl:`, no existe en este producto.
-4. **Toda interacción nueva usa una primitiva** (`Command`, `Sheet`, `ContextMenu`, `Tooltip`, `Collapsible`). El markup propio solo compone.
+4. **Toda interacción nueva usa una primitiva** (`Command`, `Sheet`, `ContextMenu`, `Collapsible`). La ayuda de un control es `title` nativo, no una capa de tooltips. El markup propio solo compone.
 5. **Cero código muerto sostenido por tests**: un componente sin import en `App.tsx` no tiene test propio.
 6. **La base la decide el repo, no el CLI**: nunca `shadcn init` sobre este repo (su default es `base-nova`, Base UI), y `components.json` nunca queda sin un `style` con prefijo (`radix-…`). Un `@base-ui-components/react` en `package.json` es una regresión.
 7. **Sin sombras nuevas ni degradados; las del registry se respetan.** `shadow-*` prohibido en `src/components/*.tsx`; en `src/components/ui/**` se deja exactamente lo que llegó del registry, sin agregar ni quitar. `bg-gradient-*` prohibido siempre. La jerarquía propia se hace con borde, fondo y espaciado. Los `ring-*` de foco no son sombras y se conservan.
@@ -311,7 +311,7 @@ El motivo por el que estos patrones persisten no es falta de criterio: es que **
 | 4b | Ídem, sin Base UI | `Command` en `Popover` | **cmdk** + Radix Popover | S7: `aria-selected`, fila activa visible, navegación | 1 d |
 | 5 | Menú contextual propio (242 líneas) | `ContextMenu` | Radix ContextMenu | S7: `role="menu"`, flechas, foco, submenú | 4 h |
 | 6 | Drawer de subred (`:147-157`) | `Sheet` | Radix Dialog | S7: `aria-modal`, focus trap, cierre con Escape | 3 h |
-| 7 | 44 `title=` nativos | `Tooltip` | Radix Tooltip | S7: ayuda de teclado, demora configurable, estilo del sistema | 4 h |
+| 7 | 44 `title=` nativos | ~~`Tooltip`~~ | Descartado | Se probó `Hint` (Tooltip de Radix) y se revirtió al `title` nativo: el tooltip agregaba animación, ruido y bloqueaba clics. | — |
 | 8 | Checkboxes (`SettingsModal.tsx:391-407,414-431`) | `Switch` o `Checkbox` | Radix Switch / Checkbox | S7: hoy no se tiñen (`text-primary` sin `accent-color`) | 1 h |
 | 9 | "Modo de ping": 2 botones que simulan un segmented control (`:440-463`) | `ToggleGroup` | Radix ToggleGroup | S3: la skill pide `ToggleGroup` para 2–7 opciones, no botones con estado manual | 1 h |
 | 10 | 2 barras de progreso con `style={{width}}` (`SettingsModal.tsx:277-282`, `SubnetScannerDrawer.tsx:207-214`) | `Progress` | Radix Progress | S1 (hues fijos) + `aria-valuenow` | 1 h |

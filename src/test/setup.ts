@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 
-// jsdom no implementa ResizeObserver y el posicionamiento de Radix (tooltips,
-// popovers) lo requiere apenas se monta un contenido abierto.
+// jsdom no implementa ResizeObserver y el posicionamiento de Radix (popovers,
+// menús) lo requiere apenas se monta un contenido abierto.
 if (!('ResizeObserver' in globalThis)) {
   class ResizeObserverStub {
     observe() {}

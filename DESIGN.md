@@ -31,9 +31,8 @@ de opciones), el ping del equipo (con `-t`) y los pings a los enlaces del sitio
 El motivo es operativo: los enlaces del sitio se consultan a diario y esconderlos
 agrega un clic a una tarea frecuente. A anchos reducidos la fila envuelve con
 `flex-wrap`; no se ocultan acciones primarias detrás de un menú. Los
-`aria-label`, la ayuda contextual (`Hint`) y el estilo de split (`rounded-r-none`
-/ `rounded-l-none border-l-0`) de cada ping se conservan; los `title` quedan sólo
-en superficies informativas, nunca en controles.
+`aria-label`, el `title` nativo y el estilo de split (`rounded-r-none` /
+`rounded-l-none border-l-0`) de cada ping se conservan.
 
 ## Consola
 
