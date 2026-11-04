@@ -97,7 +97,7 @@ export function NewAlertDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Registrar nueva alerta</DialogTitle>
+          <DialogTitle className="text-lg">Registrar nueva alerta</DialogTitle>
           <DialogDescription>
             Queda asociada a la terminal activa y al operador que la registra.
           </DialogDescription>
@@ -207,7 +207,7 @@ export function RequestResetDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Pedir reset de cuenta AD</DialogTitle>
+          <DialogTitle className="text-lg">Pedir reset de cuenta AD</DialogTitle>
           <DialogDescription>
             La solicitud se envía a la cola de reseteos de la terminal activa.
           </DialogDescription>

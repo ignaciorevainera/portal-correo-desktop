@@ -58,7 +58,7 @@ export function NetUserChooserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Consultar cuenta AD</DialogTitle>
+          <DialogTitle className="text-lg">Consultar cuenta AD</DialogTitle>
           <DialogDescription>
             Elegí un usuario de la ficha o escribí otro del dominio.
           </DialogDescription>

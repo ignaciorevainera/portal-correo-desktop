@@ -8,7 +8,7 @@ function Kbd({ className, ...props }: KbdProps) {
     <kbd
       data-slot="kbd"
       className={cn(
-        "inline-flex items-center justify-center rounded border border-border bg-muted/80 px-1 py-0.2 font-mono text-[9px] uppercase tracking-wider text-muted-foreground shadow-2xs select-none",
+        "inline-flex items-center justify-center rounded border border-border bg-muted/80 px-1 py-0.2 font-mono text-micro uppercase tracking-wider text-muted-foreground shadow-2xs select-none",
         className
       )}
       {...props}
