@@ -301,6 +301,7 @@ function createWindow() {
   const devUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
   const distIndex = path.join(__dirname, '../dist/index.html');
   const logLoadError = (target) => (err) => {
+    if (win.isDestroyed() || relaunchingWithoutSandbox) return;
     console.error(`[Load] No se pudo cargar ${target}: ${err && err.message ? err.message : err}`);
   };
 
@@ -327,18 +328,22 @@ function createWindow() {
   // Red de seguridad: si el renderer no llega a cargar y ningún evento avisa,
   // se relanza sin sandbox en lugar de dejar al operador con una ventana en blanco.
   loadWatchdog = setTimeout(() => {
-    if (windowLoaded || relaunchingWithoutSandbox) return;
+    if (windowLoaded || relaunchingWithoutSandbox || win.isDestroyed()) return;
     relaunchWithoutSandbox('la ventana no terminó de cargar en 20 segundos');
   }, 20000);
 
   if (isDev) {
     win.loadURL(devUrl).catch(() => {
-      win.loadFile(distIndex).catch(logLoadError(distIndex));
-    });
+      if (!win.isDestroyed() && !relaunchingWithoutSandbox) {
+        return win.loadFile(distIndex).catch(logLoadError(distIndex));
+      }
+    }).catch(logLoadError(devUrl));
   } else {
     win.loadFile(distIndex).catch(() => {
-      win.loadURL(devUrl).catch(logLoadError(devUrl));
-    });
+      if (!win.isDestroyed() && !relaunchingWithoutSandbox) {
+        return win.loadURL(devUrl).catch(logLoadError(devUrl));
+      }
+    }).catch(logLoadError(distIndex));
   }
 
   return win;
