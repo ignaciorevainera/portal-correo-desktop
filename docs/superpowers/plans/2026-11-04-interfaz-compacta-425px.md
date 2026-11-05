@@ -183,6 +183,20 @@ Pausar para aprobación antes de la Fase 2.
 
 ---
 
+## Task 2b: Cabecera de consola compacta (agregado en ejecución)
+
+La revisión de calidad de Task 2 detectó que a 425 px la cabecera de la consola (título + 4 botones con texto) se recortaba dentro de la Card `overflow-hidden`.
+
+**Files:**
+- Modify: `src/components/LivePingConsole.tsx`
+- Modify: `src/test/LivePingConsole.test.tsx`
+
+Cambios: título con `truncate`, contenedor de acciones con `shrink-0`, y `max-sm:hidden` en los cinco labels (Detener, Re-ejecutar, Limpiar, Copiar Último, Copiar Logs). Los iconos y `aria-label` no cambian, así que el nombre accesible se conserva.
+
+Commit: `fix(console): icon-only header actions on compact width` y `test(console): cover all compact header actions`.
+
+---
+
 # Fase 2 — Topbar compacto
 
 Objetivo de fase: header de una sola fila a 425 px, sin botones cortados y con buscador usable.
@@ -298,6 +312,16 @@ Agregar este caso al final de `describe('QuickActionsBar & Shortcut Keys')` en `
       />
     );
 
+    const remote = screen.getByRole("button", {
+      name: /conexión remota inteligente/i,
+    });
+    expect(remote.closest("div.relative")?.className).toContain(
+      "max-sm:order-1",
+    );
+
+    const ping = screen.getByRole("button", { name: /^iniciar ping$/i });
+    expect(ping.parentElement?.className).toContain("max-sm:order-2");
+
     expect(
       screen.getByRole("button", { name: /más acciones/i }).className,
     ).toContain("max-sm:order-3");
@@ -305,15 +329,15 @@ Agregar este caso al final de `describe('QuickActionsBar & Shortcut Keys')` en `
     const router = screen.getByRole("button", {
       name: /hacer ping al router \.250/i,
     });
-    expect(router.parentElement?.className).toContain("max-sm:order-4");
+    expect(router.parentElement?.className).toContain("max-sm:order-5");
 
     const server = screen.getByRole("button", {
       name: /hacer ping al servidor \.231/i,
     });
-    expect(server.parentElement?.className).toContain("max-sm:order-5");
+    expect(server.parentElement?.className).toContain("max-sm:order-6");
 
     const uptime = container.querySelector('[title^="Uptime:"]');
-    expect(uptime?.className).toContain("max-sm:order-6");
+    expect(uptime?.className).toContain("max-sm:order-7");
   });
 ```
 
@@ -341,6 +365,16 @@ Wrapper del ping (línea 285):
         <div className="flex rounded-md flex-1 min-w-27.5 grow max-sm:order-2">
 ```
 
+Spacer de corte de fila, como hijo directo de la barra, justo después del wrapper de ping y antes del fragmento de pings de sitio (línea 330). `order` no fuerza salto de línea: sin este spacer, entre ~490 y 639 px la fila 1 se lleva cinco controles y el uptime queda solo:
+
+```tsx
+        {/* Corte de fila en ancho compacto: primarias en la fila 1, secundarias en la 2 */}
+        <div
+          aria-hidden="true"
+          className="hidden max-sm:block max-sm:basis-full max-sm:order-4"
+        />
+```
+
 Botón "Más" (línea 401):
 
 ```tsx
@@ -350,26 +384,26 @@ Botón "Más" (línea 401):
 Wrapper del ping router `.250` (línea 333):
 
 ```tsx
-            <div className="flex rounded-md shrink-0 max-sm:order-4">
+            <div className="flex rounded-md shrink-0 max-sm:order-5">
 ```
 
 Wrapper del ping servidor `.231` (línea 361):
 
 ```tsx
-            <div className="flex rounded-md shrink-0 max-sm:order-5">
+            <div className="flex rounded-md shrink-0 max-sm:order-6">
 ```
 
 Chip de Uptime (línea 524):
 
 ```tsx
         <div
-          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:order-6"
+          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:order-7"
           title={`Uptime: ${terminal.uptimeText || "N/D"}`}
           aria-busy={isRefreshingUptime}
         >
 ```
 
-Resultado esperado a 425 px: fila 1 = remoto (~180 px) + ping (~110 px) + Más (~64 px) = ~366 px dentro de 397 disponibles. Fila 2 = `.250` (~86 px) + `.231` (~86 px) + uptime (~100 px) = ~280 px. A ≥640 px no cambia nada.
+Resultado esperado a 425 px: fila 1 = remoto (~180 px) + ping (~110 px) + Más (~64 px) = ~366 px dentro de 397 disponibles. Fila 2 = `.250` (~86 px) + `.231` (~86 px) + uptime (~100 px) = ~280 px. El spacer garantiza esa composición en todo el rango 425–639 px, no solo por debajo de ~490 px; agrega una línea flex de altura cero, así que el espacio entre filas visibles es de 8 px (dos veces `gap-1`). A ≥640 px el spacer queda `display:none` y no cambia nada.
 
 - [ ] **Step 4: Correr los tests y verificar que pasan**
 
@@ -515,6 +549,77 @@ Revisión manual a 425×600:
 3. Datos del equipo en 2 columnas; valores largos truncan sin desbordar; botón copiar MAC presente.
 
 Pausar para aprobación antes de la Fase 5.
+
+---
+
+## Task 5b: Margen de viewport en el primitivo de diálogo (agregado en ejecución)
+
+Motivo: la revisión de calidad de Task 5 detectó que ActivityDialogs (3 diálogos), NetUserChooserDialog y CommandDialog seguían pegados a los bordes a 425 px porque usan el primitivo compartido `DialogContent`. Se corrige una sola vez, no por componente.
+
+**Files:**
+- Create: `src/test/dialogPrimitive.test.tsx`
+- Modify: `src/components/ui/dialog.tsx:37`
+
+- [ ] **Step 1: Test que falla**
+
+```tsx
+import { describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { Dialog, DialogContent, DialogTitle } from "../components/ui/dialog";
+
+describe("DialogContent compacto", () => {
+  it("mantiene un margen de viewport bajo 640 px", () => {
+    render(
+      <Dialog open>
+        <DialogContent>
+          <DialogTitle>Prueba</DialogTitle>
+          Contenido
+        </DialogContent>
+      </Dialog>,
+    );
+
+    expect(screen.getByRole("dialog").className).toContain(
+      "max-sm:max-w-[calc(100%-1.5rem)]",
+    );
+  });
+});
+```
+
+- [ ] **Step 2: Correr y verificar que falla**
+
+Run: `npx vitest run src/test/dialogPrimitive.test.tsx`
+Expected: FAIL, clase ausente.
+
+- [ ] **Step 3: Implementar**
+
+En `src/components/ui/dialog.tsx`, `DialogContent`, insertar `max-sm:max-w-[calc(100%-1.5rem)]` justo después de `max-w-lg`. Usar `100%`, no `100vw`.
+
+- [ ] **Step 4: Verificar**
+
+Run: `npx vitest run src/test/dialogPrimitive.test.tsx src/test/InfoModal.test.tsx src/test/SettingsModal.test.tsx src/components/ActivityDialogs.test.tsx src/components/NetUserChooserDialog.test.tsx src/test/NetUserFlow.test.tsx`
+Expected: PASS. `npx tsc --noEmit` exit 0.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/components/ui/dialog.tsx src/test/dialogPrimitive.test.tsx
+git commit -m "feat(dialog): keep viewport gutter on compact width"
+```
+
+Nota: InfoModal y SettingsModal conservan su propia clase `max-sm:max-w-[calc(100vw-1.5rem)]` (mergeada después, gana). Deduplicarlas a favor del primitivo queda como follow-up opcional: no cambia comportamiento porque Radix oculta el scrollbar mientras el diálogo está abierto, pero deja dos fuentes de verdad. `AlertDialogContent` no se toca: su tope por defecto es `max-w-xs` (320 px), nunca pegado a 425 px.
+
+## Task 6b: endurecer aserción de grilla (agregado en ejecución)
+
+La revisión de calidad de Task 6 detectó que `toContain("grid-cols-2")` también pasaba con `sm:grid-cols-2`, así que borrar la clase base dejaba la suite verde. Se reemplaza por comparación de tokens:
+
+```tsx
+    const grid = screen.getByText("Dirección MAC").closest("dl");
+    expect(grid).not.toBeNull();
+    expect(grid!.className.split(/\s+/)).toContain("grid-cols-2");
+    expect(grid!.className.split(/\s+/)).not.toContain("grid-cols-1");
+```
+
+Commit: `test(details): assert grid columns by class token`.
 
 ---
 
