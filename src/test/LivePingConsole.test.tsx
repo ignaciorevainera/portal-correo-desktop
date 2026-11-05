@@ -609,4 +609,28 @@ describe('LivePingConsole Component', () => {
     );
     expect(screen.queryByTestId("terminal-scroll-container")).toBeNull();
   });
+
+  it("compacta la cabecera de la consola: acciones sólo con icono bajo 640 px", () => {
+    render(
+      <LivePingConsole ip="192.0.2.100" isPinging={false} onTogglePing={vi.fn()} />,
+    );
+
+    const headerTrigger = screen.getByRole("button", {
+      name: /consola de 192\.0\.2\.100/i,
+    });
+    expect(headerTrigger.querySelector("span")?.className).toContain("truncate");
+
+    const clear = screen.getByRole("button", { name: /limpiar logs de ping/i });
+    expect(clear.querySelector("span")?.className).toContain("max-sm:hidden");
+
+    const copyLast = screen.getByRole("button", {
+      name: /copiar último bloque de logs/i,
+    });
+    expect(copyLast.querySelector("span")?.className).toContain("max-sm:hidden");
+
+    const copyAll = screen.getByRole("button", {
+      name: /copiar logs de ping/i,
+    });
+    expect(copyAll.querySelector("span")?.className).toContain("max-sm:hidden");
+  });
 });

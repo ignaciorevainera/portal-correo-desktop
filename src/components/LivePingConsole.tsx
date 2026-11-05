@@ -289,14 +289,14 @@ export function LivePingConsole({
                 }`}
               />
               <HeaderIcon className="h-3.5 w-3.5 text-link shrink-0" />
-              <span className="font-mono text-xs font-bold text-foreground">
+              <span className="font-mono text-xs font-bold text-foreground truncate">
                 {headerLabel}
               </span>
             </button>
           </CollapsibleTrigger>
 
           {/* Controles: Detener (solo cuando activo), Limpiar, Copiar Último Bloque y Copiar Todos los Logs */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             {isAnyRunning && (
               <Button
                 type="button"
@@ -310,7 +310,7 @@ export function LivePingConsole({
                 className="h-7 px-2.5 text-micro font-sans font-medium flex items-center gap-1 cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90"
               >
                 <Square className="h-3 w-3" />
-                <span>Detener</span>
+                <span className="max-sm:hidden">Detener</span>
               </Button>
             )}
 
@@ -329,7 +329,7 @@ export function LivePingConsole({
                 className="h-7 px-2.5 text-micro font-sans font-medium flex items-center gap-1 cursor-pointer disabled:opacity-40"
               >
                 <RefreshCw className="h-3 w-3" />
-                <span>Re-ejecutar</span>
+                <span className="max-sm:hidden">Re-ejecutar</span>
               </Button>
             )}
 
@@ -346,7 +346,7 @@ export function LivePingConsole({
               className="h-7 px-2 text-micro font-sans flex items-center gap-1 cursor-pointer"
             >
               <Trash2 className="h-3 w-3" />
-              <span>Limpiar</span>
+              <span className="max-sm:hidden">Limpiar</span>
             </Button>
 
             {/* Copiar Último Bloque */}
@@ -368,7 +368,7 @@ export function LivePingConsole({
               ) : (
                 <Copy className="h-3 w-3 text-muted-foreground" />
               )}
-              <span>{copiedLast ? "Bloque copiado" : "Copiar Último"}</span>
+              <span className="max-sm:hidden">{copiedLast ? "Bloque copiado" : "Copiar Último"}</span>
             </Button>
 
             {/* Copiar Todos los Logs */}
@@ -390,7 +390,7 @@ export function LivePingConsole({
               ) : (
                 <Copy className="h-3 w-3 text-muted-foreground" />
               )}
-              <span>{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
+              <span className="max-sm:hidden">{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
             </Button>
           </div>
         </div>
