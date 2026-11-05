@@ -6,7 +6,6 @@ import {
   UserRound,
   Database,
   HelpCircle,
-  ExternalLink,
   Minus,
   Power,
   MonitorPlay,
@@ -19,7 +18,6 @@ import { InfoModal } from "./InfoModal";
 import {
   minimizeWindow,
   hideToTray,
-  openExternalUrl,
 } from "../services/electronClient";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,8 +57,6 @@ interface TopbarProps {
   serverName?: string;
   onOpenSettings?: () => void;
 }
-
-const PORTAL_MDA_URL = "https://mda.correo.local/inventario-terminales";
 
 // cmdk selecciona el primer ítem cuando su `value` es vacío; usar un valor
 // centinela conserva el estado "sin opción activa" hasta que el usuario navega.
@@ -270,10 +266,6 @@ export function Topbar({
         handleSubmit(query.trim());
       }
     }
-  };
-
-  const handleOpenPortalMda = async (): Promise<void> => {
-    await openExternalUrl(PORTAL_MDA_URL);
   };
 
   return (
@@ -490,20 +482,6 @@ export function Topbar({
             data-slot="button-group"
             className="inline-flex items-center rounded-md border border-border/60 bg-muted/20 p-0.5 -space-x-px"
           >
-            {/* Botón Portal MDA */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="default"
-              onClick={handleOpenPortalMda}
-              aria-label="Abrir Portal MDA"
-              title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
-              className="text-xs font-semibold gap-1.5 cursor-pointer text-muted-foreground hover:text-foreground"
-            >
-              <ExternalLink className="h-4 w-4" />
-              <span>Portal MDA</span>
-            </Button>
-
             {/* Settings Modal Trigger */}
             <Button
               type="button"

@@ -243,7 +243,7 @@ describe('Topbar Search and Keyboard Navigation', () => {
 
     // Ctrl+F devuelve el foco al buscador desde otro control.
     act(() => {
-      screen.getByRole('button', { name: /portal mda/i }).focus();
+      screen.getByRole('button', { name: /abrir ajustes y configuración/i }).focus();
     });
     fireEvent.keyDown(window, { key: 'f', ctrlKey: true });
     expect(searchInput).toHaveFocus();

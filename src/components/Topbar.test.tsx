@@ -23,27 +23,19 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     expect(screen.getByText(/portal correo desktop/i)).toBeInTheDocument();
   });
 
-  it('renders "Portal MDA" button and calls openExternalUrl with exact URL', async () => {
-    const openSpy = vi
-      .spyOn(electronClient, "openExternalUrl")
-      .mockResolvedValue();
+  it("no renderiza el acceso al Portal MDA: vive en el diálogo de información", () => {
     render(
       <ThemeProvider>
         <Topbar onSelectTerminal={vi.fn()} />
       </ThemeProvider>,
     );
 
-    const portalBtn = screen.getByRole("button", { name: /portal mda/i });
-    expect(portalBtn).toBeInTheDocument();
-    // Texto neutro como el resto de botones del grupo: sin acento de enlace.
-    expect(portalBtn.className).toContain("text-muted-foreground");
-    expect(portalBtn.className).toContain("hover:text-foreground");
-    expect(portalBtn.className).not.toContain("text-link");
-
-    fireEvent.click(portalBtn);
-    expect(openSpy).toHaveBeenCalledWith(
-      "https://mda.correo.local/inventario-terminales",
-    );
+    expect(
+      screen.queryByRole("button", { name: /portal mda/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /abrir información del sistema/i }),
+    ).toBeInTheDocument();
   });
 
   it("renders window control buttons (minimizar and power to tray) and invokes IPC actions", async () => {
@@ -140,8 +132,10 @@ describe("Topbar & Compact Unified Titlebar component", () => {
       input.closest('[data-slot="input-group"]')?.className,
     ).toContain("h-10");
 
-    const portalBtn = screen.getByRole("button", { name: /portal mda/i });
-    expect(portalBtn).toBeInTheDocument();
+    const infoBtn = screen.getByRole("button", {
+      name: /abrir información del sistema/i,
+    });
+    expect(infoBtn).toBeInTheDocument();
 
     const buttonGroup = container.querySelector('[data-slot="button-group"]');
     expect(buttonGroup).toBeInTheDocument();

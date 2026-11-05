@@ -1,9 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
 import { InfoModal } from "../components/InfoModal";
+import * as electronClient from "../services/electronClient";
 
 describe("InfoModal Component", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
   it("does not render when isOpen is false", () => {
     const { container } = render(
       <InfoModal isOpen={false} onClose={vi.fn()} />,
@@ -48,6 +52,25 @@ describe("InfoModal Component", () => {
     expect(screen.queryByText(/plataforma:/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/conectividad:/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/políticas:/i)).not.toBeInTheDocument();
+  });
+
+  it("abre el Portal MDA desde la sección de acceso directo y cierra el diálogo", async () => {
+    const openSpy = vi
+      .spyOn(electronClient, "openExternalUrl")
+      .mockResolvedValue();
+    const handleClose = vi.fn();
+
+    render(<InfoModal isOpen={true} onClose={handleClose} />);
+
+    expect(screen.getByText(/acceso directo/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /abrir portal mda/i }));
+
+    await waitFor(() => {
+      expect(openSpy).toHaveBeenCalledWith(
+        "https://mda.correo.local/inventario-terminales",
+      );
+    });
+    expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
   it("invokes onClose on Cerrar button click", () => {

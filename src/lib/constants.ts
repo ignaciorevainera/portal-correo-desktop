@@ -5,3 +5,6 @@ export const DEFAULT_RESET_REASON =
 
 export const RESET_QUEUE_MESSAGE =
   "Solicitud enviada a la cola (CMDA_solicitud_De_Reset)";
+
+export const PORTAL_MDA_URL =
+  "https://mda.correo.local/inventario-terminales";

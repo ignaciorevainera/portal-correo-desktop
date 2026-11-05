@@ -5,6 +5,7 @@ import {
   Activity,
   Network,
   UserCheck,
+  ExternalLink,
 } from "lucide-react";
 import {
   Dialog,
@@ -20,6 +21,8 @@ import { Card } from "@/components/ui/card";
 import { Kbd } from "@/components/ui/kbd";
 import { IconWell } from "./IconWell";
 import logoIcon from "../assets/icon.png";
+import { openExternalUrl } from "../services/electronClient";
+import { PORTAL_MDA_URL } from "@/lib/constants";
 
 interface InfoModalProps {
   isOpen: boolean;
@@ -55,6 +58,11 @@ export function InfoModal({
       label: "Escaneo inteligente de subred y enlaces de sucursal",
     },
   ];
+
+  const handleOpenPortalMda = async (): Promise<void> => {
+    await openExternalUrl(PORTAL_MDA_URL);
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -117,6 +125,29 @@ export function InfoModal({
                 );
               })}
             </Card>
+          </div>
+
+          <div className="pb-5 space-y-3">
+            <span className="text-micro font-semibold text-muted-foreground block">
+              Acceso Directo
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleOpenPortalMda}
+              aria-label="Abrir Portal MDA"
+              title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
+              className="w-full justify-between text-xs h-9 cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                <span>Portal MDA</span>
+              </span>
+              <span className="text-micro text-muted-foreground">
+                Inventario de terminales
+              </span>
+            </Button>
           </div>
         </div>
 

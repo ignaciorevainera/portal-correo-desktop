@@ -57,7 +57,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { RESET_QUEUE_MESSAGE } from "@/lib/constants";
+import { PORTAL_MDA_URL, RESET_QUEUE_MESSAGE } from "@/lib/constants";
 import {
   classifySearch,
   isIpAddress,
@@ -778,9 +778,7 @@ export default function App(): React.JSX.Element {
             onLaunchVnc={() => handleLaunchVnc()}
             onTogglePing={handleTogglePing}
             onLaunchMsra={() => handleLaunchMsra()}
-            onOpenPortalMda={() =>
-              openExternalUrl("https://mda.correo.local/inventario-terminales")
-            }
+            onOpenPortalMda={() => openExternalUrl(PORTAL_MDA_URL)}
             onQueryAccount={handleQueryAccount}
           />
         </ContextMenu>
