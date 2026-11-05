@@ -1,0 +1,34 @@
+import { describe, expect, it, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { Button } from "../components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
+
+describe("DropdownMenu", () => {
+  it("abre con teclado y ejecuta el ítem seleccionado", async () => {
+    const onSelect = vi.fn();
+
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>Más opciones</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onSelect={onSelect}>Ajustes</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    fireEvent.keyDown(screen.getByRole("button", { name: /más opciones/i }), {
+      key: "Enter",
+    });
+
+    fireEvent.click(await screen.findByRole("menuitem", { name: /ajustes/i }));
+
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+});
