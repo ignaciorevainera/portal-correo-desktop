@@ -148,7 +148,7 @@ export function QuickActionsBar({
       <div className="flex items-center flex-wrap gap-1 w-full">
         {/* Split Button Inteligente de Conexión Remota con grow */}
         <div
-          className="relative flex items-center min-w-[180px] flex-1 grow"
+          className="relative flex items-center min-w-45 flex-1 grow"
           ref={dropdownRef}
         >
           <div className="flex w-full rounded-md">
@@ -282,7 +282,7 @@ export function QuickActionsBar({
         </div>
 
         {/* Split Button: Ping del equipo consultado con grow (Único botón con estado de activación) */}
-        <div className="flex rounded-md flex-1 min-w-[110px] grow">
+        <div className="flex rounded-md flex-1 min-w-27.5 grow">
           <Button
             type="button"
             // El estado activo fuerza destructive sólido (AA también en hover) sobre el variant.
@@ -531,7 +531,7 @@ export function QuickActionsBar({
             <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
           )}
           <span
-            className="font-mono font-semibold text-foreground truncate max-w-[100px] text-micro"
+            className="font-mono font-semibold text-foreground truncate max-w-25 text-micro"
           >
             {terminal.uptimeText || "N/D"}
           </span>
