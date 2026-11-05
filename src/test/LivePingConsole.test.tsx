@@ -129,7 +129,10 @@ describe('LivePingConsole Component', () => {
     await waitFor(() => {
       expect(writeTextMock).toHaveBeenCalled();
     });
-    expect(screen.getByText(/logs copiados/i)).toBeInTheDocument();
+    expect(screen.getByText(/^logs copiados$/i)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /logs copiados al portapapeles/i,
+    );
 
     // Click Clear button
     const clearBtn = screen.getByRole('button', { name: /limpiar/i });
@@ -199,7 +202,10 @@ describe('LivePingConsole Component', () => {
     const lastCopiedText = writeTextMock.mock.calls[0][0];
     expect(lastCopiedText).toContain('Respuesta comando 2');
     expect(lastCopiedText).not.toContain('Respuesta comando 1');
-    expect(screen.getByText(/bloque copiado/i)).toBeInTheDocument();
+    expect(screen.getByText(/^bloque copiado$/i)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /bloque copiado al portapapeles/i,
+    );
   });
 
   it('auto-scrolls strictly inside the terminal element when new lines arrive', () => {
@@ -652,18 +658,14 @@ describe('LivePingConsole Component', () => {
       />,
     );
 
-    expect(
-      screen
-        .getByRole("button", { name: /copiar último bloque de logs/i })
-        .querySelector("svg")
-        ?.getAttribute("class"),
-    ).toContain("lucide-copy");
+    const copyLastIcon = screen
+      .getByRole("button", { name: /copiar último bloque de logs/i })
+      .querySelector("svg");
+    expect(copyLastIcon?.classList.contains("lucide-copy")).toBe(true);
 
-    expect(
-      screen
-        .getByRole("button", { name: /copiar logs de ping/i })
-        .querySelector("svg")
-        ?.getAttribute("class"),
-    ).toContain("lucide-files");
+    const copyAllIcon = screen
+      .getByRole("button", { name: /copiar logs de ping/i })
+      .querySelector("svg");
+    expect(copyAllIcon?.classList.contains("lucide-clipboard-list")).toBe(true);
   });
 });

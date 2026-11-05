@@ -4,7 +4,7 @@ import {
   Trash2,
   Copy,
   Check,
-  Files,
+  ClipboardList,
   CheckCheck,
   Activity,
   UserRound,
@@ -274,6 +274,14 @@ export function LivePingConsole({
           fill && isOpen ? "flex h-full min-h-0 flex-col" : "shrink-0"
         }`}
       >
+        <span role="status" aria-live="polite" className="sr-only">
+          {copiedLast
+            ? "Bloque copiado al portapapeles"
+            : copiedAll
+              ? "Logs copiados al portapapeles"
+              : ""}
+        </span>
+
         {/* Barra de Controles Superior: cabecera colapsable y acciones */}
         <div
           data-testid="console-header"
@@ -390,7 +398,7 @@ export function LivePingConsole({
               {copiedAll ? (
                 <CheckCheck className="h-3 w-3 text-success" />
               ) : (
-                <Files className="h-3 w-3 text-muted-foreground" />
+                <ClipboardList className="h-3 w-3 text-muted-foreground" />
               )}
               <span className="max-sm:hidden">{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
             </Button>
