@@ -485,6 +485,21 @@ describe('QuickActionsBar & Shortcut Keys', () => {
 
     const uptime = container.querySelector('[title^="Uptime:"]');
     expect(uptime?.className).toContain("max-sm:order-7");
+
+    // El spacer es el único `div[aria-hidden]`; los iconos Lucide también
+    // emiten aria-hidden="true" sobre <svg>, por eso se acota a div.
+    const spacer = container.querySelector('div[aria-hidden="true"]');
+    expect(spacer).not.toBeNull();
+    expect(spacer!.className.split(/\s+/)).toEqual(
+      expect.arrayContaining([
+        "hidden",
+        "max-sm:block",
+        "max-sm:basis-full",
+        "max-sm:order-4",
+      ]),
+    );
+
+    expect(container.querySelector('[class*="flex-wrap"]')).not.toBeNull();
   });
 });
 
