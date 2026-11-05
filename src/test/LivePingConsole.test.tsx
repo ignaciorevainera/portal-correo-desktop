@@ -310,9 +310,10 @@ describe('LivePingConsole Component', () => {
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
 
-    // Console terminal has adaptive height (24rem-48rem, ~55vh)
+    // La consola se adapta al alto de la ventana (10rem–48rem, ~36vh)
     const terminalBox = container.querySelector('[data-testid="terminal-scroll-container"]');
-    expect(terminalBox?.className).toContain('h-[clamp(24rem,55vh,48rem)]');
+    expect(terminalBox?.className).toContain('h-[clamp(10rem,36vh,48rem)]');
+    expect(terminalBox?.className).not.toContain('min-h-[24rem]');
   });
 
   it('never calls scrollIntoView when ping data arrives, ping finishes, or logs are cleared', () => {
