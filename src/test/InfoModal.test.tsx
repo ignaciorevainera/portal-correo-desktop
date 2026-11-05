@@ -25,6 +25,9 @@ describe("InfoModal Component", () => {
       screen.getByText("Consola técnica de soporte y monitoreo corporativo"),
     ).toBeInTheDocument();
     expect(screen.getByAltText("Correo Argentino")).toBeInTheDocument();
+    expect(screen.getByRole("dialog").className).toContain(
+      "max-sm:max-w-[calc(100vw-1.5rem)]",
+    );
   });
 
   it("renders key capabilities list including net user for username and shortcut kbd badge", () => {

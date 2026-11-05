@@ -67,7 +67,7 @@ export function InfoModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md p-0 overflow-hidden border border-border/80">
+      <DialogContent className="max-w-md max-sm:max-w-[calc(100vw-1.5rem)] p-0 overflow-hidden border border-border/80">
         {/* Cabecera Minimalista con Identidad de Marca */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60 bg-muted/20">
           <div className="flex items-center gap-3">
