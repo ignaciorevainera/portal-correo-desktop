@@ -15,6 +15,7 @@ const { createConfigProvider, ConfigError } = require('./configProvider.cjs');
 const { evaluateGate, describeEnvironment } = require('./securityGate.cjs');
 const { migrateLegacyConfig } = require('./migration.cjs');
 const { RELAUNCH_FLAG, isCompatEnabled, shouldRetryWithoutSandbox, buildRelaunchArgs } = require('./compatMode.cjs');
+const { loadUiPreferences, saveUiPreferences } = require('./uiPreferences.cjs');
 
 // ---------------------------------------------------------------------------
 // Modo de renderizado (GPU vs. software)
@@ -89,6 +90,9 @@ app.on('child-process-gone', (_event, details) => {
 });
 
 let tray = null;
+// Preferencias que el proceso principal debe respetar (bandeja y atajo global).
+// Se cargan una sola vez, al crear la ventana, y se actualizan por IPC.
+let uiPreferences = null;
 let activePingProcess = null;
 let currentPingSessionId = 0;
 let activeSubnetAbortController = null;
@@ -209,6 +213,13 @@ function getTrayIcon() {
   );
 }
 
+function getUiPreferences() {
+  if (!uiPreferences) {
+    uiPreferences = loadUiPreferences(app.getPath('userData'));
+  }
+  return uiPreferences;
+}
+
 function createTray(win) {
   if (tray) return;
   tray = new Tray(getTrayIcon());
@@ -282,11 +293,16 @@ function createWindow() {
   createTray(win);
 
   win.on('close', (event) => {
-    if (!app.isQuiting) {
+    if (app.isQuiting) return;
+
+    if (getUiPreferences().minimizeToTray) {
       event.preventDefault();
       win.hide();
       return false;
     }
+
+    // Sin bandeja, cerrar la ventana termina la aplicación.
+    app.isQuiting = true;
   });
 
   win.hookWindowMessage(0x0116, () => {
@@ -768,6 +784,17 @@ app.on('before-quit', () => {
 });
 
 function registerGlobalSearchShortcut(win) {
+  const enabled = getUiPreferences().globalHotkeyEnabled;
+
+  if (!enabled) {
+    try {
+      globalShortcut.unregister('CommandOrControl+Space');
+    } catch {}
+    return;
+  }
+
+  if (globalShortcut.isRegistered('CommandOrControl+Space')) return;
+
   try {
     globalShortcut.register('CommandOrControl+Space', () => {
       if (!win || win.isDestroyed()) return;
@@ -792,6 +819,16 @@ function registerGlobalSearchShortcut(win) {
 }
 
 let mainWindow = null;
+
+ipcMain.handle('pcd:ui-preferences-get', () => getUiPreferences());
+
+ipcMain.handle('pcd:ui-preferences-set', (_event, patch) => {
+  uiPreferences = saveUiPreferences(app.getPath('userData'), patch);
+  // El atajo global aplica de inmediato; el cierre de ventana lee la
+  // preferencia en cada evento `close`.
+  registerGlobalSearchShortcut(mainWindow);
+  return uiPreferences;
+});
 
 const gotTheLock = app.requestSingleInstanceLock();
 

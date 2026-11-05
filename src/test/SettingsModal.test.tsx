@@ -146,6 +146,66 @@ describe('SettingsModal Component', () => {
     expect(hotkey).toHaveAttribute('data-state', 'unchecked');
   });
 
+  it('envía al proceso principal los cambios de bandeja y atajo', () => {
+    const saveSpy = vi
+      .spyOn(electronClient, 'saveUiPreferences')
+      .mockResolvedValue(null);
+
+    renderSettings();
+
+    fireEvent.click(
+      screen.getByRole('switch', { name: /minimizar a la bandeja al cerrar/i })
+    );
+    expect(saveSpy).toHaveBeenCalledWith({ minimizeToTray: false });
+
+    fireEvent.click(
+      screen.getByRole('switch', { name: /atajo global ctrl \+ espacio/i })
+    );
+    expect(saveSpy).toHaveBeenCalledWith({ globalHotkeyEnabled: false });
+  });
+
+  it('adopta las preferencias persistidas por el proceso principal al abrir', async () => {
+    vi.spyOn(electronClient, 'loadUiPreferences').mockResolvedValue({
+      minimizeToTray: false,
+      globalHotkeyEnabled: false,
+      stored: true,
+    });
+
+    renderSettings();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('switch', { name: /minimizar a la bandeja al cerrar/i })
+      ).not.toBeChecked();
+    });
+    expect(
+      screen.getByRole('switch', { name: /atajo global ctrl \+ espacio/i })
+    ).not.toBeChecked();
+  });
+
+  it('migra a disco las preferencias locales cuando no hay archivo principal', async () => {
+    const saveSpy = vi
+      .spyOn(electronClient, 'saveUiPreferences')
+      .mockResolvedValue(null);
+    vi.spyOn(electronClient, 'loadUiPreferences').mockResolvedValue({
+      minimizeToTray: true,
+      globalHotkeyEnabled: true,
+      stored: false,
+    });
+
+    localStorage.setItem('pcd_pref_tray', 'false');
+    localStorage.setItem('pcd_pref_hotkey', 'false');
+
+    renderSettings();
+
+    await waitFor(() => {
+      expect(saveSpy).toHaveBeenCalledWith({
+        minimizeToTray: false,
+        globalHotkeyEnabled: false,
+      });
+    });
+  });
+
   it('el modo de ping es un grupo de opciones excluyentes', () => {
     renderSettings();
 

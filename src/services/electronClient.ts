@@ -74,6 +74,41 @@ export interface RemoteProbeResult {
   recommendedMethod: 'vnc' | 'msra' | 'none';
 }
 
+export interface UiPreferences {
+  minimizeToTray: boolean;
+  globalHotkeyEnabled: boolean;
+  /** false cuando todavía no existe archivo guardado (migración). */
+  stored?: boolean;
+}
+
+/** Preferencias del proceso principal; `null` fuera de Electron. */
+export async function loadUiPreferences(): Promise<UiPreferences | null> {
+  const api = getElectronAPI();
+  if (api && api.getUiPreferences) {
+    try {
+      return await api.getUiPreferences();
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/** Persiste un cambio parcial y devuelve el estado aplicado; `null` fuera de Electron. */
+export async function saveUiPreferences(
+  patch: Partial<UiPreferences>,
+): Promise<UiPreferences | null> {
+  const api = getElectronAPI();
+  if (api && api.setUiPreferences) {
+    try {
+      return await api.setUiPreferences(patch);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 function getElectronAPI() {
   if (typeof window !== 'undefined' && (window as any).electronAPI) {
     return (window as any).electronAPI;

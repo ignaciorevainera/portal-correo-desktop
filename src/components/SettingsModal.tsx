@@ -22,6 +22,8 @@ import {
   installUpdateNow,
   testSqlConnection,
   getDiagnostics,
+  loadUiPreferences,
+  saveUiPreferences,
   DiagnosticsInfo,
   UpdateCheckResult,
   UpdateDownloadProgress,
@@ -102,6 +104,49 @@ export function SettingsModal({
   useEffect(() => {
     saveDefaultPingMode(defaultPingMode);
   }, [defaultPingMode]);
+
+  // El proceso principal aplica estas preferencias (atajo global y cierre de
+  // ventana), así que se leen al abrir el diálogo y se le notifican al cambiar.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let cancelled = false;
+    loadUiPreferences()
+      .then((prefs) => {
+        if (cancelled || !prefs) return;
+
+        if (prefs.stored) {
+          setMinimizeToTray(prefs.minimizeToTray);
+          setGlobalHotkeyEnabled(prefs.globalHotkeyEnabled);
+          return;
+        }
+
+        // Migración: versiones anteriores solo guardaban en localStorage.
+        void saveUiPreferences({
+          minimizeToTray,
+          globalHotkeyEnabled,
+        });
+      })
+      .catch(() => {
+        // Sin proceso principal quedan los valores locales.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // Solo al abrir el diálogo: los cambios posteriores se guardan en los handlers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  const handleMinimizeToTrayChange = (value: boolean) => {
+    setMinimizeToTray(value);
+    void saveUiPreferences({ minimizeToTray: value });
+  };
+
+  const handleGlobalHotkeyChange = (value: boolean) => {
+    setGlobalHotkeyEnabled(value);
+    void saveUiPreferences({ globalHotkeyEnabled: value });
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -409,7 +454,7 @@ export function SettingsModal({
                 <Switch
                   id="minimize-to-tray"
                   checked={minimizeToTray}
-                  onCheckedChange={setMinimizeToTray}
+                  onCheckedChange={handleMinimizeToTrayChange}
                   aria-label="Minimizar a la bandeja al cerrar"
                 />
               </div>
@@ -432,7 +477,7 @@ export function SettingsModal({
                 <Switch
                   id="global-hotkey"
                   checked={globalHotkeyEnabled}
-                  onCheckedChange={setGlobalHotkeyEnabled}
+                  onCheckedChange={handleGlobalHotkeyChange}
                   aria-label="Atajo Global Ctrl + Espacio"
                 />
               </div>

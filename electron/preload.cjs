@@ -78,4 +78,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   installUpdateNow: () => ipcRenderer.invoke('pcd:install-update-now'),
   // SQL connection channel
   testSqlConnection: () => ipcRenderer.invoke('pcd:test-sql-connection'),
+  // Preferencias que aplica el proceso principal
+  getUiPreferences: () => ipcRenderer.invoke('pcd:ui-preferences-get'),
+  setUiPreferences: (patch) => ipcRenderer.invoke('pcd:ui-preferences-set', patch),
 });
