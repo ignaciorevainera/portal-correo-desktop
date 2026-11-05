@@ -530,7 +530,11 @@ export function QuickActionsBar({
 
         {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
         <div
-          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:order-7 max-sm:flex-1 max-sm:justify-center"
+          className={`flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:order-7 ${
+            siteTargets.isValid && onLaunchSitePing
+              ? "max-sm:flex-1 max-sm:justify-center"
+              : ""
+          }`}
           title={`Uptime: ${terminal.uptimeText || "N/D"}`}
           aria-busy={isRefreshingUptime}
         >
