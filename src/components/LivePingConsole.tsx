@@ -4,6 +4,8 @@ import {
   Trash2,
   Copy,
   Check,
+  Files,
+  CheckCheck,
   Activity,
   UserRound,
   RefreshCw,
@@ -386,9 +388,9 @@ export function LivePingConsole({
               className="h-7 px-2.5 text-micro font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
             >
               {copiedAll ? (
-                <Check className="h-3 w-3 text-success" />
+                <CheckCheck className="h-3 w-3 text-success" />
               ) : (
-                <Copy className="h-3 w-3 text-muted-foreground" />
+                <Files className="h-3 w-3 text-muted-foreground" />
               )}
               <span className="max-sm:hidden">{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
             </Button>
@@ -398,12 +400,12 @@ export function LivePingConsole({
         <CollapsibleContent
           className={fill ? "flex min-h-0 flex-1 flex-col" : undefined}
         >
-          {/* Pantalla Contigua estilo Windows Terminal: bg-console-bg, altura adaptable (10rem–48rem, ~36vh), auto-scroll interno por línea */}
+          {/* Pantalla Contigua estilo Windows Terminal: bg-console-bg, altura adaptable (9rem–40rem, ~30vh), auto-scroll interno por línea */}
           <div
             ref={scrollContainerRef}
             data-testid="terminal-scroll-container"
             className={`${
-              fill ? "flex-1 min-h-0" : "h-[clamp(10rem,36vh,48rem)]"
+              fill ? "flex-1 min-h-0" : "h-[clamp(9rem,30vh,40rem)]"
             } overflow-y-auto overflow-x-auto p-3 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
           >
             {logs.length === 0 ? (

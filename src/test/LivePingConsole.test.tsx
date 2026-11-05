@@ -310,9 +310,9 @@ describe('LivePingConsole Component', () => {
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
 
-    // La consola se adapta al alto de la ventana (10rem–48rem, ~36vh)
+    // La consola se adapta al alto de la ventana (9rem–40rem, ~30vh)
     const terminalBox = container.querySelector('[data-testid="terminal-scroll-container"]');
-    expect(terminalBox?.className).toContain('h-[clamp(10rem,36vh,48rem)]');
+    expect(terminalBox?.className).toContain('h-[clamp(9rem,30vh,40rem)]');
     expect(terminalBox?.className).not.toContain('min-h-[24rem]');
   });
 
@@ -641,5 +641,29 @@ describe('LivePingConsole Component', () => {
     const actions = screen.getByTestId("console-header")
       .lastElementChild as HTMLElement;
     expect(actions.className).toContain("shrink-0");
+  });
+
+  it("distingue copiar último bloque de copiar todos por icono", () => {
+    render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={false}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen
+        .getByRole("button", { name: /copiar último bloque de logs/i })
+        .querySelector("svg")
+        ?.getAttribute("class"),
+    ).toContain("lucide-copy");
+
+    expect(
+      screen
+        .getByRole("button", { name: /copiar logs de ping/i })
+        .querySelector("svg")
+        ?.getAttribute("class"),
+    ).toContain("lucide-files");
   });
 });
