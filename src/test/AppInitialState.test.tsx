@@ -68,7 +68,7 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
     );
   });
 
-  it('la carga usa primitivas Skeleton y anuncia el estado', async () => {
+  it('la carga usa Spinner y anuncia el estado', async () => {
     (global as any).window.electronAPI = {
       checkStatus: vi.fn().mockResolvedValue({ connected: true, mode: 'sql', server: '192.0.2.50' }),
       // Promesa pendiente: mantiene el estado de carga mientras dura la consulta.
@@ -90,13 +90,13 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
     });
 
     // La live region persistente anuncia la consulta y el contenedor visible
-    // mantiene los dos skeletons del estado de carga.
-    expect(screen.getByRole('status')).toHaveTextContent(
-      /Consultando base de datos técnica/i,
-    );
-    expect(
-      screen.getByTestId('loading-state').querySelectorAll('[data-slot="skeleton"]'),
-    ).toHaveLength(2);
+    // usa el Spinner (decorativo) del estado de carga.
+    expect(screen.getByRole('status')).toHaveTextContent(/^Consultando\.\.\.$/);
+
+    const loading = screen.getByTestId('loading-state');
+    expect(loading.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(0);
+    expect(loading.querySelectorAll('[data-slot="spinner"]')).toHaveLength(1);
+    expect(loading).toHaveTextContent(/^Consultando\.\.\.$/);
   });
 
   it('loads terminal on search, resets main scroll to top, and shows quick actions', async () => {
