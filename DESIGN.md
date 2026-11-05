@@ -96,9 +96,18 @@ los reporta como «decorativo» y no bloquean el exit.
 Tampoco se admiten colores literales de paleta (`text-blue-600`,
 `bg-emerald-500`, …) ni `z-50` manual fuera del baseline del contrato.
 
-En la Topbar, el atajo Portal MDA usa texto neutro (`text-muted-foreground` con
-`hover:text-foreground`), igual que el resto de botones de su grupo: sin acento
-de enlace.
+El acceso al Portal MDA vive en la sección «Acceso Directo» del diálogo de
+información; la Topbar no tiene un atajo propio. La URL se declara una sola vez
+en `src/lib/constants.ts` (`PORTAL_MDA_URL`) y los consumidores la importan.
+
+## Preferencias del proceso principal
+
+Las preferencias que el proceso principal necesita para actuar —minimizar a la
+bandeja al cerrar y atajo global `Ctrl + Espacio`— se persisten en
+`userData/ui-preferences.json`, no sólo en `localStorage`: el arranque debe
+aplicarlas antes de que cargue el renderer. El renderer las lee al abrir
+Ajustes, notifica cada cambio por IPC y, si todavía no existe archivo, migra los
+valores previos de `localStorage` la primera vez.
 
 ## Tipografía
 
