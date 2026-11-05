@@ -27,7 +27,11 @@ describe("DropdownMenu", () => {
       key: "Enter",
     });
 
-    fireEvent.click(await screen.findByRole("menuitem", { name: /ajustes/i }));
+    const item = await screen.findByRole("menuitem", { name: /ajustes/i });
+    expect(item.className.split(/\s+/)).toContain("focus:bg-muted");
+    expect(item.className.split(/\s+/)).not.toContain("focus:bg-accent");
+
+    fireEvent.click(item);
 
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
