@@ -2,8 +2,13 @@ import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-export function ThemeToggle(): React.JSX.Element {
+export function ThemeToggle({
+  className,
+}: {
+  className?: string;
+} = {}): React.JSX.Element {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -14,7 +19,10 @@ export function ThemeToggle(): React.JSX.Element {
       onClick={toggleTheme}
       aria-label="Cambiar tema de interfaz"
       title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-      className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
+      className={cn(
+        'text-muted-foreground hover:text-foreground cursor-pointer px-2',
+        className,
+      )}
     >
       {theme === 'dark' ? (
         <Sun className="h-4 w-4 text-warning" />

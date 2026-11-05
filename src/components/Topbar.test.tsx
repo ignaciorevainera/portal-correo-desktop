@@ -216,6 +216,93 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     fireEvent.click(screen.getByRole("option", { name: /jperez/i }));
     expect(handleAccount).toHaveBeenCalledWith("jperez");
   });
+
+  it("agrupa ajustes, información y tema en un menú bajo 640 px", () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    for (const name of [
+      /abrir ajustes y configuración/i,
+      /abrir información del sistema/i,
+      /cambiar tema de interfaz/i,
+    ]) {
+      expect(screen.getByRole("button", { name }).className).toContain(
+        "max-sm:hidden",
+      );
+    }
+
+    const trigger = screen.getByRole("button", {
+      name: /más opciones de la aplicación/i,
+    });
+    expect(trigger.className).toContain("max-sm:inline-flex");
+    expect(trigger).toHaveAttribute("aria-haspopup", "menu");
+  });
+
+  it("abre ajustes desde el menú compacto", async () => {
+    const onOpenSettings = vi.fn();
+    render(
+      <ThemeProvider>
+        <Topbar
+          onSelectTerminal={vi.fn()}
+          onOpenSettings={onOpenSettings}
+        />
+      </ThemeProvider>,
+    );
+
+    fireEvent.keyDown(
+      screen.getByRole("button", { name: /más opciones de la aplicación/i }),
+      { key: "Enter" },
+    );
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /ajustes y configuración/i }),
+    );
+
+    expect(onOpenSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it("abre información desde el menú compacto", async () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    fireEvent.keyDown(
+      screen.getByRole("button", { name: /más opciones de la aplicación/i }),
+      { key: "Enter" },
+    );
+    fireEvent.click(
+      await screen.findByRole("menuitem", {
+        name: /información y características/i,
+      }),
+    );
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("cambia el tema desde el menú compacto", async () => {
+    document.documentElement.className = "dark";
+    localStorage.clear();
+
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    fireEvent.keyDown(
+      screen.getByRole("button", { name: /más opciones de la aplicación/i }),
+      { key: "Enter" },
+    );
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /cambiar a modo claro/i }),
+    );
+
+    expect(document.documentElement.classList.contains("dark")).toBe(false);
+  });
 });
 
 it("renders settings button in topbar and opens settings modal on click or F10 shortcut", () => {
