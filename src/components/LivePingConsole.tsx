@@ -408,12 +408,12 @@ export function LivePingConsole({
         <CollapsibleContent
           className={fill ? "flex min-h-0 flex-1 flex-col" : undefined}
         >
-          {/* Pantalla Contigua estilo Windows Terminal: bg-console-bg, altura adaptable (9rem–40rem, ~30vh), auto-scroll interno por línea */}
+          {/* Pantalla Contigua estilo Windows Terminal: bg-console-bg, altura fija al 50% del alto de la ventana, auto-scroll interno por línea */}
           <div
             ref={scrollContainerRef}
             data-testid="terminal-scroll-container"
             className={`${
-              fill ? "flex-1 min-h-0" : "h-[clamp(9rem,30vh,40rem)]"
+              fill ? "flex-1 min-h-0" : "h-[50vh]"
             } overflow-y-auto overflow-x-auto p-3 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
           >
             {logs.length === 0 ? (

@@ -316,9 +316,9 @@ describe('LivePingConsole Component', () => {
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
 
-    // La consola se adapta al alto de la ventana (9rem–40rem, ~30vh)
+    // La consola ocupa siempre la mitad del alto de la ventana
     const terminalBox = container.querySelector('[data-testid="terminal-scroll-container"]');
-    expect(terminalBox?.className).toContain('h-[clamp(9rem,30vh,40rem)]');
+    expect(terminalBox?.className).toContain('h-[50vh]');
     expect(terminalBox?.className).not.toContain('min-h-[24rem]');
   });
 
