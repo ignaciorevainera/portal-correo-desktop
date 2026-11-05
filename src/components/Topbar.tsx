@@ -12,10 +12,12 @@ import {
   Settings,
   X,
   MoreHorizontal,
-  Sun,
-  Moon,
 } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
+import {
+  ThemeActionIcon,
+  ThemeToggle,
+  themeActionLabel,
+} from "./ThemeToggle";
 import { IconWell } from "./IconWell";
 import { InfoModal } from "./InfoModal";
 import { useTheme } from "../context/ThemeContext";
@@ -512,38 +514,20 @@ export function Topbar({
               <DropdownMenuContent align="end" className="w-60">
                 <DropdownMenuItem
                   onSelect={() => onOpenSettings?.()}
-                  aria-label="Ajustes y configuración"
+                  aria-keyshortcuts="F10"
                 >
                   <Settings className="h-4 w-4 text-muted-foreground" />
                   <span>Ajustes y configuración</span>
                   <Kbd className="ml-auto">F10</Kbd>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() => setIsInfoOpen(true)}
-                  aria-label="Información y características"
-                >
+                <DropdownMenuItem onSelect={() => setIsInfoOpen(true)}>
                   <HelpCircle className="h-4 w-4 text-muted-foreground" />
                   <span>Información y características</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => toggleTheme()}
-                  aria-label={
-                    theme === "dark"
-                      ? "Cambiar a modo claro"
-                      : "Cambiar a modo oscuro"
-                  }
-                >
-                  {theme === "dark" ? (
-                    <Sun className="h-4 w-4 text-warning" />
-                  ) : (
-                    <Moon className="h-4 w-4 text-foreground" />
-                  )}
-                  <span>
-                    {theme === "dark"
-                      ? "Cambiar a modo claro"
-                      : "Cambiar a modo oscuro"}
-                  </span>
+                <DropdownMenuItem onSelect={() => toggleTheme()}>
+                  <ThemeActionIcon theme={theme} />
+                  <span>{themeActionLabel(theme)}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -1,4 +1,9 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Topbar } from "./Topbar";
 import { ThemeProvider } from "../context/ThemeContext";
@@ -284,9 +289,6 @@ describe("Topbar & Compact Unified Titlebar component", () => {
   });
 
   it("cambia el tema desde el menú compacto", async () => {
-    document.documentElement.className = "dark";
-    localStorage.clear();
-
     render(
       <ThemeProvider>
         <Topbar onSelectTerminal={vi.fn()} />
@@ -302,6 +304,31 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     );
 
     expect(document.documentElement.classList.contains("dark")).toBe(false);
+  });
+
+  it("cierra el menú con Escape y devuelve el foco al disparador", async () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const trigger = screen.getByRole("button", {
+      name: /más opciones de la aplicación/i,
+    });
+
+    fireEvent.keyDown(trigger, { key: "Enter" });
+    await screen.findByRole("menuitem", { name: /ajustes y configuración/i });
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    fireEvent.keyDown(document.activeElement ?? document.body, {
+      key: "Escape",
+    });
+
+    await waitFor(() => {
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+    });
+    expect(document.activeElement).toBe(trigger);
   });
 });
 
