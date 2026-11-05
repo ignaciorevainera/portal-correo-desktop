@@ -55,7 +55,7 @@ export function TerminalDetailsGrid({
         Datos del equipo
       </h2>
 
-      <dl className="mt-2 grid grid-cols-1 gap-x-8 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
+      <dl className="mt-2 grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
         {fields.map((field) => {
           const raw = field.value?.trim();
           const display = raw && raw.length > 0 ? raw : FALLBACK;

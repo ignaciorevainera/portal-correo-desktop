@@ -33,6 +33,10 @@ describe("TerminalDetailsGrid", () => {
     expect(screen.getByText(terminal.cpuModel)).toBeInTheDocument();
     expect(screen.getByText(terminal.antivirusVersion)).toBeInTheDocument();
     expect(screen.getByText(terminal.costCenter as string)).toBeInTheDocument();
+
+    const grid = screen.getByText("Dirección MAC").closest("dl");
+    expect(grid?.className).toContain("grid-cols-2");
+    expect(grid?.className).not.toContain("grid-cols-1");
   });
 
   it("falls back to 'No informado' for empty fields", () => {
