@@ -652,8 +652,8 @@ Run: `npm run electron:dev`. Probar cada combinación:
 
 | Tamaño | Verificar |
 |---|---|
-| 1020×680 | layout actual intacto: una fila de acciones, tres columnas de detalles |
-| 640×680 | transición: título visible, acciones aún en una fila |
+| 1020×680 | layout actual intacto: una fila de acciones, dos columnas de detalles (`lg` = 1024) |
+| 640×680 | transición: título visible, acciones en dos filas (la barra completa mide ~690 px y solo hay ~612 px disponibles; uptime queda solo en la fila 2) |
 | 600×680 | título oculto, header en una fila, acciones en dos filas |
 | 425×600 | sin scroll horizontal; consola ~216 px; detalles en 2 columnas; diálogos con margen |
 | 425×800 | consola ~288 px; no aparece hueco vacío debajo de detalles |
@@ -684,3 +684,6 @@ Reportar: salida de `npx vitest run`, `tsc`, `npm run build`, y el resultado de 
 | Popover "Más" recortado por overflow | `PopoverContent` usa portal Radix; no lo recorta `main` |
 | Tests de clase frágiles | ya es el estilo del repo (`Topbar.test.tsx`, `LivePingConsole.test.tsx`) |
 | Electron ignora `minWidth` por DPI | probar a 100 % y 125 % de escala de Windows en Checkpoint 1 |
+| Orden de tabulación distinto del visual en compacto | aceptado: el DOM no se mueve para no alterar el orden de escritorio; queda comentado en `QuickActionsBar.tsx` |
+| Barra de acciones en 640–719 px | el uptime queda solo en la segunda fila; es el layout ancho actual, no una regresión de esta rama |
+| `ActivityPanel` (solo admin) a 425 px | tabla con scroll horizontal dentro del primitivo Table; fuera de alcance, follow-up |
