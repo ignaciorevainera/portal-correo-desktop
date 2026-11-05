@@ -148,7 +148,7 @@ export function QuickActionsBar({
       <div className="flex items-center flex-wrap gap-1 w-full">
         {/* Split Button Inteligente de Conexión Remota con grow */}
         <div
-          className="relative flex items-center min-w-45 flex-1 grow"
+          className="relative flex items-center min-w-45 flex-1 grow max-sm:order-1"
           ref={dropdownRef}
         >
           <div className="flex w-full rounded-md">
@@ -282,7 +282,7 @@ export function QuickActionsBar({
         </div>
 
         {/* Split Button: Ping del equipo consultado con grow (Único botón con estado de activación) */}
-        <div className="flex rounded-md flex-1 min-w-27.5 grow">
+        <div className="flex rounded-md flex-1 min-w-27.5 grow max-sm:order-2">
           <Button
             type="button"
             // El estado activo fuerza destructive sólido (AA también en hover) sobre el variant.
@@ -330,7 +330,7 @@ export function QuickActionsBar({
         {/* Enlaces del sitio: se usan a diario, por eso quedan siempre visibles */}
         {siteTargets.isValid && onLaunchSitePing && (
           <>
-            <div className="flex rounded-md shrink-0">
+            <div className="flex rounded-md shrink-0 max-sm:order-4">
               <Button
                 type="button"
                 variant="outline"
@@ -358,7 +358,7 @@ export function QuickActionsBar({
               </Button>
             </div>
 
-            <div className="flex rounded-md shrink-0">
+            <div className="flex rounded-md shrink-0 max-sm:order-5">
               <Button
                 type="button"
                 variant="outline"
@@ -398,7 +398,7 @@ export function QuickActionsBar({
               size="sm"
               aria-label="Más acciones"
               title="Más acciones"
-              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0"
+              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0 max-sm:order-3"
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
               <span>Más</span>
@@ -521,7 +521,7 @@ export function QuickActionsBar({
 
         {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
         <div
-          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0"
+          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:order-6"
           title={`Uptime: ${terminal.uptimeText || "N/D"}`}
           aria-busy={isRefreshingUptime}
         >

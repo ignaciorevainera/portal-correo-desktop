@@ -445,6 +445,37 @@ describe('QuickActionsBar & Shortcut Keys', () => {
       expect(onRunDiagnostic).toHaveBeenCalledWith('tracert');
     });
   });
+
+  it("en ancho compacto ordena una segunda fila para acciones secundarias", () => {
+    const { container } = render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={false}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchPingInfinite={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.getByRole("button", { name: /más acciones/i }).className,
+    ).toContain("max-sm:order-3");
+
+    const router = screen.getByRole("button", {
+      name: /hacer ping al router \.250/i,
+    });
+    expect(router.parentElement?.className).toContain("max-sm:order-4");
+
+    const server = screen.getByRole("button", {
+      name: /hacer ping al servidor \.231/i,
+    });
+    expect(server.parentElement?.className).toContain("max-sm:order-5");
+
+    const uptime = container.querySelector('[title^="Uptime:"]');
+    expect(uptime?.className).toContain("max-sm:order-6");
+  });
 });
 
 describe('QuickActionsBar Polish: Subnet Scanner & Uptime Refresh', () => {
