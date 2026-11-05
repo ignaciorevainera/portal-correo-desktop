@@ -281,13 +281,13 @@ export function Topbar({
               className="h-5 w-5 object-contain"
             />
           </IconWell>
-          <h1 className="text-sm font-bold font-heading tracking-tight text-foreground whitespace-nowrap pointer-events-none">
+          <h1 className="text-sm font-bold font-heading tracking-tight text-foreground whitespace-nowrap pointer-events-none max-sm:sr-only">
             Portal Correo Desktop
           </h1>
         </div>
 
         {/* Buscador Rápido Centralizado */}
-        <div className="relative flex-1 max-w-md app-no-drag">
+        <div className="relative flex-1 min-w-0 max-w-md app-no-drag">
           <Popover open={showResults} onOpenChange={setIsOpen}>
             <PopoverAnchor>
               <InputGroup ref={searchGroupRef} className="h-10 border-input bg-muted/70">

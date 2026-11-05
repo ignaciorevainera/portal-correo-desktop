@@ -23,6 +23,25 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     expect(screen.getByText(/portal correo desktop/i)).toBeInTheDocument();
   });
 
+  it("compacta la identidad y el buscador por debajo de 640 px", () => {
+    const { container } = render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const title = screen.getByRole("heading", {
+      name: /portal correo desktop/i,
+    });
+    expect(title.className).toContain("max-sm:sr-only");
+
+    const searchWrapper = container.querySelector("div.max-w-md");
+    expect(searchWrapper?.className).toContain("min-w-0");
+
+    expect(container.querySelector("header")?.className).toContain("h-14");
+    expect(container.querySelector("header")?.className).toContain("px-3.5");
+  });
+
   it("no renderiza el acceso al Portal MDA: vive en el diálogo de información", () => {
     render(
       <ThemeProvider>
