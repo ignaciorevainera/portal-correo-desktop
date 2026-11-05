@@ -612,7 +612,12 @@ describe('LivePingConsole Component', () => {
 
   it("compacta la cabecera de la consola: acciones sólo con icono bajo 640 px", () => {
     render(
-      <LivePingConsole ip="192.0.2.100" isPinging={false} onTogglePing={vi.fn()} />,
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        onRerun={vi.fn()}
+        onTogglePing={vi.fn()}
+      />,
     );
 
     const headerTrigger = screen.getByRole("button", {
@@ -620,17 +625,21 @@ describe('LivePingConsole Component', () => {
     });
     expect(headerTrigger.querySelector("span")?.className).toContain("truncate");
 
-    const clear = screen.getByRole("button", { name: /limpiar logs de ping/i });
-    expect(clear.querySelector("span")?.className).toContain("max-sm:hidden");
+    const actionLabels = [
+      /detener ping en vivo/i,
+      /re-ejecutar consulta/i,
+      /limpiar logs de ping/i,
+      /copiar último bloque de logs/i,
+      /copiar logs de ping/i,
+    ];
 
-    const copyLast = screen.getByRole("button", {
-      name: /copiar último bloque de logs/i,
-    });
-    expect(copyLast.querySelector("span")?.className).toContain("max-sm:hidden");
+    for (const name of actionLabels) {
+      const button = screen.getByRole("button", { name });
+      expect(button.querySelector("span")?.className).toContain("max-sm:hidden");
+    }
 
-    const copyAll = screen.getByRole("button", {
-      name: /copiar logs de ping/i,
-    });
-    expect(copyAll.querySelector("span")?.className).toContain("max-sm:hidden");
+    const actions = screen.getByTestId("console-header")
+      .lastElementChild as HTMLElement;
+    expect(actions.className).toContain("shrink-0");
   });
 });
