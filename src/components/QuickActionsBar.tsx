@@ -327,10 +327,16 @@ export function QuickActionsBar({
           </Button>
         </div>
 
+        {/* Corte de fila en ancho compacto: primarias en la fila 1, secundarias en la 2 */}
+        <div
+          aria-hidden="true"
+          className="hidden max-sm:block max-sm:basis-full max-sm:order-4"
+        />
+
         {/* Enlaces del sitio: se usan a diario, por eso quedan siempre visibles */}
         {siteTargets.isValid && onLaunchSitePing && (
           <>
-            <div className="flex rounded-md shrink-0 max-sm:order-4">
+            <div className="flex rounded-md shrink-0 max-sm:order-5">
               <Button
                 type="button"
                 variant="outline"
@@ -358,7 +364,7 @@ export function QuickActionsBar({
               </Button>
             </div>
 
-            <div className="flex rounded-md shrink-0 max-sm:order-5">
+            <div className="flex rounded-md shrink-0 max-sm:order-6">
               <Button
                 type="button"
                 variant="outline"
@@ -521,7 +527,7 @@ export function QuickActionsBar({
 
         {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
         <div
-          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:order-6"
+          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:order-7"
           title={`Uptime: ${terminal.uptimeText || "N/D"}`}
           aria-busy={isRefreshingUptime}
         >

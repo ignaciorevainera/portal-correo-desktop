@@ -459,6 +459,16 @@ describe('QuickActionsBar & Shortcut Keys', () => {
       />
     );
 
+    const remote = screen.getByRole("button", {
+      name: /conexión remota inteligente/i,
+    });
+    expect(remote.closest("div.relative")?.className).toContain(
+      "max-sm:order-1",
+    );
+
+    const ping = screen.getByRole("button", { name: /^iniciar ping$/i });
+    expect(ping.parentElement?.className).toContain("max-sm:order-2");
+
     expect(
       screen.getByRole("button", { name: /más acciones/i }).className,
     ).toContain("max-sm:order-3");
@@ -466,15 +476,15 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     const router = screen.getByRole("button", {
       name: /hacer ping al router \.250/i,
     });
-    expect(router.parentElement?.className).toContain("max-sm:order-4");
+    expect(router.parentElement?.className).toContain("max-sm:order-5");
 
     const server = screen.getByRole("button", {
       name: /hacer ping al servidor \.231/i,
     });
-    expect(server.parentElement?.className).toContain("max-sm:order-5");
+    expect(server.parentElement?.className).toContain("max-sm:order-6");
 
     const uptime = container.querySelector('[title^="Uptime:"]');
-    expect(uptime?.className).toContain("max-sm:order-6");
+    expect(uptime?.className).toContain("max-sm:order-7");
   });
 });
 
