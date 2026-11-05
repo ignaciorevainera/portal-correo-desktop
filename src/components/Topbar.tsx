@@ -15,6 +15,7 @@ import {
 import { ThemeToggle } from "./ThemeToggle";
 import { IconWell } from "./IconWell";
 import { InfoModal } from "./InfoModal";
+import { APP_VERSION_LABEL } from "@/lib/appVersion";
 import {
   minimizeWindow,
   hideToTray,
@@ -546,7 +547,7 @@ export function Topbar({
       <InfoModal
         isOpen={isInfoOpen}
         onClose={() => setIsInfoOpen(false)}
-        appVersion="v1.0.0"
+        appVersion={APP_VERSION_LABEL}
       />
     </>
   );

@@ -66,6 +66,7 @@ import {
 } from "@/lib/usernames";
 import { updateRecentSearchKind } from "@/lib/recentSearches";
 import { loadDefaultPingMode } from "@/lib/preferences";
+import { APP_VERSION } from "@/lib/appVersion";
 import { deriveSiteTargets } from "@/utils/siteTargets";
 
 export default function App(): React.JSX.Element {
@@ -806,7 +807,7 @@ export default function App(): React.JSX.Element {
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
-          currentVersion="1.0.0"
+          currentVersion={APP_VERSION}
           backendConnected={status.connected}
         />
 

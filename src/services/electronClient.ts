@@ -1,5 +1,6 @@
 import { TerminalData } from '../types/terminal';
 import { findTerminalByQuery } from './terminalService';
+import { APP_VERSION } from '../lib/appVersion';
 
 export type GateStatusCode =
   | 'AUTHORIZED'
@@ -600,8 +601,8 @@ export async function checkAppUpdates(): Promise<UpdateCheckResult> {
     } catch (err: any) {
       return {
         hasUpdate: false,
-        currentVersion: '1.0.0',
-        latestVersion: '1.0.0',
+        currentVersion: APP_VERSION,
+        latestVersion: APP_VERSION,
         error: err.message || 'Error al consultar actualizaciones',
       };
     }
@@ -610,8 +611,8 @@ export async function checkAppUpdates(): Promise<UpdateCheckResult> {
   // Web Browser fallback simulation
   return {
     hasUpdate: false,
-    currentVersion: '1.0.0',
-    latestVersion: '1.0.0',
+    currentVersion: APP_VERSION,
+    latestVersion: APP_VERSION,
     releaseNotes: 'Modo navegador web (simulación sin ejecutable nativo)',
     error: null,
   };

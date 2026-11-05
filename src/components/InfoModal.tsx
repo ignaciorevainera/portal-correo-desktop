@@ -23,6 +23,7 @@ import { IconWell } from "./IconWell";
 import logoIcon from "../assets/icon.png";
 import { openExternalUrl } from "../services/electronClient";
 import { PORTAL_MDA_URL } from "@/lib/constants";
+import { APP_VERSION_LABEL } from "@/lib/appVersion";
 
 interface InfoModalProps {
   isOpen: boolean;
@@ -33,7 +34,7 @@ interface InfoModalProps {
 export function InfoModal({
   isOpen,
   onClose,
-  appVersion = "v1.0.0",
+  appVersion = APP_VERSION_LABEL,
 }: InfoModalProps): React.JSX.Element | null {
   const capabilities = [
     {

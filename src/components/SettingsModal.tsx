@@ -45,6 +45,7 @@ import {
   saveDefaultPingMode,
   type PingMode,
 } from "@/lib/preferences";
+import { APP_VERSION } from "@/lib/appVersion";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -56,7 +57,7 @@ interface SettingsModalProps {
 export function SettingsModal({
   isOpen,
   onClose,
-  currentVersion = "1.0.0",
+  currentVersion = APP_VERSION,
   backendConnected = false,
 }: SettingsModalProps): React.JSX.Element {
   const [isChecking, setIsChecking] = useState(false);
