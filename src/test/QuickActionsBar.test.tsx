@@ -477,14 +477,17 @@ describe('QuickActionsBar & Shortcut Keys', () => {
       name: /hacer ping al router \.250/i,
     });
     expect(router.parentElement?.className).toContain("max-sm:order-5");
+    expect(router.parentElement?.className).toContain("max-sm:flex-1");
 
     const server = screen.getByRole("button", {
       name: /hacer ping al servidor \.231/i,
     });
     expect(server.parentElement?.className).toContain("max-sm:order-6");
+    expect(server.parentElement?.className).toContain("max-sm:flex-1");
 
     const uptime = container.querySelector('[title^="Uptime:"]');
     expect(uptime?.className).toContain("max-sm:order-7");
+    expect(uptime?.className).toContain("max-sm:flex-1");
 
     // El spacer es el único `div[aria-hidden]`; los iconos Lucide también
     // emiten aria-hidden="true" sobre <svg>, por eso se acota a div.
