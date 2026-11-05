@@ -4,7 +4,7 @@
 
 **Goal:** permitir que la ventana baje a ~425 px de ancho conservando el alto actual (600–800 px), con las acciones primarias visibles, las secundarias en una segunda fila de `QuickActionsBar`, la consola con alto adaptado al viewport y los diálogos dentro del ancho.
 
-**Architecture:** cambios en 7 archivos de UI más 1 archivo del proceso principal. No hay componentes nuevos ni librerías nuevas. La ventana es frameless, así que el ancho mínimo solo depende de `BrowserWindow`. Todo lo demás es Tailwind 4 con variantes `max-sm` (ancho < 640 px) y `order` de flexbox para forzar dos filas. La consola pasa de altura fija mínima 384 px a `clamp(10rem, 36vh, 48rem)`. La consola existente ya tiene colapso, scroll interno y copiar logs: no se reemplaza.
+**Architecture:** cambios en 7 archivos de UI más 1 archivo del proceso principal. No hay componentes nuevos ni librerías nuevas. La ventana es frameless, así que el ancho mínimo solo depende de `BrowserWindow`. Todo lo demás es Tailwind 4 con variantes `max-sm` (ancho < 640 px) y `order` de flexbox para forzar dos filas. La consola pasa de altura fija mínima 384 px a `clamp(9rem, 30vh, 40rem)`. La consola existente ya tiene colapso, scroll interno y copiar logs: no se reemplaza.
 
 **Tech Stack:** Electron 34 · React 19 · Vite 6 · TypeScript 5.7 · Tailwind 4 · Vitest 3 · Testing Library.
 
@@ -127,9 +127,9 @@ git commit -m "feat(window): allow compact 420px minimum width"
 En `src/test/LivePingConsole.test.tsx`, reemplazar el bloque de expectativa de altura:
 
 ```tsx
-    // La consola se adapta al alto de la ventana (10rem–48rem, ~36vh)
+    // La consola se adapta al alto de la ventana (9rem–40rem, ~30vh)
     const terminalBox = container.querySelector('[data-testid="terminal-scroll-container"]');
-    expect(terminalBox?.className).toContain('h-[clamp(10rem,36vh,48rem)]');
+    expect(terminalBox?.className).toContain('h-[clamp(9rem,30vh,40rem)]');
     expect(terminalBox?.className).not.toContain('min-h-[24rem]');
 ```
 
@@ -143,17 +143,17 @@ Expected: FAIL. La clase todavía es `h-[clamp(24rem,55vh,48rem)]`.
 En `src/components/LivePingConsole.tsx`, reemplazar el comentario y la clase:
 
 ```tsx
-          {/* Pantalla Contigua estilo Windows Terminal: bg-console-bg, altura adaptable (10rem–48rem, ~36vh), auto-scroll interno por línea */}
+          {/* Pantalla Contigua estilo Windows Terminal: bg-console-bg, altura adaptable (9rem–40rem, ~30vh), auto-scroll interno por línea */}
           <div
             ref={scrollContainerRef}
             data-testid="terminal-scroll-container"
             className={`${
-              fill ? "flex-1 min-h-0" : "h-[clamp(10rem,36vh,48rem)]"
+              fill ? "flex-1 min-h-0" : "h-[clamp(9rem,30vh,40rem)]"
             } overflow-y-auto overflow-x-auto p-3 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
           >
 ```
 
-Se elimina `min-h-[24rem]`: el piso ahora son 10rem (160 px).
+Se elimina `min-h-[24rem]`: el piso ahora son 9rem (144 px).
 
 - [ ] **Step 4: Correr el test y verificar que pasa**
 
@@ -680,10 +680,24 @@ Reportar: salida de `npx vitest run`, `tsc`, `npm run build`, y el resultado de 
 |---|---|
 | Tailwind no genera clases dinámicas | todas las clases de este plan son literales |
 | `order` no aplica si cambia el contenedor a grid | el contenedor de `QuickActionsBar` es `flex`; no cambiarlo |
-| Consola demasiado chata en ventanas de 600 px | piso de 10rem y colapso manual ya existente |
+| Consola demasiado chata en ventanas de 600 px | piso de 9rem y colapso manual ya existente |
 | Popover "Más" recortado por overflow | `PopoverContent` usa portal Radix; no lo recorta `main` |
 | Tests de clase frágiles | ya es el estilo del repo (`Topbar.test.tsx`, `LivePingConsole.test.tsx`) |
 | Electron ignora `minWidth` por DPI | probar a 100 % y 125 % de escala de Windows en Checkpoint 1 |
 | Orden de tabulación distinto del visual en compacto | aceptado: el DOM no se mueve para no alterar el orden de escritorio; queda comentado en `QuickActionsBar.tsx` |
 | Barra de acciones en 640–719 px | el uptime queda solo en la segunda fila; es el layout ancho actual, no una regresión de esta rama |
 | `ActivityPanel` (solo admin) a 425 px | tabla con scroll horizontal dentro del primitivo Table; fuera de alcance, follow-up |
+
+---
+
+## Correcciones posteriores (feedback de producto)
+
+Después del cierre se ajustaron tres puntos detectados al usar la ventana compacta:
+
+| Cambio | Archivo | Commit |
+|---|---|---|
+| Consola más baja: `clamp(9rem,30vh,40rem)` | `LivePingConsole.tsx` | `f50c9ca` |
+| Copiar Último (`Copy`/`Check`) vs Copiar Logs (`ClipboardList`/`CheckCheck`) distinguibles sin label; aviso `role="status"` para lectores de pantalla | `LivePingConsole.tsx` | `f50c9ca`, `c0235f8` |
+| Segunda fila llena el ancho: `.250`, `.231` y uptime con `max-sm:flex-1`; uptime sólo si hay pings de sitio | `QuickActionsBar.tsx` | `06a240c`, `b83329a` |
+
+Nota de altura: en ventana de 600 px la consola mide 180 px (~8–9 líneas). Un ping estándar completo puede requerir scroll interno; se acepta porque el auto-scroll fija la cola y "Copiar Logs" sigue disponible.
