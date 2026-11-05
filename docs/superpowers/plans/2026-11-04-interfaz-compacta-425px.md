@@ -699,6 +699,6 @@ Después del cierre se ajustaron tres puntos detectados al usar la ventana compa
 | Consola más baja: `clamp(9rem,30vh,40rem)`; luego ajustada a `h-[50vh]` por feedback de producto | `LivePingConsole.tsx` | `f50c9ca`, `757cbb2` |
 | Copiar Último (`Copy`/`Check`) vs Copiar Logs (`ClipboardList`/`CheckCheck`) distinguibles sin label; aviso `role="status"` para lectores de pantalla | `LivePingConsole.tsx` | `f50c9ca`, `c0235f8` |
 | Segunda fila llena el ancho: `.250`, `.231` y uptime con `max-sm:flex-1`; uptime sólo si hay pings de sitio | `QuickActionsBar.tsx` | `06a240c`, `b83329a` |
-| Menú compacto de Ajustes, Información y Tema bajo 640 px | `Topbar.tsx`, `ThemeToggle.tsx`, `ui/dropdown-menu.tsx` | `8bf483a`, `7cf9d17` |
+| Menú compacto de Ajustes, Información y Tema bajo 640 px | `Topbar.tsx`, `ThemeToggle.tsx`, `ui/dropdown-menu.tsx` | `8bf483a`, `7cf9d17`, `7b47a63` |
 
 Nota de altura: `h-[50vh]` da 300 px en ventana de 600 y 400 px en 800. El ping estándar completo entra o usa scroll interno; el auto-scroll fija la cola y "Copiar Logs" sigue disponible.
