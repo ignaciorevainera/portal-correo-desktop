@@ -473,18 +473,25 @@ describe('QuickActionsBar & Shortcut Keys', () => {
       screen.getByRole("button", { name: /más acciones/i }).className,
     ).toContain("max-sm:order-3");
 
+    const secondary = screen.getByTestId("secondary-actions");
+    expect(secondary.className).toContain("contents");
+    expect(secondary.className).toContain("max-sm:flex");
+    expect(secondary.className).toContain("max-sm:basis-full");
+    expect(secondary.className).toContain("max-sm:order-4");
+
     const router = screen.getByRole("button", {
       name: /hacer ping al router \.250/i,
     });
-    expect(router.parentElement?.className).toContain("max-sm:order-5");
-    expect(router.parentElement?.className).toContain("max-sm:flex-1");
-
     const server = screen.getByRole("button", {
       name: /hacer ping al servidor \.231/i,
     });
-    expect(server.parentElement?.className).toContain("max-sm:order-6");
-    expect(server.parentElement?.className).toContain("max-sm:flex-1");
+    const uptime = container.querySelector('[title^="Uptime:"]');
+    expect(uptime).not.toBeNull();
+    expect(secondary.contains(uptime!)).toBe(true);
 
+    for (const group of [router.parentElement, server.parentElement, uptime]) {
+      expect(group?.className).toContain("max-sm:flex-1");
+    }
     expect(router.className).toContain("max-sm:flex-1");
     expect(server.className).toContain("max-sm:flex-1");
     expect(
@@ -492,27 +499,10 @@ describe('QuickActionsBar & Shortcut Keys', () => {
         .className,
     ).not.toContain("max-sm:flex-1");
 
-    const uptime = container.querySelector('[title^="Uptime:"]');
-    expect(uptime?.className).toContain("max-sm:order-7");
-    expect(uptime?.className).toContain("max-sm:flex-1");
-
-    // El spacer es el único `div[aria-hidden]`; los iconos Lucide también
-    // emiten aria-hidden="true" sobre <svg>, por eso se acota a div.
-    const spacer = container.querySelector('div[aria-hidden="true"]');
-    expect(spacer).not.toBeNull();
-    expect(spacer!.className.split(/\s+/)).toEqual(
-      expect.arrayContaining([
-        "hidden",
-        "max-sm:block",
-        "max-sm:basis-full",
-        "max-sm:order-4",
-      ]),
-    );
-
     expect(container.querySelector('[class*="flex-wrap"]')).not.toBeNull();
   });
 
-  it("no llena el chip de uptime cuando no hay enlaces del sitio", () => {
+  it("llena la fila secundaria con el chip de uptime cuando no hay enlaces del sitio", () => {
     const { container } = render(
       <QuickActionsBar
         terminal={{ ...terminal, ip: "hostname-solo" }}
@@ -529,7 +519,7 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     ).toBeNull();
 
     const uptime = container.querySelector('[title^="Uptime:"]');
-    expect(uptime?.className).not.toContain("max-sm:flex-1");
+    expect(uptime?.className).toContain("max-sm:flex-1");
   });
 });
 

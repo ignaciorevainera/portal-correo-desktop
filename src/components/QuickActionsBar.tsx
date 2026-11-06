@@ -330,72 +330,87 @@ export function QuickActionsBar({
           </Button>
         </div>
 
-        {/* Corte de fila en ancho compacto: primarias en la fila 1, secundarias en la 2 */}
+        {/* Secundarias: fila propia en compacto, inline en escritorio */}
         <div
-          aria-hidden="true"
-          className="hidden max-sm:block max-sm:basis-full max-sm:order-4"
-        />
+          data-testid="secondary-actions"
+          className="contents max-sm:order-4 max-sm:flex max-sm:basis-full max-sm:items-center max-sm:gap-1"
+        >
+          {siteTargets.isValid && onLaunchSitePing && (
+            <>
+              <div className="flex rounded-md shrink-0 max-sm:flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLaunchSitePing("router", "standard")}
+                  aria-label="Hacer ping al router .250"
+                  title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
+                  className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1 max-sm:flex-1"
+                >
+                  <Wifi className="h-3.5 w-3.5 shrink-0 text-link" />
+                  <span className="font-mono text-micro">.250</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLaunchSitePing("router", "infinite")}
+                  aria-label="Ping continuo -t router .250"
+                  title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
+                  className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
+                >
+                  <span className="font-mono text-micro font-semibold text-link">
+                    -t
+                  </span>
+                </Button>
+              </div>
 
-        {/* Enlaces del sitio: se usan a diario, por eso quedan siempre visibles */}
-        {siteTargets.isValid && onLaunchSitePing && (
-          <>
-            <div className="flex rounded-md shrink-0 max-sm:order-5 max-sm:flex-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onLaunchSitePing("router", "standard")}
-                aria-label="Hacer ping al router .250"
-                title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
-                className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1 max-sm:flex-1"
-              >
-                <Wifi className="h-3.5 w-3.5 shrink-0 text-link" />
-                <span className="font-mono text-micro">.250</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onLaunchSitePing("router", "infinite")}
-                aria-label="Ping continuo -t router .250"
-                title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
-                className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
-              >
-                <span className="font-mono text-micro font-semibold text-link">
-                  -t
-                </span>
-              </Button>
-            </div>
+              <div className="flex rounded-md shrink-0 max-sm:flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLaunchSitePing("server", "standard")}
+                  aria-label="Hacer ping al servidor .231"
+                  title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
+                  className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1 max-sm:flex-1"
+                >
+                  <Layers className="h-3.5 w-3.5 shrink-0 text-warning" />
+                  <span className="font-mono text-micro">.231</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLaunchSitePing("server", "infinite")}
+                  aria-label="Ping continuo -t servidor .231"
+                  title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
+                  className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
+                >
+                  <span className="font-mono text-micro font-semibold text-warning">
+                    -t
+                  </span>
+                </Button>
+              </div>
+            </>
+          )}
 
-            <div className="flex rounded-md shrink-0 max-sm:order-6 max-sm:flex-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onLaunchSitePing("server", "standard")}
-                aria-label="Hacer ping al servidor .231"
-                title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
-                className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1 max-sm:flex-1"
-              >
-                <Layers className="h-3.5 w-3.5 shrink-0 text-warning" />
-                <span className="font-mono text-micro">.231</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onLaunchSitePing("server", "infinite")}
-                aria-label="Ping continuo -t servidor .231"
-                title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
-                className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
-              >
-                <span className="font-mono text-micro font-semibold text-warning">
-                  -t
-                </span>
-              </Button>
-            </div>
-          </>
-        )}
+          {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:flex-1 max-sm:justify-center sm:order-last"
+            title={`Uptime: ${terminal.uptimeText || "N/D"}`}
+            aria-busy={isRefreshingUptime}
+          >
+            {isRefreshingUptime ? (
+              <RotateCcw className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />
+            ) : (
+              <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            )}
+            <span className="font-mono font-semibold text-foreground truncate max-w-25 text-micro">
+              {terminal.uptimeText || "N/D"}
+            </span>
+          </div>
+        </div>
 
         {/* Menú "Más": acciones secundarias agrupadas sin competir con las primarias */}
         <Popover open={isMoreOpen} onOpenChange={setIsMoreOpen}>
@@ -527,28 +542,6 @@ export function QuickActionsBar({
             )}
           </PopoverContent>
         </Popover>
-
-        {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
-        <div
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:order-7 ${
-            siteTargets.isValid && onLaunchSitePing
-              ? "max-sm:flex-1 max-sm:justify-center"
-              : ""
-          }`}
-          title={`Uptime: ${terminal.uptimeText || "N/D"}`}
-          aria-busy={isRefreshingUptime}
-        >
-          {isRefreshingUptime ? (
-            <RotateCcw className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />
-          ) : (
-            <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          )}
-          <span
-            className="font-mono font-semibold text-foreground truncate max-w-25 text-micro"
-          >
-            {terminal.uptimeText || "N/D"}
-          </span>
-        </div>
       </div>
     </div>
   );
