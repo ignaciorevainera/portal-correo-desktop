@@ -711,5 +711,6 @@ Después del cierre se ajustaron tres puntos detectados al usar la ventana compa
 | Menú compacto de Ajustes, Información y Tema bajo 640 px | `Topbar.tsx`, `ThemeToggle.tsx`, `ui/dropdown-menu.tsx` | `8bf483a`, `7cf9d17`, `7b47a63` |
 | Hover neutral (`focus:bg-muted`) en los ítems del menú compacto | `ui/dropdown-menu.tsx` | `3df1a2c` |
 | Loading de búsqueda con primitiva `Spinner` y leyenda "Consultando..." | `App.tsx`, `ui/spinner.tsx` | `6f6dfa1` |
+| Resumen de estadísticas al detener un ping continuo (`-t`) | `LivePingConsole.tsx`, `lib/pingSummary.ts` | `95c64e8` |
 
 Nota de altura: `h-[50vh]` da 300 px en ventana de 600 y 400 px en 800. El ping estándar completo entra o usa scroll interno; el auto-scroll fija la cola y "Copiar Logs" sigue disponible.
