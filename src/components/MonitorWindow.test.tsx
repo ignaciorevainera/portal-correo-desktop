@@ -302,6 +302,25 @@ describe('MonitorWindow', () => {
     expect(screen.getByText('nuevo')).toBeInTheDocument();
   });
 
+  it('no pierde la última línea cuando data y end llegan juntos', async () => {
+    render(<MonitorWindow />);
+    await screen.findByText('> ping -t 192.0.2.100');
+
+    act(() => {
+      api.emitData('Error: host inaccesible\n');
+      api.emitEnd(1);
+    });
+    await flushFrame();
+
+    expect(
+      screen.getByText('Error: host inaccesible'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('[proceso finalizado: 1]'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Error de ping')).toBeInTheDocument();
+  });
+
   it('limpia suscripciones y detiene el ping al desmontar', async () => {
     const { unmount } = render(<MonitorWindow />);
     await screen.findByText('> ping -t 192.0.2.100');

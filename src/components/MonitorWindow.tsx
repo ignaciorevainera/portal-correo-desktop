@@ -182,6 +182,7 @@ export function MonitorWindow(): React.JSX.Element {
 
     const unsubscribeEnd = api.onPingEnd((code) => {
       setStatus(code === 0 || code === null ? "stopped" : "error");
+      flushBuffer();
       discardPending();
       appendLine(
         code === null
@@ -199,7 +200,7 @@ export function MonitorWindow(): React.JSX.Element {
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
       if (api) api.stopPing().catch(() => {});
     };
-  }, [api, appendLine, resetWithHeader, scheduleFlush]);
+  }, [api, appendLine, discardPending, flushBuffer, resetWithHeader, scheduleFlush]);
 
   useEffect(() => {
     const applyTheme = () => {
