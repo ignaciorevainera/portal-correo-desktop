@@ -9,6 +9,7 @@ const {
 class FakeBrowserWindow {
   static instances: FakeBrowserWindow[] = [];
   static nextWebContentsId = 1;
+  static deferClosed = false;
 
   options: any;
   destroyed = false;
@@ -87,7 +88,11 @@ class FakeBrowserWindow {
 
   close() {
     this.destroyed = true;
-    this.handlers.closed?.();
+    if (FakeBrowserWindow.deferClosed) {
+      queueMicrotask(() => this.handlers.closed?.());
+    } else {
+      this.handlers.closed?.();
+    }
   }
 
   destroy() {
@@ -132,6 +137,7 @@ describe('monitorWindows', () => {
   beforeEach(() => {
     FakeBrowserWindow.instances = [];
     FakeBrowserWindow.nextWebContentsId = 1;
+    FakeBrowserWindow.deferClosed = false;
   });
 
   it('normaliza el target', () => {
@@ -167,6 +173,11 @@ describe('monitorWindows', () => {
     expect(win.options.skipTaskbar).toBe(true);
     expect(win.skipTaskbar).toBe(true);
     expect(win.webContents.setWindowOpenHandler).toHaveBeenCalled();
+    expect(win.options.webPreferences.preload).toBe(
+      'C:\\app\\electron\\monitor-preload.cjs',
+    );
+    expect(manager.getTarget({ id: win.webContents.id })).toBe('192.0.2.100');
+    expect(manager.has(' 192.0.2.100 ')).toBe(true);
   });
 
   it('reutiliza el monitor del mismo target', () => {
@@ -262,5 +273,31 @@ describe('monitorWindows', () => {
     expect(notify).toHaveBeenCalledWith(
       expect.objectContaining({ kind: 'error' }),
     );
+  });
+
+  it('no desregistra la ventana hasta que llega closed', async () => {
+    FakeBrowserWindow.deferClosed = true;
+    const { manager, onClosed } = createHarness();
+    manager.open({ target: '192.0.2.100', label: 'WS-CORP-100' });
+    const win = FakeBrowserWindow.instances[0];
+    const webContents = { id: win.webContents.id };
+
+    expect(manager.close(webContents)).toBe(true);
+    expect(manager.getContext(webContents)).not.toBeNull();
+
+    await Promise.resolve();
+
+    expect(onClosed).toHaveBeenCalledWith(win.webContents.id);
+    expect(manager.getContext(webContents)).toBeNull();
+  });
+
+  it('rechaza un target vacío sin crear ventana', () => {
+    const { manager } = createHarness();
+
+    expect(manager.open({ target: '   ' })).toEqual({
+      ok: false,
+      reason: 'invalid-target',
+    });
+    expect(FakeBrowserWindow.instances).toHaveLength(0);
   });
 });

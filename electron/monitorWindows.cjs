@@ -107,6 +107,16 @@ function createMonitorManager({
     }
   }
 
+  function safeNotify(payload) {
+    try {
+      notify(payload);
+    } catch (err) {
+      logger?.warn?.('No se pudo notificar el monitor', {
+        error: err && err.message,
+      });
+    }
+  }
+
   function open({ target, label } = {}) {
     const key = normalizeMonitorTarget(target);
     if (!key) return { ok: false, reason: 'invalid-target' };
@@ -120,15 +130,28 @@ function createMonitorManager({
     }
 
     if (windows.size >= maxMonitors) {
-      notify({
+      safeNotify({
         kind: 'limit',
         message: `Máximo de ${maxMonitors} monitores abiertos. Cerrá uno para abrir otro.`,
       });
       return { ok: false, reason: 'limit' };
     }
 
-    const prefs = loadPreferences();
-    const bounds = nextBounds();
+    let prefs;
+    let bounds;
+    try {
+      prefs = loadPreferences();
+      bounds = nextBounds();
+    } catch (err) {
+      logger.error?.('No se pudieron calcular los bounds del monitor', {
+        error: err && err.message,
+      });
+      safeNotify({
+        kind: 'error',
+        message: 'No se pudo abrir el monitor de ping.',
+      });
+      return { ok: false, reason: 'error' };
+    }
     let win;
     try {
       win = new BrowserWindow({
@@ -159,14 +182,17 @@ function createMonitorManager({
       logger.error?.('No se pudo crear el monitor', {
         error: err && err.message,
       });
-      notify({ kind: 'error', message: 'No se pudo abrir el monitor de ping.' });
+      safeNotify({
+        kind: 'error',
+        message: 'No se pudo abrir el monitor de ping.',
+      });
       return { ok: false, reason: 'error' };
     }
 
     const webContentsId = win.webContents.id;
     const entry = {
       key,
-      target,
+      target: key,
       label: label || target,
       win,
       pinned: prefs.pinned !== false,
@@ -179,7 +205,16 @@ function createMonitorManager({
     win.setAlwaysOnTop(entry.pinned);
     win.setSkipTaskbar(true);
     win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-    win.webContents.on('will-navigate', (event) => event.preventDefault());
+    win.webContents.on('will-navigate', (event, url) => {
+      try {
+        const current = win.webContents.getURL();
+        if (new URL(url).origin !== new URL(current).origin) {
+          event.preventDefault();
+        }
+      } catch {
+        event.preventDefault();
+      }
+    });
     win.on('move', () => persistBounds(win));
     win.on('resize', () => persistBounds(win));
     win.on('closed', () => cleanup(entry));
@@ -193,11 +228,12 @@ function createMonitorManager({
     Promise.resolve()
       .then(() => loadRenderer(win, 'monitor.html'))
       .catch((err) => {
+        if (entry.closed) return;
         logger.error?.('No se pudo cargar el monitor', {
           error: err && err.message,
         });
         if (!win.isDestroyed()) win.destroy();
-        notify({
+        safeNotify({
           kind: 'error',
           message: 'No se pudo abrir el monitor de ping.',
         });
@@ -209,8 +245,11 @@ function createMonitorManager({
   function close(webContents) {
     const entry = byWebContentsId.get(webContents && webContents.id);
     if (!entry) return false;
+    if (entry.win.isDestroyed()) {
+      cleanup(entry);
+      return true;
+    }
     entry.win.close();
-    cleanup(entry);
     return true;
   }
 
@@ -241,9 +280,22 @@ function createMonitorManager({
   function setPinned(webContents, pinned) {
     const entry = byWebContentsId.get(webContents && webContents.id);
     if (!entry) return false;
+    if (entry.win.isDestroyed()) {
+      cleanup(entry);
+      return false;
+    }
+    const previous = entry.pinned;
     entry.pinned = Boolean(pinned);
-    entry.win.setAlwaysOnTop(entry.pinned);
-    savePreferences({ pinned: entry.pinned });
+    try {
+      entry.win.setAlwaysOnTop(entry.pinned);
+      savePreferences({ pinned: entry.pinned });
+    } catch (err) {
+      entry.pinned = previous;
+      logger?.warn?.('No se pudo aplicar el pin del monitor', {
+        error: err && err.message,
+      });
+      return false;
+    }
     return true;
   }
 
