@@ -681,7 +681,7 @@ describe('LivePingConsole Component', () => {
       },
     );
 
-    render(
+    const { rerender } = render(
       <LivePingConsole
         ip="192.0.2.103"
         isPinging={true}
@@ -711,6 +711,20 @@ describe('LivePingConsole Component', () => {
     expect(
       screen.getByText(/Mínimo = 13ms, Máximo = 14ms, Media = 13ms/),
     ).toBeInTheDocument();
+
+    // El ping-end ya cerró la sesión: la transición a detenido no duplica nada.
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.103"
+        isPinging={false}
+        pingMode="infinite"
+        onTogglePing={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getAllByText(/Estadísticas de ping para 192\.0\.2\.103:/),
+    ).toHaveLength(1);
+    expect(screen.getAllByText(/Proceso ping detenido/)).toHaveLength(1);
   });
 
   it("resume sólo la sesión continua actual cuando la cabecera tiene prefijo", () => {
@@ -774,5 +788,47 @@ describe('LivePingConsole Component', () => {
         /Paquetes: enviados = 1, recibidos = 1, perdidos = 0/,
       ),
     ).toBeInTheDocument();
+  });
+
+  it("muestra el resumen al detener el ping continuo desde la UI", () => {
+    let dataHandler: ((text: string) => void) | null = null;
+
+    vi.spyOn(electronClient, "subscribeToPing").mockImplementation(
+      (_target, onData) => {
+        dataHandler = onData;
+        return () => {};
+      },
+    );
+
+    const { rerender } = render(
+      <LivePingConsole
+        ip="192.0.2.103"
+        isPinging={true}
+        pingMode="infinite"
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    act(() => {
+      dataHandler?.("Respuesta desde 192.0.2.103: bytes=32 tiempo=13ms TTL=124");
+      dataHandler?.("Respuesta desde 192.0.2.103: bytes=32 tiempo=13ms TTL=124");
+    });
+
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.103"
+        isPinging={false}
+        pingMode="infinite"
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText(/Estadísticas de ping para 192\.0\.2\.103:/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Paquetes: enviados = 2, recibidos = 2, perdidos = 0/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Proceso ping detenido/)).toBeInTheDocument();
   });
 });

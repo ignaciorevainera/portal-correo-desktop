@@ -2,6 +2,7 @@ import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../App";
+import * as electronClient from "../services/electronClient";
 
 const terminal = {
   pc: "WS-CORP-100",
@@ -90,6 +91,12 @@ describe("App terminal layout", () => {
   });
 
   it("arranca con la consola abierta tras el ping automático y se puede colapsar", async () => {
+    // Aísla la llamada explícita de App: el cleanup real de subscribeToPing
+    // también invoca stopPing, lo que ocultaría si App lo hace por su cuenta.
+    vi.spyOn(electronClient, "subscribeToPing").mockImplementation(
+      () => () => {},
+    );
+
     await renderLoadedApp();
 
     const consoleTrigger = screen.getByRole("button", { name: /consola/i });
@@ -108,6 +115,7 @@ describe("App terminal layout", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Detener Ping en vivo" }),
     );
+    expect((window as any).electronAPI.stopPing).toHaveBeenCalledTimes(1);
     expect(consoleTrigger).toHaveAttribute("aria-expanded", "false");
 
     // Iniciar un ping desde la barra sí es una acción del operador.

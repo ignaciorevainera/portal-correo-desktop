@@ -98,6 +98,8 @@ export function LivePingConsole({
   // Señal ya procesada al montar: evita que un valor viejo reabra la consola
   // al montarse de nuevo tras una búsqueda.
   const handledOpenSignal = useRef(openSignal ?? 0);
+  const wasPingingRef = useRef(false);
+  const pingCompletedRef = useRef(false);
 
   // Los diagnósticos siempre son iniciados por el operador: abren la consola.
   useEffect(() => {
@@ -124,6 +126,7 @@ export function LivePingConsole({
   useEffect(() => {
     if (!isPinging || !ip) return;
 
+    pingCompletedRef.current = false;
     const isInfinite = pingMode === "infinite";
     // Append instead of wiping
     const prefixTag = linePrefix ? `${linePrefix} ` : "";
@@ -141,6 +144,8 @@ export function LivePingConsole({
         }
       },
       (code: number) => {
+        if (pingCompletedRef.current) return;
+        pingCompletedRef.current = true;
         setLogs((prev) => {
           const next = [...prev];
 
@@ -166,6 +171,28 @@ export function LivePingConsole({
       unsubscribe();
     };
   }, [isPinging, ip, pingMode, linePrefix]);
+
+  // El operador puede detener el ping: el proceso se mata y no llega `ping-end`,
+  // así que el resumen de un ping continuo se calcula al pasar isPinging a false.
+  useEffect(() => {
+    if (
+      wasPingingRef.current &&
+      !isPinging &&
+      pingMode === "infinite" &&
+      !pingCompletedRef.current
+    ) {
+      pingCompletedRef.current = true;
+      setLogs((prev) => {
+        const summary = summarizePingLogs(currentPingLines(prev), ip);
+        return [
+          ...prev,
+          ...(summary ? [summary] : []),
+          `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`,
+        ];
+      });
+    }
+    wasPingingRef.current = isPinging;
+  }, [isPinging, pingMode, ip]);
 
   // Generic diagnostic command subscription (nbtstat, tracert, arp)
   useEffect(() => {

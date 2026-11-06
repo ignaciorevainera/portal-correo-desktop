@@ -40,6 +40,7 @@ import {
   retrySecurityGate,
   GateStatus,
   checkIsAdmin,
+  stopPing,
 } from "./services/electronClient";
 import { TerminalData } from "./types/terminal";
 import { Search, SearchX, RotateCcw } from "lucide-react";
@@ -359,10 +360,11 @@ export default function App(): React.JSX.Element {
 
   const handleTogglePing = () => {
     if (isPinging) {
+      void stopPing();
       setIsPinging(false);
-    } else {
-      handleStartPing("standard", terminal?.ip, undefined);
+      return;
     }
+    handleStartPing("standard", terminal?.ip, undefined);
   };
 
   const handleLaunchPingInfinite = () => {
@@ -371,6 +373,7 @@ export default function App(): React.JSX.Element {
       (!pingTarget || pingTarget === terminal?.ip) &&
       pingMode === "infinite"
     ) {
+      void stopPing();
       setIsPinging(false);
       return;
     }
