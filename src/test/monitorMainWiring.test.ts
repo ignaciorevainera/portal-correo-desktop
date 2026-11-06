@@ -15,10 +15,10 @@ describe('monitor main wiring', () => {
     expect(main).toContain("'pcd:monitor-connect-remote'");
     expect(main).toContain("'pcd:monitor-remote-result'");
     expect(main).toContain('closeAllMonitors');
-    expect(main).toMatch(/createMonitorInfrastructure\(\)/);
-    expect(main).toMatch(/registerMonitorShortcut\(\)/);
-    expect(main).toMatch(/pingSessions\.start\(/);
-    expect(main).toMatch(/pingSessions\.stop\(/);
+    expect(main).toMatch(/createMonitorInfrastructure\(\);/);
+    expect(main).toMatch(/registerMonitorShortcut\(\);/);
+    expect(main).toMatch(/pingSessions\.start\(event\.sender/);
+    expect(main).toMatch(/pingSessions\.stop\(event\.sender/);
   });
 
   it('el cierre y la bandeja cierran los monitores', () => {
