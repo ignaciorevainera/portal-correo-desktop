@@ -249,6 +249,20 @@ describe('SettingsModal Component', () => {
     expect(localStorage.getItem('pcd_pref_ping_mode')).not.toBe('');
   });
 
+  it('documenta el atajo del monitor flotante', () => {
+    render(
+      <SettingsModal
+        isOpen
+        onClose={vi.fn()}
+        currentVersion="1.2.0"
+        backendConnected
+      />,
+    );
+
+    expect(screen.getByText(/Monitor flotante/i)).toBeInTheDocument();
+    expect(screen.getByText(/Ctrl \+ Alt \+ Espacio/i)).toBeInTheDocument();
+  });
+
   it('renders corporate diagnostics panel with gate status, code and bootstrap info', async () => {
     (window as any).electronAPI = {
       getDiagnostics: vi.fn().mockResolvedValue({

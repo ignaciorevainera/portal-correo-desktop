@@ -82,6 +82,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setMonitorTarget: (payload) =>
     ipcRenderer.send('pcd:monitor-target-set', payload),
   openMonitorCurrent: () => ipcRenderer.invoke('pcd:monitor-open-current'),
+  isMonitorShortcutRegistered: () =>
+    ipcRenderer.invoke('pcd:monitor-shortcut-status'),
   onMonitorNotice: (callback) => {
     const listener = (_event, payload) => callback(payload);
     ipcRenderer.on('pcd:monitor-notice', listener);

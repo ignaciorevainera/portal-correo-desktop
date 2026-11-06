@@ -482,6 +482,13 @@ export function SettingsModal({
                   aria-label="Atajo Global Ctrl + Espacio"
                 />
               </div>
+              <p className="text-micro text-muted-foreground border-t border-border/60 pt-2">
+                Monitor flotante:{" "}
+                <span className="font-mono text-foreground">
+                  Ctrl + Alt + Espacio
+                </span>{" "}
+                abre el monitor del último equipo consultado.
+              </p>
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">

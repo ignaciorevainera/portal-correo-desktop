@@ -706,6 +706,10 @@ ipcMain.handle('pcd:monitor-open-current', (event) => {
     : { ok: false, reason: 'unavailable' };
 });
 
+ipcMain.handle('pcd:monitor-shortcut-status', () => {
+  return globalShortcut.isRegistered('CommandOrControl+Alt+Space');
+});
+
 // Subnet Scanner IPC Handlers
 ipcMain.on('pcd:subnet-scan-start', async (event, payload) => {
   if (activeSubnetAbortController) {

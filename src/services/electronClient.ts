@@ -1,6 +1,8 @@
 import { TerminalData } from '../types/terminal';
 import { findTerminalByQuery } from './terminalService';
 import { APP_VERSION } from '../lib/appVersion';
+import type { MonitorRemoteResult } from '@/types/monitor';
+export type { MonitorRemoteResult };
 
 export type GateStatusCode =
   | 'AUTHORIZED'
@@ -691,4 +693,70 @@ export async function testSqlConnection(): Promise<BackendStatus> {
     database: 'BD_DEMO',
     mode: 'mock',
   };
+}
+
+export interface MonitorTargetPayload {
+  target: string;
+  label: string;
+}
+
+export interface MonitorNotice {
+  kind: 'limit' | 'error';
+  message: string;
+}
+
+export function setMonitorTarget(
+  payload: MonitorTargetPayload | null,
+): void {
+  const api = getElectronAPI();
+  if (api && typeof api.setMonitorTarget === 'function') {
+    api.setMonitorTarget(payload);
+  }
+}
+
+export async function openMonitorCurrent(): Promise<{
+  ok: boolean;
+  reason?: string;
+}> {
+  const api = getElectronAPI();
+  if (api && typeof api.openMonitorCurrent === 'function') {
+    try {
+      return await api.openMonitorCurrent();
+    } catch {
+      return { ok: false, reason: 'error' };
+    }
+  }
+  return { ok: false, reason: 'unavailable' };
+}
+
+export function subscribeToMonitorNotice(
+  callback: (notice: MonitorNotice) => void,
+): () => void {
+  const api = getElectronAPI();
+  if (api && typeof api.onMonitorNotice === 'function') {
+    return api.onMonitorNotice(callback);
+  }
+  return () => {};
+}
+
+export function subscribeToMonitorRemoteResult(
+  callback: (result: MonitorRemoteResult) => void,
+): () => void {
+  const api = getElectronAPI();
+  if (api && typeof api.onMonitorRemoteResult === 'function') {
+    return api.onMonitorRemoteResult(callback);
+  }
+  return () => {};
+}
+
+export async function isMonitorShortcutRegistered(): Promise<boolean> {
+  const api = getElectronAPI();
+  if (api && typeof api.isMonitorShortcutRegistered === 'function') {
+    try {
+      return Boolean(await api.isMonitorShortcutRegistered());
+    } catch {
+      return false;
+    }
+  }
+  return false;
 }

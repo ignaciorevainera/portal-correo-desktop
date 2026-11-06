@@ -14,6 +14,7 @@ describe('monitor main wiring', () => {
     expect(main).toContain("'pcd:monitor-open-current'");
     expect(main).toContain("'pcd:monitor-connect-remote'");
     expect(main).toContain("'pcd:monitor-remote-result'");
+    expect(main).toContain("'pcd:monitor-shortcut-status'");
     expect(main).toContain('closeAllMonitors');
     expect(main).toMatch(/createMonitorInfrastructure\(\);/);
     expect(main).toMatch(/registerMonitorShortcut\(\);/);
@@ -37,6 +38,7 @@ describe('monitor main wiring', () => {
     expect(preload).toContain('openMonitorCurrent');
     expect(preload).toContain('onMonitorNotice');
     expect(preload).toContain('onMonitorRemoteResult');
+    expect(preload).toContain('isMonitorShortcutRegistered');
     expect(preload).toContain("'pcd:monitor-target-set'");
     expect(preload).toContain("'pcd:monitor-open-current'");
     expect(preload).toContain("'pcd:monitor-notice'");
