@@ -21,7 +21,7 @@ export interface MonitorApi {
   onPingData(callback: (text: string) => void): () => void;
   onPingEnd(callback: (code: number | null) => void): () => void;
   setPinned(pinned: boolean): Promise<boolean>;
-  close(): Promise<void>;
+  close(): Promise<boolean>;
   copyText(text: string): Promise<boolean>;
   connectRemote(): Promise<MonitorRemoteResult>;
 }
