@@ -20,3 +20,18 @@ if (!('ResizeObserver' in globalThis)) {
 if (!Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = () => {};
 }
+
+// jsdom no garantiza requestAnimationFrame; el monitor agrupa la salida por frame.
+if (typeof globalThis.requestAnimationFrame !== 'function') {
+  Object.defineProperty(globalThis, 'requestAnimationFrame', {
+    writable: true,
+    configurable: true,
+    value: (callback: FrameRequestCallback) =>
+      setTimeout(() => callback(Date.now()), 16) as unknown as number,
+  });
+  Object.defineProperty(globalThis, 'cancelAnimationFrame', {
+    writable: true,
+    configurable: true,
+    value: (handle: number) => clearTimeout(handle),
+  });
+}
