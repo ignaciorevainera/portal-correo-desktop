@@ -3527,7 +3527,7 @@ Plan completo y guardado en `docs/superpowers/plans/2026-11-06-monitor-flotante-
 
 Ejecutado en la rama `feat/monitor-flotante-ping` con subagentes por tarea y revisión de spec + calidad.
 
-**Verificación:** 561/561 tests en 79 archivos, `npm run build` con `dist/monitor.html`, `npm run audit:contrast` y `npm run release:check` en verde. Checklist manual de Electron pendiente de ejecución por el operador.
+**Verificación:** 562/562 tests en 79 archivos, `npm run build` con `dist/monitor.html`, `npm run audit:contrast` y `npm run release:check` en verde. Checklist manual de Electron pendiente de ejecución por el operador.
 
 **Desvíos principales respecto del texto de las tareas** (detalle completo en `docs/superpowers/specs/2026-11-06-monitor-flotante-ping-design.md`, sección 13):
 

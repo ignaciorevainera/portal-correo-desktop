@@ -590,7 +590,7 @@ createMonitorRemote({
 
 ## 13. Notas de implementación (2026-11-06)
 
-Implementado en la rama `feat/monitor-flotante-ping`. La suite completa quedó en **561 tests**, el build genera `dist/monitor.html`, `audit:contrast` y `release:check` pasan.
+Implementado en la rama `feat/monitor-flotante-ping`. La suite completa quedó en **562 tests**, el build genera `dist/monitor.html`, `audit:contrast` y `release:check` pasan.
 
 Desvíos respecto del diseño inicial, todos revisados por spec y calidad:
 
