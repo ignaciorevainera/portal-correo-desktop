@@ -204,3 +204,17 @@ el flujo del operador:
 3. **Consola cerrada → consola abierta.** Arrancar colapsada obligaba a abrirla
    después de cada búsqueda y ocultaba el resultado del ping automático. Arranca
    abierta y sigue siendo colapsable desde el encabezado.
+
+## Monitor flotante de ping
+
+La ventana de monitoreo (`monitor.html`) es una superficie compacta con los
+tokens semánticos (`bg-card`, `border-border`) y una consola oscura fija
+(`--console-*`) en ambos temas. Su cabecera es arrastrable y sus controles son
+iconos con `aria-label`; el botón de conexión remota usa el sondeo inteligente
+VNC/MSRA y no detiene el ping. El resultado remoto se comunica con un toast en la
+ventana principal.
+
+El monitor se abre con `Ctrl + Alt + Espacio` para el último equipo consultado,
+hasta cuatro ventanas, y se cierra definitivamente con su X. Ocultar la ventana
+principal cierra todos los monitores; la app queda en la bandeja. El fallback
+local solo abre si el atajo global no está registrado, para no duplicar avisos.

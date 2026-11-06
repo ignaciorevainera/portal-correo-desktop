@@ -100,15 +100,17 @@ Contratos:
 | `pcd:monitor-ping-stop` | Monitor | Mata solo la sesión de ese monitor. |
 | `pcd:monitor-connect-remote` | Monitor | Usa el target registrado, ejecuta `launchRemoteSmart` con la clave VNC y devuelve el resultado. No toca las sesiones de ping. |
 | `pcd:monitor-remote-result` | Main → ventana principal | Resultado de la conexión remota para el toast de sonner. |
+| `pcd:monitor-shortcut-status` | Ventana principal → Main | Devuelve si `CommandOrControl+Alt+Space` está registrado; el fallback local solo abre si es `false`. |
 | `pcd:cmd-start` | Ventana principal | Detiene solo el ping de ese sender antes del diagnóstico. Los diagnósticos siguen siendo un proceso global. |
 | `closed` / `destroyed` | Main | Mata la sesión del `webContents` que desaparece. |
 | `before-quit` | Main | Mata todas las sesiones. |
 
 Detalles:
 
-- Un `sessionId` incremental por sesión protege contra callbacks viejos: si el proceso anterior emite `close` después de que el sender ya inició otro ping, no se envía nada.
-- `send` verifica `webContents.isDestroyed()` antes de emitir.
-- Si `executePing` devuelve `null` por error de spawn, no se guarda entrada en el mapa; el error ya se emitió por `onData`/`onDone`.
+- Un `sessionId` incremental por sesión protege contra callbacks viejos: si el proceso anterior emite `close` después de que el sender ya inició otro ping, no se envía nada. `isCurrent` compara el token, no solo la identidad del objeto.
+- `send` verifica `webContents.isDestroyed()` antes de emitir y envuelve `webContents.send` en try/catch; `logger` es null-safe.
+- Un sender ya destruido se rechaza antes de lanzar el ping. `watchSender` registra un único listener `destroyed` por `webContents` (WeakSet) para detener la sesión.
+- Si `executePing` devuelve `null` o un proceso inválido, se elimina la sesión y se emite `pcd:ping-end` con código 1; si ya había emitido `onDone`, no se duplica.
 - La API del renderer principal (`electronAPI.ping`, `electronAPI.stopPing`, `subscribeToPing`) no cambia. El cambio es interno.
 - Esto también corrige un problema latente: hoy dos ventanas que escuchen `pcd:ping-data` recibirían la salida de la misma sesión.
 - **Conexión remota:** el handler `pcd:monitor-connect-remote` busca el target en el registro del monitor, resuelve la clave VNC con `resolveVncSecret()` y llama a `systemTools.launchRemoteSmart(target, { vncPassword })`. Devuelve el resultado al monitor y emite `pcd:monitor-remote-result` a la ventana principal con `{ ...result, target }` para el toast.
@@ -158,9 +160,10 @@ La ventana principal avisa al proceso principal cuando cambia el equipo consulta
 4. `focus()`.
 5. Si hay último target, abre o enfoca su monitor.
 6. Si no hay target, envía el evento de autofocus existente para enfocar el buscador.
-7. Si se alcanzó el tope, emite `pcd:monitor-notice` con `{ kind: 'limit', message }`.
+7. Si se alcanzó el tope, `monitorWindows.open()` emite `pcd:monitor-notice`; el atajo solo propaga el resultado.
+8. Si el atajo global no se registró, el fallback local consulta `pcd:monitor-shortcut-status` y solo llama a `open-current` cuando es `false`.
 
-Fallback: si `globalShortcut.register` devuelve `false` porque otra app tomó la combinación, la ventana principal escucha `Ctrl + Alt + Espacio` localmente y llama a `pcd:monitor-open-current`. Si el atajo global funcionó, el evento local no debería llegar; si llegara, abrir el monitor es idempotente (reutiliza la ventana).
+Fallback: si `globalShortcut.register` devuelve `false` porque otra app tomó la combinación, la ventana principal escucha `Ctrl + Alt + Espacio` localmente, consulta `pcd:monitor-shortcut-status` y solo llama a `pcd:monitor-open-current` cuando el atajo global no está registrado. Así no se duplican aperturas ni avisos.
 
 `pcd:monitor-open-current` es un `invoke` que devuelve `{ ok, reason }` y usa el último target. También sirve para un futuro botón visible.
 
@@ -305,6 +308,7 @@ El punto refleja el **estado del proceso**, no la calidad de red. Un “Tiempo d
 | `src/monitor.tsx` | Bootstrap de React + `ErrorBoundary` + `MonitorWindow`; importa `index.css`. |
 | `src/components/MonitorWindow.tsx` | UI, estados, consola, controles, botón de conexión remota y suscripciones a `monitorAPI`. |
 | `src/lib/pingLog.ts` | `sanitizePingText` compartido y `classifyPingLine` para los tonos del monitor. |
+| `src/types/monitor.ts` | Tipos compartidos de `monitorAPI` y augmentación global `Window.monitorAPI`. |
 | `electron/monitor-preload.cjs` | `contextBridge` con `monitorAPI` mínimo, incluida la conexión remota. |
 | `electron/monitorWindows.cjs` | Registro, creación, reutilización, tope, bounds, pin, cierre y seguridad de ventanas. |
 | `electron/monitorShortcut.cjs` | Handler puro del atajo: restaura la principal, abre/reutiliza, enfoca el buscador o avisa el tope. |
@@ -324,13 +328,13 @@ El punto refleja el **estado del proceso**, no la calidad de red. Un “Tiempo d
 | Archivo | Cambio |
 |---|---|
 | `electron/main.cjs` | Composición de sesiones, registro de monitores, registro del atajo, target, ciclo de vida, handler remoto y avisos. |
-| `electron/preload.cjs` | `setMonitorTarget`, `openMonitorCurrent`, `onMonitorNotice`, `onMonitorRemoteResult`. |
+| `electron/preload.cjs` | `setMonitorTarget`, `openMonitorCurrent`, `onMonitorNotice`, `onMonitorRemoteResult`, `isMonitorShortcutRegistered`. |
 | `vite.config.ts` | `monitor.html` como input multi-página. |
-| `src/services/electronClient.ts` | Wrappers de target, apertura, aviso y suscripción al resultado remoto. |
-| `src/App.tsx` | Avisa el target al cargar/limpiar terminal y muestra los avisos y el resultado remoto como toast. |
+| `src/services/electronClient.ts` | Wrappers de target, apertura, aviso, resultado remoto y estado del atajo. |
+| `src/App.tsx` | Avisa el target al cargar/limpiar terminal, muestra los avisos y el resultado remoto como toast, y gatea el fallback local por `isMonitorShortcutRegistered`. |
 | `src/components/SettingsModal.tsx` | Documenta `Ctrl + Alt + Espacio` sin agregar un toggle. |
 | `src/components/LivePingConsole.tsx` | Usa `sanitizePingText` desde `src/lib/pingLog.ts`; sin cambios de comportamiento. |
-| `src/types/electron-modules.d.ts` | Tipos de `monitorAPI`, del resultado remoto y de las nuevas funciones de `electronAPI`. |
+| `src/types/monitor.ts` | Tipos de `monitorAPI`, del resultado remoto y augmentación global `Window.monitorAPI`. |
 | `DESIGN.md` | Nota corta sobre la ventana de monitoreo y su consola oscura. |
 
 ### 6.3 Contratos
@@ -349,7 +353,7 @@ interface MonitorApi {
   onPingData(callback: (text: string) => void): () => void;
   onPingEnd(callback: (code: number | null) => void): () => void;
   setPinned(pinned: boolean): Promise<boolean>;
-  close(): Promise<void>;
+  close(): Promise<boolean>;
   copyText(text: string): Promise<boolean>;
   connectRemote(): Promise<MonitorRemoteResult>;
 }
@@ -357,6 +361,7 @@ interface MonitorApi {
 interface MonitorRemoteResult {
   success: boolean;
   methodUsed: 'vnc' | 'msra' | 'none';
+  target?: string;
   portUsed?: number;
   message?: string;
   vncClosed?: boolean;
@@ -368,13 +373,14 @@ interface MonitorRemoteResult {
 
 ```text
 createMonitorManager({
-  BrowserWindow, screen, loadRenderer, preloadPath,
-  preferences, notify, logger
+  BrowserWindow, screen, getMainWindow, loadRenderer, preloadPath, iconPath,
+  loadPreferences, savePreferences, notify, onClosed, logger, maxMonitors
 }) → {
   open({ target, label }),
   close(webContents),
   closeAll(),
   getContext(webContents),
+  getTarget(webContents),
   setPinned(webContents, pinned),
   has(target),
   count()
@@ -387,8 +393,10 @@ createMonitorManager({
 createPingSessions({ executePing, logger }) → {
   start(webContents, target, continuous),
   stop(webContents),
+  stopById(webContentsId),
   stopAll(),
-  has(webContents)
+  has(webContents),
+  count()
 }
 ```
 
@@ -396,7 +404,7 @@ createPingSessions({ executePing, logger }) → {
 
 ```text
 createMonitorShortcut({
-  getMainWindow, getLastTarget, openMonitor, focusSearch, notify, logger
+  getMainWindow, getLastTarget, openMonitor, focusSearch, logger
 }) → { handle() }
 ```
 
@@ -410,8 +418,8 @@ createMonitorShortcut({
 
 ```text
 createMonitorRemote({
-  getMonitorTarget, launchRemoteSmart, resolveVncSecret,
-  notifyMain, flashMain, logger
+  getTarget, launchRemoteSmart, resolveVncSecret,
+  notifyMain, flashMain, isMainMinimized, logger
 }) → { connect(webContents) }
 ```
 
@@ -423,7 +431,7 @@ createMonitorRemote({
 - **Ping:** 1–2 MB por `ping.exe -t`, una línea por segundo. Consola + 4 monitores = 5 procesos; CPU prácticamente nula.
 - **Conexión remota:** sondeo de 4 puertos TCP en paralelo con timeout de 600 ms, solo al pulsar el botón. No hay polling ni impacto en el ping. VNC/MSRA se lanzan como proceso externo detached.
 - **Bundle:** `monitor.html` importa React, pocos primitivos, iconos y `index.css`. No importa `App`, servicios de DB, Radix de diálogos, cmdk ni Settings.
-- **IPC:** un `webContents.send` por chunk, sin polling ni intervalos. El renderer acumula en un buffer y vuelca a estado una vez por frame con `requestAnimationFrame`; un burst produce un solo re-render.
+- **IPC:** un `webContents.send` por chunk, sin polling ni intervalos. El renderer acumula líneas completas en un buffer de 200k, las vuelca por frame con `requestAnimationFrame` y usa un fallback de 250 ms si el frame se throttlea; un burst produce un solo re-render.
 - **DOM:** máximo 500 líneas, nodos simples; no hace falta virtualizar.
 - **Auto-scroll:** una lectura/escritura de `scrollTop` por flush.
 - **Sin `backgroundThrottling: false`:** el monitor está visible y always-on-top; no necesita desactivar el throttle.
@@ -577,3 +585,28 @@ createMonitorRemote({
 3. **Entrada y UI del monitor:** `monitor.html`, `src/monitor.tsx`, `MonitorWindow` (incluido el botón remoto), preload, estilos y pruebas de componente.
 4. **Cableado principal:** target, atajo global con fallback, avisos, ciclo de vida, handler remoto (`monitorRemote.cjs`), Ajustes y pruebas de `App`/`electronClient`.
 5. **Verificación:** checklist manual (incluida la conexión remota), rendimiento, `npm test`, `npm run build`, `npm run audit:contrast`, `npm run release:check`, y nota en `DESIGN.md`.
+
+---
+
+## 13. Notas de implementación (2026-11-06)
+
+Implementado en la rama `feat/monitor-flotante-ping`. La suite completa quedó en **561 tests**, el build genera `dist/monitor.html`, `audit:contrast` y `release:check` pasan.
+
+Desvíos respecto del diseño inicial, todos revisados por spec y calidad:
+
+- **Avisos:** `monitorWindows.open()` es el único dueño de los avisos de tope/error; `monitorShortcut` ya no notifica para no duplicar toasts. El fallback local consulta `pcd:monitor-shortcut-status` y solo abre si el atajo global no está registrado.
+- **Remoto:** `monitorRemote` deduplica conexiones concurrentes por sender, normaliza rechazos no-`Error`, protege `notifyMain`/`flashMain`, hace flash si la principal está minimizada y acepta `isMainMinimized`. `systemTools.launchRemoteSmart` ahora reenvía `vncPassword` al lanzador VNC (bug preexistente).
+- **Ventanas:** `close()` espera el evento `closed` para desregistrar; `setPinned` tolera ventanas destruidas y revierte; `open()` normaliza el target del registro, protege notificaciones y navegación; `closeAll()` limpia pings y bounds pendientes.
+- **Sesiones:** sender destruido rechazado antes de lanzar; `send` protegido; `sessionId` usado como token; proceso nulo/inválido emite `pcd:ping-end`; un listener `destroyed` por sender.
+- **Preferencias:** bounds enteros, tamaño positivo y tope 10000; `stored` solo es `true` si la escritura/rename terminó; temp único con `wx` y limpieza en `finally`.
+- **Tipos:** `src/types/monitor.d.ts` se eliminó porque quedaba sombreado por `monitor.ts`; la augmentación `Window.monitorAPI` vive en `src/types/monitor.ts`.
+- **UI:** ids estables por línea, buffer de líneas completas, fallback de 250 ms, tope de 200k, guarda para no revivir `live` tras stop/error, tema con `pcd-theme` + `storage`, `color-scheme: dark`, pin/copy/tema endurecidos.
+- **Clasificador:** `error`/`media` con límites de palabra, `unreachable` y variantes `agotó/agotada`; tabla de 21 casos.
+
+Deudas aceptadas, fuera del alcance de esta entrega:
+
+- `pcd:cmd-start` tiene una carrera preexistente: el `onDone` de un comando anterior puede limpiar `activeDiagnosticProcess` de un comando nuevo. No la introduce este cambio; conviene un token de generación en una tarea aparte.
+- `will-navigate` compara orígenes; en `file://` el origen es `"null"`, así que la navegación entre archivos locales no queda bloqueada por origen. La UI no tiene enlaces y el preload del monitor es mínimo; se deja como hardening pendiente.
+- El guardado de bounds con debounce de 300 ms puede perderse si la ventana se cierra dentro de esa ventana; no afecta la operación.
+- La cascada puede apilarse en la esquina cuando los bounds guardados ya están clampados al borde.
+- Checklist manual en Electron pendiente de ejecución por el operador (VNC/MSRA reales, DPI y bandeja).

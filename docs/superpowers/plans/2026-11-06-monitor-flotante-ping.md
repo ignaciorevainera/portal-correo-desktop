@@ -3520,3 +3520,23 @@ Plan completo y guardado en `docs/superpowers/plans/2026-11-06-monitor-flotante-
 2. **Inline Execution:** se ejecuta en esta sesión con `executing-plans`, por lotes y con checkpoints.
 
 ¿Cuál preferís?
+
+---
+
+## Estado de ejecución (2026-11-06)
+
+Ejecutado en la rama `feat/monitor-flotante-ping` con subagentes por tarea y revisión de spec + calidad.
+
+**Verificación:** 561/561 tests en 79 archivos, `npm run build` con `dist/monitor.html`, `npm run audit:contrast` y `npm run release:check` en verde. Checklist manual de Electron pendiente de ejecución por el operador.
+
+**Desvíos principales respecto del texto de las tareas** (detalle completo en `docs/superpowers/specs/2026-11-06-monitor-flotante-ping-design.md`, sección 13):
+
+- `monitorWindows.open()` es el único dueño de los avisos de tope/error; `monitorShortcut` ya no recibe `notify`. El fallback local consulta `pcd:monitor-shortcut-status` y solo abre si el global no está registrado.
+- `monitorRemote` acepta `isMainMinimized`, deduplica conexiones concurrentes, normaliza errores no-`Error` y protege `notifyMain`/`flashMain`. `systemTools.launchRemoteSmart` reenvía `vncPassword`.
+- `monitorWindows.close()` espera `closed` para desregistrar; `setPinned` tolera ventanas destruidas y revierte; `open()` normaliza el target y protege la navegación.
+- `pingSessions` rechaza senders destruidos, usa `sessionId` como token y emite `pcd:ping-end` si el proceso es nulo/inválido.
+- `src/types/monitor.d.ts` se eliminó; la augmentación `Window.monitorAPI` vive en `src/types/monitor.ts`.
+- `MonitorWindow` usa ids estables por línea, buffer de líneas completas con fallback de 250 ms y tema con `pcd-theme` + `storage`.
+- El test de `SettingsModal` vive en `src/test/SettingsModal.test.tsx` (no existe `src/components/SettingsModal.test.tsx`).
+
+**Deudas aceptadas:** carrera preexistente de `pcd:cmd-start`; `will-navigate` con origen `file://`; bounds pendientes al cerrar dentro de 300 ms; cascada en esquina clampada; checklist manual de Electron.
