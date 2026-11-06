@@ -53,6 +53,8 @@ describe('MonitorWindow', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    localStorage.clear();
+    document.documentElement.classList.remove('dark');
     api = createApi();
     (window as any).monitorAPI = api;
   });
@@ -205,5 +207,23 @@ describe('MonitorWindow', () => {
     await flushFrame();
     await screen.findByText('otra línea');
     expect(log.scrollTop).toBe(0);
+  });
+
+  it('aplica el tema guardado y reacciona a storage', async () => {
+    localStorage.setItem('pcd-theme', 'light');
+    render(<MonitorWindow />);
+    await screen.findByText('> ping -t 192.0.2.100');
+
+    expect(document.documentElement).not.toHaveClass('dark');
+
+    localStorage.setItem('pcd-theme', 'dark');
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: 'pcd-theme',
+        newValue: 'dark',
+      }),
+    );
+
+    expect(document.documentElement).toHaveClass('dark');
   });
 });

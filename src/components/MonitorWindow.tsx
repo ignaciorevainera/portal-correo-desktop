@@ -135,6 +135,16 @@ export function MonitorWindow(): React.JSX.Element {
     };
   }, [api]);
 
+  useEffect(() => {
+    const applyTheme = () => {
+      const theme = localStorage.getItem("pcd-theme") || "dark";
+      document.documentElement.classList.toggle("dark", theme === "dark");
+    };
+    applyTheme();
+    window.addEventListener("storage", applyTheme);
+    return () => window.removeEventListener("storage", applyTheme);
+  }, []);
+
   useLayoutEffect(() => {
     const element = scrollRef.current;
     if (element && stickToBottomRef.current) {
