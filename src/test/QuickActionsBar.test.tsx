@@ -488,6 +488,7 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     const uptime = container.querySelector('[title^="Uptime:"]');
     expect(uptime).not.toBeNull();
     expect(secondary.contains(uptime!)).toBe(true);
+    expect(uptime?.className).toContain("sm:order-last");
 
     for (const group of [router.parentElement, server.parentElement, uptime]) {
       expect(group?.className).toContain("max-sm:flex-1");
