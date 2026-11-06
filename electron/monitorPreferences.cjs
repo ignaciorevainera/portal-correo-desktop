@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PREFS_FILE_NAME = 'monitor-preferences.json';
+const MAX_BOUND = 10000;
 
 const DEFAULTS = Object.freeze({
   bounds: null,
@@ -12,14 +13,20 @@ function preferencesPath(userDataDir) {
   return path.join(userDataDir, PREFS_FILE_NAME);
 }
 
-function isFiniteNumber(value) {
-  return typeof value === 'number' && Number.isFinite(value);
+function isFiniteInteger(value) {
+  return (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    Number.isInteger(value)
+  );
 }
 
 function normalizeBounds(raw) {
   if (!raw || typeof raw !== 'object') return null;
   const { x, y, width, height } = raw;
-  if (![x, y, width, height].every(isFiniteNumber)) return null;
+  if (![x, y, width, height].every(isFiniteInteger)) return null;
+  if (width <= 0 || height <= 0) return null;
+  if (width > MAX_BOUND || height > MAX_BOUND) return null;
   return { x, y, width, height };
 }
 
@@ -45,23 +52,45 @@ function loadMonitorPreferences(userDataDir) {
   }
 }
 
+function stripUndefined(patch) {
+  if (!patch || typeof patch !== 'object') return {};
+  return Object.fromEntries(
+    Object.entries(patch).filter(([, value]) => value !== undefined),
+  );
+}
+
 function saveMonitorPreferences(userDataDir, patch) {
   const current = loadMonitorPreferences(userDataDir);
-  const next = normalizePreferences({ ...current, ...(patch || {}) });
+  const next = normalizePreferences({
+    ...current,
+    ...stripUndefined(patch),
+  });
+  let stored = false;
 
   if (userDataDir) {
+    let tmp = '';
     try {
       const file = preferencesPath(userDataDir);
       fs.mkdirSync(path.dirname(file), { recursive: true });
-      const tmp = `${file}.tmp`;
-      fs.writeFileSync(tmp, JSON.stringify(next, null, 2), 'utf8');
+      tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
+      fs.writeFileSync(tmp, JSON.stringify(next, null, 2), {
+        encoding: 'utf8',
+        flag: 'wx',
+      });
       fs.renameSync(tmp, file);
+      stored = true;
     } catch {
       // Sin persistencia, el cambio aplica solo en esta sesión.
+    } finally {
+      if (tmp) {
+        try {
+          fs.unlinkSync(tmp);
+        } catch {}
+      }
     }
   }
 
-  return { ...next, stored: true };
+  return { ...next, stored };
 }
 
 module.exports = {
