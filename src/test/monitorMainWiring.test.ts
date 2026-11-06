@@ -15,6 +15,10 @@ describe('monitor main wiring', () => {
     expect(main).toContain("'pcd:monitor-connect-remote'");
     expect(main).toContain("'pcd:monitor-remote-result'");
     expect(main).toContain('closeAllMonitors');
+    expect(main).toMatch(/createMonitorInfrastructure\(\)/);
+    expect(main).toMatch(/registerMonitorShortcut\(\)/);
+    expect(main).toMatch(/pingSessions\.start\(/);
+    expect(main).toMatch(/pingSessions\.stop\(/);
   });
 
   it('el cierre y la bandeja cierran los monitores', () => {
@@ -33,5 +37,9 @@ describe('monitor main wiring', () => {
     expect(preload).toContain('openMonitorCurrent');
     expect(preload).toContain('onMonitorNotice');
     expect(preload).toContain('onMonitorRemoteResult');
+    expect(preload).toContain("'pcd:monitor-target-set'");
+    expect(preload).toContain("'pcd:monitor-open-current'");
+    expect(preload).toContain("'pcd:monitor-notice'");
+    expect(preload).toContain("'pcd:monitor-remote-result'");
   });
 });

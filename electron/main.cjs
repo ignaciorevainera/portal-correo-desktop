@@ -109,6 +109,7 @@ let monitorShortcut = null;
 let monitorRemote = null;
 let lastMonitorTarget = null;
 let pingSessions = null;
+let flashFocusBound = false;
 
 app.isQuiting = false;
 
@@ -308,6 +309,18 @@ function createWindow() {
     title: 'Portal Correo Desktop - Monitoreo e Inventario de Estaciones',
   });
 
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  win.webContents.on('will-navigate', (event, url) => {
+    try {
+      const current = win.webContents.getURL();
+      if (new URL(url).origin !== new URL(current).origin) {
+        event.preventDefault();
+      }
+    } catch {
+      event.preventDefault();
+    }
+  });
+
   createTray(win);
 
   win.on('close', (event) => {
@@ -344,11 +357,16 @@ function createWindow() {
   let loadWatchdog = null;
 
   win.webContents.on('render-process-gone', (_event, details) => {
+    lastMonitorTarget = null;
     if (details && details.reason === 'launch-failed') {
       relaunchWithoutSandbox('el renderer no pudo lanzarse');
       return;
     }
     console.error('[Renderer] El proceso terminó:', details && details.reason);
+  });
+
+  win.webContents.on('did-start-loading', () => {
+    lastMonitorTarget = null;
   });
 
   win.webContents.on('did-finish-load', () => {
@@ -357,6 +375,7 @@ function createWindow() {
   });
 
   win.on('closed', () => {
+    lastMonitorTarget = null;
     if (loadWatchdog) clearTimeout(loadWatchdog);
   });
 
@@ -655,7 +674,8 @@ ipcMain.on('pcd:monitor-target-set', (event, payload) => {
   if (
     !mainWindow ||
     mainWindow.isDestroyed() ||
-    event.sender !== mainWindow.webContents
+    event.sender !== mainWindow.webContents ||
+    event.senderFrame !== mainWindow.webContents.mainFrame
   ) {
     return;
   }
@@ -672,7 +692,15 @@ ipcMain.on('pcd:monitor-target-set', (event, payload) => {
   }
 });
 
-ipcMain.handle('pcd:monitor-open-current', () => {
+ipcMain.handle('pcd:monitor-open-current', (event) => {
+  if (
+    !mainWindow ||
+    mainWindow.isDestroyed() ||
+    event.sender !== mainWindow.webContents ||
+    event.senderFrame !== mainWindow.webContents.mainFrame
+  ) {
+    return { ok: false, reason: 'forbidden' };
+  }
   return monitorShortcut
     ? monitorShortcut.handle()
     : { ok: false, reason: 'unavailable' };
@@ -833,6 +861,7 @@ ipcMain.handle('pcd:install-update-now', async () => {
 app.on('before-quit', () => {
   app.isQuiting = true;
   closeAllMonitors();
+  stopActiveDiagnosticProcess();
   if (pingSessions) pingSessions.stopAll();
   if (app.isReady()) {
     globalShortcut.unregisterAll();
@@ -887,8 +916,12 @@ function notifyMainWindow(channel, payload) {
 
 function flashMainWindow() {
   if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isFocused()) return;
   mainWindow.flashFrame(true);
+  if (flashFocusBound) return;
+  flashFocusBound = true;
   mainWindow.once('focus', () => {
+    flashFocusBound = false;
     if (!mainWindow || mainWindow.isDestroyed()) return;
     mainWindow.flashFrame(false);
   });
