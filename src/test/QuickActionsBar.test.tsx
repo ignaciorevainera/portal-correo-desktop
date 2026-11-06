@@ -445,6 +445,83 @@ describe('QuickActionsBar & Shortcut Keys', () => {
       expect(onRunDiagnostic).toHaveBeenCalledWith('tracert');
     });
   });
+
+  it("agrupa y llena la segunda fila de acciones por debajo de 768 px", () => {
+    const { container } = render(
+      <QuickActionsBar
+        terminal={terminal}
+        isPinging={false}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchPingInfinite={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+      />
+    );
+
+    const remote = screen.getByRole("button", {
+      name: /conexión remota inteligente/i,
+    });
+    expect(remote.closest("div.relative")?.className).toContain(
+      "max-md:order-1",
+    );
+
+    const ping = screen.getByRole("button", { name: /^iniciar ping$/i });
+    expect(ping.parentElement?.className).toContain("max-md:order-2");
+
+    expect(
+      screen.getByRole("button", { name: /más acciones/i }).className,
+    ).toContain("max-md:order-3");
+
+    const secondary = screen.getByTestId("secondary-actions");
+    expect(secondary.className).toContain("contents");
+    expect(secondary.className).toContain("max-md:flex");
+    expect(secondary.className).toContain("max-md:basis-full");
+    expect(secondary.className).toContain("max-md:order-4");
+
+    const router = screen.getByRole("button", {
+      name: /hacer ping al router \.250/i,
+    });
+    const server = screen.getByRole("button", {
+      name: /hacer ping al servidor \.231/i,
+    });
+    const uptime = container.querySelector('[title^="Uptime:"]');
+    expect(uptime).not.toBeNull();
+    expect(secondary.contains(uptime!)).toBe(true);
+    expect(uptime?.className).toContain("sm:order-last");
+
+    for (const group of [router.parentElement, server.parentElement, uptime]) {
+      expect(group?.className).toContain("max-md:flex-1");
+    }
+    expect(router.className).toContain("max-md:flex-1");
+    expect(server.className).toContain("max-md:flex-1");
+    expect(
+      screen.getByRole("button", { name: /ping continuo -t router \.250/i })
+        .className,
+    ).not.toContain("max-md:flex-1");
+
+    expect(container.querySelector('[class*="flex-wrap"]')).not.toBeNull();
+  });
+
+  it("llena la fila secundaria con el chip de uptime cuando no hay enlaces del sitio", () => {
+    const { container } = render(
+      <QuickActionsBar
+        terminal={{ ...terminal, ip: "hostname-solo" }}
+        isPinging={false}
+        onLaunchVnc={vi.fn()}
+        onLaunchMsra={vi.fn()}
+        onTogglePing={vi.fn()}
+        onLaunchSitePing={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.queryByRole("button", { name: /hacer ping al router/i }),
+    ).toBeNull();
+
+    const uptime = container.querySelector('[title^="Uptime:"]');
+    expect(uptime?.className).toContain("max-md:flex-1");
+  });
 });
 
 describe('QuickActionsBar Polish: Subnet Scanner & Uptime Refresh', () => {

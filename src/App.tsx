@@ -40,6 +40,7 @@ import {
   retrySecurityGate,
   GateStatus,
   checkIsAdmin,
+  stopPing,
 } from "./services/electronClient";
 import { TerminalData } from "./types/terminal";
 import { Search, SearchX, RotateCcw } from "lucide-react";
@@ -54,7 +55,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PORTAL_MDA_URL, RESET_QUEUE_MESSAGE } from "@/lib/constants";
@@ -359,10 +360,11 @@ export default function App(): React.JSX.Element {
 
   const handleTogglePing = () => {
     if (isPinging) {
+      void stopPing();
       setIsPinging(false);
-    } else {
-      handleStartPing("standard", terminal?.ip, undefined);
+      return;
     }
+    handleStartPing("standard", terminal?.ip, undefined);
   };
 
   const handleLaunchPingInfinite = () => {
@@ -371,6 +373,7 @@ export default function App(): React.JSX.Element {
       (!pingTarget || pingTarget === terminal?.ip) &&
       pingMode === "infinite"
     ) {
+      void stopPing();
       setIsPinging(false);
       return;
     }
@@ -639,17 +642,16 @@ export default function App(): React.JSX.Element {
           {/* Live region persistente: los lectores de pantalla solo anuncian cambios
               si el nodo ya existe antes de que aparezca el texto. */}
           <span role="status" aria-live="polite" className="sr-only">
-            {isLoading ? "Consultando base de datos técnica..." : ""}
+            {isLoading ? "Consultando..." : ""}
           </span>
           {isLoading ? (
             <div
               data-testid="loading-state"
               className="flex-1 w-full min-h-80 flex flex-col items-center justify-center text-center p-6 space-y-3"
             >
-              <Skeleton className="h-7 w-7 rounded-full" />
-              <Skeleton className="h-3 w-64" />
+              <Spinner aria-hidden="true" className="size-7 text-link" />
               <p className="text-xs text-muted-foreground font-mono">
-                Consultando base de datos técnica...
+                Consultando...
               </p>
             </div>
           ) : !terminal && accountQuery ? (

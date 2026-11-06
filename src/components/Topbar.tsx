@@ -11,10 +11,16 @@ import {
   MonitorPlay,
   Settings,
   X,
+  MoreHorizontal,
 } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
+import {
+  ThemeActionIcon,
+  ThemeToggle,
+  themeActionLabel,
+} from "./ThemeToggle";
 import { IconWell } from "./IconWell";
 import { InfoModal } from "./InfoModal";
+import { useTheme } from "../context/ThemeContext";
 import { APP_VERSION_LABEL } from "@/lib/appVersion";
 import {
   minimizeWindow,
@@ -41,6 +47,13 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { classifySearch } from "@/lib/usernames";
 import {
   loadRecentSearches,
@@ -83,6 +96,7 @@ export function Topbar({
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() =>
     loadRecentSearches(),
   );
+  const { theme, toggleTheme } = useTheme();
   const inputRef = useRef<HTMLInputElement>(null);
   const searchGroupRef = useRef<HTMLDivElement>(null);
 
@@ -281,13 +295,13 @@ export function Topbar({
               className="h-5 w-5 object-contain"
             />
           </IconWell>
-          <h1 className="text-sm font-bold font-heading tracking-tight text-foreground whitespace-nowrap pointer-events-none">
+          <h1 className="text-sm font-bold font-heading tracking-tight text-foreground whitespace-nowrap pointer-events-none max-sm:sr-only">
             Portal Correo Desktop
           </h1>
         </div>
 
         {/* Buscador Rápido Centralizado */}
-        <div className="relative flex-1 max-w-md app-no-drag">
+        <div className="relative flex-1 min-w-0 max-w-md app-no-drag">
           <Popover open={showResults} onOpenChange={setIsOpen}>
             <PopoverAnchor>
               <InputGroup ref={searchGroupRef} className="h-10 border-input bg-muted/70">
@@ -483,6 +497,41 @@ export function Topbar({
             data-slot="button-group"
             className="inline-flex items-center rounded-md border border-border/60 bg-muted/20 p-0.5 -space-x-px"
           >
+            {/* Acciones secundarias agrupadas en ancho compacto */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Más opciones de la aplicación"
+                  title="Ajustes, información y tema"
+                  className="hidden max-sm:inline-flex text-muted-foreground hover:text-foreground cursor-pointer px-2"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuItem
+                  onSelect={() => onOpenSettings?.()}
+                  aria-keyshortcuts="F10"
+                >
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  <span>Ajustes y configuración</span>
+                  <Kbd className="ml-auto">F10</Kbd>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setIsInfoOpen(true)}>
+                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                  <span>Información y características</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => toggleTheme()}>
+                  <ThemeActionIcon theme={theme} />
+                  <span>{themeActionLabel(theme)}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Settings Modal Trigger */}
             <Button
               type="button"
@@ -491,7 +540,7 @@ export function Topbar({
               onClick={() => onOpenSettings?.()}
               aria-label="Abrir ajustes y configuración"
               title="Configuración y Actualizaciones (Atajo F10)"
-              className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
+              className="text-muted-foreground hover:text-foreground cursor-pointer px-2 max-sm:hidden"
             >
               <Settings className="h-4 w-4" />
             </Button>
@@ -504,12 +553,12 @@ export function Topbar({
               onClick={() => setIsInfoOpen(true)}
               aria-label="Abrir información del sistema"
               title="Información y características del aplicativo"
-              className="text-muted-foreground hover:text-foreground cursor-pointer px-2"
+              className="text-muted-foreground hover:text-foreground cursor-pointer px-2 max-sm:hidden"
             >
               <HelpCircle className="h-4 w-4" />
             </Button>
 
-            <ThemeToggle />
+            <ThemeToggle className="max-sm:hidden" />
 
             {/* Separador vertical de ventana dentro del buttongroup */}
             <Separator orientation="vertical" className="h-5 mx-1" />

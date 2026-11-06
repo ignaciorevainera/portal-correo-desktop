@@ -129,7 +129,10 @@ describe('LivePingConsole Component', () => {
     await waitFor(() => {
       expect(writeTextMock).toHaveBeenCalled();
     });
-    expect(screen.getByText(/logs copiados/i)).toBeInTheDocument();
+    expect(screen.getByText(/^logs copiados$/i)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /logs copiados al portapapeles/i,
+    );
 
     // Click Clear button
     const clearBtn = screen.getByRole('button', { name: /limpiar/i });
@@ -199,7 +202,10 @@ describe('LivePingConsole Component', () => {
     const lastCopiedText = writeTextMock.mock.calls[0][0];
     expect(lastCopiedText).toContain('Respuesta comando 2');
     expect(lastCopiedText).not.toContain('Respuesta comando 1');
-    expect(screen.getByText(/bloque copiado/i)).toBeInTheDocument();
+    expect(screen.getByText(/^bloque copiado$/i)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /bloque copiado al portapapeles/i,
+    );
   });
 
   it('auto-scrolls strictly inside the terminal element when new lines arrive', () => {
@@ -310,9 +316,10 @@ describe('LivePingConsole Component', () => {
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /copiar logs/i })).toBeInTheDocument();
 
-    // Console terminal has adaptive height (24rem-48rem, ~55vh)
+    // La consola ocupa siempre la mitad del alto de la ventana
     const terminalBox = container.querySelector('[data-testid="terminal-scroll-container"]');
-    expect(terminalBox?.className).toContain('h-[clamp(24rem,55vh,48rem)]');
+    expect(terminalBox?.className).toContain('h-[50vh]');
+    expect(terminalBox?.className).not.toContain('min-h-[24rem]');
   });
 
   it('never calls scrollIntoView when ping data arrives, ping finishes, or logs are cleared', () => {
@@ -607,5 +614,221 @@ describe('LivePingConsole Component', () => {
       "false",
     );
     expect(screen.queryByTestId("terminal-scroll-container")).toBeNull();
+  });
+
+  it("compacta la cabecera de la consola: acciones sólo con icono bajo 640 px", () => {
+    render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={true}
+        onRerun={vi.fn()}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    const headerTrigger = screen.getByRole("button", {
+      name: /consola de 192\.0\.2\.100/i,
+    });
+    expect(headerTrigger.querySelector("span")?.className).toContain("truncate");
+
+    const actionLabels = [
+      /detener ping en vivo/i,
+      /re-ejecutar consulta/i,
+      /limpiar logs de ping/i,
+      /copiar último bloque de logs/i,
+      /copiar logs de ping/i,
+    ];
+
+    for (const name of actionLabels) {
+      const button = screen.getByRole("button", { name });
+      expect(button.querySelector("span")?.className).toContain("max-sm:hidden");
+    }
+
+    const actions = screen.getByTestId("console-header")
+      .lastElementChild as HTMLElement;
+    expect(actions.className).toContain("shrink-0");
+  });
+
+  it("distingue copiar último bloque de copiar todos por icono", () => {
+    render(
+      <LivePingConsole
+        ip="192.0.2.100"
+        isPinging={false}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    const copyLastIcon = screen
+      .getByRole("button", { name: /copiar último bloque de logs/i })
+      .querySelector("svg");
+    expect(copyLastIcon?.classList.contains("lucide-copy")).toBe(true);
+
+    const copyAllIcon = screen
+      .getByRole("button", { name: /copiar logs de ping/i })
+      .querySelector("svg");
+    expect(copyAllIcon?.classList.contains("lucide-clipboard-list")).toBe(true);
+  });
+
+  it("muestra estadísticas al detener un ping continuo", () => {
+    let dataHandler: ((text: string) => void) | null = null;
+    let doneHandler: ((code: number | null) => void) | null = null;
+
+    vi.spyOn(electronClient, "subscribeToPing").mockImplementation(
+      (_target, onData, onDone) => {
+        dataHandler = onData;
+        doneHandler = onDone as typeof doneHandler;
+        return () => {};
+      },
+    );
+
+    const { rerender } = render(
+      <LivePingConsole
+        ip="192.0.2.103"
+        isPinging={true}
+        pingMode="infinite"
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    act(() => {
+      dataHandler?.("Respuesta desde 192.0.2.103: bytes=32 tiempo=13ms TTL=64");
+      dataHandler?.("Respuesta desde 192.0.2.103: bytes=32 tiempo=14ms TTL=64");
+      dataHandler?.("Respuesta desde 192.0.2.103: bytes=32 tiempo=13ms TTL=64");
+    });
+
+    act(() => {
+      doneHandler?.(null);
+    });
+
+    expect(
+      screen.getByText(/Estadísticas de ping para 192\.0\.2\.103:/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Paquetes: enviados = 3, recibidos = 3, perdidos = 0/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Mínimo = 13ms, Máximo = 14ms, Media = 13ms/),
+    ).toBeInTheDocument();
+
+    // El ping-end ya cerró la sesión: la transición a detenido no duplica nada.
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.103"
+        isPinging={false}
+        pingMode="infinite"
+        onTogglePing={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getAllByText(/Estadísticas de ping para 192\.0\.2\.103:/),
+    ).toHaveLength(1);
+    expect(screen.getAllByText(/Proceso ping detenido/)).toHaveLength(1);
+  });
+
+  it("resume sólo la sesión continua actual cuando la cabecera tiene prefijo", () => {
+    let dataHandler: ((text: string) => void) | null = null;
+    let doneHandler: ((code: number | null) => void) | null = null;
+
+    vi.spyOn(electronClient, "subscribeToPing").mockImplementation(
+      (_target, onData, onDone) => {
+        dataHandler = onData;
+        doneHandler = onDone as typeof doneHandler;
+        return () => {};
+      },
+    );
+
+    const { rerender } = render(
+      <LivePingConsole
+        ip="192.0.2.10"
+        isPinging={true}
+        pingMode="standard"
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    act(() => {
+      dataHandler?.("Respuesta desde 192.0.2.10: bytes=32 tiempo=99ms TTL=64");
+    });
+
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.10"
+        isPinging={false}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.250"
+        isPinging={true}
+        pingMode="infinite"
+        linePrefix="[ROUTER .250]"
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    act(() => {
+      dataHandler?.(
+        "Respuesta desde 192.0.2.250: bytes=32 tiempo=13ms TTL=64",
+      );
+    });
+
+    act(() => {
+      doneHandler?.(null);
+    });
+
+    expect(
+      screen.getByText(/Estadísticas de ping para 192\.0\.2\.250:/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Paquetes: enviados = 1, recibidos = 1, perdidos = 0/,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("muestra el resumen al detener el ping continuo desde la UI", () => {
+    let dataHandler: ((text: string) => void) | null = null;
+
+    vi.spyOn(electronClient, "subscribeToPing").mockImplementation(
+      (_target, onData) => {
+        dataHandler = onData;
+        return () => {};
+      },
+    );
+
+    const { rerender } = render(
+      <LivePingConsole
+        ip="192.0.2.103"
+        isPinging={true}
+        pingMode="infinite"
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    act(() => {
+      dataHandler?.("Respuesta desde 192.0.2.103: bytes=32 tiempo=13ms TTL=124");
+      dataHandler?.("Respuesta desde 192.0.2.103: bytes=32 tiempo=13ms TTL=124");
+    });
+
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.103"
+        isPinging={false}
+        pingMode="infinite"
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText(/Estadísticas de ping para 192\.0\.2\.103:/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Paquetes: enviados = 2, recibidos = 2, perdidos = 0/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Proceso ping detenido/)).toBeInTheDocument();
   });
 });

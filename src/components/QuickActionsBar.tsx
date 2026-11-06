@@ -145,10 +145,13 @@ export function QuickActionsBar({
   return (
     <div className="w-full flex flex-col gap-1">
       {/* Barra de Acciones Rápida y Adaptativa: Todos los botones y Uptime en el mismo contenedor */}
+      {/* En ancho compacto `order` cambia el orden visual, no el de tabulación:
+          el foco recorre .250/.231 antes de llegar a "Más". Se acepta para no
+          alterar el orden de escritorio. */}
       <div className="flex items-center flex-wrap gap-1 w-full">
         {/* Split Button Inteligente de Conexión Remota con grow */}
         <div
-          className="relative flex items-center min-w-45 flex-1 grow"
+          className="relative flex items-center min-w-45 flex-1 grow max-md:order-1"
           ref={dropdownRef}
         >
           <div className="flex w-full rounded-md">
@@ -282,7 +285,7 @@ export function QuickActionsBar({
         </div>
 
         {/* Split Button: Ping del equipo consultado con grow (Único botón con estado de activación) */}
-        <div className="flex rounded-md flex-1 min-w-27.5 grow">
+        <div className="flex rounded-md flex-1 min-w-27.5 grow max-md:order-2">
           <Button
             type="button"
             // El estado activo fuerza destructive sólido (AA también en hover) sobre el variant.
@@ -327,66 +330,87 @@ export function QuickActionsBar({
           </Button>
         </div>
 
-        {/* Enlaces del sitio: se usan a diario, por eso quedan siempre visibles */}
-        {siteTargets.isValid && onLaunchSitePing && (
-          <>
-            <div className="flex rounded-md shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onLaunchSitePing("router", "standard")}
-                aria-label="Hacer ping al router .250"
-                title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
-                className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1"
-              >
-                <Wifi className="h-3.5 w-3.5 shrink-0 text-link" />
-                <span className="font-mono text-micro">.250</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onLaunchSitePing("router", "infinite")}
-                aria-label="Ping continuo -t router .250"
-                title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
-                className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
-              >
-                <span className="font-mono text-micro font-semibold text-link">
-                  -t
-                </span>
-              </Button>
-            </div>
+        {/* Secundarias: fila propia en compacto, inline en escritorio */}
+        <div
+          data-testid="secondary-actions"
+          className="contents max-md:order-4 max-md:flex max-md:basis-full max-md:items-center max-md:gap-1"
+        >
+          {siteTargets.isValid && onLaunchSitePing && (
+            <>
+              <div className="flex rounded-md shrink-0 max-md:flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLaunchSitePing("router", "standard")}
+                  aria-label="Hacer ping al router .250"
+                  title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
+                  className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1 max-md:flex-1"
+                >
+                  <Wifi className="h-3.5 w-3.5 shrink-0 text-link" />
+                  <span className="font-mono text-micro">.250</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLaunchSitePing("router", "infinite")}
+                  aria-label="Ping continuo -t router .250"
+                  title={`Ping continuo (-t) a ${siteTargets.routerIp}`}
+                  className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
+                >
+                  <span className="font-mono text-micro font-semibold text-link">
+                    -t
+                  </span>
+                </Button>
+              </div>
 
-            <div className="flex rounded-md shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onLaunchSitePing("server", "standard")}
-                aria-label="Hacer ping al servidor .231"
-                title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
-                className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1"
-              >
-                <Layers className="h-3.5 w-3.5 shrink-0 text-warning" />
-                <span className="font-mono text-micro">.231</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onLaunchSitePing("server", "infinite")}
-                aria-label="Ping continuo -t servidor .231"
-                title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
-                className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
-              >
-                <span className="font-mono text-micro font-semibold text-warning">
-                  -t
-                </span>
-              </Button>
-            </div>
-          </>
-        )}
+              <div className="flex rounded-md shrink-0 max-md:flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLaunchSitePing("server", "standard")}
+                  aria-label="Hacer ping al servidor .231"
+                  title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
+                  className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1 max-md:flex-1"
+                >
+                  <Layers className="h-3.5 w-3.5 shrink-0 text-warning" />
+                  <span className="font-mono text-micro">.231</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLaunchSitePing("server", "infinite")}
+                  aria-label="Ping continuo -t servidor .231"
+                  title={`Ping continuo (-t) a ${siteTargets.serverIp}`}
+                  className="rounded-l-none border-l-0 h-8 w-8 px-0 justify-center cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80"
+                >
+                  <span className="font-mono text-micro font-semibold text-warning">
+                    -t
+                  </span>
+                </Button>
+              </div>
+            </>
+          )}
+
+          {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-md:flex-1 max-md:justify-center sm:order-last"
+            title={`Uptime: ${terminal.uptimeText || "N/D"}`}
+            aria-busy={isRefreshingUptime}
+          >
+            {isRefreshingUptime ? (
+              <RotateCcw className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />
+            ) : (
+              <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            )}
+            <span className="font-mono font-semibold text-foreground truncate max-w-25 text-micro">
+              {terminal.uptimeText || "N/D"}
+            </span>
+          </div>
+        </div>
 
         {/* Menú "Más": acciones secundarias agrupadas sin competir con las primarias */}
         <Popover open={isMoreOpen} onOpenChange={setIsMoreOpen}>
@@ -398,7 +422,7 @@ export function QuickActionsBar({
               size="sm"
               aria-label="Más acciones"
               title="Más acciones"
-              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0"
+              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0 max-md:order-3"
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
               <span>Más</span>
@@ -518,24 +542,6 @@ export function QuickActionsBar({
             )}
           </PopoverContent>
         </Popover>
-
-        {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
-        <div
-          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0"
-          title={`Uptime: ${terminal.uptimeText || "N/D"}`}
-          aria-busy={isRefreshingUptime}
-        >
-          {isRefreshingUptime ? (
-            <RotateCcw className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />
-          ) : (
-            <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          )}
-          <span
-            className="font-mono font-semibold text-foreground truncate max-w-25 text-micro"
-          >
-            {terminal.uptimeText || "N/D"}
-          </span>
-        </div>
       </div>
     </div>
   );

@@ -1,4 +1,9 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Topbar } from "./Topbar";
 import { ThemeProvider } from "../context/ThemeContext";
@@ -21,6 +26,25 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     const input = screen.getByPlaceholderText(/buscar terminal/i);
     expect(input).toBeInTheDocument();
     expect(screen.getByText(/portal correo desktop/i)).toBeInTheDocument();
+  });
+
+  it("compacta la identidad y el buscador por debajo de 640 px", () => {
+    const { container } = render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const title = screen.getByRole("heading", {
+      name: /portal correo desktop/i,
+    });
+    expect(title.className).toContain("max-sm:sr-only");
+
+    const searchWrapper = container.querySelector("div.max-w-md");
+    expect(searchWrapper?.className).toContain("min-w-0");
+
+    expect(container.querySelector("header")?.className).toContain("h-14");
+    expect(container.querySelector("header")?.className).toContain("px-3.5");
   });
 
   it("no renderiza el acceso al Portal MDA: vive en el diálogo de información", () => {
@@ -196,6 +220,115 @@ describe("Topbar & Compact Unified Titlebar component", () => {
 
     fireEvent.click(screen.getByRole("option", { name: /jperez/i }));
     expect(handleAccount).toHaveBeenCalledWith("jperez");
+  });
+
+  it("agrupa ajustes, información y tema en un menú bajo 640 px", () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    for (const name of [
+      /abrir ajustes y configuración/i,
+      /abrir información del sistema/i,
+      /cambiar tema de interfaz/i,
+    ]) {
+      expect(screen.getByRole("button", { name }).className).toContain(
+        "max-sm:hidden",
+      );
+    }
+
+    const trigger = screen.getByRole("button", {
+      name: /más opciones de la aplicación/i,
+    });
+    expect(trigger.className).toContain("max-sm:inline-flex");
+    expect(trigger).toHaveAttribute("aria-haspopup", "menu");
+  });
+
+  it("abre ajustes desde el menú compacto", async () => {
+    const onOpenSettings = vi.fn();
+    render(
+      <ThemeProvider>
+        <Topbar
+          onSelectTerminal={vi.fn()}
+          onOpenSettings={onOpenSettings}
+        />
+      </ThemeProvider>,
+    );
+
+    fireEvent.keyDown(
+      screen.getByRole("button", { name: /más opciones de la aplicación/i }),
+      { key: "Enter" },
+    );
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /ajustes y configuración/i }),
+    );
+
+    expect(onOpenSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it("abre información desde el menú compacto", async () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    fireEvent.keyDown(
+      screen.getByRole("button", { name: /más opciones de la aplicación/i }),
+      { key: "Enter" },
+    );
+    fireEvent.click(
+      await screen.findByRole("menuitem", {
+        name: /información y características/i,
+      }),
+    );
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("cambia el tema desde el menú compacto", async () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    fireEvent.keyDown(
+      screen.getByRole("button", { name: /más opciones de la aplicación/i }),
+      { key: "Enter" },
+    );
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: /cambiar a modo claro/i }),
+    );
+
+    expect(document.documentElement.classList.contains("dark")).toBe(false);
+  });
+
+  it("cierra el menú con Escape y devuelve el foco al disparador", async () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const trigger = screen.getByRole("button", {
+      name: /más opciones de la aplicación/i,
+    });
+
+    fireEvent.keyDown(trigger, { key: "Enter" });
+    await screen.findByRole("menuitem", { name: /ajustes y configuración/i });
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    fireEvent.keyDown(document.activeElement ?? document.body, {
+      key: "Escape",
+    });
+
+    await waitFor(() => {
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+    });
+    expect(document.activeElement).toBe(trigger);
   });
 });
 

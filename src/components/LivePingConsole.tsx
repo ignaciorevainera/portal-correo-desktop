@@ -4,6 +4,8 @@ import {
   Trash2,
   Copy,
   Check,
+  ClipboardList,
+  CheckCheck,
   Activity,
   UserRound,
   RefreshCw,
@@ -13,6 +15,7 @@ import {
   subscribeToPing,
   subscribeToDiagnosticCommand,
 } from "../services/electronClient";
+import { currentPingLines, summarizePingLogs } from "@/lib/pingSummary";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -95,6 +98,8 @@ export function LivePingConsole({
   // Señal ya procesada al montar: evita que un valor viejo reabra la consola
   // al montarse de nuevo tras una búsqueda.
   const handledOpenSignal = useRef(openSignal ?? 0);
+  const wasPingingRef = useRef(false);
+  const pingCompletedRef = useRef(false);
 
   // Los diagnósticos siempre son iniciados por el operador: abren la consola.
   useEffect(() => {
@@ -121,6 +126,7 @@ export function LivePingConsole({
   useEffect(() => {
     if (!isPinging || !ip) return;
 
+    pingCompletedRef.current = false;
     const isInfinite = pingMode === "infinite";
     // Append instead of wiping
     const prefixTag = linePrefix ? `${linePrefix} ` : "";
@@ -138,13 +144,24 @@ export function LivePingConsole({
         }
       },
       (code: number) => {
-        // Línea final limpia sin prefijo repetido
-        setLogs((prev) => [
-          ...prev,
-          code === null
-            ? `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`
-            : `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`,
-        ]);
+        if (pingCompletedRef.current) return;
+        pingCompletedRef.current = true;
+        setLogs((prev) => {
+          const next = [...prev];
+
+          if (isInfinite) {
+            const summary = summarizePingLogs(currentPingLines(next), ip);
+            if (summary) next.push(summary);
+          }
+
+          next.push(
+            code === null
+              ? `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`
+              : `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`,
+          );
+
+          return next;
+        });
         onPingCompleteRef.current?.();
       },
       isInfinite,
@@ -154,6 +171,28 @@ export function LivePingConsole({
       unsubscribe();
     };
   }, [isPinging, ip, pingMode, linePrefix]);
+
+  // El operador puede detener el ping: el proceso se mata y no llega `ping-end`,
+  // así que el resumen de un ping continuo se calcula al pasar isPinging a false.
+  useEffect(() => {
+    if (
+      wasPingingRef.current &&
+      !isPinging &&
+      pingMode === "infinite" &&
+      !pingCompletedRef.current
+    ) {
+      pingCompletedRef.current = true;
+      setLogs((prev) => {
+        const summary = summarizePingLogs(currentPingLines(prev), ip);
+        return [
+          ...prev,
+          ...(summary ? [summary] : []),
+          `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`,
+        ];
+      });
+    }
+    wasPingingRef.current = isPinging;
+  }, [isPinging, pingMode, ip]);
 
   // Generic diagnostic command subscription (nbtstat, tracert, arp)
   useEffect(() => {
@@ -272,6 +311,14 @@ export function LivePingConsole({
           fill && isOpen ? "flex h-full min-h-0 flex-col" : "shrink-0"
         }`}
       >
+        <span role="status" aria-live="polite" className="sr-only">
+          {copiedLast
+            ? "Bloque copiado al portapapeles"
+            : copiedAll
+              ? "Logs copiados al portapapeles"
+              : ""}
+        </span>
+
         {/* Barra de Controles Superior: cabecera colapsable y acciones */}
         <div
           data-testid="console-header"
@@ -289,14 +336,14 @@ export function LivePingConsole({
                 }`}
               />
               <HeaderIcon className="h-3.5 w-3.5 text-link shrink-0" />
-              <span className="font-mono text-xs font-bold text-foreground">
+              <span className="font-mono text-xs font-bold text-foreground truncate">
                 {headerLabel}
               </span>
             </button>
           </CollapsibleTrigger>
 
           {/* Controles: Detener (solo cuando activo), Limpiar, Copiar Último Bloque y Copiar Todos los Logs */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             {isAnyRunning && (
               <Button
                 type="button"
@@ -310,7 +357,7 @@ export function LivePingConsole({
                 className="h-7 px-2.5 text-micro font-sans font-medium flex items-center gap-1 cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90"
               >
                 <Square className="h-3 w-3" />
-                <span>Detener</span>
+                <span className="max-sm:hidden">Detener</span>
               </Button>
             )}
 
@@ -329,7 +376,7 @@ export function LivePingConsole({
                 className="h-7 px-2.5 text-micro font-sans font-medium flex items-center gap-1 cursor-pointer disabled:opacity-40"
               >
                 <RefreshCw className="h-3 w-3" />
-                <span>Re-ejecutar</span>
+                <span className="max-sm:hidden">Re-ejecutar</span>
               </Button>
             )}
 
@@ -346,7 +393,7 @@ export function LivePingConsole({
               className="h-7 px-2 text-micro font-sans flex items-center gap-1 cursor-pointer"
             >
               <Trash2 className="h-3 w-3" />
-              <span>Limpiar</span>
+              <span className="max-sm:hidden">Limpiar</span>
             </Button>
 
             {/* Copiar Último Bloque */}
@@ -368,7 +415,7 @@ export function LivePingConsole({
               ) : (
                 <Copy className="h-3 w-3 text-muted-foreground" />
               )}
-              <span>{copiedLast ? "Bloque copiado" : "Copiar Último"}</span>
+              <span className="max-sm:hidden">{copiedLast ? "Bloque copiado" : "Copiar Último"}</span>
             </Button>
 
             {/* Copiar Todos los Logs */}
@@ -386,11 +433,11 @@ export function LivePingConsole({
               className="h-7 px-2.5 text-micro font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
             >
               {copiedAll ? (
-                <Check className="h-3 w-3 text-success" />
+                <CheckCheck className="h-3 w-3 text-success" />
               ) : (
-                <Copy className="h-3 w-3 text-muted-foreground" />
+                <ClipboardList className="h-3 w-3 text-muted-foreground" />
               )}
-              <span>{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
+              <span className="max-sm:hidden">{copiedAll ? "Logs copiados" : "Copiar Logs"}</span>
             </Button>
           </div>
         </div>
@@ -398,12 +445,12 @@ export function LivePingConsole({
         <CollapsibleContent
           className={fill ? "flex min-h-0 flex-1 flex-col" : undefined}
         >
-          {/* Pantalla Contigua estilo Windows Terminal: bg-console-bg, altura adaptable (24rem–48rem, ~55vh), auto-scroll interno por línea */}
+          {/* Pantalla Contigua estilo Windows Terminal: bg-console-bg, altura fija al 50% del alto de la ventana, auto-scroll interno por línea */}
           <div
             ref={scrollContainerRef}
             data-testid="terminal-scroll-container"
             className={`${
-              fill ? "flex-1 min-h-0" : "h-[clamp(24rem,55vh,48rem)] min-h-[24rem]"
+              fill ? "flex-1 min-h-0" : "h-[50vh]"
             } overflow-y-auto overflow-x-auto p-3 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
           >
             {logs.length === 0 ? (
