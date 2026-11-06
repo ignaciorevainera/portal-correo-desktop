@@ -24,17 +24,35 @@ function createPingSessions({ executePing, logger = console } = {}) {
     }
   }
 
-  function send(webContents, channel, payload) {
-    if (!canSend(webContents)) return;
-    webContents.send(channel, payload);
+  function isDestroyed(webContents) {
+    if (!webContents || typeof webContents.isDestroyed !== 'function') return false;
+    try {
+      return webContents.isDestroyed();
+    } catch {
+      return true;
+    }
   }
 
+  function send(webContents, channel, payload) {
+    if (!canSend(webContents)) return;
+    try {
+      webContents.send(channel, payload);
+    } catch (err) {
+      logger.warn?.('No se pudo enviar el evento de ping', {
+        error: err && err.message,
+      });
+    }
+  }
+
+  // Detener no emite pcd:ping-end: el renderer que pidió el stop limpia su propio estado.
   function stopById(webContentsId) {
     const session = sessions.get(webContentsId);
     if (!session) return false;
     sessions.delete(webContentsId);
+    const proc = session.proc;
+    if (!proc || typeof proc.kill !== 'function') return true;
     try {
-      session.proc.kill();
+      proc.kill();
     } catch (err) {
       logger.warn?.('No se pudo detener el ping', {
         error: err && err.message,
@@ -53,6 +71,11 @@ function createPingSessions({ executePing, logger = console } = {}) {
       throw new Error('webContents inválido');
     }
 
+    if (isDestroyed(webContents)) {
+      stopById(webContents.id);
+      return null;
+    }
+
     stopById(webContents.id);
 
     const sessionId = nextSessionId++;
@@ -64,7 +87,14 @@ function createPingSessions({ executePing, logger = console } = {}) {
     };
     sessions.set(webContents.id, session);
 
-    const isCurrent = () => sessions.get(webContents.id) === session;
+    if (typeof webContents.once === 'function') {
+      try {
+        webContents.once('destroyed', () => stopById(webContents.id));
+      } catch {}
+    }
+
+    const isCurrent = () =>
+      sessions.get(webContents.id)?.sessionId === sessionId;
 
     const onData = (data) => {
       if (!isCurrent()) return;
@@ -79,8 +109,10 @@ function createPingSessions({ executePing, logger = console } = {}) {
 
     let proc = null;
     try {
+      // executePing (systemTools) sanitiza el target y emite error/end si es inválido.
       proc = executePing(
         target,
+        // El ping estándar siempre es de 4 paquetes; el monitor usa continuous.
         continuous ? { continuous: true } : 4,
         onData,
         onDone,
@@ -101,25 +133,39 @@ function createPingSessions({ executePing, logger = console } = {}) {
       return null;
     }
 
-    if (!proc) {
-      if (isCurrent()) sessions.delete(webContents.id);
+    if (!proc || typeof proc.kill !== 'function') {
+      if (isCurrent()) {
+        sessions.delete(webContents.id);
+        send(webContents, 'pcd:ping-data', 'No se pudo iniciar ping.\n');
+        send(webContents, 'pcd:ping-end', 1);
+      }
       return null;
     }
 
     session.proc = proc;
+
+    if (!isCurrent()) {
+      try {
+        proc.kill();
+      } catch {}
+      return null;
+    }
+
     return session;
   }
 
   function stopAll() {
     for (const [id, session] of sessions) {
+      sessions.delete(id);
+      const proc = session.proc;
+      if (!proc || typeof proc.kill !== 'function') continue;
       try {
-        session.proc.kill();
+        proc.kill();
       } catch (err) {
         logger.warn?.('No se pudo detener el ping', {
           error: err && err.message,
         });
       }
-      sessions.delete(id);
     }
   }
 

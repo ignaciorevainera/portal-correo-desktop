@@ -93,24 +93,22 @@ describe('pingSessions', () => {
 
     sessions.stopAll();
 
+    expect(procs).toHaveLength(2);
     expect(procs.every((proc) => proc.kill.mock.calls.length === 1)).toBe(true);
     expect(sessions.count()).toBe(0);
   });
 
-  it('no envía eventos a un sender destruido', () => {
-    const { sessions, procs } = createHarness();
+  it('no inicia ping para un sender destruido', () => {
+    const { sessions, executePing } = createHarness();
     const a = createSender(1);
     a.isDestroyed = () => true;
 
-    sessions.start(a, '192.0.2.1', true);
-    procs[0].onData('x');
-    procs[0].onDone(0);
-
-    expect(a.messages).toEqual([]);
+    expect(sessions.start(a, '192.0.2.1', true)).toBeNull();
+    expect(executePing).not.toHaveBeenCalled();
     expect(sessions.count()).toBe(0);
   });
 
-  it('no deja sesión si executePing devuelve null', () => {
+  it('no deja sesión y emite fin si executePing devuelve null', () => {
     const executePing = vi.fn(() => null);
     const sessions = createPingSessions({
       executePing,
@@ -120,6 +118,70 @@ describe('pingSessions', () => {
 
     sessions.start(a, '192.0.2.1', true);
 
+    expect(a.messages).toEqual([
+      { channel: 'pcd:ping-data', payload: 'No se pudo iniciar ping.\n' },
+      { channel: 'pcd:ping-end', payload: 1 },
+    ]);
     expect(sessions.has(a)).toBe(false);
+  });
+
+  it('emite el fin al sender actual con su código', () => {
+    const { sessions, procs } = createHarness();
+    const a = createSender(1);
+
+    sessions.start(a, '192.0.2.1', true);
+    procs[0].onDone(0);
+
+    expect(a.messages).toEqual([
+      { channel: 'pcd:ping-end', payload: 0 },
+    ]);
+    expect(sessions.has(a)).toBe(false);
+  });
+
+  it('ignora datos del proceso viejo tras reiniciar', () => {
+    const { sessions, procs } = createHarness();
+    const a = createSender(1);
+
+    sessions.start(a, '192.0.2.1', true);
+    sessions.start(a, '192.0.2.2', true);
+    procs[0].onData('viejo');
+    procs[1].onData('nuevo');
+
+    expect(a.messages).toEqual([
+      { channel: 'pcd:ping-data', payload: 'nuevo' },
+    ]);
+  });
+
+  it('emite error y fin si executePing lanza', () => {
+    const executePing = vi.fn(() => {
+      throw new Error('boom');
+    });
+    const sessions = createPingSessions({
+      executePing,
+      logger: { warn: vi.fn() },
+    });
+    const a = createSender(1);
+
+    sessions.start(a, '192.0.2.1', true);
+
+    expect(a.messages).toEqual([
+      { channel: 'pcd:ping-data', payload: 'Error al iniciar ping: boom\n' },
+      { channel: 'pcd:ping-end', payload: 1 },
+    ]);
+    expect(sessions.has(a)).toBe(false);
+  });
+
+  it('no propaga errores si el sender falla al enviar', () => {
+    const { sessions, procs } = createHarness();
+    const a = createSender(1);
+    a.send = () => {
+      throw new Error('destroyed');
+    };
+
+    sessions.start(a, '192.0.2.1', true);
+
+    expect(() => procs[0].onData('x')).not.toThrow();
+    expect(() => procs[0].onDone(0)).not.toThrow();
+    expect(sessions.count()).toBe(0);
   });
 });
