@@ -285,6 +285,23 @@ describe('MonitorWindow', () => {
     ).toBeInTheDocument();
   });
 
+  it('descarta el buffer parcial al reiniciar', async () => {
+    render(<MonitorWindow />);
+    await screen.findByText('> ping -t 192.0.2.100');
+
+    act(() => api.emitData('parcial'));
+    await flushFrame();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Detener ping' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Reiniciar ping' }));
+
+    act(() => api.emitData('nuevo\n'));
+    await flushFrame();
+
+    expect(screen.queryByText('parcial')).toBeNull();
+    expect(screen.getByText('nuevo')).toBeInTheDocument();
+  });
+
   it('limpia suscripciones y detiene el ping al desmontar', async () => {
     const { unmount } = render(<MonitorWindow />);
     await screen.findByText('> ping -t 192.0.2.100');

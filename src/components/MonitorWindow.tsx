@@ -77,6 +77,18 @@ export function MonitorWindow(): React.JSX.Element {
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const nextLineIdRef = useRef(0);
 
+  const discardPending = useCallback(() => {
+    bufferRef.current = "";
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+    if (flushTimerRef.current) {
+      clearTimeout(flushTimerRef.current);
+      flushTimerRef.current = null;
+    }
+  }, []);
+
   const appendLine = useCallback((text: string) => {
     const entry = { id: nextLineIdRef.current++, text };
     setLines((previous) => [...previous, entry].slice(-MAX_LINES));
@@ -92,8 +104,9 @@ export function MonitorWindow(): React.JSX.Element {
   }, []);
 
   const resetWithHeader = useCallback((text: string) => {
+    discardPending();
     setLines([{ id: nextLineIdRef.current++, text }]);
-  }, []);
+  }, [discardPending]);
 
   const flushBuffer = useCallback(() => {
     if (flushTimerRef.current) {
@@ -169,6 +182,7 @@ export function MonitorWindow(): React.JSX.Element {
 
     const unsubscribeEnd = api.onPingEnd((code) => {
       setStatus(code === 0 || code === null ? "stopped" : "error");
+      discardPending();
       appendLine(
         code === null
           ? "[proceso detenido]"
@@ -219,13 +233,14 @@ export function MonitorWindow(): React.JSX.Element {
     if (status === "starting" || status === "live") {
       api.stopPing().catch(() => {});
       setStatus("stopped");
+      discardPending();
       appendLine("[proceso detenido]");
       return;
     }
     setStatus("starting");
     resetWithHeader(`> ping -t ${context.target}`);
     api.startPing();
-  }, [api, appendLine, context, resetWithHeader, status]);
+  }, [api, appendLine, context, discardPending, resetWithHeader, status]);
 
   const handleCopy = useCallback(async () => {
     if (!api) return;
