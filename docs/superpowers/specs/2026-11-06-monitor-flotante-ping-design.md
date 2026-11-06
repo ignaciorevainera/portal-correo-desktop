@@ -1,4 +1,4 @@
-# Monitor flotante de ping (`ping -t`) — Diseño
+# Monitor flotante de ping (`ping -t`) con conexión remota — Diseño
 
 **Fecha:** 2026-11-06
 **Estado:** Para revisión del usuario
@@ -15,7 +15,8 @@ En Portal Correo Desktop esto se implementa con:
 - una **ventana compacta dedicada** de Electron, no una segunda instancia completa de la app;
 - **sesiones de ping independientes por ventana**, para que la consola principal y cada monitor no se interrumpan;
 - hasta **4 monitores simultáneos**, uno por equipo, con reutilización;
-- un atajo **global** `Ctrl + Alt + Espacio`, porque `Ctrl + Espacio` ya está tomado por la búsqueda global.
+- un atajo **global** `Ctrl + Alt + Espacio`, porque `Ctrl + Espacio` ya está tomado por la búsqueda global;
+- **conexión remota inteligente desde la cabecera del monitor**, reutilizando el sondeo de puertos y el lanzador VNC/MSRA que ya usa la barra principal.
 
 La respuesta corta a “¿es posible con Electron?” es sí. El costo real no es el ping —una línea por segundo— sino cada renderer adicional; por eso la ventana compacta y el tope de 4.
 
@@ -33,6 +34,7 @@ La respuesta corta a “¿es posible con Electron?” es sí. El costo real no e
 | El renderer de la app carga React, Radix, cmdk, fuentes y servicios | `src/main.tsx`, `src/App.tsx` | Una segunda ventana completa duplicaría todo eso; el monitor no lo necesita. |
 | La consola principal ya usa un viewport oscuro fijo | `src/components/LivePingConsole.tsx`, `DESIGN.md` | El monitor reutiliza los mismos tokens `--console-*`. |
 | `ping.exe` corre en el proceso principal con `windowsHide` y decodificación CP850 | `electron/systemTools.cjs` | El monitor recibe texto limpio; no hay que decodificar en el renderer. |
+| La conexión remota inteligente ya existe: `launchRemoteSmart` sondea 5901/5900/3389/135 y elige VNC o MSRA | `electron/systemTools.cjs`, `electron/main.cjs:519-522` | El monitor puede reutilizarla con un canal que use su target registrado. |
 
 HMDA resolvía esto con un timer ICMP de WinForms. En Electron el equivalente es un `ping.exe -t` por ventana, propiedad del proceso principal, con eventos IPC.
 
@@ -53,8 +55,10 @@ HMDA resolvía esto con un timer ICMP de WinForms. En Electron el equivalente es
 | Atajo | `Ctrl + Alt + Espacio`, global. `Ctrl + Espacio` sigue siendo la búsqueda global. |
 | Tipo de ventana | Compacta y dedicada (`monitor.html` + `MonitorWindow`), no una segunda app completa. |
 | Cantidad | Hasta 4 monitores, uno por equipo, con reutilización por target. |
-| Alcance | Solo el equipo consultado; sin campo de destino, buscador, VNC ni diagnóstico. |
-| Disparo | Atajo global; sin botón nuevo en la barra en v1. |
+| Alcance | Ping del equipo consultado + conexión remota inteligente; sin campo de destino, buscador ni diagnóstico. |
+| Conexión remota | Botón inteligente en la cabecera; sondea puertos y elige VNC o MSRA. Sin selección manual en el monitor. |
+| Feedback remoto | Toast de sonner en la ventana principal; el monitor solo refleja el estado de carga del botón. |
+| Disparo | Atajo global; sin botón nuevo en la barra de acciones de la principal en v1. |
 | Ventana | Frameless, always-on-top con pin, `skipTaskbar`, 420×300, redimensionable, bounds persistidos. |
 | Cierre del monitor | Destruye la ventana y mata su ping. No oculta a bandeja. |
 | Ciclo de vida | La principal manda: al ocultarse/cerrarse, destruye todos los monitores. La app sigue en bandeja; solo termina desde la bandeja o al cerrar la principal sin bandeja. |
@@ -94,6 +98,8 @@ Contratos:
 | `pcd:ping-end` | Main → sender | Solo al sender; código de salida o `null` si se mató. |
 | `pcd:ping-stop` | Ventana principal | Mata solo la sesión de ese sender. |
 | `pcd:monitor-ping-stop` | Monitor | Mata solo la sesión de ese monitor. |
+| `pcd:monitor-connect-remote` | Monitor | Usa el target registrado, ejecuta `launchRemoteSmart` con la clave VNC y devuelve el resultado. No toca las sesiones de ping. |
+| `pcd:monitor-remote-result` | Main → ventana principal | Resultado de la conexión remota para el toast de sonner. |
 | `pcd:cmd-start` | Ventana principal | Detiene solo el ping de ese sender antes del diagnóstico. Los diagnósticos siguen siendo un proceso global. |
 | `closed` / `destroyed` | Main | Mata la sesión del `webContents` que desaparece. |
 | `before-quit` | Main | Mata todas las sesiones. |
@@ -105,6 +111,12 @@ Detalles:
 - Si `executePing` devuelve `null` por error de spawn, no se guarda entrada en el mapa; el error ya se emitió por `onData`/`onDone`.
 - La API del renderer principal (`electronAPI.ping`, `electronAPI.stopPing`, `subscribeToPing`) no cambia. El cambio es interno.
 - Esto también corrige un problema latente: hoy dos ventanas que escuchen `pcd:ping-data` recibirían la salida de la misma sesión.
+- **Conexión remota:** el handler `pcd:monitor-connect-remote` busca el target en el registro del monitor, resuelve la clave VNC con `resolveVncSecret()` y llama a `systemTools.launchRemoteSmart(target, { vncPassword })`. Devuelve el resultado al monitor y emite `pcd:monitor-remote-result` a la ventana principal con `{ ...result, target }` para el toast.
+- El handler remoto captura errores inesperados y siempre devuelve `{ success: false, message }`; el monitor rehabilita el botón y la principal muestra el toast de error.
+- Si la principal está minimizada o el resultado es un error, se llama `flashFrame(true)`; se apaga al enfocar la ventana. Así el toast no pasa desapercibido cuando el monitor está encima.
+- El monitor **no reutiliza** el `remoteProbe` de la barra principal: ese estado corresponde al equipo consultado en la principal, que puede ser otro. Cada monitor sondea su propio target.
+- El sondeo del monitor **no actualiza** los badges de puertos de la barra principal; son estados independientes.
+- La conexión remota no detiene, pausa ni reinicia el ping del monitor.
 
 ### 4.3 Registro de monitores
 
@@ -184,6 +196,9 @@ Ctrl + Alt + Espacio
                  ├─ monitorAPI.startPing()
                  │    └─ main: pingSessions[sender.id] = spawn('ping', ['-t', target])
                  │         └─ pcd:ping-data → solo ese monitor
+                 ├─ monitorAPI.connectRemote()
+                 │    └─ main: target del registro → launchRemoteSmart
+                 │         └─ pcd:monitor-remote-result → toast en la principal
                  └─ monitorAPI.close()
                       └─ main: win.close() → closed → stopPing(sender.id)
 ```
@@ -196,7 +211,7 @@ Ctrl + Alt + Espacio
 
 ```text
 ┌──────────────────────────────────────────────┐
-│ ● PC-OPERADOR · 10.66.10.25   📌  ⧉  ■  ✕  │  36 px, arrastrable
+│ ● PC-OPERADOR · 10.66.10.25   ▷  📌  ⧉  ■  ✕ │  36 px, arrastrable
 ├──────────────────────────────────────────────┤
 │ > ping -t 10.66.10.25                        │
 │ Haciendo ping a 10.66.10.25 con 32 bytes...  │
@@ -215,13 +230,15 @@ Ctrl + Alt + Espacio
 ### 5.2 Cabecera
 
 - **Izquierda:** punto de estado de 6 px + etiqueta `hostname · IP` (o solo IP si no hay hostname), `font-mono`, `text-xs`, truncada con `title` completo.
-- **Derecha, en orden:** pin, copiar, detener/reiniciar, cerrar.
+- **Derecha, en orden:** conectar remotamente, pin, copiar, detener/reiniciar, cerrar.
 - **Botones:** `Button` `variant="ghost"` `size="icon-xs"`, con `aria-label` y `title`.
+  - Conectar remotamente: `MonitorPlay`; `aria-label="Conectar remotamente"`, `title="Conectar remotamente (VNC o MSRA según puertos)"`. Mientras sondea, muestra `Spinner`, queda deshabilitado y su `aria-label` pasa a “Conectando remotamente…”; al terminar vuelve al icono. Si el invoke rechaza, también vuelve al icono y se registra el warning. No detiene el ping.
   - Pin: `Pin` / `PinOff`, `aria-pressed` refleja el estado.
   - Copiar: `Copy` → `Check` durante 2 s; `role="status"` anuncia “Logs copiados” o “No se pudo copiar”.
   - Detener/Reiniciar: `Square` mientras corre, `RotateCw` cuando está detenido.
   - Cerrar: `X`, hover destructivo, `aria-label="Cerrar monitor"`.
 - **Estado:** el punto usa `bg-warning` (iniciando), `bg-success` (en vivo), `bg-muted-foreground` (detenido) o `bg-destructive` (error). Solo “iniciando” pulsa; “en vivo” queda fijo.
+- **Ancho:** a 320 px la etiqueta trunca; los cinco botones se mantienen visibles.
 
 ### 5.3 Consola
 
@@ -248,6 +265,10 @@ Ctrl + Alt + Espacio
 | Detenido | gris | Reiniciar | últimas líneas + “Proceso detenido” |
 | Error | rojo | Reiniciar | mensaje de error |
 | Copiado | — | Copiar → check 2 s | sin cambios |
+| Conectando remoto | — | spinner en el botón remoto | sin cambios |
+| Resultado remoto | — | — | toast en la principal; consola y estado del ping no cambian |
+
+El botón remoto está disponible en todos los estados y no altera el ping. El resultado de la conexión no se muestra dentro del monitor: se envía a la ventana principal como toast.
 
 El punto refleja el **estado del proceso**, no la calidad de red. Un “Tiempo de espera agotado” se colorea en la línea, pero el monitor sigue “En vivo” mientras `ping -t` corre. Así se evita un semáforo que parpadea con cada paquete perdido.
 
@@ -264,6 +285,9 @@ El punto refleja el **estado del proceso**, no la calidad de red. Un “Tiempo d
 - Estadísticas acumuladas en vivo (Enviados/Recibidos/Perdidos/Último ms).
 - Múltiples pings por ventana.
 - Editar el target desde el monitor.
+- Elegir manualmente VNC o MSRA desde el monitor; solo existe el botón inteligente.
+- Mostrar el resultado de la conexión remota dentro del monitor; va como toast a la principal.
+- Actualizar los badges de puertos de la barra principal desde el sondeo del monitor.
 - Recordar monitores abiertos entre sesiones; solo se recuerdan bounds y pin.
 - Botón visible en la barra de acciones.
 - Historial persistente de monitoreos.
@@ -279,11 +303,12 @@ El punto refleja el **estado del proceso**, no la calidad de red. Un “Tiempo d
 |---|---|
 | `monitor.html` | Entrada Vite del monitor; aplica el tema antes del paint y monta `src/monitor.tsx`. |
 | `src/monitor.tsx` | Bootstrap de React + `ErrorBoundary` + `MonitorWindow`; importa `index.css`. |
-| `src/components/MonitorWindow.tsx` | UI, estados, consola, controles y suscripciones a `monitorAPI`. |
+| `src/components/MonitorWindow.tsx` | UI, estados, consola, controles, botón de conexión remota y suscripciones a `monitorAPI`. |
 | `src/lib/pingLog.ts` | `sanitizePingText` compartido y `classifyPingLine` para los tonos del monitor. |
-| `electron/monitor-preload.cjs` | `contextBridge` con `monitorAPI` mínimo. |
+| `electron/monitor-preload.cjs` | `contextBridge` con `monitorAPI` mínimo, incluida la conexión remota. |
 | `electron/monitorWindows.cjs` | Registro, creación, reutilización, tope, bounds, pin, cierre y seguridad de ventanas. |
 | `electron/monitorShortcut.cjs` | Handler puro del atajo: restaura la principal, abre/reutiliza, enfoca el buscador o avisa el tope. |
+| `electron/monitorRemote.cjs` | Handler de conexión remota: target del registro, `launchRemoteSmart`, clave VNC y resultado a la principal. |
 | `electron/monitorPreferences.cjs` | Persistencia de `{ bounds, pinned }` en `userData`. |
 | `electron/pingSessions.cjs` | Mapa de sesiones por `webContents.id`, arranque/parada, tokens y enrutamiento. |
 | `src/components/MonitorWindow.test.tsx` | Pruebas de UI. |
@@ -292,19 +317,20 @@ El punto refleja el **estado del proceso**, no la calidad de red. Un “Tiempo d
 | `src/test/pingSessions.test.ts` | Pruebas de aislamiento de sesiones. |
 | `src/test/monitorPreferences.test.ts` | Pruebas de persistencia. |
 | `src/test/monitorShortcut.test.ts` | Pruebas del handler del atajo y del target. |
+| `src/test/monitorRemote.test.ts` | Pruebas del handler remoto con dependencias inyectadas. |
 
 ### 6.2 Modificados
 
 | Archivo | Cambio |
 |---|---|
-| `electron/main.cjs` | Composición de sesiones, registro de monitores, registro del atajo, target, ciclo de vida y avisos. |
-| `electron/preload.cjs` | `setMonitorTarget`, `openMonitorCurrent`, `onMonitorNotice`. |
+| `electron/main.cjs` | Composición de sesiones, registro de monitores, registro del atajo, target, ciclo de vida, handler remoto y avisos. |
+| `electron/preload.cjs` | `setMonitorTarget`, `openMonitorCurrent`, `onMonitorNotice`, `onMonitorRemoteResult`. |
 | `vite.config.ts` | `monitor.html` como input multi-página. |
-| `src/services/electronClient.ts` | Wrappers de target, apertura y aviso. |
-| `src/App.tsx` | Avisa el target al cargar/limpiar terminal y muestra los avisos como toast. |
+| `src/services/electronClient.ts` | Wrappers de target, apertura, aviso y suscripción al resultado remoto. |
+| `src/App.tsx` | Avisa el target al cargar/limpiar terminal y muestra los avisos y el resultado remoto como toast. |
 | `src/components/SettingsModal.tsx` | Documenta `Ctrl + Alt + Espacio` sin agregar un toggle. |
 | `src/components/LivePingConsole.tsx` | Usa `sanitizePingText` desde `src/lib/pingLog.ts`; sin cambios de comportamiento. |
-| `src/types/electron-modules.d.ts` | Tipos de `monitorAPI` y de las nuevas funciones de `electronAPI`. |
+| `src/types/electron-modules.d.ts` | Tipos de `monitorAPI`, del resultado remoto y de las nuevas funciones de `electronAPI`. |
 | `DESIGN.md` | Nota corta sobre la ventana de monitoreo y su consola oscura. |
 
 ### 6.3 Contratos
@@ -325,6 +351,16 @@ interface MonitorApi {
   setPinned(pinned: boolean): Promise<boolean>;
   close(): Promise<void>;
   copyText(text: string): Promise<boolean>;
+  connectRemote(): Promise<MonitorRemoteResult>;
+}
+
+interface MonitorRemoteResult {
+  success: boolean;
+  methodUsed: 'vnc' | 'msra' | 'none';
+  portUsed?: number;
+  message?: string;
+  vncClosed?: boolean;
+  msraAvailable?: boolean;
 }
 ```
 
@@ -370,12 +406,22 @@ createMonitorShortcut({
 { bounds: { x, y, width, height } | null, pinned: boolean }
 ```
 
+`monitorRemote.cjs` expone:
+
+```text
+createMonitorRemote({
+  getMonitorTarget, launchRemoteSmart, resolveVncSecret,
+  notifyMain, flashMain, logger
+}) → { connect(webContents) }
+```
+
 ---
 
 ## 7. Rendimiento
 
 - **Renderer:** 40–70 MB por monitor; cuatro monitores, 160–280 MB extra. Es el costo dominante.
 - **Ping:** 1–2 MB por `ping.exe -t`, una línea por segundo. Consola + 4 monitores = 5 procesos; CPU prácticamente nula.
+- **Conexión remota:** sondeo de 4 puertos TCP en paralelo con timeout de 600 ms, solo al pulsar el botón. No hay polling ni impacto en el ping. VNC/MSRA se lanzan como proceso externo detached.
 - **Bundle:** `monitor.html` importa React, pocos primitivos, iconos y `index.css`. No importa `App`, servicios de DB, Radix de diálogos, cmdk ni Settings.
 - **IPC:** un `webContents.send` por chunk, sin polling ni intervalos. El renderer acumula en un buffer y vuelca a estado una vez por frame con `requestAnimationFrame`; un burst produce un solo re-render.
 - **DOM:** máximo 500 líneas, nodos simples; no hace falta virtualizar.
@@ -391,9 +437,11 @@ createMonitorShortcut({
 ## 8. Seguridad
 
 - `contextIsolation: true`, `nodeIntegration: false`, sandbox por defecto. Nada de `nodeIntegrationInWorker`.
-- **Preload mínimo del monitor:** contexto, iniciar/detener ping, eventos, pin, copiar y cerrar. Sin DB, búsqueda, VNC, shell, updater ni diagnóstico.
+- **Preload mínimo del monitor:** contexto, iniciar/detener ping, eventos, pin, copiar, cerrar y `connectRemote`. Sin DB, búsqueda, shell, updater ni diagnóstico. La única acción remota es `connectRemote`, que no acepta target.
 - **El target no viene del renderer del monitor:** el proceso principal lo toma de su registro. La ventana principal sigue validando con `sanitizeHostOrIp` al iniciar su ping.
 - **Validación de sender:** los handlers de monitor solo actúan si el `webContents.id` pertenece a un monitor registrado; `pcd:monitor-target-set` solo acepta a la ventana principal.
+- **Conexión remota:** `pcd:monitor-connect-remote` solo acepta monitores registrados; el target sale del registro, no del renderer. El main resuelve la clave VNC y llama a `launchRemoteSmart`, que sanitiza el host y lanza VNC/MSRA con argumentos separados (`cmd.exe /c start` en MSRA, target sanitizado).
+- **Sin acciones manuales:** el monitor no expone `launchVnc` ni `launchMsra` directo; solo la acción inteligente. No puede lanzar VNC/MSRA a un target distinto del suyo.
 - **Navegación:** `setWindowOpenHandler` deniega ventanas nuevas y `will-navigate` bloquea la navegación fuera del origen local. El monitor no tiene enlaces externos.
 - **Portapapeles:** se escribe desde el proceso principal vía IPC, validando que sea string y con un tope de longitud. No depende de permisos del navegador.
 - **Sin dependencias nuevas.**
@@ -421,6 +469,12 @@ createMonitorShortcut({
   - `closeAllMonitors` no deja ventanas ni procesos;
   - fallo de carga destruye la ventana y avisa.
 - `monitorPreferences.cjs`: defaults, JSON corrupto, campos parciales, bounds inválidos.
+- `monitorRemote.cjs` con `launchRemoteSmart`/`resolveVncSecret` inyectados:
+  - usa el target del monitor registrado, no un target del renderer;
+  - llama a `launchRemoteSmart` con `{ vncPassword }`;
+  - devuelve el resultado al monitor y emite `pcd:monitor-remote-result` a la principal;
+  - rechaza senders que no son monitores;
+  - no toca las sesiones de ping.
 - Handler del atajo extraído y testeado: sin target enfoca buscador; con target abre; con tope avisa; restaura si está minimizada/oculta.
 - `pcd:monitor-target-set` rechaza senders que no son la ventana principal y targets inválidos.
 
@@ -432,14 +486,17 @@ createMonitorShortcut({
   - detener/reiniciar, pin, copiar y cerrar;
   - auto-scroll respetuoso (abajo sí, arriba no, volver abajo sí);
   - estados iniciando/en vivo/detenido/error;
+  - botón remoto: llama a `connectRemote`, muestra spinner y se deshabilita mientras espera; al volver, el ping sigue igual; si el invoke rechaza, el botón se rehabilita;
+  - el monitor no muestra un menú manual de VNC/MSRA;
   - no hay campo de destino ni buscador.
-- `electronClient.test.ts`: nuevas funciones de target, apertura y aviso, con y sin `electronAPI`.
-- `App.test.tsx`: al cargar terminal avisa `{ target, label }`; al limpiar, cambiar a cuenta o no encontrar, envía `null`; el aviso de tope se traduce a toast.
+- `electronClient.test.ts`: nuevas funciones de target, apertura, aviso y suscripción al resultado remoto, con y sin `electronAPI`.
+- `App.test.tsx`: al cargar terminal avisa `{ target, label }`; al limpiar, cambiar a cuenta o no encontrar, envía `null`; el aviso de tope se traduce a toast; el resultado remoto se traduce a toast success (VNC), info (MSRA) o error (sin acceso).
 - `SettingsModal.test.tsx`: muestra el atajo del monitor.
 
 ### 9.3 Estáticas y build
 
 - `monitor-preload.cjs` expone solo las claves permitidas y no expone `ipcRenderer` ni canales arbitrarios.
+- `monitor-preload.cjs` no expone `launchVnc`/`launchMsra` ni acepta target en `connectRemote`; solo el canal fijo `pcd:monitor-connect-remote`.
 - `monitorWindows.cjs` declara `contextIsolation`, `nodeIntegration: false` y deniega ventanas nuevas.
 - `vite.config.ts` incluye `monitor.html` como input y `dist/monitor.html` se genera en el build.
 - `monitor.html` referencia `src/monitor.tsx` y aplica el tema antes del paint.
@@ -459,6 +516,10 @@ createMonitorShortcut({
 10. Tema claro: cromo claro, consola oscura. DPI 125/150%: texto legible y bounds dentro de pantalla.
 11. Diez minutos con 4 monitores: memoria estable, CPU < 1%, sin crecimiento por encima de 500 líneas.
 12. `Ctrl + Espacio` sigue trayendo la app y buscando desde el portapapeles.
+13. Pulsar el botón remoto del monitor A → abre VNC o MSRA según los puertos; el ping de A sigue corriendo; la principal muestra el toast.
+14. Sin acceso remoto → toast de error en la principal; el monitor sigue pingeando.
+15. Con la principal minimizada o ante un error remoto, se dispara `flashFrame`; el toast se ve al restaurar.
+16. El monitor no ofrece un menú manual de VNC/MSRA; solo el botón inteligente.
 
 ### 9.5 Regresión
 
@@ -479,10 +540,13 @@ createMonitorShortcut({
 6. Sin terminal consultada o sin IP, el atajo enfoca el buscador y no abre monitor.
 7. Pin alterna always-on-top; bounds y pin se conservan entre aperturas y se ajustan al área visible.
 8. La consola respeta el tope de 500 líneas, el auto-scroll solo cuando el operador está abajo, y el botón Copiar funciona.
-9. El monitor no tiene campo de destino, buscador, VNC ni diagnóstico.
-10. `Ctrl + Espacio` conserva exactamente el comportamiento actual.
-11. `monitor.html` se genera en `dist`; no se agregan dependencias.
-12. `npm test`, `npm run build`, `npm run audit:contrast` y `npm run release:check` pasan.
+9. El monitor tiene un botón de conexión remota inteligente; al pulsarlo sondea 5901/5900/3389/135 y abre VNC o MSRA sin detener el ping.
+10. Si no hay acceso remoto, la principal muestra un toast de error y el monitor sigue pingeando.
+11. El resultado remoto se muestra como toast en la principal; el monitor solo refleja el estado de carga del botón y no tiene selección manual de VNC/MSRA.
+12. El monitor no tiene campo de destino, buscador ni diagnóstico.
+13. `Ctrl + Espacio` conserva exactamente el comportamiento actual.
+14. `monitor.html` se genera en `dist`; no se agregan dependencias.
+15. `npm test`, `npm run build`, `npm run audit:contrast` y `npm run release:check` pasan.
 
 ---
 
@@ -499,6 +563,10 @@ createMonitorShortcut({
 | `skipTaskbar` deja el monitor fuera de la barra de tareas | El atajo global lo enfoca; el pin lo mantiene visible. |
 | El monitor tapa contenido | Pin/unpin; se puede cerrar y reabrir. |
 | Copiar falla | El estado del botón no cambia y se anuncia “No se pudo copiar”. |
+| El sondeo remoto tarda hasta ~600 ms | Spinner + botón deshabilitado; una sola ejecución; el ping sigue. |
+| El toast de la principal puede quedar detrás del monitor | El toast de error dura 10 s; si la principal está minimizada o el resultado es error, `flashFrame(true)`. El éxito se evidencia porque VNC/MSRA abre. |
+| El sondeo del monitor no actualiza los badges de la principal | Estados independientes; el toast incluye el target para evitar confusión. |
+| VNC sin clave o MSRA no disponible | `resolveVncSecret` y `launchRemoteSmart` ya devuelven el motivo; se muestra en el toast. |
 
 ---
 
@@ -506,6 +574,6 @@ createMonitorShortcut({
 
 1. **Sesiones por renderer:** extraer `pingSessions.cjs`, cablear en `main.cjs`, pruebas de aislamiento y regresión de la consola.
 2. **Preferencias y ventanas:** `monitorPreferences.cjs` y `monitorWindows.cjs` con pruebas de reutilización, tope, bounds y cierre.
-3. **Entrada y UI del monitor:** `monitor.html`, `src/monitor.tsx`, `MonitorWindow`, preload, estilos y pruebas de componente.
-4. **Cableado principal:** target, atajo global con fallback, avisos, ciclo de vida, Ajustes y pruebas de `App`/`electronClient`.
-5. **Verificación:** checklist manual, rendimiento, `npm test`, `npm run build`, `npm run audit:contrast`, `npm run release:check`, y nota en `DESIGN.md`.
+3. **Entrada y UI del monitor:** `monitor.html`, `src/monitor.tsx`, `MonitorWindow` (incluido el botón remoto), preload, estilos y pruebas de componente.
+4. **Cableado principal:** target, atajo global con fallback, avisos, ciclo de vida, handler remoto (`monitorRemote.cjs`), Ajustes y pruebas de `App`/`electronClient`.
+5. **Verificación:** checklist manual (incluida la conexión remota), rendimiento, `npm test`, `npm run build`, `npm run audit:contrast`, `npm run release:check`, y nota en `DESIGN.md`.
