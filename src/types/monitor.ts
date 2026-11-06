@@ -25,3 +25,9 @@ export interface MonitorApi {
   copyText(text: string): Promise<boolean>;
   connectRemote(): Promise<MonitorRemoteResult>;
 }
+
+declare global {
+  interface Window {
+    monitorAPI?: MonitorApi;
+  }
+}
