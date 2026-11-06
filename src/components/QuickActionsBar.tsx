@@ -151,7 +151,7 @@ export function QuickActionsBar({
       <div className="flex items-center flex-wrap gap-1 w-full">
         {/* Split Button Inteligente de Conexión Remota con grow */}
         <div
-          className="relative flex items-center min-w-45 flex-1 grow max-sm:order-1"
+          className="relative flex items-center min-w-45 flex-1 grow max-md:order-1"
           ref={dropdownRef}
         >
           <div className="flex w-full rounded-md">
@@ -285,7 +285,7 @@ export function QuickActionsBar({
         </div>
 
         {/* Split Button: Ping del equipo consultado con grow (Único botón con estado de activación) */}
-        <div className="flex rounded-md flex-1 min-w-27.5 grow max-sm:order-2">
+        <div className="flex rounded-md flex-1 min-w-27.5 grow max-md:order-2">
           <Button
             type="button"
             // El estado activo fuerza destructive sólido (AA también en hover) sobre el variant.
@@ -333,11 +333,11 @@ export function QuickActionsBar({
         {/* Secundarias: fila propia en compacto, inline en escritorio */}
         <div
           data-testid="secondary-actions"
-          className="contents max-sm:order-4 max-sm:flex max-sm:basis-full max-sm:items-center max-sm:gap-1"
+          className="contents max-md:order-4 max-md:flex max-md:basis-full max-md:items-center max-md:gap-1"
         >
           {siteTargets.isValid && onLaunchSitePing && (
             <>
-              <div className="flex rounded-md shrink-0 max-sm:flex-1">
+              <div className="flex rounded-md shrink-0 max-md:flex-1">
                 <Button
                   type="button"
                   variant="outline"
@@ -345,7 +345,7 @@ export function QuickActionsBar({
                   onClick={() => onLaunchSitePing("router", "standard")}
                   aria-label="Hacer ping al router .250"
                   title={`Ping estándar (4 paquetes) a ${siteTargets.routerIp}`}
-                  className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1 max-sm:flex-1"
+                  className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1 max-md:flex-1"
                 >
                   <Wifi className="h-3.5 w-3.5 shrink-0 text-link" />
                   <span className="font-mono text-micro">.250</span>
@@ -365,7 +365,7 @@ export function QuickActionsBar({
                 </Button>
               </div>
 
-              <div className="flex rounded-md shrink-0 max-sm:flex-1">
+              <div className="flex rounded-md shrink-0 max-md:flex-1">
                 <Button
                   type="button"
                   variant="outline"
@@ -373,7 +373,7 @@ export function QuickActionsBar({
                   onClick={() => onLaunchSitePing("server", "standard")}
                   aria-label="Hacer ping al servidor .231"
                   title={`Ping estándar (4 paquetes) a ${siteTargets.serverIp}`}
-                  className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1 max-sm:flex-1"
+                  className="rounded-r-none h-8 px-2 text-xs font-semibold cursor-pointer border-border bg-muted text-foreground hover:bg-muted/80 gap-1 max-md:flex-1"
                 >
                   <Layers className="h-3.5 w-3.5 shrink-0 text-warning" />
                   <span className="font-mono text-micro">.231</span>
@@ -397,7 +397,7 @@ export function QuickActionsBar({
 
           {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
           <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:flex-1 max-sm:justify-center sm:order-last"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-md:flex-1 max-md:justify-center sm:order-last"
             title={`Uptime: ${terminal.uptimeText || "N/D"}`}
             aria-busy={isRefreshingUptime}
           >
@@ -422,7 +422,7 @@ export function QuickActionsBar({
               size="sm"
               aria-label="Más acciones"
               title="Más acciones"
-              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0 max-sm:order-3"
+              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0 max-md:order-3"
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
               <span>Más</span>
