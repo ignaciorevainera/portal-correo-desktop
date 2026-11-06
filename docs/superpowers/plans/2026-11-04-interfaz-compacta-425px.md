@@ -4,7 +4,7 @@
 
 **Goal:** permitir que la ventana baje a ~425 px de ancho conservando el alto actual (600–800 px), con las acciones primarias visibles, las secundarias en una segunda fila de `QuickActionsBar`, la consola con alto adaptado al viewport y los diálogos dentro del ancho.
 
-**Architecture:** cambios en 7 archivos de UI más 1 archivo del proceso principal. No hay componentes nuevos ni librerías nuevas. La ventana es frameless, así que el ancho mínimo solo depende de `BrowserWindow`. Todo lo demás es Tailwind 4 con variantes `max-sm` (ancho < 640 px) y `order` de flexbox para forzar dos filas. La consola pasa de altura fija mínima 384 px a `h-[50vh]` (mitad del alto de la ventana). La consola existente ya tiene colapso, scroll interno y copiar logs: no se reemplaza.
+**Architecture:** cambios en 7 archivos de UI más 1 archivo del proceso principal. No hay componentes nuevos ni librerías nuevas. La ventana es frameless, así que el ancho mínimo solo depende de `BrowserWindow`. Todo lo demás es Tailwind 4 con variantes `max-sm` (ancho < 640 px) y `max-md` (ancho < 768 px; sólo la barra de acciones) y `order` de flexbox para forzar dos filas. La consola pasa de altura fija mínima 384 px a `h-[50vh]` (mitad del alto de la ventana). La consola existente ya tiene colapso, scroll interno y copiar logs: no se reemplaza.
 
 **Tech Stack:** Electron 34 · React 19 · Vite 6 · TypeScript 5.7 · Tailwind 4 · Vitest 3 · Testing Library.
 
@@ -299,7 +299,7 @@ Objetivo de fase: acciones primarias en la fila 1; sitio `.250`, `.231` y uptime
 Agregar este caso al final de `describe('QuickActionsBar & Shortcut Keys')` en `src/test/QuickActionsBar.test.tsx`:
 
 ```tsx
-  it("en ancho compacto ordena y llena la segunda fila de acciones", () => {
+  it("agrupa y llena la segunda fila de acciones por debajo de 768 px", () => {
     const { container } = render(
       <QuickActionsBar
         terminal={terminal}
@@ -316,21 +316,21 @@ Agregar este caso al final de `describe('QuickActionsBar & Shortcut Keys')` en `
       name: /conexión remota inteligente/i,
     });
     expect(remote.closest("div.relative")?.className).toContain(
-      "max-sm:order-1",
+      "max-md:order-1",
     );
 
     const ping = screen.getByRole("button", { name: /^iniciar ping$/i });
-    expect(ping.parentElement?.className).toContain("max-sm:order-2");
+    expect(ping.parentElement?.className).toContain("max-md:order-2");
 
     expect(
       screen.getByRole("button", { name: /más acciones/i }).className,
-    ).toContain("max-sm:order-3");
+    ).toContain("max-md:order-3");
 
     const secondary = screen.getByTestId("secondary-actions");
     expect(secondary.className).toContain("contents");
-    expect(secondary.className).toContain("max-sm:flex");
-    expect(secondary.className).toContain("max-sm:basis-full");
-    expect(secondary.className).toContain("max-sm:order-4");
+    expect(secondary.className).toContain("max-md:flex");
+    expect(secondary.className).toContain("max-md:basis-full");
+    expect(secondary.className).toContain("max-md:order-4");
 
     const router = screen.getByRole("button", {
       name: /hacer ping al router \.250/i,
@@ -344,14 +344,14 @@ Agregar este caso al final de `describe('QuickActionsBar & Shortcut Keys')` en `
     expect(uptime?.className).toContain("sm:order-last");
 
     for (const group of [router.parentElement, server.parentElement, uptime]) {
-      expect(group?.className).toContain("max-sm:flex-1");
+      expect(group?.className).toContain("max-md:flex-1");
     }
-    expect(router.className).toContain("max-sm:flex-1");
-    expect(server.className).toContain("max-sm:flex-1");
+    expect(router.className).toContain("max-md:flex-1");
+    expect(server.className).toContain("max-md:flex-1");
     expect(
       screen.getByRole("button", { name: /ping continuo -t router \.250/i })
         .className,
-    ).not.toContain("max-sm:flex-1");
+    ).not.toContain("max-md:flex-1");
 
     expect(container.querySelector('[class*="flex-wrap"]')).not.toBeNull();
   });
@@ -360,7 +360,7 @@ Agregar este caso al final de `describe('QuickActionsBar & Shortcut Keys')` en `
 - [ ] **Step 2: Correr el test y verificar que falla**
 
 Run: `npx vitest run src/test/QuickActionsBar.test.tsx -t "segunda fila"`
-Expected: FAIL. Ninguna clase `max-sm:order-*` existe todavía.
+Expected: FAIL. Ninguna clase `max-md:order-*` existe todavía.
 
 - [ ] **Step 3: Implementar**
 
@@ -370,7 +370,7 @@ Wrapper del split button remoto (línea 150):
 
 ```tsx
         <div
-          className="relative flex items-center min-w-45 flex-1 grow max-sm:order-1"
+          className="relative flex items-center min-w-45 flex-1 grow max-md:order-1"
           ref={dropdownRef}
         >
 ```
@@ -378,7 +378,7 @@ Wrapper del split button remoto (línea 150):
 Wrapper del ping (línea 285):
 
 ```tsx
-        <div className="flex rounded-md flex-1 min-w-27.5 grow max-sm:order-2">
+        <div className="flex rounded-md flex-1 min-w-27.5 grow max-md:order-2">
 ```
 
 Spacer de corte de fila: ya no se usa. La fila secundaria es un grupo real que fuerza el salto y reparte el ancho:
@@ -387,32 +387,32 @@ Spacer de corte de fila: ya no se usa. La fila secundaria es un grupo real que f
         {/* Secundarias: fila propia en compacto, inline en escritorio */}
         <div
           data-testid="secondary-actions"
-          className="contents max-sm:order-4 max-sm:flex max-sm:basis-full max-sm:items-center max-sm:gap-1"
+          className="contents max-md:order-4 max-md:flex max-md:basis-full max-md:items-center max-md:gap-1"
         >
           {siteTargets.isValid && onLaunchSitePing && (
             <>
-              <div className="flex rounded-md shrink-0 max-sm:flex-1">…par .250…</div>
-              <div className="flex rounded-md shrink-0 max-sm:flex-1">…par .231…</div>
+              <div className="flex rounded-md shrink-0 max-md:flex-1">…par .250…</div>
+              <div className="flex rounded-md shrink-0 max-md:flex-1">…par .231…</div>
             </>
           )}
           <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:flex-1 max-sm:justify-center sm:order-last"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-md:flex-1 max-md:justify-center sm:order-last"
             title={`Uptime: ${terminal.uptimeText || "N/D"}`}
             aria-busy={isRefreshingUptime}
           >
 ```
 
-`contents` hace que en escritorio los hijos participen directo de la fila; `sm:order-last` mantiene el uptime después de "Más". En compacto el wrapper pasa a `flex basis-full`, siempre crea la segunda fila y sus hijos se reparten en partes iguales. Si no hay enlaces de sitio, el uptime solo llena la fila. Los botones primarios de cada par llevan `max-sm:flex-1`; el compañero `-t` queda fijo.
+`contents` hace que en escritorio los hijos participen directo de la fila; `sm:order-last` mantiene el uptime después de "Más". En compacto el wrapper pasa a `flex basis-full`, siempre crea la segunda fila y sus hijos se reparten en partes iguales. Si no hay enlaces de sitio, el uptime solo llena la fila. Los botones primarios de cada par llevan `max-md:flex-1`; el compañero `-t` queda fijo.
 
 Botón "Más" (línea 401):
 
 ```tsx
-              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0 max-sm:order-3"
+              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0 max-md:order-3"
 ```
 
-Los wrappers de `.250` y `.231` van dentro del grupo secundario con `max-sm:flex-1` y sin `order` propio; su botón primario también lleva `max-sm:flex-1` y el `-t` queda fijo.
+Los wrappers de `.250` y `.231` van dentro del grupo secundario con `max-md:flex-1` y sin `order` propio; su botón primario también lleva `max-md:flex-1` y el `-t` queda fijo.
 
-Resultado esperado a 425 px: fila 1 = remoto (~180 px) + ping (~110 px) + Más (~64 px) = ~366 px dentro de 397 disponibles. Fila 2 = grupo con tres partes iguales (~130 px cada una) o uptime solo ocupando toda la fila si la terminal no tiene IPv4 válida. A ≥640 px el grupo es `display:contents` y el orden visual queda remoto, ping, `.250`, `.231`, Más, uptime.
+Resultado esperado a 425 px: fila 1 = remoto (~180 px) + ping (~110 px) + Más (~64 px) = ~366 px dentro de 397 disponibles. Fila 2 = grupo con tres partes iguales (~130 px cada una) o uptime solo ocupando toda la fila si la terminal no tiene IPv4 válida. La agrupación aplica hasta 767 px (`max-md`); desde 768 px el grupo es `display:contents` y el orden visual queda remoto, ping, `.250`, `.231`, Más, uptime en una sola fila.
 
 - [ ] **Step 4: Correr los tests y verificar que pasan**
 
@@ -707,7 +707,7 @@ Después del cierre se ajustaron tres puntos detectados al usar la ventana compa
 |---|---|---|
 | Consola más baja: `clamp(9rem,30vh,40rem)`; luego ajustada a `h-[50vh]` por feedback de producto | `LivePingConsole.tsx` | `f50c9ca`, `757cbb2` |
 | Copiar Último (`Copy`/`Check`) vs Copiar Logs (`ClipboardList`/`CheckCheck`) distinguibles sin label; aviso `role="status"` para lectores de pantalla | `LivePingConsole.tsx` | `f50c9ca`, `c0235f8` |
-| Segunda fila llena el ancho: `.250`, `.231` y uptime con `max-sm:flex-1`; uptime sólo si hay pings de sitio | `QuickActionsBar.tsx` | `06a240c`, `b83329a` |
+| Segunda fila llena el ancho: grupo `.250`/`.231`/uptime con `max-md:flex-1` (agrupado hasta 767 px) | `QuickActionsBar.tsx` | `06a240c`, `b83329a`, `bce4d1f`, `49349fd` |
 | Menú compacto de Ajustes, Información y Tema bajo 640 px | `Topbar.tsx`, `ThemeToggle.tsx`, `ui/dropdown-menu.tsx` | `8bf483a`, `7cf9d17`, `7b47a63` |
 | Hover neutral (`focus:bg-muted`) en los ítems del menú compacto | `ui/dropdown-menu.tsx` | `3df1a2c` |
 | Loading de búsqueda con primitiva `Spinner` y leyenda "Consultando..." | `App.tsx`, `ui/spinner.tsx` | `6f6dfa1` |
