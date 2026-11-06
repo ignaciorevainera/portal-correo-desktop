@@ -12,6 +12,8 @@ import { MonitorWindow } from './MonitorWindow';
 function createApi() {
   let dataCallback: (text: string) => void = () => {};
   let endCallback: (code: number | null) => void = () => {};
+  const unsubData = vi.fn();
+  const unsubEnd = vi.fn();
 
   return {
     getContext: vi.fn().mockResolvedValue({
@@ -23,11 +25,11 @@ function createApi() {
     stopPing: vi.fn().mockResolvedValue(true),
     onPingData: vi.fn((callback: (text: string) => void) => {
       dataCallback = callback;
-      return () => {};
+      return unsubData;
     }),
     onPingEnd: vi.fn((callback: (code: number | null) => void) => {
       endCallback = callback;
-      return () => {};
+      return unsubEnd;
     }),
     setPinned: vi.fn().mockResolvedValue(true),
     close: vi.fn().mockResolvedValue(undefined),
@@ -39,6 +41,8 @@ function createApi() {
     }),
     emitData: (text: string) => dataCallback(text),
     emitEnd: (code: number | null) => endCallback(code),
+    unsubData,
+    unsubEnd,
   };
 }
 
@@ -77,9 +81,9 @@ describe('MonitorWindow', () => {
 
     act(() => {
       api.emitData(
-        Array.from({ length: 600 }, (_, index) => `línea ${index}`).join(
+        `${Array.from({ length: 600 }, (_, index) => `línea ${index}`).join(
           '\n',
-        ),
+        )}\n`,
       );
     });
     await flushFrame();
@@ -210,20 +214,85 @@ describe('MonitorWindow', () => {
   });
 
   it('aplica el tema guardado y reacciona a storage', async () => {
-    localStorage.setItem('pcd-theme', 'light');
+    localStorage.setItem('pcd-theme', 'dark');
     render(<MonitorWindow />);
     await screen.findByText('> ping -t 192.0.2.100');
 
-    expect(document.documentElement).not.toHaveClass('dark');
+    expect(document.documentElement).toHaveClass('dark');
 
-    localStorage.setItem('pcd-theme', 'dark');
+    localStorage.setItem('pcd-theme', 'light');
     window.dispatchEvent(
       new StorageEvent('storage', {
         key: 'pcd-theme',
-        newValue: 'dark',
+        newValue: 'light',
       }),
     );
 
-    expect(document.documentElement).toHaveClass('dark');
+    expect(document.documentElement).not.toHaveClass('dark');
+  });
+
+  it('marca detenido al recibir end 0', async () => {
+    render(<MonitorWindow />);
+    await screen.findByText('> ping -t 192.0.2.100');
+
+    act(() => api.emitEnd(0));
+
+    expect(screen.getByText('Ping detenido')).toBeInTheDocument();
+    expect(screen.getByText('[proceso finalizado: 0]')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Reiniciar ping' }),
+    ).toBeInTheDocument();
+  });
+
+  it('marca error al recibir un end distinto de 0', async () => {
+    render(<MonitorWindow />);
+    await screen.findByText('> ping -t 192.0.2.100');
+
+    act(() => api.emitEnd(1));
+
+    expect(screen.getByText('Error de ping')).toBeInTheDocument();
+    expect(screen.getByText('[proceso finalizado: 1]')).toBeInTheDocument();
+  });
+
+  it('no corta una línea parcial entre chunks', async () => {
+    render(<MonitorWindow />);
+    await screen.findByText('> ping -t 192.0.2.100');
+
+    act(() => api.emitData('Respuesta desde 192.0.2.100'));
+    await flushFrame();
+    act(() => api.emitData(': bytes=32\n'));
+    await flushFrame();
+
+    expect(
+      screen.getByText('Respuesta desde 192.0.2.100: bytes=32'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Respuesta desde 192.0.2.100'),
+    ).toBeNull();
+  });
+
+  it('no revive el estado tras detener', async () => {
+    render(<MonitorWindow />);
+    await screen.findByText('> ping -t 192.0.2.100');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Detener ping' }));
+    act(() => api.emitData('tarde\n'));
+    await flushFrame();
+
+    expect(screen.getByText('tarde')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Reiniciar ping' }),
+    ).toBeInTheDocument();
+  });
+
+  it('limpia suscripciones y detiene el ping al desmontar', async () => {
+    const { unmount } = render(<MonitorWindow />);
+    await screen.findByText('> ping -t 192.0.2.100');
+
+    unmount();
+
+    expect(api.unsubData).toHaveBeenCalled();
+    expect(api.unsubEnd).toHaveBeenCalled();
+    expect(api.stopPing).toHaveBeenCalled();
   });
 });

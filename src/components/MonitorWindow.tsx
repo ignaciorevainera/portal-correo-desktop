@@ -23,6 +23,11 @@ import type { MonitorContext } from "@/types/monitor";
 
 const MAX_LINES = 500;
 
+interface MonitorLine {
+  id: number;
+  text: string;
+}
+
 type MonitorStatus = "loading" | "starting" | "live" | "stopped" | "error";
 
 const statusLabels: Record<MonitorStatus, string> = {
@@ -57,7 +62,7 @@ function toneClass(line: string): string {
 export function MonitorWindow(): React.JSX.Element {
   const api = window.monitorAPI;
   const [context, setContext] = useState<MonitorContext | null>(null);
-  const [lines, setLines] = useState<string[]>([]);
+  const [lines, setLines] = useState<MonitorLine[]>([]);
   const [status, setStatus] = useState<MonitorStatus>("loading");
   const [pinned, setPinned] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -68,7 +73,65 @@ export function MonitorWindow(): React.JSX.Element {
   const stickToBottomRef = useRef(true);
   const bufferRef = useRef("");
   const frameRef = useRef<number | null>(null);
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nextLineIdRef = useRef(0);
+
+  const appendLine = useCallback((text: string) => {
+    const entry = { id: nextLineIdRef.current++, text };
+    setLines((previous) => [...previous, entry].slice(-MAX_LINES));
+  }, []);
+
+  const appendLines = useCallback((texts: string[]) => {
+    if (texts.length === 0) return;
+    const entries = texts.map((text) => ({
+      id: nextLineIdRef.current++,
+      text,
+    }));
+    setLines((previous) => [...previous, ...entries].slice(-MAX_LINES));
+  }, []);
+
+  const resetWithHeader = useCallback((text: string) => {
+    setLines([{ id: nextLineIdRef.current++, text }]);
+  }, []);
+
+  const flushBuffer = useCallback(() => {
+    if (flushTimerRef.current) {
+      clearTimeout(flushTimerRef.current);
+      flushTimerRef.current = null;
+    }
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+    const combined = bufferRef.current;
+    const lastNewline = combined.lastIndexOf("\n");
+    if (lastNewline === -1) return;
+    const complete = combined.slice(0, lastNewline);
+    bufferRef.current = combined.slice(lastNewline + 1);
+    const nextLines = complete.split(/\r?\n/).filter(Boolean);
+    if (nextLines.length === 0) return;
+    appendLines(nextLines);
+    setStatus((previous) =>
+      previous === "stopped" || previous === "error" ? previous : "live",
+    );
+  }, [appendLines]);
+
+  const scheduleFlush = useCallback(() => {
+    if (frameRef.current !== null || flushTimerRef.current !== null) return;
+    frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = null;
+      flushBuffer();
+    });
+    flushTimerRef.current = setTimeout(() => {
+      flushTimerRef.current = null;
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
+      flushBuffer();
+    }, 250);
+  }, [flushBuffer]);
 
   useEffect(() => {
     if (!api) {
@@ -88,7 +151,7 @@ export function MonitorWindow(): React.JSX.Element {
         }
         setContext(nextContext);
         setPinned(nextContext.pinned);
-        setLines([`> ping -t ${nextContext.target}`]);
+        resetWithHeader(`> ping -t ${nextContext.target}`);
         setStatus("starting");
         api.startPing();
       })
@@ -98,30 +161,18 @@ export function MonitorWindow(): React.JSX.Element {
 
     const unsubscribeData = api.onPingData((text) => {
       bufferRef.current += sanitizePingText(text);
-      if (frameRef.current !== null) return;
-      frameRef.current = requestAnimationFrame(() => {
-        frameRef.current = null;
-        const chunk = bufferRef.current;
-        bufferRef.current = "";
-        if (!chunk) return;
-        const nextLines = chunk.split(/\r?\n/).filter(Boolean);
-        if (nextLines.length === 0) return;
-        setLines((previous) =>
-          [...previous, ...nextLines].slice(-MAX_LINES),
-        );
-        setStatus("live");
-      });
+      if (bufferRef.current.length > 200000) {
+        bufferRef.current = bufferRef.current.slice(-200000);
+      }
+      scheduleFlush();
     });
 
     const unsubscribeEnd = api.onPingEnd((code) => {
       setStatus(code === 0 || code === null ? "stopped" : "error");
-      setLines((previous) =>
-        [
-          ...previous,
-          code === null
-            ? "[proceso detenido]"
-            : `[proceso finalizado: ${code}]`,
-        ].slice(-MAX_LINES),
+      appendLine(
+        code === null
+          ? "[proceso detenido]"
+          : `[proceso finalizado: ${code}]`,
       );
     });
 
@@ -130,14 +181,18 @@ export function MonitorWindow(): React.JSX.Element {
       unsubscribeData();
       unsubscribeEnd();
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+      if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
       if (api) api.stopPing().catch(() => {});
     };
-  }, [api]);
+  }, [api, appendLine, resetWithHeader, scheduleFlush]);
 
   useEffect(() => {
     const applyTheme = () => {
-      const theme = localStorage.getItem("pcd-theme") || "dark";
+      let theme = "dark";
+      try {
+        theme = localStorage.getItem("pcd-theme") || "dark";
+      } catch {}
       document.documentElement.classList.toggle("dark", theme === "dark");
     };
     applyTheme();
@@ -164,20 +219,18 @@ export function MonitorWindow(): React.JSX.Element {
     if (status === "starting" || status === "live") {
       api.stopPing().catch(() => {});
       setStatus("stopped");
-      setLines((previous) =>
-        [...previous, "[proceso detenido]"].slice(-MAX_LINES),
-      );
+      appendLine("[proceso detenido]");
       return;
     }
     setStatus("starting");
-    setLines([`> ping -t ${context.target}`]);
+    resetWithHeader(`> ping -t ${context.target}`);
     api.startPing();
-  }, [api, context, status]);
+  }, [api, appendLine, context, resetWithHeader, status]);
 
   const handleCopy = useCallback(async () => {
     if (!api) return;
     try {
-      const ok = await api.copyText(lines.join("\n"));
+      const ok = await api.copyText(lines.map((line) => line.text).join("\n"));
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
       setCopied(ok);
       setCopyError(!ok);
@@ -200,7 +253,8 @@ export function MonitorWindow(): React.JSX.Element {
     const nextPinned = !pinned;
     setPinned(nextPinned);
     try {
-      await api.setPinned(nextPinned);
+      const ok = await api.setPinned(nextPinned);
+      if (!ok) setPinned(!nextPinned);
     } catch {
       setPinned(!nextPinned);
     }
@@ -296,6 +350,7 @@ export function MonitorWindow(): React.JSX.Element {
             variant="ghost"
             size="icon-xs"
             onClick={handleCopy}
+            disabled={lines.length === 0}
             aria-label="Copiar logs del monitor"
             title="Copiar logs del monitor"
             className="cursor-pointer text-muted-foreground hover:text-foreground"
@@ -312,6 +367,7 @@ export function MonitorWindow(): React.JSX.Element {
             variant="ghost"
             size="icon-xs"
             onClick={handleStopRestart}
+            disabled={!context}
             aria-label={isRunning ? "Detener ping" : "Reiniciar ping"}
             title={isRunning ? "Detener ping" : "Reiniciar ping"}
             className="cursor-pointer text-muted-foreground hover:text-foreground"
@@ -347,7 +403,7 @@ export function MonitorWindow(): React.JSX.Element {
         role="log"
         aria-live="off"
         aria-label={`Salida de ping de ${context?.label ?? ""}`}
-        className="min-h-0 flex-1 overflow-y-auto overflow-x-auto bg-console-bg p-2.5 font-mono text-micro leading-relaxed text-console-fg select-text"
+        className="min-h-0 flex-1 overflow-y-auto overflow-x-auto bg-console-bg p-2.5 font-mono text-micro leading-relaxed text-console-fg select-text [color-scheme:dark]"
       >
         {status === "loading" && (
           <div className="text-console-muted">Cargando monitor…</div>
@@ -357,12 +413,12 @@ export function MonitorWindow(): React.JSX.Element {
             No se pudo iniciar el monitor de ping.
           </div>
         )}
-        {lines.map((line, index) => (
+        {lines.map((line) => (
           <div
-            key={`${index}-${line.slice(0, 12)}`}
-            className={cn("whitespace-pre", toneClass(line))}
+            key={line.id}
+            className={cn("whitespace-pre", toneClass(line.text))}
           >
-            {line}
+            {line.text}
           </div>
         ))}
       </div>
