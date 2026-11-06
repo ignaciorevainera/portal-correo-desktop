@@ -668,4 +668,111 @@ describe('LivePingConsole Component', () => {
       .querySelector("svg");
     expect(copyAllIcon?.classList.contains("lucide-clipboard-list")).toBe(true);
   });
+
+  it("muestra estadísticas al detener un ping continuo", () => {
+    let dataHandler: ((text: string) => void) | null = null;
+    let doneHandler: ((code: number | null) => void) | null = null;
+
+    vi.spyOn(electronClient, "subscribeToPing").mockImplementation(
+      (_target, onData, onDone) => {
+        dataHandler = onData;
+        doneHandler = onDone as typeof doneHandler;
+        return () => {};
+      },
+    );
+
+    render(
+      <LivePingConsole
+        ip="192.0.2.103"
+        isPinging={true}
+        pingMode="infinite"
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    act(() => {
+      dataHandler?.("Respuesta desde 192.0.2.103: bytes=32 tiempo=13ms TTL=64");
+      dataHandler?.("Respuesta desde 192.0.2.103: bytes=32 tiempo=14ms TTL=64");
+      dataHandler?.("Respuesta desde 192.0.2.103: bytes=32 tiempo=13ms TTL=64");
+    });
+
+    act(() => {
+      doneHandler?.(null);
+    });
+
+    expect(
+      screen.getByText(/Estadísticas de ping para 192\.0\.2\.103:/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Paquetes: enviados = 3, recibidos = 3, perdidos = 0/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Mínimo = 13ms, Máximo = 14ms, Media = 13ms/),
+    ).toBeInTheDocument();
+  });
+
+  it("resume sólo la sesión continua actual cuando la cabecera tiene prefijo", () => {
+    let dataHandler: ((text: string) => void) | null = null;
+    let doneHandler: ((code: number | null) => void) | null = null;
+
+    vi.spyOn(electronClient, "subscribeToPing").mockImplementation(
+      (_target, onData, onDone) => {
+        dataHandler = onData;
+        doneHandler = onDone as typeof doneHandler;
+        return () => {};
+      },
+    );
+
+    const { rerender } = render(
+      <LivePingConsole
+        ip="192.0.2.10"
+        isPinging={true}
+        pingMode="standard"
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    act(() => {
+      dataHandler?.("Respuesta desde 192.0.2.10: bytes=32 tiempo=99ms TTL=64");
+    });
+
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.10"
+        isPinging={false}
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    rerender(
+      <LivePingConsole
+        ip="192.0.2.250"
+        isPinging={true}
+        pingMode="infinite"
+        linePrefix="[ROUTER .250]"
+        onTogglePing={vi.fn()}
+      />,
+    );
+
+    act(() => {
+      dataHandler?.(
+        "Respuesta desde 192.0.2.250: bytes=32 tiempo=13ms TTL=64",
+      );
+    });
+
+    act(() => {
+      doneHandler?.(null);
+    });
+
+    expect(
+      screen.getByText(/Estadísticas de ping para 192\.0\.2\.250:/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Paquetes: enviados = 1, recibidos = 1, perdidos = 0/,
+      ),
+    ).toBeInTheDocument();
+  });
 });

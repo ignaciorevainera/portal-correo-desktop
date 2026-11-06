@@ -15,6 +15,7 @@ import {
   subscribeToPing,
   subscribeToDiagnosticCommand,
 } from "../services/electronClient";
+import { currentPingLines, summarizePingLogs } from "@/lib/pingSummary";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -140,13 +141,22 @@ export function LivePingConsole({
         }
       },
       (code: number) => {
-        // Línea final limpia sin prefijo repetido
-        setLogs((prev) => [
-          ...prev,
-          code === null
-            ? `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`
-            : `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`,
-        ]);
+        setLogs((prev) => {
+          const next = [...prev];
+
+          if (isInfinite) {
+            const summary = summarizePingLogs(currentPingLines(next), ip);
+            if (summary) next.push(summary);
+          }
+
+          next.push(
+            code === null
+              ? `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`
+              : `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`,
+          );
+
+          return next;
+        });
         onPingCompleteRef.current?.();
       },
       isInfinite,
