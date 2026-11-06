@@ -15,11 +15,15 @@ export type PingLineTone = 'default' | 'info' | 'warning' | 'destructive';
 
 export function classifyPingLine(line: string): PingLineTone {
   if (!line) return 'default';
-  if (/100% perdidos|inaccesible|error/i.test(line)) return 'destructive';
-  if (/tiempo de espera agotado|request timed out|agotado/i.test(line)) {
+  if (/100% perdidos|\binaccesible\b|\bunreachable\b|\berror\b/i.test(line)) {
+    return 'destructive';
+  }
+  if (
+    /tiempo de espera agotado|request timed out|agot(?:ó|ad[oa]s?)/i.test(line)
+  ) {
     return 'warning';
   }
-  if (/estad[ií]sticas|m[ií]nimo|m[aá]ximo|media|ping -t/i.test(line)) {
+  if (/estad[ií]sticas|m[ií]nimo|m[aá]ximo|\bmedia\b|ping -t/i.test(line)) {
     return 'info';
   }
   return 'default';
