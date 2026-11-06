@@ -299,7 +299,7 @@ Objetivo de fase: acciones primarias en la fila 1; sitio `.250`, `.231` y uptime
 Agregar este caso al final de `describe('QuickActionsBar & Shortcut Keys')` en `src/test/QuickActionsBar.test.tsx`:
 
 ```tsx
-  it("en ancho compacto ordena una segunda fila para acciones secundarias", () => {
+  it("en ancho compacto ordena y llena la segunda fila de acciones", () => {
     const { container } = render(
       <QuickActionsBar
         terminal={terminal}
@@ -326,18 +326,34 @@ Agregar este caso al final de `describe('QuickActionsBar & Shortcut Keys')` en `
       screen.getByRole("button", { name: /más acciones/i }).className,
     ).toContain("max-sm:order-3");
 
+    const secondary = screen.getByTestId("secondary-actions");
+    expect(secondary.className).toContain("contents");
+    expect(secondary.className).toContain("max-sm:flex");
+    expect(secondary.className).toContain("max-sm:basis-full");
+    expect(secondary.className).toContain("max-sm:order-4");
+
     const router = screen.getByRole("button", {
       name: /hacer ping al router \.250/i,
     });
-    expect(router.parentElement?.className).toContain("max-sm:order-5");
-
     const server = screen.getByRole("button", {
       name: /hacer ping al servidor \.231/i,
     });
-    expect(server.parentElement?.className).toContain("max-sm:order-6");
-
     const uptime = container.querySelector('[title^="Uptime:"]');
-    expect(uptime?.className).toContain("max-sm:order-7");
+    expect(uptime).not.toBeNull();
+    expect(secondary.contains(uptime!)).toBe(true);
+    expect(uptime?.className).toContain("sm:order-last");
+
+    for (const group of [router.parentElement, server.parentElement, uptime]) {
+      expect(group?.className).toContain("max-sm:flex-1");
+    }
+    expect(router.className).toContain("max-sm:flex-1");
+    expect(server.className).toContain("max-sm:flex-1");
+    expect(
+      screen.getByRole("button", { name: /ping continuo -t router \.250/i })
+        .className,
+    ).not.toContain("max-sm:flex-1");
+
+    expect(container.querySelector('[class*="flex-wrap"]')).not.toBeNull();
   });
 ```
 
@@ -365,15 +381,28 @@ Wrapper del ping (línea 285):
         <div className="flex rounded-md flex-1 min-w-27.5 grow max-sm:order-2">
 ```
 
-Spacer de corte de fila, como hijo directo de la barra, justo después del wrapper de ping y antes del fragmento de pings de sitio (línea 330). `order` no fuerza salto de línea: sin este spacer, entre ~490 y 639 px la fila 1 se lleva cinco controles y el uptime queda solo:
+Spacer de corte de fila: ya no se usa. La fila secundaria es un grupo real que fuerza el salto y reparte el ancho:
 
 ```tsx
-        {/* Corte de fila en ancho compacto: primarias en la fila 1, secundarias en la 2 */}
+        {/* Secundarias: fila propia en compacto, inline en escritorio */}
         <div
-          aria-hidden="true"
-          className="hidden max-sm:block max-sm:basis-full max-sm:order-4"
-        />
+          data-testid="secondary-actions"
+          className="contents max-sm:order-4 max-sm:flex max-sm:basis-full max-sm:items-center max-sm:gap-1"
+        >
+          {siteTargets.isValid && onLaunchSitePing && (
+            <>
+              <div className="flex rounded-md shrink-0 max-sm:flex-1">…par .250…</div>
+              <div className="flex rounded-md shrink-0 max-sm:flex-1">…par .231…</div>
+            </>
+          )}
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:flex-1 max-sm:justify-center sm:order-last"
+            title={`Uptime: ${terminal.uptimeText || "N/D"}`}
+            aria-busy={isRefreshingUptime}
+          >
 ```
+
+`contents` hace que en escritorio los hijos participen directo de la fila; `sm:order-last` mantiene el uptime después de "Más". En compacto el wrapper pasa a `flex basis-full`, siempre crea la segunda fila y sus hijos se reparten en partes iguales. Si no hay enlaces de sitio, el uptime solo llena la fila. Los botones primarios de cada par llevan `max-sm:flex-1`; el compañero `-t` queda fijo.
 
 Botón "Más" (línea 401):
 
@@ -381,29 +410,9 @@ Botón "Más" (línea 401):
               className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0 max-sm:order-3"
 ```
 
-Wrapper del ping router `.250` (línea 333):
+Los wrappers de `.250` y `.231` van dentro del grupo secundario con `max-sm:flex-1` y sin `order` propio; su botón primario también lleva `max-sm:flex-1` y el `-t` queda fijo.
 
-```tsx
-            <div className="flex rounded-md shrink-0 max-sm:order-5">
-```
-
-Wrapper del ping servidor `.231` (línea 361):
-
-```tsx
-            <div className="flex rounded-md shrink-0 max-sm:order-6">
-```
-
-Chip de Uptime (línea 524):
-
-```tsx
-        <div
-          className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-sm:order-7"
-          title={`Uptime: ${terminal.uptimeText || "N/D"}`}
-          aria-busy={isRefreshingUptime}
-        >
-```
-
-Resultado esperado a 425 px: fila 1 = remoto (~180 px) + ping (~110 px) + Más (~64 px) = ~366 px dentro de 397 disponibles. Fila 2 = `.250` (~86 px) + `.231` (~86 px) + uptime (~100 px) = ~280 px. El spacer garantiza esa composición en todo el rango 425–639 px, no solo por debajo de ~490 px; agrega una línea flex de altura cero, así que el espacio entre filas visibles es de 8 px (dos veces `gap-1`). A ≥640 px el spacer queda `display:none` y no cambia nada.
+Resultado esperado a 425 px: fila 1 = remoto (~180 px) + ping (~110 px) + Más (~64 px) = ~366 px dentro de 397 disponibles. Fila 2 = grupo con tres partes iguales (~130 px cada una) o uptime solo ocupando toda la fila si la terminal no tiene IPv4 válida. A ≥640 px el grupo es `display:contents` y el orden visual queda remoto, ping, `.250`, `.231`, Más, uptime.
 
 - [ ] **Step 4: Correr los tests y verificar que pasan**
 
