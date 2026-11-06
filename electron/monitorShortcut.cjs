@@ -3,39 +3,76 @@ function createMonitorShortcut({
   getLastTarget,
   openMonitor,
   focusSearch,
-  notify = () => {},
   logger = console,
 }) {
   function handle() {
-    const win = getMainWindow && getMainWindow();
+    let win;
+    try {
+      win = getMainWindow && getMainWindow();
+    } catch (err) {
+      logger?.warn?.('No se pudo obtener la ventana principal', {
+        error: err && err.message,
+      });
+      return { ok: false, reason: 'no-window' };
+    }
+
     if (!win || (typeof win.isDestroyed === 'function' && win.isDestroyed())) {
       return { ok: false, reason: 'no-window' };
     }
 
-    if (win.isMinimized()) win.restore();
-    if (!win.isVisible()) win.show();
-    win.focus();
+    try {
+      if (win.isMinimized()) win.restore();
+      if (!win.isVisible()) win.show();
+      win.focus();
+    } catch (err) {
+      logger?.warn?.('No se pudo enfocar la ventana principal', {
+        error: err && err.message,
+      });
+      return { ok: false, reason: 'no-window' };
+    }
 
-    const lastTarget = getLastTarget && getLastTarget();
-    if (!lastTarget || !lastTarget.target) {
+    let lastTarget;
+    try {
+      lastTarget = getLastTarget && getLastTarget();
+    } catch (err) {
+      logger?.warn?.('No se pudo leer el último target', {
+        error: err && err.message,
+      });
+      lastTarget = null;
+    }
+
+    const target =
+      lastTarget && typeof lastTarget.target === 'string'
+        ? lastTarget.target.trim()
+        : '';
+
+    if (!target) {
       logger.debug?.('Atajo de monitor sin target consultado');
-      focusSearch(win);
+      try {
+        focusSearch(win);
+      } catch (err) {
+        logger?.warn?.('No se pudo enfocar el buscador', {
+          error: err && err.message,
+        });
+        return { ok: false, reason: 'error' };
+      }
       return { ok: false, reason: 'no-target' };
     }
 
-    const result = openMonitor(lastTarget);
-    if (result && !result.ok && result.reason === 'limit') {
-      notify({
-        kind: 'limit',
-        message:
-          'Máximo de 4 monitores abiertos. Cerrá uno para abrir otro.',
+    let result;
+    try {
+      result = openMonitor({ ...lastTarget, target });
+    } catch (err) {
+      logger?.warn?.('No se pudo abrir el monitor', {
+        error: err && err.message,
       });
-    } else if (result && !result.ok && result.reason === 'error') {
-      notify({
-        kind: 'error',
-        message: 'No se pudo abrir el monitor de ping.',
-      });
+      return { ok: false, reason: 'error' };
     }
+
+    if (!result || typeof result !== 'object') {
+      return { ok: false, reason: 'error' };
+    }
+
     return result;
   }
 

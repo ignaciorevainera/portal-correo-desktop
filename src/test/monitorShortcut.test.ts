@@ -35,8 +35,7 @@ describe('monitorShortcut', () => {
       getLastTarget: () => ({ target: '192.0.2.100', label: 'PC-100' }),
       openMonitor,
       focusSearch,
-      notify: vi.fn(),
-      logger: { debug: vi.fn() },
+      logger: { debug: vi.fn(), warn: vi.fn() },
     });
 
     const result = shortcut.handle();
@@ -61,8 +60,7 @@ describe('monitorShortcut', () => {
       getLastTarget: () => null,
       openMonitor,
       focusSearch,
-      notify: vi.fn(),
-      logger: { debug: vi.fn() },
+      logger: { debug: vi.fn(), warn: vi.fn() },
     });
 
     expect(shortcut.handle()).toEqual({ ok: false, reason: 'no-target' });
@@ -70,22 +68,26 @@ describe('monitorShortcut', () => {
     expect(openMonitor).not.toHaveBeenCalled();
   });
 
-  it('avisa cuando se alcanza el tope', () => {
-    const notify = vi.fn();
+  it('propaga el resultado del tope sin notificar', () => {
+    const focusSearch = vi.fn();
+    const openMonitor = vi.fn().mockReturnValue({
+      ok: false,
+      reason: 'limit',
+    });
     const shortcut = createMonitorShortcut({
       getMainWindow: () => createWindow(),
       getLastTarget: () => ({ target: '192.0.2.100', label: 'PC-100' }),
-      openMonitor: () => ({ ok: false, reason: 'limit' }),
-      focusSearch: vi.fn(),
-      notify,
-      logger: { debug: vi.fn() },
+      openMonitor,
+      focusSearch,
+      logger: { debug: vi.fn(), warn: vi.fn() },
     });
 
-    shortcut.handle();
-
-    expect(notify).toHaveBeenCalledWith(
-      expect.objectContaining({ kind: 'limit' }),
-    );
+    expect(shortcut.handle()).toEqual({ ok: false, reason: 'limit' });
+    expect(openMonitor).toHaveBeenCalledWith({
+      target: '192.0.2.100',
+      label: 'PC-100',
+    });
+    expect(focusSearch).not.toHaveBeenCalled();
   });
 
   it('no hace nada sin ventana principal', () => {
@@ -94,10 +96,60 @@ describe('monitorShortcut', () => {
       getLastTarget: () => ({ target: '192.0.2.100' }),
       openMonitor: vi.fn(),
       focusSearch: vi.fn(),
-      notify: vi.fn(),
-      logger: { debug: vi.fn() },
+      logger: { debug: vi.fn(), warn: vi.fn() },
     });
 
     expect(shortcut.handle()).toEqual({ ok: false, reason: 'no-window' });
+  });
+
+  it('devuelve error si openMonitor lanza', () => {
+    const openMonitor = vi.fn(() => {
+      throw new Error('boom');
+    });
+    const shortcut = createMonitorShortcut({
+      getMainWindow: () => createWindow(),
+      getLastTarget: () => ({ target: '192.0.2.100', label: 'PC-100' }),
+      openMonitor,
+      focusSearch: vi.fn(),
+      logger: { debug: vi.fn(), warn: vi.fn() },
+    });
+
+    expect(shortcut.handle()).toEqual({ ok: false, reason: 'error' });
+  });
+
+  it('no hace nada si la ventana está destruida', () => {
+    const win = createWindow({ destroyed: true });
+    const getLastTarget = vi.fn();
+    const openMonitor = vi.fn();
+    const focusSearch = vi.fn();
+    const shortcut = createMonitorShortcut({
+      getMainWindow: () => win,
+      getLastTarget,
+      openMonitor,
+      focusSearch,
+      logger: { debug: vi.fn(), warn: vi.fn() },
+    });
+
+    expect(shortcut.handle()).toEqual({ ok: false, reason: 'no-window' });
+    expect(getLastTarget).not.toHaveBeenCalled();
+    expect(openMonitor).not.toHaveBeenCalled();
+    expect(focusSearch).not.toHaveBeenCalled();
+  });
+
+  it('trata un target en blanco como no-target', () => {
+    const win = createWindow();
+    const focusSearch = vi.fn();
+    const openMonitor = vi.fn();
+    const shortcut = createMonitorShortcut({
+      getMainWindow: () => win,
+      getLastTarget: () => ({ target: '   ', label: 'PC-100' }),
+      openMonitor,
+      focusSearch,
+      logger: { debug: vi.fn(), warn: vi.fn() },
+    });
+
+    expect(shortcut.handle()).toEqual({ ok: false, reason: 'no-target' });
+    expect(focusSearch).toHaveBeenCalledWith(win);
+    expect(openMonitor).not.toHaveBeenCalled();
   });
 });
