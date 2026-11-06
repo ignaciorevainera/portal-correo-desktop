@@ -12,6 +12,7 @@ function createPingSessions({ executePing, logger = console } = {}) {
   }
 
   const sessions = new Map();
+  const watchedSenders = new WeakSet();
   let nextSessionId = 1;
 
   function canSend(webContents) {
@@ -21,6 +22,23 @@ function createPingSessions({ executePing, logger = console } = {}) {
       return !webContents.isDestroyed();
     } catch {
       return false;
+    }
+  }
+
+  function watchSender(webContents) {
+    if (
+      typeof webContents.once !== 'function' ||
+      watchedSenders.has(webContents)
+    ) {
+      return;
+    }
+    watchedSenders.add(webContents);
+    try {
+      webContents.once('destroyed', () => stopById(webContents.id));
+    } catch (err) {
+      logger?.warn?.('No se pudo registrar la limpieza del sender', {
+        error: err && err.message,
+      });
     }
   }
 
@@ -38,7 +56,7 @@ function createPingSessions({ executePing, logger = console } = {}) {
     try {
       webContents.send(channel, payload);
     } catch (err) {
-      logger.warn?.('No se pudo enviar el evento de ping', {
+      logger?.warn?.('No se pudo enviar el evento de ping', {
         error: err && err.message,
       });
     }
@@ -54,7 +72,7 @@ function createPingSessions({ executePing, logger = console } = {}) {
     try {
       proc.kill();
     } catch (err) {
-      logger.warn?.('No se pudo detener el ping', {
+      logger?.warn?.('No se pudo detener el ping', {
         error: err && err.message,
       });
     }
@@ -79,19 +97,10 @@ function createPingSessions({ executePing, logger = console } = {}) {
     stopById(webContents.id);
 
     const sessionId = nextSessionId++;
-    const session = {
-      sessionId,
-      proc: null,
-      target,
-      continuous: Boolean(continuous),
-    };
+    const session = { sessionId, proc: null };
     sessions.set(webContents.id, session);
 
-    if (typeof webContents.once === 'function') {
-      try {
-        webContents.once('destroyed', () => stopById(webContents.id));
-      } catch {}
-    }
+    watchSender(webContents);
 
     const isCurrent = () =>
       sessions.get(webContents.id)?.sessionId === sessionId;
@@ -127,7 +136,7 @@ function createPingSessions({ executePing, logger = console } = {}) {
         );
         send(webContents, 'pcd:ping-end', 1);
       }
-      logger.warn?.('Error al iniciar ping', {
+      logger?.warn?.('Error al iniciar ping', {
         error: err && err.message,
       });
       return null;
@@ -162,7 +171,7 @@ function createPingSessions({ executePing, logger = console } = {}) {
       try {
         proc.kill();
       } catch (err) {
-        logger.warn?.('No se pudo detener el ping', {
+        logger?.warn?.('No se pudo detener el ping', {
           error: err && err.message,
         });
       }
