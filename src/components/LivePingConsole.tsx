@@ -16,6 +16,7 @@ import {
   subscribeToDiagnosticCommand,
 } from "../services/electronClient";
 import { currentPingLines, summarizePingLogs } from "@/lib/pingSummary";
+import { sanitizePingText } from "@/lib/pingLog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -49,19 +50,6 @@ interface LivePingConsoleProps {
   targetLabel?: string;
   fill?: boolean;
   onRerun?: () => void;
-}
-
-function sanitizePingText(text: string): string {
-  if (!text) return "";
-  return text
-    .replace(/Estad[\ufffd\?s]?sticas/gi, "Estadísticas")
-    .replace(/M[\ufffd\?a]?ximo/gi, "Máximo")
-    .replace(/M[\ufffd\?i]?nimo/gi, "Mínimo")
-    .replace(/milise[\ufffd\?]?gundos/gi, "milisegundos")
-    .replace(/perdid[\ufffd\?]?s/gi, "perdidos")
-    .replace(/recibid[\ufffd\?]?s/gi, "recibidos")
-    .replace(/enviad[\ufffd\?]?s/gi, "enviados")
-    .replace(/aproximad[\ufffd\?]?s/gi, "aproximados");
 }
 
 /**
