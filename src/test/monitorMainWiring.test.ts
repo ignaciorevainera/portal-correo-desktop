@@ -20,6 +20,9 @@ describe('monitor main wiring', () => {
     expect(main).toMatch(/registerMonitorShortcut\(\);/);
     expect(main).toMatch(/pingSessions\.start\(event\.sender/);
     expect(main).toMatch(/pingSessions\.stop\(event\.sender/);
+    expect(main).toMatch(
+      /shutdownChildProcesses\(\);\s*app\.exit\(0\)/,
+    );
   });
 
   it('el cierre y la bandeja cierran los monitores', () => {

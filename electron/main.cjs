@@ -88,6 +88,7 @@ function relaunchWithoutSandbox(reason) {
     console.error('[Compat] No se pudo programar el relanzamiento:', err && err.message);
   }
 
+  shutdownChildProcesses();
   app.exit(0);
 }
 
@@ -917,6 +918,18 @@ function registerGlobalSearchShortcut(win) {
 
 function closeAllMonitors() {
   if (monitorManager) monitorManager.closeAll();
+}
+
+function shutdownChildProcesses() {
+  try {
+    closeAllMonitors();
+  } catch {}
+  try {
+    stopActiveDiagnosticProcess();
+  } catch {}
+  try {
+    if (pingSessions) pingSessions.stopAll();
+  } catch {}
 }
 
 function notifyMainWindow(channel, payload) {
