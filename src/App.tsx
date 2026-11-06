@@ -225,7 +225,7 @@ export default function App(): React.JSX.Element {
   useEffect(() => {
     const handleMonitorShortcut = (event: KeyboardEvent) => {
       if (event.repeat) return;
-      if (event.ctrlKey && event.altKey && event.code === "Space") {
+      if ((event.ctrlKey || event.metaKey) && event.altKey && event.code === "Space") {
         event.preventDefault();
         // Si el proceso principal registró el atajo global, él abre el monitor;
         // el fallback local solo actúa cuando no hay atajo global activo.

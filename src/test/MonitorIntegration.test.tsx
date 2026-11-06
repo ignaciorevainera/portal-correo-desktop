@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
 
@@ -27,6 +27,8 @@ let noticeCallback: ((notice: any) => void) | null = null;
 let remoteCallback: ((result: any) => void) | null = null;
 
 function installApi(overrides: any = {}) {
+  const unsubNotice = vi.fn();
+  const unsubRemote = vi.fn();
   const api = {
     checkStatus: vi.fn().mockResolvedValue({ connected: true, mode: 'sql' }),
     searchTerminal: vi.fn().mockResolvedValue({ source: 'sql', data: terminal }),
@@ -39,12 +41,14 @@ function installApi(overrides: any = {}) {
     isMonitorShortcutRegistered: vi.fn().mockResolvedValue(false),
     onMonitorNotice: vi.fn((callback: (notice: any) => void) => {
       noticeCallback = callback;
-      return () => {};
+      return unsubNotice;
     }),
     onMonitorRemoteResult: vi.fn((callback: (result: any) => void) => {
       remoteCallback = callback;
-      return () => {};
+      return unsubRemote;
     }),
+    unsubNotice,
+    unsubRemote,
     ...overrides,
   };
   (window as any).electronAPI = api;
@@ -83,11 +87,18 @@ describe('App monitor integration', () => {
   });
 
   it('limpia el target cuando no encuentra la terminal', async () => {
-    const api = installApi({
-      searchTerminal: vi.fn().mockResolvedValue({ source: 'mock', data: null }),
+    const searchTerminal = vi
+      .fn()
+      .mockResolvedValueOnce({ source: 'sql', data: terminal })
+      .mockResolvedValueOnce({ source: 'mock', data: null });
+    const api = installApi({ searchTerminal });
+
+    await loadTerminal();
+    expect(api.setMonitorTarget).toHaveBeenCalledWith({
+      target: '192.0.2.100',
+      label: 'WS-CORP-100',
     });
 
-    render(<App />);
     const input = screen.getByPlaceholderText(/buscar terminal/i);
     fireEvent.change(input, { target: { value: 'NO-EXISTE' } });
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
@@ -126,6 +137,51 @@ describe('App monitor integration', () => {
     ).toBeInTheDocument();
   });
 
+  it('muestra el resultado MSRA como info', async () => {
+    installApi();
+    render(<App />);
+    await waitFor(() => expect(remoteCallback).toBeTypeOf('function'));
+
+    remoteCallback?.({
+      success: true,
+      methodUsed: 'msra',
+      message: 'MSRA iniciado',
+      target: '192.0.2.100',
+    });
+
+    expect(await screen.findByText('MSRA iniciado')).toBeInTheDocument();
+  });
+
+  it('muestra el error remoto', async () => {
+    installApi();
+    render(<App />);
+    await waitFor(() => expect(remoteCallback).toBeTypeOf('function'));
+
+    remoteCallback?.({
+      success: false,
+      methodUsed: 'none',
+      message: 'Sin acceso remoto',
+      target: '192.0.2.100',
+    });
+
+    expect(await screen.findByText('Sin acceso remoto')).toBeInTheDocument();
+  });
+
+  it('muestra el aviso de error del monitor', async () => {
+    installApi();
+    render(<App />);
+    await waitFor(() => expect(noticeCallback).toBeTypeOf('function'));
+
+    noticeCallback?.({
+      kind: 'error',
+      message: 'No se pudo abrir el monitor de ping.',
+    });
+
+    expect(
+      await screen.findByText('No se pudo abrir el monitor'),
+    ).toBeInTheDocument();
+  });
+
   it('dispara la apertura local con Ctrl+Alt+Espacio', async () => {
     const api = installApi();
     render(<App />);
@@ -158,8 +214,20 @@ describe('App monitor integration', () => {
     await waitFor(() =>
       expect(api.isMonitorShortcutRegistered).toHaveBeenCalledTimes(1),
     );
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
+    await act(async () => {
+      await Promise.resolve();
+    });
     expect(api.openMonitorCurrent).not.toHaveBeenCalled();
+  });
+
+  it('limpia las suscripciones al desmontar', async () => {
+    const api = installApi();
+    const { unmount } = render(<App />);
+    await waitFor(() => expect(noticeCallback).toBeTypeOf('function'));
+
+    unmount();
+
+    expect(api.unsubNotice).toHaveBeenCalled();
+    expect(api.unsubRemote).toHaveBeenCalled();
   });
 });

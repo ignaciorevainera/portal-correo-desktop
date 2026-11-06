@@ -710,7 +710,11 @@ export function setMonitorTarget(
 ): void {
   const api = getElectronAPI();
   if (api && typeof api.setMonitorTarget === 'function') {
-    api.setMonitorTarget(payload);
+    try {
+      api.setMonitorTarget(payload);
+    } catch {
+      // El frame puede estar destruyéndose; no bloquear el efecto de App.
+    }
   }
 }
 

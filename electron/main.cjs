@@ -706,7 +706,15 @@ ipcMain.handle('pcd:monitor-open-current', (event) => {
     : { ok: false, reason: 'unavailable' };
 });
 
-ipcMain.handle('pcd:monitor-shortcut-status', () => {
+ipcMain.handle('pcd:monitor-shortcut-status', (event) => {
+  if (
+    !mainWindow ||
+    mainWindow.isDestroyed() ||
+    event.sender !== mainWindow.webContents ||
+    event.senderFrame !== mainWindow.webContents.mainFrame
+  ) {
+    return false;
+  }
   return globalShortcut.isRegistered('CommandOrControl+Alt+Space');
 });
 

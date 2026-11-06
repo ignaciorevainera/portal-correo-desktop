@@ -43,5 +43,6 @@ describe('monitor main wiring', () => {
     expect(preload).toContain("'pcd:monitor-open-current'");
     expect(preload).toContain("'pcd:monitor-notice'");
     expect(preload).toContain("'pcd:monitor-remote-result'");
+    expect(preload).toContain("'pcd:monitor-shortcut-status'");
   });
 });
