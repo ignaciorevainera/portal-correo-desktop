@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { IconWell } from "./IconWell";
+import { Kbd } from "@/components/ui/kbd";
 import {
   loadDefaultPingMode,
   saveDefaultPingMode,
@@ -558,7 +559,7 @@ export function SettingsModal({
           <section className="space-y-3">
             <div className="flex items-center gap-2 border-b border-border/60 pb-2">
               <Eye className="h-4 w-4 text-link" />
-              <h3 className="overline-label text-foreground">
+              <h3 className="text-micro font-semibold tracking-wider text-muted-foreground">
                 Accesibilidad y Visualización
               </h3>
             </div>
@@ -568,7 +569,7 @@ export function SettingsModal({
                 Tamaño de Texto e Interfaz
               </div>
               <div className="text-micro text-muted-foreground">
-                Escalado armónico de textos y controles (atajos: <kbd className="px-1 py-0.5 rounded bg-muted font-mono text-[10px]">Ctrl +</kbd> / <kbd className="px-1 py-0.5 rounded bg-muted font-mono text-[10px]">Ctrl -</kbd> / <kbd className="px-1 py-0.5 rounded bg-muted font-mono text-[10px]">Ctrl 0</kbd>)
+                Escalado armónico de textos y controles (atajos: <Kbd>Ctrl</Kbd>+<Kbd>+</Kbd> / <Kbd>Ctrl</Kbd>+<Kbd>-</Kbd> / <Kbd>Ctrl</Kbd>+<Kbd>0</Kbd>)
               </div>
               <ToggleGroup
                 type="single"
