@@ -51,6 +51,12 @@ interface LivePingConsoleProps {
   onRerun?: () => void;
 }
 
+export interface ConsoleLine {
+  id: number;
+  text: string;
+  tone: string;
+}
+
 function sanitizePingText(text: string): string {
   if (!text) return "";
   return text
@@ -62,6 +68,26 @@ function sanitizePingText(text: string): string {
     .replace(/recibid[\ufffd\?]?s/gi, "recibidos")
     .replace(/enviad[\ufffd\?]?s/gi, "enviados")
     .replace(/aproximad[\ufffd\?]?s/gi, "aproximados");
+}
+
+function classifyTone(line: string, insideGlobalGroupsRef: { current: boolean }): string {
+  const isGroupHeader = /grupos globales|global group memberships/i.test(line);
+  if (isGroupHeader) insideGlobalGroupsRef.current = true;
+
+  const isGroupItem = insideGlobalGroupsRef.current && /^\s*\*/.test(line);
+  if (insideGlobalGroupsRef.current && line.trim() === "") {
+    insideGlobalGroupsRef.current = false;
+  }
+
+  if (isGroupHeader) return "text-console-info font-semibold";
+  if (isGroupItem) return "text-console-info";
+  if (line.startsWith("[") && line.includes(">")) return "text-console-info font-bold";
+  if (line.includes("Iniciando") || line.includes("Ejecutando")) return "text-console-warning font-semibold";
+  if (line.includes("finalizado")) return "text-console-success font-semibold";
+  if (line.includes("Error") || line.includes("cerrado") || line.includes("inaccesible")) {
+    return "text-console-destructive font-semibold";
+  }
+  return "text-console-fg";
 }
 
 /**
@@ -85,7 +111,9 @@ export function LivePingConsole({
   fill = false,
   onRerun,
 }: LivePingConsoleProps): React.JSX.Element {
-  const [logs, setLogs] = useState<string[]>([]);
+  const [lines, setLines] = useState<ConsoleLine[]>([]);
+  const nextLineIdRef = useRef(1);
+  const insideGlobalGroupsRef = useRef(false);
   const [copiedAll, setCopiedAll] = useState(false);
   const [copiedLast, setCopiedLast] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
@@ -101,6 +129,19 @@ export function LivePingConsole({
   const wasPingingRef = useRef(false);
   const pingCompletedRef = useRef(false);
 
+  const appendLines = React.useCallback((rawTexts: string[]) => {
+    if (rawTexts.length === 0) return;
+    setLines((prev) => {
+      const newItems: ConsoleLine[] = rawTexts.map((text) => ({
+        id: nextLineIdRef.current++,
+        text,
+        tone: classifyTone(text, insideGlobalGroupsRef),
+      }));
+      const combined = [...prev, ...newItems];
+      return combined.length > 400 ? combined.slice(-400) : combined;
+    });
+  }, []);
+
   // Los diagnósticos siempre son iniciados por el operador: abren la consola.
   useEffect(() => {
     if (activeCommandId) setIsOpen(true);
@@ -115,12 +156,25 @@ export function LivePingConsole({
     }
   }, [openSignal]);
 
-  // Auto-desplazamiento exclusivo dentro del contenedor de la terminal ante nuevas líneas
+  // Auto-desplazamiento exclusivo dentro del contenedor con requestAnimationFrame
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    let rafId: number;
+    if (typeof requestAnimationFrame === "function") {
+      rafId = requestAnimationFrame(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+        }
+      });
     }
-  }, [logs, isOpen]);
+    return () => {
+      if (typeof cancelAnimationFrame === "function" && rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, [lines, isOpen]);
 
   // Ping subscription (backward-compatible)
   useEffect(() => {
@@ -131,7 +185,7 @@ export function LivePingConsole({
     // Append instead of wiping
     const prefixTag = linePrefix ? `${linePrefix} ` : "";
     const header = `[${new Date().toLocaleTimeString()}] > ${prefixTag}ping ${isInfinite ? "-t" : "-n 4"} ${ip}`;
-    setLogs((prev) => [...prev, header]);
+    appendLines([header]);
 
     const unsubscribe = subscribeToPing(
       ip,
@@ -140,27 +194,40 @@ export function LivePingConsole({
         const rawLines = sanitized.split(/\r?\n/).filter(Boolean);
         // Mantener las líneas intermedias limpias (el prefijo solo va en la cabecera inicial)
         if (rawLines.length > 0) {
-          setLogs((prev) => [...prev, ...rawLines].slice(-400));
+          appendLines(rawLines);
         }
       },
       (code: number) => {
         if (pingCompletedRef.current) return;
         pingCompletedRef.current = true;
-        setLogs((prev) => {
-          const next = [...prev];
+        setLines((prev) => {
+          const stringLines = prev.map((l) => l.text);
+          const newEntries: ConsoleLine[] = [];
 
           if (isInfinite) {
-            const summary = summarizePingLogs(currentPingLines(next), ip);
-            if (summary) next.push(summary);
+            const summary = summarizePingLogs(currentPingLines(stringLines), ip);
+            if (summary) {
+              newEntries.push({
+                id: nextLineIdRef.current++,
+                text: summary,
+                tone: classifyTone(summary, insideGlobalGroupsRef),
+              });
+            }
           }
 
-          next.push(
+          const completionMsg =
             code === null
               ? `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`
-              : `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`,
-          );
+              : `[${new Date().toLocaleTimeString()}] Proceso ping finalizado (código: ${code}).\n`;
 
-          return next;
+          newEntries.push({
+            id: nextLineIdRef.current++,
+            text: completionMsg,
+            tone: classifyTone(completionMsg, insideGlobalGroupsRef),
+          });
+
+          const combined = [...prev, ...newEntries];
+          return combined.length > 400 ? combined.slice(-400) : combined;
         });
         onPingCompleteRef.current?.();
       },
@@ -170,7 +237,7 @@ export function LivePingConsole({
     return () => {
       unsubscribe();
     };
-  }, [isPinging, ip, pingMode, linePrefix]);
+  }, [isPinging, ip, pingMode, linePrefix, appendLines]);
 
   // El operador puede detener el ping: el proceso se mata y no llega `ping-end`,
   // así que el resumen de un ping continuo se calcula al pasar isPinging a false.
@@ -182,13 +249,25 @@ export function LivePingConsole({
       !pingCompletedRef.current
     ) {
       pingCompletedRef.current = true;
-      setLogs((prev) => {
-        const summary = summarizePingLogs(currentPingLines(prev), ip);
-        return [
-          ...prev,
-          ...(summary ? [summary] : []),
-          `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`,
-        ];
+      setLines((prev) => {
+        const stringLines = prev.map((l) => l.text);
+        const summary = summarizePingLogs(currentPingLines(stringLines), ip);
+        const newEntries: ConsoleLine[] = [];
+        if (summary) {
+          newEntries.push({
+            id: nextLineIdRef.current++,
+            text: summary,
+            tone: classifyTone(summary, insideGlobalGroupsRef),
+          });
+        }
+        const stopMsg = `[${new Date().toLocaleTimeString()}] Proceso ping detenido.\n`;
+        newEntries.push({
+          id: nextLineIdRef.current++,
+          text: stopMsg,
+          tone: classifyTone(stopMsg, insideGlobalGroupsRef),
+        });
+        const combined = [...prev, ...newEntries];
+        return combined.length > 400 ? combined.slice(-400) : combined;
       });
     }
     wasPingingRef.current = isPinging;
@@ -204,7 +283,7 @@ export function LivePingConsole({
       return;
 
     const header = `[${activeCommand.timestamp || new Date().toLocaleTimeString()}] > ${activeCommand.argsText || `${activeCommand.command} ${activeCommand.target}`}`;
-    setLogs((prev) => [...prev, header]);
+    appendLines([header]);
 
     const unsubscribe = subscribeToDiagnosticCommand(
       activeCommand.command,
@@ -213,21 +292,29 @@ export function LivePingConsole({
         const sanitized = sanitizePingText(text);
         const lines = sanitized.split(/\r?\n/).filter(Boolean);
         if (lines.length > 0) {
-          setLogs((prev) => [...prev, ...lines].slice(-400));
+          appendLines(lines);
         }
       },
       (code: number) => {
-        setLogs((prev) => {
-          const next = [
-            ...prev,
-            `[${new Date().toLocaleTimeString()}] Proceso ${activeCommand.command} finalizado (código: ${code}).\n`,
+        setLines((prev) => {
+          const completionMsg = `[${new Date().toLocaleTimeString()}] Proceso ${activeCommand.command} finalizado (código: ${code}).\n`;
+          const newEntries: ConsoleLine[] = [
+            {
+              id: nextLineIdRef.current++,
+              text: completionMsg,
+              tone: classifyTone(completionMsg, insideGlobalGroupsRef),
+            },
           ];
           if (activeCommand.command === "netuser" && code !== 0) {
-            next.push(
-              "[net user] No se pudo consultar la cuenta. Verificá que exista, que sea del dominio actual y que tu cuenta tenga permiso de lectura.\n",
-            );
+            const errLine = "[net user] No se pudo consultar la cuenta. Verificá que exista, que sea del dominio actual y que tu cuenta tenga permiso de lectura.\n";
+            newEntries.push({
+              id: nextLineIdRef.current++,
+              text: errLine,
+              tone: classifyTone(errLine, insideGlobalGroupsRef),
+            });
           }
-          return next;
+          const combined = [...prev, ...newEntries];
+          return combined.length > 400 ? combined.slice(-400) : combined;
         });
         onDiagnosticCompleteRef.current?.();
       },
@@ -237,15 +324,16 @@ export function LivePingConsole({
     return () => {
       unsubscribe();
     };
-  }, [activeCommand]);
+  }, [activeCommand, appendLines]);
 
   const handleClear = (): void => {
-    setLogs([]);
+    setLines([]);
+    insideGlobalGroupsRef.current = false;
   };
 
   const handleCopyLogs = async (): Promise<void> => {
-    if (logs.length === 0) return;
-    const text = logs.join("\n");
+    if (lines.length === 0) return;
+    const text = lines.map((l) => l.text).join("\n");
     try {
       if (navigator?.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
@@ -258,18 +346,18 @@ export function LivePingConsole({
   };
 
   const getLastOutputBlock = (): string => {
-    if (logs.length === 0) return "";
+    if (lines.length === 0) return "";
     let lastCmdIdx = -1;
-    for (let i = logs.length - 1; i >= 0; i--) {
-      if (logs[i].startsWith("[") && logs[i].includes(">")) {
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (lines[i].text.startsWith("[") && lines[i].text.includes(">")) {
         lastCmdIdx = i;
         break;
       }
     }
     if (lastCmdIdx === -1) {
-      return logs.join("\n");
+      return lines.map((l) => l.text).join("\n");
     }
-    return logs.slice(lastCmdIdx).join("\n");
+    return lines.slice(lastCmdIdx).map((l) => l.text).join("\n");
   };
 
   const handleCopyLastBlock = async (): Promise<void> => {
@@ -300,7 +388,6 @@ export function LivePingConsole({
   const isAccountMode = mode === "account";
   const HeaderIcon = isAccountMode ? UserRound : Activity;
   const headerLabel = isAccountMode ? `Cuenta AD · ${targetLabel ?? ""}` : ip;
-  let insideGlobalGroups = false;
 
   return (
     <Collapsible asChild open={isOpen} onOpenChange={setIsOpen}>
@@ -405,7 +492,7 @@ export function LivePingConsole({
                 event.stopPropagation();
                 handleCopyLastBlock();
               }}
-              disabled={logs.length === 0}
+              disabled={lines.length === 0}
               aria-label="Copiar último bloque de logs"
               title="Copiar únicamente el último comando y su respuesta al portapapeles"
               className="h-7 px-2.5 text-micro font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
@@ -427,7 +514,7 @@ export function LivePingConsole({
                 event.stopPropagation();
                 handleCopyLogs();
               }}
-              disabled={logs.length === 0}
+              disabled={lines.length === 0}
               aria-label="Copiar logs de ping"
               title="Copiar logs completos al portapapeles"
               className="h-7 px-2.5 text-micro font-sans flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
@@ -453,46 +540,22 @@ export function LivePingConsole({
               fill ? "flex-1 min-h-0" : "h-[50vh]"
             } overflow-y-auto overflow-x-auto p-3 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
           >
-            {logs.length === 0 ? (
+            {lines.length === 0 ? (
               <div className="h-full flex items-center justify-center text-console-muted font-sans text-xs">
                 {isAccountMode
                   ? "Consultá una cuenta para ver la salida de net user."
                   : "Selecciona una acción (Ping, Ping -t, Nbtstat, Tracert, ARP) en la barra superior para iniciar diagnóstico."}
               </div>
             ) : (
-              logs.map((line, idx) => {
-                const isGroupHeader = /grupos globales|global group memberships/i.test(
-                  line,
-                );
-                if (isGroupHeader) insideGlobalGroups = true;
-
-                const isGroupItem = insideGlobalGroups && /^\s*\*/.test(line);
-                if (insideGlobalGroups && line.trim() === "") {
-                  insideGlobalGroups = false;
-                }
-
-                const tone = isGroupHeader
-                  ? "text-console-info font-semibold"
-                  : isGroupItem
-                    ? "text-console-info"
-                    : line.startsWith("[") && line.includes(">")
-                      ? "text-console-info font-bold"
-                      : line.includes("Iniciando") || line.includes("Ejecutando")
-                        ? "text-console-warning font-semibold"
-                        : line.includes("finalizado")
-                          ? "text-console-success font-semibold"
-                          : line.includes("Error") ||
-                              line.includes("cerrado") ||
-                              line.includes("inaccesible")
-                            ? "text-console-destructive font-semibold"
-                            : "text-console-fg";
-
-                return (
-                  <div key={idx} className={`whitespace-pre font-mono ${tone}`}>
-                    {line}
-                  </div>
-                );
-              })
+              lines.map((line) => (
+                <div
+                  key={line.id}
+                  data-line-id={line.id}
+                  className={`whitespace-pre font-mono ${line.tone}`}
+                >
+                  {line.text}
+                </div>
+              ))
             )}
           </div>
         </CollapsibleContent>
