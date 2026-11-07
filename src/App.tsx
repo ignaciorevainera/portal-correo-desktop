@@ -41,6 +41,7 @@ import {
   GateStatus,
   checkIsAdmin,
   stopPing,
+  saveUiPreferences,
 } from "./services/electronClient";
 import { TerminalData } from "./types/terminal";
 import { Search, SearchX, RotateCcw } from "lucide-react";
@@ -66,7 +67,9 @@ import {
   splitUsernames,
 } from "@/lib/usernames";
 import { updateRecentSearchKind } from "@/lib/recentSearches";
-import { loadDefaultPingMode } from "@/lib/preferences";
+import { loadDefaultPingMode, loadDefaultTextScale, saveDefaultTextScale, loadDefaultHighContrast } from "@/lib/preferences";
+import { getNextTextScale, getPrevTextScale, applyTextScale } from "@/lib/textScale";
+import { applyHighContrastClass } from "@/lib/highContrast";
 import { APP_VERSION } from "@/lib/appVersion";
 import { deriveSiteTargets } from "@/utils/siteTargets";
 
@@ -136,6 +139,14 @@ export default function App(): React.JSX.Element {
       setIsRetryingGate(false);
     }
   };
+
+  // Inicialización de escala de texto y alto contraste desde almacenamiento
+  const [appTextScale, setAppTextScale] = useState(loadDefaultTextScale);
+
+  useEffect(() => {
+    applyTextScale(loadDefaultTextScale());
+    applyHighContrastClass(loadDefaultHighContrast());
+  }, []);
 
   const mainRef = useRef<HTMLElement>(null);
 
@@ -392,6 +403,36 @@ export default function App(): React.JSX.Element {
       } else if (e.key === "F4") {
         e.preventDefault();
         handleTogglePing();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === "+" || e.key === "=")) {
+        e.preventDefault();
+        setAppTextScale((prev) => {
+          const next = getNextTextScale(prev);
+          saveDefaultTextScale(next);
+          applyTextScale(next);
+          void saveUiPreferences({ textScale: next });
+          toast.info(`Escala de texto: ${next}%`);
+          return next;
+        });
+      } else if ((e.ctrlKey || e.metaKey) && e.key === "-") {
+        e.preventDefault();
+        setAppTextScale((prev) => {
+          const next = getPrevTextScale(prev);
+          saveDefaultTextScale(next);
+          applyTextScale(next);
+          void saveUiPreferences({ textScale: next });
+          toast.info(`Escala de texto: ${next}%`);
+          return next;
+        });
+      } else if ((e.ctrlKey || e.metaKey) && e.key === "0") {
+        e.preventDefault();
+        setAppTextScale(() => {
+          const next = "100";
+          saveDefaultTextScale(next);
+          applyTextScale(next);
+          void saveUiPreferences({ textScale: next });
+          toast.info("Escala restablecida: 100%");
+          return next;
+        });
       }
     };
     window.addEventListener("keydown", handleGlobalShortcuts);

@@ -311,4 +311,36 @@ describe('SettingsModal Component', () => {
     fireEvent.click(testBtn);
     expect(testSqlSpy).toHaveBeenCalledTimes(1);
   });
+  it('permite seleccionar escala de texto y activar modo de alto contraste', async () => {
+    const savePrefsSpy = vi.spyOn(electronClient, 'saveUiPreferences').mockResolvedValue({
+      minimizeToTray: true,
+      globalHotkeyEnabled: true,
+      textScale: '120',
+      highContrast: true,
+      stored: true,
+    });
+
+    render(
+      <SettingsModal
+        isOpen={true}
+        onClose={vi.fn()}
+        currentVersion="1.0.0"
+      />
+    );
+
+    expect(screen.getByRole('heading', { name: /accesibilidad y visualización/i })).toBeInTheDocument();
+    expect(screen.getByText(/tamaño de texto e interfaz/i)).toBeInTheDocument();
+    expect(screen.getByText(/modo de alto contraste/i)).toBeInTheDocument();
+
+    const scale120Btn = screen.getByRole('radio', { name: /120%/i });
+    expect(scale120Btn).toBeInTheDocument();
+    fireEvent.click(scale120Btn);
+
+    const highContrastSwitch = screen.getByRole('switch', { name: /modo de alto contraste/i });
+    expect(highContrastSwitch).toBeInTheDocument();
+    fireEvent.click(highContrastSwitch);
+
+    expect(savePrefsSpy).toHaveBeenCalledWith(expect.objectContaining({ textScale: '120' }));
+    expect(savePrefsSpy).toHaveBeenCalledWith(expect.objectContaining({ highContrast: true }));
+  });
 });

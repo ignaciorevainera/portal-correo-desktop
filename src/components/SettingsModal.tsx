@@ -37,6 +37,7 @@ import {
   Sliders,
   Sparkles,
   Database,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { IconWell } from "./IconWell";
@@ -44,7 +45,14 @@ import {
   loadDefaultPingMode,
   saveDefaultPingMode,
   type PingMode,
+  type TextScale,
+  loadDefaultTextScale,
+  saveDefaultTextScale,
+  loadDefaultHighContrast,
+  saveDefaultHighContrast,
 } from "@/lib/preferences";
+import { applyHighContrastClass } from "@/lib/highContrast";
+import { applyTextScale } from "@/lib/textScale";
 import { APP_VERSION } from "@/lib/appVersion";
 
 interface SettingsModalProps {
@@ -94,6 +102,9 @@ export function SettingsModal({
   const [defaultPingMode, setDefaultPingMode] =
     useState<PingMode>(loadDefaultPingMode);
 
+  const [textScale, setTextScale] = useState<TextScale>(loadDefaultTextScale);
+  const [highContrast, setHighContrast] = useState<boolean>(loadDefaultHighContrast);
+
   useEffect(() => {
     localStorage.setItem("pcd_pref_tray", String(minimizeToTray));
   }, [minimizeToTray]);
@@ -105,6 +116,26 @@ export function SettingsModal({
   useEffect(() => {
     saveDefaultPingMode(defaultPingMode);
   }, [defaultPingMode]);
+
+  useEffect(() => {
+    saveDefaultTextScale(textScale);
+    applyTextScale(textScale);
+  }, [textScale]);
+
+  useEffect(() => {
+    saveDefaultHighContrast(highContrast);
+    applyHighContrastClass(highContrast);
+  }, [highContrast]);
+
+  const handleTextScaleChange = (scale: TextScale) => {
+    setTextScale(scale);
+    void saveUiPreferences({ textScale: scale });
+  };
+
+  const handleHighContrastChange = (enabled: boolean) => {
+    setHighContrast(enabled);
+    void saveUiPreferences({ highContrast: enabled });
+  };
 
   // El proceso principal aplica estas preferencias (atajo global y cierre de
   // ventana), así que se leen al abrir el diálogo y se le notifican al cambiar.
@@ -119,6 +150,8 @@ export function SettingsModal({
         if (prefs.stored) {
           setMinimizeToTray(prefs.minimizeToTray);
           setGlobalHotkeyEnabled(prefs.globalHotkeyEnabled);
+          if (prefs.textScale) setTextScale(prefs.textScale);
+          if (typeof prefs.highContrast === 'boolean') setHighContrast(prefs.highContrast);
           return;
         }
 
@@ -518,6 +551,86 @@ export function SettingsModal({
                   Continuo (-t)
                 </ToggleGroupItem>
               </ToggleGroup>
+            </div>
+          </section>
+
+          {/* SECCIÓN 4: ACCESIBILIDAD Y VISUALIZACIÓN */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-border/60 pb-2">
+              <Eye className="h-4 w-4 text-link" />
+              <h3 className="overline-label text-foreground">
+                Accesibilidad y Visualización
+              </h3>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">
+              <div className="text-xs font-bold text-foreground">
+                Tamaño de Texto e Interfaz
+              </div>
+              <div className="text-micro text-muted-foreground">
+                Escalado armónico de textos y controles (atajos: <kbd className="px-1 py-0.5 rounded bg-muted font-mono text-[10px]">Ctrl +</kbd> / <kbd className="px-1 py-0.5 rounded bg-muted font-mono text-[10px]">Ctrl -</kbd> / <kbd className="px-1 py-0.5 rounded bg-muted font-mono text-[10px]">Ctrl 0</kbd>)
+              </div>
+              <ToggleGroup
+                type="single"
+                value={textScale}
+                onValueChange={(value) => {
+                  if (value === "100" || value === "110" || value === "120" || value === "130") {
+                    handleTextScaleChange(value);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                aria-label="Tamaño de texto e interfaz"
+                className="pt-1 justify-start gap-1.5"
+              >
+                <ToggleGroupItem
+                  value="100"
+                  aria-label="100% Estándar"
+                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  100%
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="110"
+                  aria-label="110% Mediano"
+                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  110%
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="120"
+                  aria-label="120% Grande"
+                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  120%
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="130"
+                  aria-label="130% Extra grande"
+                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  130%
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="cursor-pointer space-y-0.5">
+                  <Label htmlFor="high-contrast" className="text-xs font-medium text-foreground">
+                    Modo de Alto Contraste
+                  </Label>
+                  <p className="text-micro text-muted-foreground">
+                    Intensifica bordes, elimina transparencias y eleva el contraste para monitores de baja resolución o visibilidad reducida.
+                  </p>
+                </div>
+                <Switch
+                  id="high-contrast"
+                  checked={highContrast}
+                  onCheckedChange={handleHighContrastChange}
+                  aria-label="Modo de Alto Contraste"
+                />
+              </div>
             </div>
           </section>
 
