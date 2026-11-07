@@ -66,6 +66,32 @@ function cleanupStaleVncFiles(dir = os.tmpdir(), options = {}) {
   return { removed };
 }
 
+async function cleanupStaleVncFilesAsync(dir = os.tmpdir(), options = {}) {
+  const { now = () => Date.now(), maxAgeMs = 24 * 60 * 60 * 1000 } = options;
+  let removed = 0;
+
+  try {
+    const entries = await fs.promises.readdir(dir);
+    for (const entry of entries) {
+      if (!/^pcd_.*\.vnc$/i.test(entry)) continue;
+      const full = path.join(dir, entry);
+      try {
+        const stats = await fs.promises.stat(full);
+        if (now() - stats.mtimeMs >= maxAgeMs) {
+          await fs.promises.unlink(full);
+          removed += 1;
+        }
+      } catch {
+        // archivo bloqueado o ya eliminado
+      }
+    }
+  } catch {
+    // directorio ilegible
+  }
+
+  return { removed };
+}
+
 function getVncCommand(vncPath, configPath) {
   return {
     exe: vncPath,
@@ -125,7 +151,13 @@ function getArpArgs(targetIpOrHost) {
   };
 }
 
+let cachedVncViewerPath = null;
+function clearVncViewerPathCache() {
+  cachedVncViewerPath = null;
+}
+
 function getVncViewerPath() {
+  if (cachedVncViewerPath) return cachedVncViewerPath;
   const appPath = path.resolve(__dirname, '..');
   const possiblePaths = [
     path.join(appPath, 'resources', 'bin', 'vncviewer.exe'),
@@ -133,9 +165,13 @@ function getVncViewerPath() {
   ];
 
   for (const p of possiblePaths) {
-    if (fs.existsSync(p)) return p;
+    if (fs.existsSync(p)) {
+      cachedVncViewerPath = p;
+      return p;
+    }
   }
-  return 'vncviewer.exe';
+  cachedVncViewerPath = 'vncviewer.exe';
+  return cachedVncViewerPath;
 }
 
 function probeTcpPort(host, port, timeoutMs = 1200) {
@@ -178,12 +214,34 @@ function probeTcpPort(host, port, timeoutMs = 1200) {
   });
 }
 
-async function probeRemotePorts(host, timeoutMs = 800) {
+let probeTcpPortImpl = probeTcpPort;
+function setProbeTcpPortImpl(fn) {
+  probeTcpPortImpl = fn || probeTcpPort;
+}
+
+const PROBE_CACHE_TTL_MS = 8000;
+const probeCache = new Map();
+
+function clearProbeCache() {
+  probeCache.clear();
+}
+
+async function probeRemotePorts(host, timeoutMs = 800, options = {}) {
+  const cleanHost = sanitizeHostOrIp(host);
+  const now = Date.now();
+  if (!options.bypassCache && probeCache.has(cleanHost)) {
+    const cached = probeCache.get(cleanHost);
+    if (now - cached.timestamp < PROBE_CACHE_TTL_MS) {
+      return { ...cached.data, cached: true };
+    }
+    probeCache.delete(cleanHost);
+  }
+
   const [res5901, res5900, res3389, res135] = await Promise.all([
-    probeTcpPort(host, 5901, timeoutMs),
-    probeTcpPort(host, 5900, timeoutMs),
-    probeTcpPort(host, 3389, timeoutMs),
-    probeTcpPort(host, 135, timeoutMs),
+    probeTcpPortImpl(cleanHost, 5901, timeoutMs),
+    probeTcpPortImpl(cleanHost, 5900, timeoutMs),
+    probeTcpPortImpl(cleanHost, 3389, timeoutMs),
+    probeTcpPortImpl(cleanHost, 135, timeoutMs),
   ]);
 
   let vncPort = null;
@@ -201,14 +259,16 @@ async function probeRemotePorts(host, timeoutMs = 800) {
     recommendedMethod = 'msra';
   }
 
-  return {
-    host,
+  const result = {
+    host: cleanHost,
     vncPort,
     port5901Open: res5901.open,
     port5900Open: res5900.open,
     msraAvailable,
     recommendedMethod,
   };
+  probeCache.set(cleanHost, { timestamp: now, data: result });
+  return result;
 }
 
 async function launchRemoteSmart(targetIpOrHost, options = {}) {
@@ -594,6 +654,7 @@ module.exports = {
   buildVncConfigFile,
   buildVncTempPath,
   cleanupStaleVncFiles,
+  cleanupStaleVncFilesAsync,
   getVncCommand,
   getMsraCommand,
   getPingArgs,
@@ -601,8 +662,12 @@ module.exports = {
   getTracertArgs,
   getArpArgs,
   getVncViewerPath,
+  clearVncViewerPathCache,
   probeTcpPort,
   probeRemotePorts,
+  clearProbeCache,
+  setProbeTcpPortImpl,
+  PROBE_CACHE_TTL_MS,
   launchVnc,
   launchVncSmart,
   launchRemoteSmart,

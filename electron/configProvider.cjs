@@ -63,6 +63,7 @@ class UncConfigProvider {
     this.configPath = configPath;
     this.readFile = readFile;
     this.logger = logger;
+    this._cachedFull = null;
   }
 
   get source() {
@@ -73,11 +74,20 @@ class UncConfigProvider {
     return { source: this.source, target: this.configPath };
   }
 
-  async readFull() {
+  clearCache() {
+    this._cachedFull = null;
+  }
+
+  async readFull(bypassCache = false) {
+    if (!bypassCache && this._cachedFull) {
+      return this._cachedFull;
+    }
+
     let content;
     try {
       content = await this.readFile(this.configPath, 'utf8');
     } catch (err) {
+      this._cachedFull = null;
       throw new ConfigError(mapFsError(err), `No se pudo leer la configuración: ${err && err.message}`, {
         path: this.configPath,
       });
@@ -87,20 +97,22 @@ class UncConfigProvider {
     try {
       parsed = JSON.parse(stripBom(content));
     } catch {
+      this._cachedFull = null;
       throw new ConfigError('BAD_CONFIG', 'El archivo de configuración no es JSON válido', { path: this.configPath });
     }
 
-    return validateCorporateConfig(parsed);
+    this._cachedFull = validateCorporateConfig(parsed);
+    return this._cachedFull;
   }
 
-  async getConfig() {
-    const full = await this.readFull();
+  async getConfig(bypassCache = false) {
+    const full = await this.readFull(bypassCache);
     const { vncPassword, ...config } = full;
     return config;
   }
 
-  async getVncSecret() {
-    const full = await this.readFull();
+  async getVncSecret(bypassCache = false) {
+    const full = await this.readFull(bypassCache);
     if (!full.vncPassword) {
       throw new ConfigError('SECRET_UNAVAILABLE', 'La configuración no incluye clave VNC', { path: this.configPath });
     }

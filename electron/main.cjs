@@ -1,4 +1,14 @@
 const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, globalShortcut, clipboard, dialog, net } = require('electron');
+
+// Verificación anticipada de instancia única antes de inicializar módulos pesados
+const gotTheLock = typeof app?.requestSingleInstanceLock === 'function' ? app.requestSingleInstanceLock() : true;
+if (!gotTheLock) {
+  app.quit();
+  if (typeof process.exit === 'function') {
+    process.exit(0);
+  }
+}
+
 const path = require('path');
 const fs = require('fs');
 const dbService = require('./dbService.cjs');
@@ -188,24 +198,37 @@ app.whenReady().then(async () => {
     });
   }
   initializeBootstrap();
-  const cleanup = systemTools.cleanupStaleVncFiles();
-  if (cleanup.removed > 0) logger.info('Temporales VNC eliminados', { count: cleanup.removed });
+  // Limpieza diferida no bloqueante de temporales VNC (evita I/O de disco durante el cold start)
+  setTimeout(() => {
+    const cleaner = systemTools.cleanupStaleVncFilesAsync || systemTools.cleanupStaleVncFiles;
+    Promise.resolve(cleaner()).then((cleanup) => {
+      if (cleanup && cleanup.removed > 0) logger.info('Temporales VNC eliminados', { count: cleanup.removed });
+    }).catch(() => {});
+  }, 3000);
   await runGate();
 });
 
+let cachedAppIconPath = undefined;
 function getAppIconPath() {
+  if (cachedAppIconPath !== undefined) {
+    return cachedAppIconPath;
+  }
   const winIco = path.join(__dirname, '../public/windows/icon.ico');
   if (fs.existsSync(winIco)) {
+    cachedAppIconPath = winIco;
     return winIco;
   }
   const rootFavicon = path.join(__dirname, '../public/favicon.ico');
   if (fs.existsSync(rootFavicon)) {
+    cachedAppIconPath = rootFavicon;
     return rootFavicon;
   }
   const rootPng = path.join(__dirname, '../public/icon.png');
   if (fs.existsSync(rootPng)) {
+    cachedAppIconPath = rootPng;
     return rootPng;
   }
+  cachedAppIconPath = null;
   return null;
 }
 
@@ -285,6 +308,7 @@ function createWindow() {
     maximizable: false,
     fullscreenable: false,
     backgroundColor: '#0f172a',
+    show: false,
     frame: false,
     autoHideMenuBar: true,
     ...(iconPath ? { icon: iconPath } : {}),
@@ -294,6 +318,12 @@ function createWindow() {
       nodeIntegration: false,
     },
     title: 'Portal Correo Desktop - Monitoreo e Inventario de Estaciones',
+  });
+
+  win.once('ready-to-show', () => {
+    if (!win.isDestroyed()) {
+      win.show();
+    }
   });
 
   createTray(win);
@@ -836,31 +866,25 @@ ipcMain.handle('pcd:ui-preferences-set', (_event, patch) => {
   return uiPreferences;
 });
 
-const gotTheLock = app.requestSingleInstanceLock();
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    if (!mainWindow.isVisible()) mainWindow.show();
+    mainWindow.focus();
+  }
+});
 
-if (!gotTheLock) {
-  app.quit();
-} else {
-  app.on('second-instance', () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      if (!mainWindow.isVisible()) mainWindow.show();
-      mainWindow.focus();
+app.whenReady().then(() => {
+  mainWindow = createWindow();
+  registerGlobalSearchShortcut(mainWindow);
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      mainWindow = createWindow();
+      registerGlobalSearchShortcut(mainWindow);
     }
   });
-
-  app.whenReady().then(() => {
-    mainWindow = createWindow();
-    registerGlobalSearchShortcut(mainWindow);
-
-    app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        mainWindow = createWindow();
-        registerGlobalSearchShortcut(mainWindow);
-      }
-    });
-  });
-}
+});
 
 app.on('will-quit', () => {
   if (app.isReady()) {
