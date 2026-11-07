@@ -12,13 +12,15 @@ describe('App Rendering & Software-Rasterization Optimizations', () => {
     vi.restoreAllMocks();
     vi.spyOn(electronClient, 'checkSecurityGateStatus').mockResolvedValue({
       status: 'READY',
+      code: 'AUTHORIZED',
+      message: '',
       source: 'unc',
-      target: '\\\\mock\\config.json',
+      configPath: '\\\\mock\\config.json',
     });
     vi.spyOn(electronClient, 'checkBackendStatus').mockResolvedValue({
-      ok: true,
-      poolSize: 1,
-      lastCheck: new Date().toISOString(),
+      connected: true,
+      mode: 'sql',
+      server: 'srv',
     });
   });
 
@@ -37,11 +39,7 @@ describe('App Rendering & Software-Rasterization Optimizations', () => {
     const { container } = render(
       <ThemeProvider>
         <Topbar
-          onSearch={vi.fn()}
-          onOpenSettings={vi.fn()}
-          onOpenSubnetScanner={vi.fn()}
-          searchError={null}
-          backendStatus={{ ok: true, poolSize: 1, lastCheck: '' }}
+          onSelectTerminal={vi.fn()}
         />
       </ThemeProvider>
     );

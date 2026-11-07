@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from 'vitest';
-// @ts-expect-error - CJS module in electron
 const { scanSubnetBatch } = require('../../electron/subnetScanner.cjs');
 
 describe('Subnet Scanner Continuous Worker Pool & 2-Phase Discovery', () => {
