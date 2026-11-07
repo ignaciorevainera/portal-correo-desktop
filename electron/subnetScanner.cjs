@@ -119,7 +119,12 @@ async function defaultDnsResolver(targetIp) {
 }
 
 /**
- * Concurrently scans an array of IPs in controlled batches.
+ * Concurrently scans an array of IPs using a continuous sliding Worker Pool (concurrency N)
+ * with 2-phase host discovery:
+ * Phase 1: Emits onHostFound immediately with alive: true and latency as soon as ping succeeds,
+ *          without blocking the worker loop or waiting for reverse DNS.
+ * Phase 2: Resolves DNS/NetBIOS asynchronously in the background and emits onHostUpdate
+ *          (and updates result host) when resolved.
  */
 async function scanSubnetBatch(ips, options = {}) {
   const {
@@ -130,6 +135,7 @@ async function scanSubnetBatch(ips, options = {}) {
     pinger = defaultPingProbe,
     dnsResolver = defaultDnsResolver,
     onHostFound,
+    onHostUpdate,
     onProgress,
   } = options;
 
@@ -137,62 +143,83 @@ async function scanSubnetBatch(ips, options = {}) {
   let scanned = startIndex;
   const foundHosts = [];
   const seenIps = new Set();
+  const backgroundDnsTasks = [];
+  let currentIndex = 0;
 
-  for (let i = 0; i < ips.length; i += concurrency) {
-    if (signal && signal.aborted) {
-      return { aborted: true, hosts: foundHosts };
-    }
+  const worker = async () => {
+    while (currentIndex < ips.length) {
+      if (signal && signal.aborted) return;
+      const index = currentIndex++;
+      if (index >= ips.length) return;
+      const ip = ips[index];
 
-    const batch = ips.slice(i, i + concurrency);
-    await Promise.all(
-      batch.map(async (ip) => {
+      try {
+        const pingRes = await pinger(ip, 400, signal);
         if (signal && signal.aborted) return;
+        scanned++;
+        if (onProgress) {
+          onProgress(scanned, total);
+        }
 
-        try {
-          const pingRes = await pinger(ip, 400, signal);
+        if (pingRes && pingRes.alive) {
           if (signal && signal.aborted) return;
-          scanned++;
-          if (onProgress) {
-            onProgress(scanned, total);
-          }
-
-          if (pingRes.alive) {
-            if (signal && signal.aborted) return;
-            if (seenIps.has(ip)) {
-              return;
-            }
+          if (!seenIps.has(ip)) {
             seenIps.add(ip);
-
-            let hostname = null;
-            try {
-              hostname = await dnsResolver(ip);
-            } catch {}
-            if (signal && signal.aborted) return;
 
             const host = {
               ip,
-              hostname: hostname || null,
+              hostname: null,
               alive: true,
               latency: pingRes.latency,
             };
-
             foundHosts.push(host);
+
+            // Fase 1: Emisión inmediata de host vivo
             if (onHostFound) {
               onHostFound(host);
             }
-          }
-        } catch {
-          if (signal && signal.aborted) return;
-          scanned++;
-          if (onProgress) {
-            onProgress(scanned, total);
+
+            // Fase 2: Resolución asíncrona desacoplada del worker
+            if (dnsResolver) {
+              const dnsTask = Promise.resolve()
+                .then(() => dnsResolver(ip))
+                .then((resolvedName) => {
+                  if (signal && signal.aborted) return;
+                  if (resolvedName) {
+                    host.hostname = resolvedName;
+                    if (onHostUpdate) {
+                      onHostUpdate({ ...host, hostname: resolvedName });
+                    }
+                  }
+                })
+                .catch(() => {});
+              backgroundDnsTasks.push(dnsTask);
+            }
           }
         }
-      })
-    );
+      } catch {
+        if (signal && signal.aborted) return;
+        scanned++;
+        if (onProgress) {
+          onProgress(scanned, total);
+        }
+      }
+    }
+  };
+
+  const poolSize = Math.max(1, Math.min(concurrency, ips.length));
+  const workers = [];
+  for (let i = 0; i < poolSize; i++) {
+    workers.push(worker());
   }
 
-  return { aborted: false, hosts: foundHosts };
+  await Promise.all(workers);
+
+  if (backgroundDnsTasks.length > 0) {
+    await Promise.all(backgroundDnsTasks);
+  }
+
+  return { aborted: Boolean(signal && signal.aborted), hosts: foundHosts };
 }
 
 module.exports = {

@@ -706,6 +706,11 @@ ipcMain.on('pcd:subnet-scan-start', async (event, payload) => {
           event.sender.send('pcd:subnet-host-found', host);
         }
       },
+      onHostUpdate: (host) => {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('pcd:subnet-host-found', host);
+        }
+      },
       onProgress: (scanned, total) => {
         if (!event.sender.isDestroyed()) {
           event.sender.send('pcd:subnet-progress', { scanned, total });
