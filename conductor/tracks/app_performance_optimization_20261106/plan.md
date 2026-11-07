@@ -9,8 +9,8 @@
 
 ## Phase 2: Escáner de Subred `/24` con Worker Pool Continuo y Descubrimiento en 2 Fases
 - [x] Task: Write Tests: `scanSubnetBatch` con Worker Pool deslizante (sin bloqueo por host con DNS lento) y emisión en 2 fases (host vivo inmediato + actualización de hostname) [b867d75]
-- [~] Task: Implement Worker Pool continuo y emisión en 2 fases en `electron/subnetScanner.cjs`
-- [ ] Task: Write Tests: actualización in-place de hostname por IP, filtrado memorizado y throttling de progreso en `SubnetScannerDrawer.tsx`
+- [x] Task: Implement Worker Pool continuo y emisión en 2 fases en `electron/subnetScanner.cjs` [3b5a07e]
+- [~] Task: Write Tests: actualización in-place de hostname por IP, filtrado memorizado y throttling de progreso en `SubnetScannerDrawer.tsx`
 - [ ] Task: Implement actualización in-place, `useMemo`, `React.memo` y throttling de progreso en `src/components/SubnetScannerDrawer.tsx`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
