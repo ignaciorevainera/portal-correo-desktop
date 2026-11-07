@@ -19,9 +19,9 @@
 - [x] Task: Implement modelo de líneas `{ id, text, tone }` en `O(1)` y scroll con `requestAnimationFrame` en `src/components/LivePingConsole.tsx` [3e0e8f7]
 - [x] Task: Write Tests: renderizado estable y carga diferida de modales/drawers en `App.tsx` y `Topbar.tsx` [6f070fc]
 - [x] Task: Implement `React.memo` (`TerminalIdentity`, `TerminalDetailsGrid`, `ActivityPanel`), `React.lazy` + `Suspense` para diálogos secundarios, limpieza en `App.tsx` y optimización CSS sin `backdrop-blur` en `Topbar.tsx` [8475cd7]
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Verificación Integral, Auditoría de Contraste/Seguridad y Documentación
-- [ ] Task: Actualizar `conductor/product.md` y `conductor/tech-stack.md` documentando la arquitectura de rendimiento optimizada
+- [~] Task: Actualizar `conductor/product.md` y `conductor/tech-stack.md` documentando la arquitectura de rendimiento optimizada
 - [ ] Task: Ejecutar suite completa de tests (`CI=true npm test`), auditoría de contraste (`npm run audit:contrast`) y build de producción (`npm run build`)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
