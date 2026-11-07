@@ -82,7 +82,7 @@
 
 ---
 
-- [ ] **Track: UI Polish, Subnet Drawer, Character Encoding & Uptime Refactor**
+- [x] **Track: UI Polish, Subnet Drawer, Character Encoding & Uptime Refactor**
   *Link: [./tracks/ui_polish_subnet_encoding_uptime_20261026/index.md](./tracks/ui_polish_subnet_encoding_uptime_20261026/index.md)*
 
 

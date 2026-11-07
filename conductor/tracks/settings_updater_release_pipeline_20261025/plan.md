@@ -17,15 +17,15 @@
 - [x] Task: Phase 2 Verification & Checkpoint (Protocol in workflow.md)
 
 ### Phase 3: Integración de Botón CTA en `Topbar.tsx` y Cableado de Reinicio en `App.tsx`
-- [~] Task: Integrar acceso a Ajustes en la barra superior y atajo global de teclado
-  - [ ] Write Failing Tests: Actualizar `src/components/Topbar.test.tsx` y `src/App.test.tsx` para verificar la presencia del botón ⚙️ con tooltip, la respuesta al atajo de teclado (`F10`) y el disparo del toast de reinicio cuando la descarga en background finaliza.
+- [x] Task: Integrar acceso a Ajustes en la barra superior y atajo global de teclado
+  - [x] Write Failing Tests: Actualizar `src/components/Topbar.test.tsx` y `src/App.test.tsx` para verificar la presencia del botón ⚙️ con tooltip, la respuesta al atajo de teclado (`F10`) y el disparo del toast de reinicio cuando la descarga en background finaliza.
   - [x] Implement to Pass Tests: Agregar botón de ajustes en `src/components/Topbar.tsx`, cablear apertura del modal y registrar listener para aplicar actualización al cerrar el aplicativo si el usuario no reinicia de inmediato.
   - [x] Refactor & Coverage: Ejecutar suite completa de tests de la interfaz.
 - [x] Task: Phase 3 Verification & Checkpoint (Protocol in workflow.md)
 
 ### Phase 4: Empaquetado Dual (`electron-builder`) y Scripts de Release con Blindaje Zero-Secrets
-- [ ] Task: Configurar `electron-builder` y script pre-release de auditoría obligatoria
-  - [ ] Write Failing Tests: Crear test en `src/test/releaseGate.test.ts` que valide que el script de release falle si `securityAudit.test.ts` detecta cualquier secreto o IP privada en el repositorio.
-  - [ ] Implement to Pass Tests: Instalar y configurar `electron-builder` en `package.json` para compilar los targets `nsis` (`.exe` de instalación) y `portable` (`.exe` autónomo sin instalación), integrando el script `npm run release:check` y `npm run release:build`.
-  - [x] Refactor & Coverage: Validar compilación local de artefactos y verificación de 0 referencias a secretos en los bundles de distribución.
+- [x] Task: Configurar `electron-builder` y script pre-release de auditoría obligatoria
+  - [x] Write Failing Tests: Crear test en `src/test/releaseGate.test.ts` que valide que el script de release falle si `securityAudit.test.ts` detecta cualquier secreto o IP privada en el repositorio. [109d7f1]
+  - [x] Implement to Pass Tests: Instalar y configurar `electron-builder` en `package.json` para compilar los targets `nsis` (`.exe` de instalación) y `portable` (`.exe` autónomo sin instalación), integrando el script `npm run release:check` y `npm run release:build`. [109d7f1]
+  - [x] Refactor & Coverage: Validar compilación local de artefactos y verificación de 0 referencias a secretos en los bundles de distribución. [109d7f1]
 - [x] Task: Phase 4 Verification & Checkpoint (Protocol in workflow.md)

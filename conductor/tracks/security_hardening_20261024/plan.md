@@ -26,7 +26,7 @@
 
 ## Phase 3: Pantalla de Bloqueo Corporativo (`SecurityLockScreen`) e Integración IPC [REVERTIDO]
 > **Nota de Reversión (Revert Track)**: A solicitud del usuario mediante `/conductor-revert`, se eliminó el requisito de clave corporativa y la pantalla de bloqueo (`SecurityLockScreen`). La aplicación queda abierta y disponible de forma directa para cualquier usuario sin necesidad de ingresar claves o archivos de configuración externos. El resguardo de seguridad se mantiene íntegramente mediante la política Zero-Secrets en el repositorio (sin IPs sensibles ni credenciales en GitHub) y el acceso natural por red corporativa / VPN.
-- [~] Task: Revertido - Prescindir de `SecurityLockScreen.tsx` y requisito de clave corporativa en handlers IPC, habilitando acceso directo a la consola para cualquier usuario.
+- [x] Task: Revertido (Obsoleto) - Prescindir de `SecurityLockScreen.tsx` y requisito de clave corporativa en handlers IPC, habilitando acceso directo a la consola para cualquier usuario.
 
 ## Phase 4: Purga Criptográfica del Historial de Git y Auditoría Final [checkpoint: 2fe0692]
 
