@@ -4,8 +4,8 @@
 - [x] Task: Write Tests: ejecución en paralelo de SPs secundarios en `dbService.getTerminalInfo` y carga diferida de `mssql` [71aaf8b]
 - [x] Task: Implement paralelización (`Promise.allSettled`) en `electron/dbService.cjs` y pre-calentamiento no bloqueante del pool en `electron/main.cjs` [5361a86]
 - [x] Task: Write Tests: caché con TTL en `probeRemotePorts`, caché de `getVncViewerPath`, `cleanupStaleVncFilesAsync` y caché de secreto VNC en `UncConfigProvider` [5bf6a79]
-- [ ] Task: Implement optimizaciones en `electron/systemTools.cjs`, `electron/configProvider.cjs` y `electron/main.cjs` (`requestSingleInstanceLock` temprano, `ready-to-show`, limpieza VNC asíncrona diferida)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Implement optimizaciones en `electron/systemTools.cjs`, `electron/configProvider.cjs` y `electron/main.cjs` (`requestSingleInstanceLock` temprano, `ready-to-show`, limpieza VNC asíncrona diferida) [ea919bc]
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Escáner de Subred `/24` con Worker Pool Continuo y Descubrimiento en 2 Fases
 - [ ] Task: Write Tests: `scanSubnetBatch` con Worker Pool deslizante (sin bloqueo por host con DNS lento) y emisión en 2 fases (host vivo inmediato + actualización de hostname)
