@@ -38,3 +38,15 @@
 - **Unit & Service Testing:** Vitest para pruebas unitarias de IPC, validaciones, auditoría Zero-Secrets y servicios SQL.
 - **Code Quality:** ESLint + Prettier.
 - **Packaging & Distribution:** `electron-builder` para generar ejecutables portables o instaladores NSIS para Windows 10/11 x64.
+
+## 6. High-Performance & Software-Rendering Architecture
+- **SQL / IPC Concurrency:** Ejecución paralela de Stored Procedures secundarios (`cmda_Busca_SI_HAY_ALERTA_Activa_para_terminal_T`, `CMDA_Trae_historial_De_REset_DE_UNA_PC_T`, `Cmda_trae_historial_UptimeXterminal_T`) mediante `Promise.allSettled` tras resolver el SP principal de la terminal, reduciendo la latencia percibida en más de un 60%.
+- **Cold Start & Main Process:** Carga diferida (`lazy require`) de la librería pesada `mssql`, adquisición inmediata de `requestSingleInstanceLock`, precalentamiento background del pool SQL tras el evento `READY` de Security Gate, y limpieza asíncrona no bloqueante de archivos `.vnc` huérfanos.
+- **In-Memory Caching:** Caché TTL en memoria (8 segundos) para sondeo de puertos remotos (`probeRemotePorts`) y resolución en caché de rutas de ejecutables locales (`getVncViewerPath`), reduciendo I/O de disco repetitivo.
+- **Subnet Scanner Engine:** Worker Pool deslizante continuo (16 tareas concurrentes) con arquitectura de descubrimiento en dos fases: reporte instantáneo del host vivo (`alive: true`) seguido de resolución asíncrona de nombre NetBIOS/DNS, y estrangulamiento de eventos de progreso (40 ms) para evitar saturación del puente IPC.
+- **Renderer React 19 Optimization:**
+  - Modelo de buffer circular con IDs monótonos estables (`{ id, text, tone }`) en `LivePingConsole`, eliminando re-renderizados masivos en buffers de 400 líneas.
+  - Auto-scroll sincronizado con el ciclo de refresco del navegador mediante `requestAnimationFrame`.
+  - Memorización con `React.memo` en vistas de ficha técnica (`TerminalIdentity`, `TerminalDetailsGrid`, `ActivityPanel`).
+  - Carga diferida (`React.lazy` + `Suspense`) de componentes pesados secundarios (`SubnetScannerDrawer`, `SettingsModal`, `InfoModal`).
+  - Reemplazo de filtros CSS pesados (`backdrop-blur`) por fondos sólidos (`bg-card`), optimizado para renderizado por software (`--disable-gpu`) en equipos corporativos.

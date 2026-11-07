@@ -28,6 +28,10 @@
 6. **Productividad Global y Escáner Visual de Subred:**
    - Invocación global inmediata mediante atajo de sistema (`Ctrl + Espacio`) que restaura la ventana desde segundo plano, analiza el portapapeles y auto-completa/dispara la búsqueda si contiene una IP o Hostname válido.
    - Escáner visual de subred asíncrono y no bloqueante que barre el segmento `/24` de la terminal activa, resolviendo hostnames por DNS inverso y desplegando los equipos en tiempo real en un panel deslizable (Drawer) con accesos de 1-clic a VNC y ficha técnica.
+7. **Arquitectura de Alto Rendimiento, Arranque Instantáneo y Renderizado Ligero:**
+   - **Arranque Instantáneo (Cold Start):** Adquisición temprana de `requestSingleInstanceLock`, carga diferida (lazy) de `mssql`, limpieza asíncrona no bloqueante de temporales VNC y precalentamiento background del pool SQL tras autorizar el Gate de Seguridad.
+   - **Escáner Continuo de Subred /24:** Pool deslizante continuo (16 workers concurrentes) con descubrimiento en dos fases (detección ICMP inmediata + resolución DNS asíncrona) y estrangulamiento de eventos de progreso (40 ms) para mantener la UI a 60 FPS sin saltos de hilo.
+   - **Consola O(1) y Renderizado por Software:** Buffer circular de líneas con IDs monótonos estables y tono precalculado en `LivePingConsole` para reconciliación React en tiempo constante; eliminación de filtros `backdrop-blur` en Topbar y memorización (`React.memo`) de componentes estáticos para máxima fluidez incluso sin aceleración por hardware GPU (`--disable-gpu`).
 
 ## Target Audience
 Operadores de soporte técnico, administradores de sistemas y analistas de monitoreo e inventario de estaciones de trabajo.
