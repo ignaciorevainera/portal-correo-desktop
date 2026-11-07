@@ -485,7 +485,7 @@ export function SettingsModal({
               <p className="text-micro text-muted-foreground border-t border-border/60 pt-2">
                 Monitor flotante:{" "}
                 <span className="font-mono text-foreground">
-                  Ctrl + Alt + Espacio
+                  Ctrl + Shift + Espacio
                 </span>{" "}
                 abre el monitor del último equipo consultado.
               </p>

@@ -182,7 +182,7 @@ describe('App monitor integration', () => {
     ).toBeInTheDocument();
   });
 
-  it('dispara la apertura local con Ctrl+Alt+Espacio', async () => {
+  it('dispara la apertura local con Ctrl+Shift+Espacio', async () => {
     const api = installApi();
     render(<App />);
 
@@ -190,7 +190,7 @@ describe('App monitor integration', () => {
       key: ' ',
       code: 'Space',
       ctrlKey: true,
-      altKey: true,
+      shiftKey: true,
     });
 
     await waitFor(() =>
@@ -208,7 +208,7 @@ describe('App monitor integration', () => {
       key: ' ',
       code: 'Space',
       ctrlKey: true,
-      altKey: true,
+      shiftKey: true,
     });
 
     await waitFor(() =>

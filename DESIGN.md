@@ -214,7 +214,7 @@ iconos con `aria-label`; el botón de conexión remota usa el sondeo inteligente
 VNC/MSRA y no detiene el ping. El resultado remoto se comunica con un toast en la
 ventana principal.
 
-El monitor se abre con `Ctrl + Alt + Espacio` para el último equipo consultado,
+El monitor se abre con `Ctrl + Shift + Espacio` para el último equipo consultado,
 hasta cuatro ventanas, y se cierra definitivamente con su X. Ocultar la ventana
 principal cierra todos los monitores; la app queda en la bandeja. El fallback
 local solo abre si el atajo global no está registrado, para no duplicar avisos.

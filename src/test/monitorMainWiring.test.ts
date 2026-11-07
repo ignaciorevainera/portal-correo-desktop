@@ -9,7 +9,7 @@ describe('monitor main wiring', () => {
   it('registra el atajo y los canales del monitor', () => {
     const main = read('electron/main.cjs');
 
-    expect(main).toContain('CommandOrControl+Alt+Space');
+    expect(main).toContain('CommandOrControl+Shift+Space');
     expect(main).toContain("'pcd:monitor-target-set'");
     expect(main).toContain("'pcd:monitor-open-current'");
     expect(main).toContain("'pcd:monitor-connect-remote'");

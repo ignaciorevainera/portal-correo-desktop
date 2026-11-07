@@ -15,7 +15,7 @@ En Portal Correo Desktop esto se implementa con:
 - una **ventana compacta dedicada** de Electron, no una segunda instancia completa de la app;
 - **sesiones de ping independientes por ventana**, para que la consola principal y cada monitor no se interrumpan;
 - hasta **4 monitores simultáneos**, uno por equipo, con reutilización;
-- un atajo **global** `Ctrl + Alt + Espacio`, porque `Ctrl + Espacio` ya está tomado por la búsqueda global;
+- un atajo **global** `Ctrl + Shift + Espacio`, porque `Ctrl + Espacio` ya está tomado por la búsqueda global;
 - **conexión remota inteligente desde la cabecera del monitor**, reutilizando el sondeo de puertos y el lanzador VNC/MSRA que ya usa la barra principal.
 
 La respuesta corta a “¿es posible con Electron?” es sí. El costo real no es el ping —una línea por segundo— sino cada renderer adicional; por eso la ventana compacta y el tope de 4.
@@ -52,7 +52,7 @@ HMDA resolvía esto con un timer ICMP de WinForms. En Electron el equivalente es
 
 | Tema | Decisión |
 |---|---|
-| Atajo | `Ctrl + Alt + Espacio`, global. `Ctrl + Espacio` sigue siendo la búsqueda global. |
+| Atajo | `Ctrl + Shift + Espacio`, global. `Ctrl + Espacio` sigue siendo la búsqueda global. |
 | Tipo de ventana | Compacta y dedicada (`monitor.html` + `MonitorWindow`), no una segunda app completa. |
 | Cantidad | Hasta 4 monitores, uno por equipo, con reutilización por target. |
 | Alcance | Ping del equipo consultado + conexión remota inteligente; sin campo de destino, buscador ni diagnóstico. |
@@ -100,7 +100,7 @@ Contratos:
 | `pcd:monitor-ping-stop` | Monitor | Mata solo la sesión de ese monitor. |
 | `pcd:monitor-connect-remote` | Monitor | Usa el target registrado, ejecuta `launchRemoteSmart` con la clave VNC y devuelve el resultado. No toca las sesiones de ping. |
 | `pcd:monitor-remote-result` | Main → ventana principal | Resultado de la conexión remota para el toast de sonner. |
-| `pcd:monitor-shortcut-status` | Ventana principal → Main | Devuelve si `CommandOrControl+Alt+Space` está registrado; el fallback local solo abre si es `false`. |
+| `pcd:monitor-shortcut-status` | Ventana principal → Main | Devuelve si `CommandOrControl+Shift+Space` está registrado; el fallback local solo abre si es `false`. |
 | `pcd:cmd-start` | Ventana principal | Detiene solo el ping de ese sender antes del diagnóstico. Los diagnósticos siguen siendo un proceso global. |
 | `closed` / `destroyed` | Main | Mata la sesión del `webContents` que desaparece. |
 | `before-quit` | Main | Mata todas las sesiones. |
@@ -152,7 +152,7 @@ La ventana principal avisa al proceso principal cuando cambia el equipo consulta
 - Se usa **el IP del equipo consultado** (`terminal.ip`), no el `pingTarget` de la consola. Un ping a `.250` o `.231` no cambia el target del monitor.
 - Si el equipo no tiene IP, no se abre monitor; se limpia el target. No se usa el hostname como fallback porque el flujo actual de ping exige IP.
 
-`Ctrl + Alt + Espacio` se registra con `globalShortcut` después de crear la ventana principal:
+`Ctrl + Shift + Espacio` se registra con `globalShortcut` después de crear la ventana principal:
 
 1. Si no hay ventana principal, no hace nada.
 2. Si está minimizada, `restore()`.
@@ -163,13 +163,13 @@ La ventana principal avisa al proceso principal cuando cambia el equipo consulta
 7. Si se alcanzó el tope, `monitorWindows.open()` emite `pcd:monitor-notice`; el atajo solo propaga el resultado.
 8. Si el atajo global no se registró, el fallback local consulta `pcd:monitor-shortcut-status` y solo llama a `open-current` cuando es `false`.
 
-Fallback: si `globalShortcut.register` devuelve `false` porque otra app tomó la combinación, la ventana principal escucha `Ctrl + Alt + Espacio` localmente, consulta `pcd:monitor-shortcut-status` y solo llama a `pcd:monitor-open-current` cuando el atajo global no está registrado. Así no se duplican aperturas ni avisos.
+Fallback: si `globalShortcut.register` devuelve `false` porque otra app tomó la combinación, la ventana principal escucha `Ctrl + Shift + Espacio` localmente, consulta `pcd:monitor-shortcut-status` y solo llama a `pcd:monitor-open-current` cuando el atajo global no está registrado. Así no se duplican aperturas ni avisos.
 
 `pcd:monitor-open-current` es un `invoke` que devuelve `{ ok, reason }` y usa el último target. También sirve para un futuro botón visible.
 
 `pcd:monitor-notice` lleva `{ kind: 'limit' | 'error', message }` a la ventana principal, que lo traduce a un toast de sonner.
 
-El atajo del monitor **no depende** de la preferencia `globalHotkeyEnabled`, que sigue controlando únicamente `Ctrl + Espacio`. Si el operador desactiva la búsqueda global, el monitor sigue disponible con `Ctrl + Alt + Espacio`.
+El atajo del monitor **no depende** de la preferencia `globalHotkeyEnabled`, que sigue controlando únicamente `Ctrl + Espacio`. Si el operador desactiva la búsqueda global, el monitor sigue disponible con `Ctrl + Shift + Espacio`.
 
 ### 4.5 Ciclo de vida
 
@@ -190,7 +190,7 @@ La app **no termina por cerrar monitores**. La ventana principal es el ancla: pu
 ### 4.6 Flujo de datos
 
 ```text
-Ctrl + Alt + Espacio
+Ctrl + Shift + Espacio
   └─ main: ¿hay lastMonitorTarget?
        ├─ no → main window: autofocus buscador
        └─ sí → openMonitor(target)
@@ -332,7 +332,7 @@ El punto refleja el **estado del proceso**, no la calidad de red. Un “Tiempo d
 | `vite.config.ts` | `monitor.html` como input multi-página. |
 | `src/services/electronClient.ts` | Wrappers de target, apertura, aviso, resultado remoto y estado del atajo. |
 | `src/App.tsx` | Avisa el target al cargar/limpiar terminal, muestra los avisos y el resultado remoto como toast, y gatea el fallback local por `isMonitorShortcutRegistered`. |
-| `src/components/SettingsModal.tsx` | Documenta `Ctrl + Alt + Espacio` sin agregar un toggle. |
+| `src/components/SettingsModal.tsx` | Documenta `Ctrl + Shift + Espacio` sin agregar un toggle. |
 | `src/components/LivePingConsole.tsx` | Usa `sanitizePingText` desde `src/lib/pingLog.ts`; sin cambios de comportamiento. |
 | `src/types/monitor.ts` | Tipos de `monitorAPI`, del resultado remoto y augmentación global `Window.monitorAPI`. |
 | `DESIGN.md` | Nota corta sobre la ventana de monitoreo y su consola oscura. |
@@ -512,7 +512,7 @@ createMonitorRemote({
 
 ### 9.4 Checklist manual en Electron
 
-1. Consultar equipo A → `Ctrl + Alt + Espacio` → monitor A abre y pingea.
+1. Consultar equipo A → `Ctrl + Shift + Espacio` → monitor A abre y pingea.
 2. Consultar equipo B → atajo → monitor B abre; A sigue pingeando.
 3. La consola principal puede iniciar/detener su ping sin afectar a A ni B.
 4. Cerrar monitor A → su `ping.exe` desaparece; B sigue.
@@ -540,7 +540,7 @@ createMonitorRemote({
 
 ## 10. Criterios de aceptación
 
-1. Con una terminal cargada, `Ctrl + Alt + Espacio` abre una ventana (420×300 por defecto) para esa IP y ejecuta `ping -t`.
+1. Con una terminal cargada, `Ctrl + Shift + Espacio` abre una ventana (420×300 por defecto) para esa IP y ejecuta `ping -t`.
 2. La consola principal puede mantener su propio ping; iniciar o detener uno no afecta al otro.
 3. Se pueden abrir hasta 4 monitores; el mismo target reutiliza ventana; el quinto muestra un toast y no crea ventana ni proceso.
 4. La X de un monitor destruye la ventana y mata su ping; la principal sigue viva.
@@ -562,7 +562,7 @@ createMonitorRemote({
 
 | Riesgo | Mitigación |
 |---|---|
-| Otra app ya usa `Ctrl + Alt + Espacio` | Fallback local en la ventana principal + aviso en Ajustes; si ambos fallan, se evalúa un ítem visible en “Más”. |
+| Otra app ya usa `Ctrl + Shift + Espacio` | Fallback local en la ventana principal + aviso en Ajustes; si ambos fallan, se evalúa un ítem visible en “Más”. |
 | Memoria en equipos de 8 GB | Entrada compacta, tope 4, cierre mata renderer y proceso, sin polling. |
 | `ping.exe` huérfano tras crash | Limpieza en `closed`/`destroyed`/`before-quit`; el crash duro queda como limitación conocida. |
 | Bounds fuera de pantalla al desconectar un monitor | Clamp contra el `workArea` en cada apertura; no se confía en el JSON guardado. |

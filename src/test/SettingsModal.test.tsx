@@ -260,7 +260,7 @@ describe('SettingsModal Component', () => {
     );
 
     expect(screen.getByText(/Monitor flotante/i)).toBeInTheDocument();
-    expect(screen.getByText(/Ctrl \+ Alt \+ Espacio/i)).toBeInTheDocument();
+    expect(screen.getByText(/Ctrl \+ Shift \+ Espacio/i)).toBeInTheDocument();
   });
 
   it('renders corporate diagnostics panel with gate status, code and bootstrap info', async () => {

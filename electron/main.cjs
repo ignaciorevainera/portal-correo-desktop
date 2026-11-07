@@ -716,7 +716,7 @@ ipcMain.handle('pcd:monitor-shortcut-status', (event) => {
   ) {
     return false;
   }
-  return globalShortcut.isRegistered('CommandOrControl+Alt+Space');
+  return globalShortcut.isRegistered('CommandOrControl+Shift+Space');
 });
 
 // Subnet Scanner IPC Handlers
@@ -1018,19 +1018,19 @@ function createMonitorInfrastructure() {
 }
 
 function registerMonitorShortcut() {
-  if (globalShortcut.isRegistered('CommandOrControl+Alt+Space')) return;
+  if (globalShortcut.isRegistered('CommandOrControl+Shift+Space')) return;
   try {
     const registered = globalShortcut.register(
-      'CommandOrControl+Alt+Space',
+      'CommandOrControl+Shift+Space',
       () => {
         if (monitorShortcut) monitorShortcut.handle();
       },
     );
     if (!registered) {
-      logger.warn('No se pudo registrar CommandOrControl+Alt+Space');
+      logger.warn('No se pudo registrar CommandOrControl+Shift+Space');
     }
   } catch (err) {
-    logger.warn('Error al registrar CommandOrControl+Alt+Space', {
+    logger.warn('Error al registrar CommandOrControl+Shift+Space', {
       error: err && err.message,
     });
   }

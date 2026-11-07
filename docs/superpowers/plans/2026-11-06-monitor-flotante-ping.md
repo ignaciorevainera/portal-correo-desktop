@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** agregar una ventana compacta de monitoreo `ping -t` por equipo consultado, con hasta 4 monitores simultáneos, sesiones de ping independientes de la consola principal, atajo global `Ctrl + Alt + Espacio` y conexión remota inteligente VNC/MSRA desde la cabecera del monitor.
+**Goal:** agregar una ventana compacta de monitoreo `ping -t` por equipo consultado, con hasta 4 monitores simultáneos, sesiones de ping independientes de la consola principal, atajo global `Ctrl + Shift + Espacio` y conexión remota inteligente VNC/MSRA desde la cabecera del monitor.
 
 **Architecture:** el proceso principal es el único dueño de los `ping.exe` y de las `BrowserWindow`. Un mapa de sesiones por `webContents.id` aísla la consola principal de cada monitor; un registro de ventanas por target reutiliza monitores y aplica el tope de 4. La UI del monitor es una entrada Vite propia (`monitor.html`) con un preload mínimo; la conexión remota reutiliza `launchRemoteSmart` y el resultado se muestra como toast en la ventana principal.
 
@@ -2529,7 +2529,7 @@ describe('monitor main wiring', () => {
   it('registra el atajo y los canales del monitor', () => {
     const main = read('electron/main.cjs');
 
-    expect(main).toContain('CommandOrControl+Alt+Space');
+    expect(main).toContain('CommandOrControl+Shift+Space');
     expect(main).toContain("'pcd:monitor-target-set'");
     expect(main).toContain("'pcd:monitor-open-current'");
     expect(main).toContain("'pcd:monitor-connect-remote'");
@@ -2857,19 +2857,19 @@ function createMonitorInfrastructure() {
 }
 
 function registerMonitorShortcut() {
-  if (globalShortcut.isRegistered('CommandOrControl+Alt+Space')) return;
+  if (globalShortcut.isRegistered('CommandOrControl+Shift+Space')) return;
   try {
     const registered = globalShortcut.register(
-      'CommandOrControl+Alt+Space',
+      'CommandOrControl+Shift+Space',
       () => {
         if (monitorShortcut) monitorShortcut.handle();
       },
     );
     if (!registered) {
-      logger.warn('No se pudo registrar CommandOrControl+Alt+Space');
+      logger.warn('No se pudo registrar CommandOrControl+Shift+Space');
     }
   } catch (err) {
-    logger.warn('Error al registrar CommandOrControl+Alt+Space', {
+    logger.warn('Error al registrar CommandOrControl+Shift+Space', {
       error: err && err.message,
     });
   }
@@ -3186,7 +3186,7 @@ describe('App monitor integration', () => {
     ).toBeInTheDocument();
   });
 
-  it('dispara la apertura local con Ctrl+Alt+Espacio', async () => {
+  it('dispara la apertura local con Ctrl+Shift+Espacio', async () => {
     const api = installApi();
     render(<App />);
 
@@ -3194,7 +3194,7 @@ describe('App monitor integration', () => {
       key: ' ',
       code: 'Space',
       ctrlKey: true,
-      altKey: true,
+      shiftKey: true,
     });
 
     await waitFor(() =>
@@ -3374,7 +3374,7 @@ export function subscribeToMonitorRemoteResult(
   useEffect(() => {
     const handleMonitorShortcut = (event: KeyboardEvent) => {
       if (event.repeat) return;
-      if (event.ctrlKey && event.altKey && event.code === "Space") {
+      if (event.ctrlKey && event.shiftKey && event.code === "Space") {
         event.preventDefault();
         openMonitorCurrent().catch(() => {});
       }
@@ -3394,7 +3394,7 @@ En `src/components/SettingsModal.tsx`, dentro de la tarjeta “Atajo Global de T
               <p className="text-micro text-muted-foreground border-t border-border/60 pt-2">
                 Monitor flotante:{" "}
                 <span className="font-mono text-foreground">
-                  Ctrl + Alt + Espacio
+                  Ctrl + Shift + Espacio
                 </span>{" "}
                 abre el monitor del último equipo consultado.
               </p>
@@ -3478,7 +3478,7 @@ npm run electron:dev
 
 Verificar:
 
-1. Consultar equipo A → `Ctrl + Alt + Espacio` → monitor A abre y pingea.
+1. Consultar equipo A → `Ctrl + Shift + Espacio` → monitor A abre y pingea.
 2. Consultar equipo B → atajo → monitor B abre; A sigue pingeando.
 3. La consola principal inicia/detiene su ping sin afectar a A ni B.
 4. Cerrar monitor A → su `ping.exe` desaparece; B sigue.
