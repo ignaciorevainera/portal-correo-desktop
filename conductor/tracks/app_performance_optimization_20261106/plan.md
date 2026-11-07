@@ -16,8 +16,8 @@
 
 ## Phase 3: Consola `LivePingConsole` `O(1)`, React 19 Memoization, Lazy Loading y Software Rendering
 - [x] Task: Write Tests: `LivePingConsole` con entradas estructuradas (`id` estable al superar 400 líneas, pre-clasificación de `tone` y preservación de controles) [8d71d52]
-- [~] Task: Implement modelo de líneas `{ id, text, tone }` en `O(1)` y scroll con `requestAnimationFrame` en `src/components/LivePingConsole.tsx`
-- [ ] Task: Write Tests: renderizado estable y carga diferida de modales/drawers en `App.tsx` y `Topbar.tsx`
+- [x] Task: Implement modelo de líneas `{ id, text, tone }` en `O(1)` y scroll con `requestAnimationFrame` en `src/components/LivePingConsole.tsx` [3e0e8f7]
+- [~] Task: Write Tests: renderizado estable y carga diferida de modales/drawers en `App.tsx` y `Topbar.tsx`
 - [ ] Task: Implement `React.memo` (`TerminalIdentity`, `TerminalDetailsGrid`, `ActivityPanel`), `React.lazy` + `Suspense` para diálogos secundarios, limpieza en `App.tsx` y optimización CSS sin `backdrop-blur` en `Topbar.tsx`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
