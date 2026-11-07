@@ -41,7 +41,70 @@ interface SubnetScannerDrawerProps {
   onLaunchVnc?: (target: string) => void | Promise<void>;
 }
 
-export function SubnetScannerDrawer({
+interface SubnetHostCardProps {
+  host: SubnetDiscoveredHost;
+  isConnecting: boolean;
+  onSelectTerminal: (target: string) => void;
+  onRemoteClick: (e: React.MouseEvent, target: string) => void;
+}
+
+const SubnetHostCard = React.memo(function SubnetHostCard({
+  host,
+  isConnecting,
+  onSelectTerminal,
+  onRemoteClick,
+}: SubnetHostCardProps) {
+  const hostname = host.hostname ? host.hostname.trim() : null;
+  const displayName = hostname || host.ip;
+  const lookupTarget = hostname || host.ip;
+
+  return (
+    <Card className="flex-row items-stretch gap-0 border-border/80 p-0 hover:border-border hover:bg-muted/30 transition-all overflow-hidden group">
+      {/* Porción principal: Información y selección de terminal */}
+      <button
+        type="button"
+        onClick={() => onSelectTerminal(lookupTarget)}
+        aria-label={`Consultar terminal ${displayName}`}
+        title={`Consultar terminal ${displayName}`}
+        className="flex-1 min-w-0 p-2.5 text-left flex flex-col justify-center cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
+        <div className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-success shrink-0" />
+          <span className="text-xs font-bold text-foreground font-mono truncate transition-colors">
+            {displayName}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 mt-0.5 text-micro font-mono text-muted-foreground">
+          {hostname && <span>{host.ip}</span>}
+          {host.latency !== null && (
+            <span className="text-muted-foreground">{host.latency}ms</span>
+          )}
+        </div>
+      </button>
+
+      {/* Divisor vertical sutil entre porciones */}
+      <div className="w-px bg-border/60 self-stretch my-1" />
+
+      {/* Última porción reservada exclusivamente para el botón de conexión remota */}
+      <button
+        type="button"
+        onClick={(e) => onRemoteClick(e, lookupTarget)}
+        disabled={isConnecting}
+        aria-label={`Conexión remota rápida con ${displayName}`}
+        title="Conexión remota rápida (VNC / MSRA)"
+        className="w-10 flex items-center justify-center shrink-0 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
+        {isConnecting ? (
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        ) : (
+          <Monitor className="h-4 w-4" />
+        )}
+      </button>
+    </Card>
+  );
+});
+
+export const SubnetScannerDrawer = React.memo(function SubnetScannerDrawer({
   isOpen,
   onClose,
   targetIp,
@@ -58,6 +121,7 @@ export function SubnetScannerDrawer({
   const [connectingIp, setConnectingIp] = useState<string | null>(null);
 
   const cleanupRef = useRef<(() => void) | null>(null);
+  const lastProgressTimeRef = useRef<number>(0);
 
   const parts = targetIp.split('.');
   const subnetPrefix = parts.length === 4 ? `${parts[0]}.${parts[1]}.${parts[2]}.0/24` : targetIp;
@@ -70,16 +134,34 @@ export function SubnetScannerDrawer({
 
     setIsScanning(true);
     setIsPaused(false);
+    lastProgressTimeRef.current = 0;
 
     const cleanup = startSubnetScanner(
       targetIp,
       (newHost) => {
         setHosts((prev) => {
-          if (prev.some((h) => h.ip === newHost.ip)) return prev;
+          const index = prev.findIndex((h) => h.ip === newHost.ip);
+          if (index >= 0) {
+            if (
+              prev[index].hostname === newHost.hostname &&
+              prev[index].latency === newHost.latency
+            ) {
+              return prev;
+            }
+            const copy = [...prev];
+            copy[index] = { ...copy[index], ...newHost };
+            return copy;
+          }
           return [...prev, newHost];
         });
       },
-      (p) => setProgress(p),
+      (p) => {
+        const now = Date.now();
+        if (p.scanned === p.total || now - lastProgressTimeRef.current >= 40) {
+          lastProgressTimeRef.current = now;
+          setProgress(p);
+        }
+      },
       (summary) => {
         setIsScanning(false);
         if (summary.aborted) {
@@ -129,7 +211,7 @@ export function SubnetScannerDrawer({
     runScan(0);
   };
 
-  const handleRemoteClick = async (e: React.MouseEvent, target: string) => {
+  const handleRemoteClick = React.useCallback(async (e: React.MouseEvent, target: string) => {
     e.stopPropagation();
     setConnectingIp(target);
     try {
@@ -143,17 +225,20 @@ export function SubnetScannerDrawer({
     } finally {
       setConnectingIp(null);
     }
-  };
+  }, [onSmartRemote, onLaunchRemote, onLaunchVnc]);
+
+  const filteredHosts = React.useMemo(() => {
+    const query = filterQuery.trim().toLowerCase();
+    if (!query) return hosts;
+    return hosts.filter((h) => {
+      const name = h.hostname || h.ip;
+      return name.toLowerCase().includes(query) || h.ip.includes(query);
+    });
+  }, [hosts, filterQuery]);
 
   if (!isOpen) return null;
 
   const percentage = progress.total > 0 ? Math.round((progress.scanned / progress.total) * 100) : 0;
-
-  const filteredHosts = hosts.filter((h) => {
-    const name = h.hostname || h.ip;
-    const query = filterQuery.toLowerCase();
-    return name.toLowerCase().includes(query) || h.ip.includes(filterQuery.trim());
-  });
 
   return (
     <Sheet
@@ -290,57 +375,16 @@ export function SubnetScannerDrawer({
             </div>
           ) : (
             filteredHosts.map((host) => {
-              const hostname = host.hostname ? host.hostname.trim() : null;
-              const displayName = hostname || host.ip;
-              const lookupTarget = hostname || host.ip;
-              const isConnectingThis = connectingIp === lookupTarget || connectingIp === host.ip;
-
+              const lookupTarget = (host.hostname && host.hostname.trim()) || host.ip;
+              const isConnecting = connectingIp === lookupTarget || connectingIp === host.ip;
               return (
-                <Card
+                <SubnetHostCard
                   key={host.ip}
-                  className="flex-row items-stretch gap-0 border-border/80 p-0 hover:border-border hover:bg-muted/30 transition-all overflow-hidden group"
-                >
-                  {/* Porción principal: Información y selección de terminal */}
-                  <button
-                    type="button"
-                    onClick={() => onSelectTerminal(lookupTarget)}
-                    aria-label={`Consultar terminal ${displayName}`}
-                    title={`Consultar terminal ${displayName}`}
-                    className="flex-1 min-w-0 p-2.5 text-left flex flex-col justify-center cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-success shrink-0" />
-                      <span className="text-xs font-bold text-foreground font-mono truncate transition-colors">
-                        {displayName}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-micro font-mono text-muted-foreground">
-                      {hostname && <span>{host.ip}</span>}
-                      {host.latency !== null && (
-                        <span className="text-muted-foreground">{host.latency}ms</span>
-                      )}
-                    </div>
-                  </button>
-
-                  {/* Divisor vertical sutil entre porciones */}
-                  <div className="w-px bg-border/60 self-stretch my-1" />
-
-                  {/* Última porción reservada exclusivamente para el botón de conexión remota */}
-                  <button
-                    type="button"
-                    onClick={(e) => handleRemoteClick(e, lookupTarget)}
-                    disabled={isConnectingThis}
-                    aria-label={`Conexión remota rápida con ${displayName}`}
-                    title="Conexión remota rápida (VNC / MSRA)"
-                    className="w-10 flex items-center justify-center shrink-0 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  >
-                    {isConnectingThis ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    ) : (
-                      <Monitor className="h-4 w-4" />
-                    )}
-                  </button>
-                </Card>
+                  host={host}
+                  isConnecting={isConnecting}
+                  onSelectTerminal={onSelectTerminal}
+                  onRemoteClick={handleRemoteClick}
+                />
               );
             })
           )}
@@ -403,4 +447,4 @@ export function SubnetScannerDrawer({
       </SheetContent>
     </Sheet>
   );
-}
+});
