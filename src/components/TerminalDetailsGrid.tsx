@@ -33,7 +33,7 @@ function buildFields(terminal: TerminalData): DetailField[] {
   ];
 }
 
-export function TerminalDetailsGrid({
+export const TerminalDetailsGrid = React.memo(function TerminalDetailsGrid({
   terminal,
 }: {
   terminal: TerminalData;
@@ -86,4 +86,4 @@ export function TerminalDetailsGrid({
       </dl>
     </Card>
   );
-}
+});

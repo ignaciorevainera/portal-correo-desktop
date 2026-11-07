@@ -123,7 +123,7 @@ interface ActivityPanelProps {
   onRequestReset: (reason: string) => void;
 }
 
-export function ActivityPanel({
+export const ActivityPanel = React.memo(function ActivityPanel({
   terminal,
   onAddAlert,
   onCloseAlert,
@@ -321,4 +321,4 @@ export function ActivityPanel({
       />
     </Card>
   );
-}
+});

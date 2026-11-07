@@ -15,11 +15,18 @@ import {
   ContextMenu,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { SubnetScannerDrawer } from "./components/SubnetScannerDrawer";
-import { SettingsModal } from "./components/SettingsModal";
+const SubnetScannerDrawer = React.lazy(() =>
+  import("./components/SubnetScannerDrawer").then((m) => ({
+    default: m.SubnetScannerDrawer,
+  })),
+);
+const SettingsModal = React.lazy(() =>
+  import("./components/SettingsModal").then((m) => ({
+    default: m.SettingsModal,
+  })),
+);
 import { BlockedScreen } from "./components/BlockedScreen";
 import {
-  getAllTerminals,
   addAlertToTerminal,
   closeAlertOnTerminal,
 } from "./services/terminalService";
@@ -139,7 +146,6 @@ export default function App(): React.JSX.Element {
 
   const mainRef = useRef<HTMLElement>(null);
 
-  const allTerminals = getAllTerminals();
   const accountUsers = useMemo(
     () => splitUsernames(terminal?.userNt),
     [terminal?.userNt],
@@ -787,31 +793,37 @@ export default function App(): React.JSX.Element {
         </ContextMenu>
 
         {/* Panel Deslizable de Escaneo Asíncrono de Subred */}
-        {terminal && (
-          <SubnetScannerDrawer
-            isOpen={isSubnetDrawerOpen}
-            onClose={() => setIsSubnetDrawerOpen(false)}
-            targetIp={terminal.ip}
-            onSelectTerminal={(pc) => {
-              handleSelectTerminal(pc);
-              setIsSubnetDrawerOpen(false);
-            }}
-            onLaunchRemote={(target) => {
-              handleLaunchSmartRemote(target);
-            }}
-            onLaunchVnc={(target) => {
-              handleLaunchSmartRemote(target);
-            }}
-          />
+        {terminal && isSubnetDrawerOpen && (
+          <React.Suspense fallback={null}>
+            <SubnetScannerDrawer
+              isOpen={isSubnetDrawerOpen}
+              onClose={() => setIsSubnetDrawerOpen(false)}
+              targetIp={terminal.ip}
+              onSelectTerminal={(pc) => {
+                handleSelectTerminal(pc);
+                setIsSubnetDrawerOpen(false);
+              }}
+              onLaunchRemote={(target) => {
+                handleLaunchSmartRemote(target);
+              }}
+              onLaunchVnc={(target) => {
+                handleLaunchSmartRemote(target);
+              }}
+            />
+          </React.Suspense>
         )}
 
         {/* Modal de Ajustes y Actualizaciones */}
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          currentVersion={APP_VERSION}
-          backendConnected={status.connected}
-        />
+        {isSettingsOpen && (
+          <React.Suspense fallback={null}>
+            <SettingsModal
+              isOpen={isSettingsOpen}
+              onClose={() => setIsSettingsOpen(false)}
+              currentVersion={APP_VERSION}
+              backendConnected={status.connected}
+            />
+          </React.Suspense>
+        )}
 
         <NetUserChooserDialog
           open={isAccountChooserOpen}

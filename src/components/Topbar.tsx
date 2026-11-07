@@ -19,7 +19,9 @@ import {
   themeActionLabel,
 } from "./ThemeToggle";
 import { IconWell } from "./IconWell";
-import { InfoModal } from "./InfoModal";
+const InfoModal = React.lazy(() =>
+  import("./InfoModal").then((m) => ({ default: m.InfoModal })),
+);
 import { useTheme } from "../context/ThemeContext";
 import { APP_VERSION_LABEL } from "@/lib/appVersion";
 import {
@@ -285,7 +287,7 @@ export function Topbar({
 
   return (
     <>
-      <header className="h-14 bg-card/90 backdrop-blur px-3.5 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
+      <header className="h-14 bg-card px-3.5 flex items-center justify-between gap-3 sticky top-0 z-30 app-drag-region select-none">
         {/* Identidad / Brand (Arrastrable junto al header para mover la ventana con el mouse) */}
         <div className="flex items-center gap-2.5 shrink-0 cursor-default select-none">
           <IconWell size="sm" className="p-1.5 pointer-events-none">
@@ -593,11 +595,15 @@ export function Topbar({
       </header>
 
       {/* Info Modal Component */}
-      <InfoModal
-        isOpen={isInfoOpen}
-        onClose={() => setIsInfoOpen(false)}
-        appVersion={APP_VERSION_LABEL}
-      />
+      {isInfoOpen && (
+        <React.Suspense fallback={null}>
+          <InfoModal
+            isOpen={isInfoOpen}
+            onClose={() => setIsInfoOpen(false)}
+            appVersion={APP_VERSION_LABEL}
+          />
+        </React.Suspense>
+      )}
     </>
   );
 }

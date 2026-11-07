@@ -5,7 +5,7 @@ import { CopyValueButton } from "./CopyValueButton";
 import { Button } from "@/components/ui/button";
 import { splitUsernames } from "@/lib/usernames";
 
-export function TerminalIdentity({
+export const TerminalIdentity = React.memo(function TerminalIdentity({
   terminal,
   onQueryAccount,
 }: {
@@ -84,4 +84,4 @@ export function TerminalIdentity({
       </div>
     </section>
   );
-}
+});
