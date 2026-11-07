@@ -96,5 +96,5 @@
 
 ---
 
-- [~] **Track: Optimización Integral de Rendimiento, SQL/IPC, Cold Start, Escáner de Subred y Renderizado**
+- [x] **Track: Optimización Integral de Rendimiento, SQL/IPC, Cold Start, Escáner de Subred y Renderizado**
   *Link: [./tracks/app_performance_optimization_20261106/index.md](./tracks/app_performance_optimization_20261106/index.md)*
