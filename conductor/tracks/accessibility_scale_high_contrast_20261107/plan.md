@@ -3,10 +3,10 @@
 ## Phases
 
 ### Phase 1: Capa de Persistencia y Soporte IPC (Backend / Electron / Preferences)
-- [ ] Task: (TDD) Pruebas y soporte de preferencias para `textScale` y `highContrast` en `uiPreferences` y `electronClient`
-  - [ ] Escribir tests unitarios en Vitest para validar los valores por defecto, lectura y guardado de `textScale` ("100" | "110" | "120" | "130") y `highContrast` (boolean)
-  - [ ] Extender `electron/uiPreferences.cjs` y canales IPC en `electron/main.cjs` y `electron/preload.cjs` para persistir y sincronizar las preferencias de accesibilidad
-  - [ ] Implementar helpers y tipos en `src/services/electronClient.ts` y `src/lib/preferences.ts` con respaldo bidireccional en `localStorage`
+- [x] Task: (TDD) Pruebas y soporte de preferencias para `textScale` y `highContrast` en `uiPreferences` y `electronClient` (5bc3c28)
+  - [x] Escribir tests unitarios en Vitest para validar los valores por defecto, lectura y guardado de `textScale` ("100" | "110" | "120" | "130") y `highContrast` (boolean)
+  - [x] Extender `electron/uiPreferences.cjs` y canales IPC en `electron/main.cjs` y `electron/preload.cjs` para persistir y sincronizar las preferencias de accesibilidad
+  - [x] Implementar helpers y tipos en `src/services/electronClient.ts` y `src/lib/preferences.ts` con respaldo bidireccional en `localStorage`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 2: Motor de Escalado Visual, Atajos de Teclado y Estilos de Alto Contraste
