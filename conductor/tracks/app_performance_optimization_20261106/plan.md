@@ -1,7 +1,7 @@
 # Implementation Plan: Optimización Integral de Rendimiento, SQL/IPC, Cold Start, Escáner de Subred y Renderizado
 
 ## Phase 1: Paralelización SQL/IPC, Caché de Sondeo Remoto y Cold Start (Main Process)
-- [ ] Task: Write Tests: ejecución en paralelo de SPs secundarios en `dbService.getTerminalInfo` y carga diferida de `mssql`
+- [x] Task: Write Tests: ejecución en paralelo de SPs secundarios en `dbService.getTerminalInfo` y carga diferida de `mssql` [71aaf8b]
 - [ ] Task: Implement paralelización (`Promise.allSettled`) en `electron/dbService.cjs` y pre-calentamiento no bloqueante del pool en `electron/main.cjs`
 - [ ] Task: Write Tests: caché con TTL en `probeRemotePorts`, caché de `getVncViewerPath`, `cleanupStaleVncFilesAsync` y caché de secreto VNC en `UncConfigProvider`
 - [ ] Task: Implement optimizaciones en `electron/systemTools.cjs`, `electron/configProvider.cjs` y `electron/main.cjs` (`requestSingleInstanceLock` temprano, `ready-to-show`, limpieza VNC asíncrona diferida)
