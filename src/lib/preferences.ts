@@ -3,16 +3,28 @@
  *
  * El modo de ping predeterminado se lee en cada carga de terminal, así que un
  * cambio en Ajustes aplica en la búsqueda siguiente sin recargar la ventana.
+ *
+ * La escala de texto y el modo de alto contraste se respaldan aquí para respuesta
+ * inmediata y se sincronizan con `uiPreferences` de Electron para persistencia global.
  */
 
 export type PingMode = "standard" | "infinite";
+export type TextScale = "100" | "110" | "120" | "130";
 
 export const PING_MODE_KEY = "pcd_pref_ping_mode";
+export const TEXT_SCALE_KEY = "pcd_pref_text_scale";
+export const HIGH_CONTRAST_KEY = "pcd_pref_high_contrast";
 
 export const DEFAULT_PING_MODE: PingMode = "standard";
+export const DEFAULT_TEXT_SCALE: TextScale = "100";
+export const DEFAULT_HIGH_CONTRAST: boolean = false;
 
 function isPingMode(value: unknown): value is PingMode {
   return value === "standard" || value === "infinite";
+}
+
+function isTextScale(value: unknown): value is TextScale {
+  return value === "100" || value === "110" || value === "120" || value === "130";
 }
 
 export function loadDefaultPingMode(): PingMode {
@@ -27,6 +39,41 @@ export function loadDefaultPingMode(): PingMode {
 export function saveDefaultPingMode(mode: PingMode): void {
   try {
     localStorage.setItem(PING_MODE_KEY, mode);
+  } catch {
+    // Sin almacenamiento la preferencia no persiste, pero no rompe la sesión.
+  }
+}
+
+export function loadDefaultTextScale(): TextScale {
+  try {
+    const stored = localStorage.getItem(TEXT_SCALE_KEY);
+    return isTextScale(stored) ? stored : DEFAULT_TEXT_SCALE;
+  } catch {
+    return DEFAULT_TEXT_SCALE;
+  }
+}
+
+export function saveDefaultTextScale(scale: TextScale): void {
+  try {
+    localStorage.setItem(TEXT_SCALE_KEY, scale);
+  } catch {
+    // Sin almacenamiento la preferencia no persiste, pero no rompe la sesión.
+  }
+}
+
+export function loadDefaultHighContrast(): boolean {
+  try {
+    const stored = localStorage.getItem(HIGH_CONTRAST_KEY);
+    if (stored !== null) return stored === "true";
+    return DEFAULT_HIGH_CONTRAST;
+  } catch {
+    return DEFAULT_HIGH_CONTRAST;
+  }
+}
+
+export function saveDefaultHighContrast(enabled: boolean): void {
+  try {
+    localStorage.setItem(HIGH_CONTRAST_KEY, String(enabled));
   } catch {
     // Sin almacenamiento la preferencia no persiste, pero no rompe la sesión.
   }

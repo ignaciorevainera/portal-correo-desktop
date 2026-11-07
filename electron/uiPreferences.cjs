@@ -5,6 +5,8 @@
  *  - `minimizeToTray`: al cerrar la ventana, ocultar a la bandeja en lugar de
  *    terminar la aplicación.
  *  - `globalHotkeyEnabled`: registrar o no el atajo global Ctrl + Espacio.
+ *  - `textScale`: escala de visualización / texto ("100" | "110" | "120" | "130").
+ *  - `highContrast`: modo de alto contraste reforzado.
  *
  * Se guardan en un JSON dentro de `userData` para que el arranque aplique el
  * último valor elegido por el operador antes de que cargue el renderer.
@@ -15,9 +17,13 @@ const path = require('path');
 
 const PREFS_FILE_NAME = 'ui-preferences.json';
 
+const VALID_TEXT_SCALES = Object.freeze(['100', '110', '120', '130']);
+
 const DEFAULTS = Object.freeze({
   minimizeToTray: true,
   globalHotkeyEnabled: true,
+  textScale: '100',
+  highContrast: false,
 });
 
 function preferencesPath(userDataDir) {
@@ -31,6 +37,13 @@ function asBoolean(value, fallback) {
   return fallback;
 }
 
+function asTextScale(value, fallback) {
+  if (typeof value === 'string' && VALID_TEXT_SCALES.includes(value)) {
+    return value;
+  }
+  return fallback;
+}
+
 function normalizePreferences(raw) {
   const source = raw && typeof raw === 'object' ? raw : {};
   return {
@@ -39,6 +52,8 @@ function normalizePreferences(raw) {
       source.globalHotkeyEnabled,
       DEFAULTS.globalHotkeyEnabled
     ),
+    textScale: asTextScale(source.textScale, DEFAULTS.textScale),
+    highContrast: asBoolean(source.highContrast, DEFAULTS.highContrast),
   };
 }
 
@@ -90,6 +105,7 @@ function saveUiPreferences(userDataDir, patch) {
 module.exports = {
   DEFAULTS,
   PREFS_FILE_NAME,
+  VALID_TEXT_SCALES,
   normalizePreferences,
   loadUiPreferences,
   saveUiPreferences,
