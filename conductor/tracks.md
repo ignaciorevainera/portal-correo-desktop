@@ -95,7 +95,7 @@
 
 ---
 
-- [ ] **Track: Accesibilidad Visual: Escala de Texto y Modo de Alto Contraste**
+- [~] **Track: Accesibilidad Visual: Escala de Texto y Modo de Alto Contraste**
   *Link: [./tracks/accessibility_scale_high_contrast_20261107/index.md](./tracks/accessibility_scale_high_contrast_20261107/index.md)*
 
 
