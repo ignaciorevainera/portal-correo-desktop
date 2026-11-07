@@ -145,6 +145,12 @@ async function runGate() {
       });
     }
     gateState = await evaluateGate({ provider: gateProvider, logger });
+    if (gateState && gateState.status === 'READY') {
+      // Pre-calentamiento asíncrono no bloqueante del pool SQL para eliminar latencia en la primera búsqueda
+      dbService.getPool().catch((err) => {
+        logger.warn('Pre-calentamiento de pool SQL diferido falló', { error: err && err.message });
+      });
+    }
   } catch (err) {
     configManager.resetConfig();
     const code = err instanceof ConfigError ? err.code : 'NO_CONFIG';

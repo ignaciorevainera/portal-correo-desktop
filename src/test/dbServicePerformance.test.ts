@@ -5,7 +5,7 @@ describe('dbService Performance and Parallelization', () => {
   let dbService: any;
 
   beforeEach(() => {
-    vi.resetModules();
+    delete require.cache[require.resolve('../../electron/dbService.cjs')];
     dbService = require('../../electron/dbService.cjs');
   });
 
@@ -70,6 +70,8 @@ describe('dbService Performance and Parallelization', () => {
     };
 
     dbService.setPool(mockPool);
+    // Pre-initialize SQL module so require('mssql') IO is not counted in query execution time
+    dbService.getSqlModule();
 
     const startTime = Date.now();
     const result = await dbService.getTerminalInfo('PC-TEST-001');

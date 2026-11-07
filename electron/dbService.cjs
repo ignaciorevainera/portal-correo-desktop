@@ -1,5 +1,16 @@
-const sql = require('mssql');
+let sql = null;
 const configManager = require('./configManager.cjs');
+
+function getSqlModule() {
+  if (!sql) {
+    sql = require('mssql');
+  }
+  return sql;
+}
+
+function isMssqlLoaded() {
+  return sql !== null;
+}
 
 function getSqlConfig(options = {}) {
   const cfg = configManager.getConfig(options);
@@ -32,7 +43,8 @@ async function getPool() {
   if (!sqlCfg.server || !sqlCfg.user || !sqlCfg.password) {
     throw new Error('Configuración SQL no inicializada. Requiere autenticación corporativa.');
   }
-  pool = await sql.connect(sqlCfg);
+  const sqlMod = getSqlModule();
+  pool = await sqlMod.connect(sqlCfg);
   return pool;
 }
 
@@ -69,9 +81,10 @@ async function checkStatus() {
 async function resolvePcFromIp(ip) {
   try {
     const p = await service.getPool();
+    const sqlMod = getSqlModule();
     const r1 = await p
       .request()
-      .input('ip', sql.VarChar(50), ip)
+      .input('ip', sqlMod.VarChar(50), ip)
       .query('SELECT TOP 1 pc FROM Fecha_Relevada_PCs WHERE ip = @ip ORDER BY Fecha_Relevada DESC');
     if (r1.recordset && r1.recordset.length > 0 && r1.recordset[0].pc) {
       return r1.recordset[0].pc.trim();
@@ -98,7 +111,8 @@ async function getTerminalInfo(query) {
 
   // 1. CMDA_Trae_Info_DE_PC_PARAmesa_T
   const infoReq = p.request();
-  infoReq.input('pc', sql.VarChar(100), targetPc);
+  const sqlMod = getSqlModule();
+  infoReq.input('pc', sqlMod.VarChar(100), targetPc);
   const infoRes = await infoReq.execute('CMDA_Trae_Info_DE_PC_PARAmesa_T');
 
   if (!infoRes.recordset || infoRes.recordset.length === 0) {
@@ -106,83 +120,103 @@ async function getTerminalInfo(query) {
   }
   const mainData = infoRes.recordset[0];
 
-  // 2. Cmda_Trae_Datos_De_Ubicacion_Y_cpa_centro_Costo_T
-  let location = '';
-  let costCenter = '';
-  try {
-    const locReq = p.request();
-    locReq.input('pc', sql.VarChar(100), targetPc);
-    const locRes = await locReq.execute('Cmda_Trae_Datos_De_Ubicacion_Y_cpa_centro_Costo_T');
-    if (locRes.recordset && locRes.recordset.length > 0) {
-      const row = locRes.recordset[0];
-      location = row.Ubicacion || row.ubicacion || row.Direccion || '';
-      costCenter = row.Centro_Costo || row.centro_costo || row.cpa || '';
-    }
-  } catch {
-    // optional location info
-  }
-
-  // 3. cmda_Busca_SI_HAY_ALERTA_Activa_para_terminal_T
-  const alerts = [];
-  try {
-    const alertReq = p.request();
-    alertReq.input('terminal', sql.VarChar(100), targetPc);
-    const alertRes = await alertReq.execute('cmda_Busca_SI_HAY_ALERTA_Activa_para_terminal_T');
-    if (alertRes.recordset) {
-      for (const row of alertRes.recordset) {
-        alerts.push({
-          id: String(row.id || Math.random()),
-          title: row.Titulo || row.titulo || 'Alerta Operativa',
-          description: row.Descripcion || row.descripcion || '',
-          operator: row.Operador || row.operador || 'Sistema',
-          date: row.Fecha || row.fecha || '',
-          active: true,
-        });
+  // 2. Ejecución concurrente de Stored Procedures secundarios (Promise.allSettled)
+  const fetchLocation = async () => {
+    try {
+      const locReq = p.request();
+      locReq.input('pc', sqlMod.VarChar(100), targetPc);
+      const locRes = await locReq.execute('Cmda_Trae_Datos_De_Ubicacion_Y_cpa_centro_Costo_T');
+      if (locRes.recordset && locRes.recordset.length > 0) {
+        const row = locRes.recordset[0];
+        return {
+          location: row.Ubicacion || row.ubicacion || row.Direccion || '',
+          costCenter: row.Centro_Costo || row.centro_costo || row.cpa || '',
+        };
       }
+    } catch {
+      // optional location info
     }
-  } catch {
-    // optional alert info
-  }
+    return { location: '', costCenter: '' };
+  };
 
-  // 4. CMDA_Trae_historial_De_REset_DE_UNA_PC_T
-  const resetHistory = [];
-  try {
-    const resetReq = p.request();
-    resetReq.input('pc', sql.VarChar(100), targetPc);
-    const resetRes = await resetReq.execute('CMDA_Trae_historial_De_REset_DE_UNA_PC_T');
-    if (resetRes.recordset) {
-      for (const row of resetRes.recordset) {
-        resetHistory.push({
-          id: String(row.id || Math.random()),
-          date: row.Fecha || row.fecha || '',
-          operator: row.Operador || row.operador || '',
-          reason: row.Motivo || row.motivo || '',
-          result: row.Resultado || row.resultado || '',
-        });
+  const fetchAlerts = async () => {
+    const alertsList = [];
+    try {
+      const alertReq = p.request();
+      alertReq.input('terminal', sqlMod.VarChar(100), targetPc);
+      const alertRes = await alertReq.execute('cmda_Busca_SI_HAY_ALERTA_Activa_para_terminal_T');
+      if (alertRes.recordset) {
+        for (const row of alertRes.recordset) {
+          alertsList.push({
+            id: String(row.id || Math.random()),
+            title: row.Titulo || row.titulo || 'Alerta Operativa',
+            description: row.Descripcion || row.descripcion || '',
+            operator: row.Operador || row.operador || 'Sistema',
+            date: row.Fecha || row.fecha || '',
+            active: true,
+          });
+        }
       }
+    } catch {
+      // optional alert info
     }
-  } catch {
-    // optional reset history
-  }
+    return alertsList;
+  };
 
-  // 5. Cmda_trae_historial_UptimeXterminal_T
-  let uptimeText = '';
-  try {
-    const uptimeReq = p.request();
-    uptimeReq.input('terminal', sql.VarChar(100), targetPc);
-    const uptimeRes = await uptimeReq.execute('Cmda_trae_historial_UptimeXterminal_T');
-    if (uptimeRes.recordset && uptimeRes.recordset.length > 0) {
-      const uRow = uptimeRes.recordset[0];
-      uptimeText = uRow.Uptime || uRow.uptime || uRow.TiempoActivo || uRow.Fecha || '';
+  const fetchResets = async () => {
+    const resetList = [];
+    try {
+      const resetReq = p.request();
+      resetReq.input('pc', sqlMod.VarChar(100), targetPc);
+      const resetRes = await resetReq.execute('CMDA_Trae_historial_De_REset_DE_UNA_PC_T');
+      if (resetRes.recordset) {
+        for (const row of resetRes.recordset) {
+          resetList.push({
+            id: String(row.id || Math.random()),
+            date: row.Fecha || row.fecha || '',
+            operator: row.Operador || row.operador || '',
+            reason: row.Motivo || row.motivo || '',
+            result: row.Resultado || row.resultado || '',
+          });
+        }
+      }
+    } catch {
+      // optional reset history
     }
-  } catch {
-    // optional uptime history
-  }
+    return resetList;
+  };
+
+  const fetchUptime = async () => {
+    try {
+      const uptimeReq = p.request();
+      uptimeReq.input('terminal', sqlMod.VarChar(100), targetPc);
+      const uptimeRes = await uptimeReq.execute('Cmda_trae_historial_UptimeXterminal_T');
+      if (uptimeRes.recordset && uptimeRes.recordset.length > 0) {
+        const uRow = uptimeRes.recordset[0];
+        return uRow.Uptime || uRow.uptime || uRow.TiempoActivo || uRow.Fecha || '';
+      }
+    } catch {
+      // optional uptime history
+    }
+    return '';
+  };
+
+  const [locSettled, alertsSettled, resetsSettled, uptimeSettled] = await Promise.allSettled([
+    fetchLocation(),
+    fetchAlerts(),
+    fetchResets(),
+    fetchUptime(),
+  ]);
+
+  const loc = locSettled.status === 'fulfilled' ? locSettled.value : { location: '', costCenter: '' };
+  const alerts = alertsSettled.status === 'fulfilled' ? alertsSettled.value : [];
+  const resetHistory = resetsSettled.status === 'fulfilled' ? resetsSettled.value : [];
+  const uptimeText = uptimeSettled.status === 'fulfilled' ? uptimeSettled.value : '';
 
   return {
     ...mainData,
-    location,
-    costCenter,
+    location: loc.location,
+    costCenter: loc.costCenter,
     alerts,
     resetHistory,
     uptimeText: uptimeText || mainData.uptimeText || '',
@@ -200,6 +234,8 @@ const service = {
   checkStatus,
   resolvePcFromIp,
   getTerminalInfo,
+  isMssqlLoaded,
+  getSqlModule,
 };
 
 module.exports = service;
