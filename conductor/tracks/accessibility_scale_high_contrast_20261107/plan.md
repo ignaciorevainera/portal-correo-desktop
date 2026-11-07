@@ -10,11 +10,11 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 2: Motor de Escalado Visual, Atajos de Teclado y Estilos de Alto Contraste
-- [ ] Task: (TDD) Pruebas y reglas de estilo para Modo de Alto Contraste (`.high-contrast`)
-  - [ ] Escribir tests unitarios para verificar la inyección de la clase `.high-contrast` en el elemento raíz del documento
-  - [ ] Incorporar reglas de estilo en `src/index.css` bajo la clase `.high-contrast` (bordes sólidos nítidos, eliminación de transparencias tenues, textos y badges de máximo contraste WCAG AAA)
-  - [ ] Verificar la compatibilidad de tokens con el script de auditoría (`npm run audit:contrast`)
-- [ ] Task: (TDD) Motor de escala visual y atajos de teclado (`Ctrl + +`, `Ctrl + -`, `Ctrl + 0`)
+- [x] Task: (TDD) Pruebas y reglas de estilo para Modo de Alto Contraste (`.high-contrast`) (a99b928)
+  - [x] Escribir tests unitarios para verificar la inyección de la clase `.high-contrast` en el elemento raíz del documento
+  - [x] Incorporar reglas de estilo en `src/index.css` bajo la clase `.high-contrast` (bordes sólidos nítidos, eliminación de transparencias tenues, textos y badges de máximo contraste WCAG AAA)
+  - [x] Verificar la compatibilidad de tokens con el script de auditoría (`npm run audit:contrast`)
+- [~] Task: (TDD) Motor de escala visual y atajos de teclado (`Ctrl + +`, `Ctrl + -`, `Ctrl + 0`)
   - [ ] Escribir tests unitarios para la navegación entre los 4 niveles de escala discretos y la detección de atajos de teclado
   - [ ] Implementar hook/utilidad de accesibilidad que aplique el zoom factor en Electron (`webFrame.setZoomFactor`) y escuche los atajos de teclado globales en la ventana
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
