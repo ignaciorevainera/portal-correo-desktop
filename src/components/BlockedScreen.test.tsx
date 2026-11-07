@@ -28,7 +28,6 @@ describe('BlockedScreen', () => {
 
     expect(screen.queryByText(/\\\\servidor/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/config\.json/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/unc/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Error interno/i)).not.toBeInTheDocument();
   });
 
@@ -37,7 +36,7 @@ describe('BlockedScreen', () => {
     ['BAD_CONFIG', /tiene un problema/i],
     ['NO_PERMISSION', /tu usuario no tiene acceso/i],
     ['NO_LAN_TIMEOUT', /no respondió/i],
-    ['NO_LAN_DNS', /no encontramos la configuración/i],
+    ['NO_LAN_DNS', /no pudimos ubicar el servidor/i],
     ['UNKNOWN', /no pudimos verificar/i],
   ] as const)('mapea el código %s a un título útil', (code, title) => {
     render(
@@ -60,6 +59,27 @@ describe('BlockedScreen', () => {
     ).toBeInTheDocument();
   });
 
+  it.each([
+    ["unc", "\\\\servidor\\share\\config.json"],
+    ["http", "https://interno/config.json"],
+    ["dev", "C:\\secreto\\bootstrap.json"],
+  ])("no muestra origen ni rutas (%s)", (source, marker) => {
+    render(
+      <BlockedScreen
+        gate={{
+          ...baseGate,
+          source: source as GateStatus["source"],
+          configPath: marker,
+          message: `Error interno en ${marker}`,
+        }}
+        onRetry={() => {}}
+        isRetrying={false}
+      />,
+    );
+
+    expect(screen.queryByText(new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"))).not.toBeInTheDocument();
+  });
+
   it('dispara el reintento al presionar el botón', () => {
     const onRetry = vi.fn();
     render(
@@ -76,5 +96,17 @@ describe('BlockedScreen', () => {
     );
 
     expect(screen.getByRole('button', { name: /verificando/i })).toBeDisabled();
+  });
+
+  it("no imprime códigos desconocidos sin sanear", () => {
+    render(
+      <BlockedScreen
+        gate={{ ...baseGate, code: "constructor" as GateStatus["code"] }}
+        onRetry={() => {}}
+        isRetrying={false}
+      />,
+    );
+
+    expect(screen.getByText(/Código de referencia: DESCONOCIDO/)).toBeInTheDocument();
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getStartupErrorContent,
+  getSupportCode,
   STARTUP_ERRORS,
 } from "./startupErrors";
 import type { GateStatusCode } from "../services/electronClient";
@@ -25,10 +26,15 @@ describe("startupErrors", () => {
       if (code !== "AUTHORIZED") {
         expect(content.description.length).toBeGreaterThan(0);
         expect(content.steps.length).toBeGreaterThanOrEqual(2);
-        for (const step of content.steps) {
-          expect(step).not.toMatch(/[\\\\/]|\.json|\.cjs|bootstrap|UNC/i);
-        }
       }
+
+      const serialized = [
+        content.title,
+        content.description,
+        ...content.steps,
+      ].join(" ");
+
+      expect(serialized).not.toMatch(/\\\\|config\.json|bootstrap|\bUNC\b/i);
     }
   });
 
@@ -52,5 +58,18 @@ describe("startupErrors", () => {
         STARTUP_ERRORS.UNKNOWN,
       );
     }
+  });
+
+  it("trata AUTHORIZED como estado no renderizable", () => {
+    expect(getStartupErrorContent({ code: "AUTHORIZED" })).toBe(
+      STARTUP_ERRORS.UNKNOWN,
+    );
+  });
+
+  it("sanea el código de soporte", () => {
+    expect(getSupportCode("NO_CONFIG")).toBe("NO_CONFIG");
+    expect(getSupportCode("constructor")).toBe("DESCONOCIDO");
+    expect(getSupportCode("\\\\servidor\\config")).toBe("DESCONOCIDO");
+    expect(getSupportCode("")).toBe("DESCONOCIDO");
   });
 });

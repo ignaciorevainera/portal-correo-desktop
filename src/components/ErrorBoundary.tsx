@@ -8,24 +8,19 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
-    error: null,
-    errorInfo: null,
   };
 
-  public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorInfo: null };
+  public static getDerivedStateFromError(): State {
+    return { hasError: true };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("[ErrorBoundary caught an error]", error, errorInfo);
-    this.setState({ errorInfo });
   }
 
   public handleReload = () => {
@@ -33,7 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+    this.setState({ hasError: false });
   };
 
   public render() {
@@ -44,14 +39,14 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex items-center gap-3 text-destructive">
               <AlertTriangle className="h-6 w-6 shrink-0" aria-hidden="true" />
               <h1 className="text-lg font-bold font-heading text-balance">
-                No pudimos iniciar la aplicación
+                La aplicación encontró un problema
               </h1>
             </div>
 
             <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
-              Algo falló mientras se preparaba la interfaz. Tus datos no se
-              modificaron. Probá de nuevo o recargá la ventana; si el problema
-              vuelve a aparecer, contactá a soporte técnico.
+              Algo falló mientras se mostraba esta pantalla. Podés volver a
+              intentar o recargar la ventana. Si el problema se repite, contactá
+              a soporte técnico.
             </p>
 
             <div className="space-y-2 rounded-md border border-border/70 bg-muted/30 p-4 text-left">
@@ -70,7 +65,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             <div className="flex items-center justify-end gap-2 pt-1">
               <Button
-                variant="outline"
+                variant="default"
                 size="sm"
                 onClick={this.handleReset}
                 className="text-xs cursor-pointer"
@@ -78,7 +73,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 Reintentar
               </Button>
               <Button
-                variant="default"
+                variant="outline"
                 size="sm"
                 onClick={this.handleReload}
                 className="text-xs gap-1.5 cursor-pointer"

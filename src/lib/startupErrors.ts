@@ -25,7 +25,7 @@ export const STARTUP_ERRORS: Record<VisibleCode, StartupErrorContent> & {
 } = {
   AUTHORIZED: { title: "Acceso verificado", description: "", steps: [] },
   NO_LAN_DNS: {
-    title: "No encontramos la configuración corporativa",
+    title: "No pudimos ubicar el servidor de configuración",
     description:
       "Tu equipo no pudo ubicar el servidor que entrega la configuración de la aplicación. Esto suele ocurrir cuando no estás conectado a la red interna.",
     steps: [
@@ -62,7 +62,7 @@ export const STARTUP_ERRORS: Record<VisibleCode, StartupErrorContent> & {
       "Estás en la red corporativa, pero la cuenta de Windows con la que iniciaste sesión no puede leer la configuración de la aplicación.",
     steps: [
       "Revisá que hayas iniciado sesión con tu cuenta corporativa.",
-      "Cerrá la aplicación, volvé a abrirla y elegí Reintentar.",
+      "Cerrá y volvé a abrir la aplicación para que vuelva a validar el acceso.",
       "Si el acceso sigue denegado, pedile a soporte que habilite la lectura para tu usuario.",
     ],
   },
@@ -93,7 +93,13 @@ export function getStartupErrorContent(code: {
   code?: GateStatusCode | string;
 }): StartupErrorContent {
   const key = String(code.code || "UNKNOWN");
-  return Object.hasOwn(STARTUP_ERRORS, key)
-    ? STARTUP_ERRORS[key as keyof typeof STARTUP_ERRORS]
-    : UNKNOWN_CONTENT;
+  if (!Object.hasOwn(STARTUP_ERRORS, key) || key === "AUTHORIZED") {
+    return UNKNOWN_CONTENT;
+  }
+  return STARTUP_ERRORS[key as keyof typeof STARTUP_ERRORS];
+}
+
+export function getSupportCode(code?: string | null): string {
+  const value = String(code || "").trim();
+  return /^[A-Z_]{1,32}$/.test(value) ? value : "DESCONOCIDO";
 }

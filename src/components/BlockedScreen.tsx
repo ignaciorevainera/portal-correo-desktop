@@ -1,6 +1,6 @@
 import { ShieldAlert, RefreshCw, WifiOff, FileWarning } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getStartupErrorContent } from '@/lib/startupErrors';
+import { getStartupErrorContent, getSupportCode } from '@/lib/startupErrors';
 import type { GateStatus } from '../services/electronClient';
 
 interface BlockedScreenProps {
@@ -29,21 +29,25 @@ export function BlockedScreen({ gate, onRetry, isRetrying }: BlockedScreenProps)
           <h1 className="font-heading text-lg font-bold text-balance text-foreground">
             {content.title}
           </h1>
-          <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
-            {content.description}
-          </p>
+          {content.description ? (
+            <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
+              {content.description}
+            </p>
+          ) : null}
         </div>
 
-        <div className="w-full space-y-2 rounded-lg border border-border/70 bg-muted/30 p-4 text-left">
-          <h2 className="text-xs font-semibold text-foreground">
-            Qué podés hacer
-          </h2>
-          <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-pretty text-muted-foreground">
-            {content.steps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ul>
-        </div>
+        {content.steps.length > 0 ? (
+          <div className="w-full space-y-2 rounded-lg border border-border/70 bg-muted/30 p-4 text-left">
+            <h2 className="text-xs font-semibold text-foreground">
+              Qué podés hacer
+            </h2>
+            <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-pretty text-muted-foreground">
+              {content.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <Button onClick={onRetry} disabled={isRetrying} className="gap-2">
           <RefreshCw className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
@@ -51,7 +55,7 @@ export function BlockedScreen({ gate, onRetry, isRetrying }: BlockedScreenProps)
         </Button>
 
         <p className="font-mono text-micro text-muted-foreground break-words">
-          Código para soporte: {gate.code}
+          Código de referencia: {getSupportCode(gate.code)}
         </p>
       </section>
     </div>
