@@ -17,7 +17,10 @@ describe('LivePingConsole Component', () => {
       />
     );
 
-    expect(screen.getByText('192.0.2.100')).toBeInTheDocument();
+    const ipLabel = screen.getByText('192.0.2.100');
+    expect(ipLabel).toBeInTheDocument();
+    // Se oculta la IP en anchos reducidos para evitar solapamiento con los botones de control
+    expect(ipLabel).toHaveClass('hidden', 'sm:inline');
     // Redundant Iniciar button must NOT exist when idle
     expect(screen.queryByRole('button', { name: /^iniciar$/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();

@@ -423,7 +423,7 @@ export function LivePingConsole({
                 }`}
               />
               <HeaderIcon className="h-3.5 w-3.5 text-link shrink-0" />
-              <span className="font-mono text-xs font-bold text-foreground truncate">
+              <span className="font-mono text-xs font-bold text-foreground truncate hidden sm:inline">
                 {headerLabel}
               </span>
             </button>
