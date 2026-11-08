@@ -311,7 +311,7 @@ describe('SettingsModal Component', () => {
     fireEvent.click(testBtn);
     expect(testSqlSpy).toHaveBeenCalledTimes(1);
   });
-  it('permite seleccionar escala de texto y activar modo de alto contraste', async () => {
+  it('permite seleccionar escala de texto y activar modo de alto contraste con formato armónico de tarjetas', async () => {
     const savePrefsSpy = vi.spyOn(electronClient, 'saveUiPreferences').mockResolvedValue({
       minimizeToTray: true,
       globalHotkeyEnabled: true,
@@ -328,9 +328,12 @@ describe('SettingsModal Component', () => {
       />
     );
 
-    expect(screen.getByRole('heading', { name: /accesibilidad y visualización/i })).toBeInTheDocument();
+    const heading = screen.getByRole('heading', { name: /accesibilidad y visualización/i });
+    expect(heading).toBeInTheDocument();
+    expect(heading).toHaveClass('overline-label', 'text-foreground');
+
     expect(screen.getByText(/tamaño de texto e interfaz/i)).toBeInTheDocument();
-    expect(screen.getByText(/modo de alto contraste/i)).toBeInTheDocument();
+    expect(screen.getByText(/alto contraste visual/i)).toBeInTheDocument();
 
     const scale120Btn = screen.getByRole('radio', { name: /120%/i });
     expect(scale120Btn).toBeInTheDocument();

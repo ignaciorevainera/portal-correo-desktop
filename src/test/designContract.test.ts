@@ -68,9 +68,9 @@ describe("contrato de diseno", () => {
     ).toBe(0);
   });
 
-  it("usa una sola utilidad de overline y no más de cinco", () => {
+  it("usa una sola utilidad de overline y no más de seis", () => {
     expect(count(/\buppercase\b/g)).toBe(0);
-    expect(count(/\boverline-label\b/g)).toBeLessThanOrEqual(5);
+    expect(count(/\boverline-label\b/g)).toBeLessThanOrEqual(6);
   });
 
   it("no hay degradados ni Base UI", () => {

@@ -559,7 +559,7 @@ export function SettingsModal({
           <section className="space-y-3">
             <div className="flex items-center gap-2 border-b border-border/60 pb-2">
               <Eye className="h-4 w-4 text-link" />
-              <h3 className="text-micro font-semibold tracking-wider text-muted-foreground">
+              <h3 className="overline-label text-foreground">
                 Accesibilidad y Visualización
               </h3>
             </div>
@@ -582,7 +582,7 @@ export function SettingsModal({
                 variant="outline"
                 size="sm"
                 aria-label="Tamaño de texto e interfaz"
-                className="pt-1 justify-start gap-1.5"
+                className="pt-1"
               >
                 <ToggleGroupItem
                   value="100"
@@ -616,6 +616,9 @@ export function SettingsModal({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+              <div className="text-xs font-bold text-foreground">
+                Alto Contraste Visual
+              </div>
               <div className="flex items-start justify-between gap-3">
                 <div className="cursor-pointer space-y-0.5">
                   <Label htmlFor="high-contrast" className="text-xs font-medium text-foreground">

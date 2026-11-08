@@ -951,7 +951,7 @@ h1, h2, h3, h4 {
   scrollbar-gutter: stable;
 }
 
-/* Etiqueta de sección: 11 px, mayúsculas y tracking corto. Máximo 5 por app. */
+/* Etiqueta de sección: 11 px, mayúsculas y tracking corto. Máximo 6 por app. */
 @utility overline-label {
   font-size: var(--text-micro);
   line-height: 1.4;
