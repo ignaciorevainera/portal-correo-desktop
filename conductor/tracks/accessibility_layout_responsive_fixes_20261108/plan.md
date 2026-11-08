@@ -17,16 +17,16 @@
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 3: Layout Responsivo de `QuickActionsBar.tsx` y `Topbar.tsx`
-- [ ] Task: (TDD) Pruebas y layout fluido en la barra de acciones rápidas y popover de búsquedas
-  - [ ] Actualizar y escribir pruebas en `src/test/QuickActionsBar.test.tsx` y `src/test/TopbarSearchNavigation.test.tsx` para validar ausencia de overflow horizontal y distribución correcta en viewport mínimo
-  - [ ] Refactorizar el layout de `src/components/QuickActionsBar.tsx` para organizar de manera fluida y cohesionada los grupos de botones según el espacio disponible sin dejar huecos vacíos
+- [ ] Task: (TDD) Pruebas y layout fluido de ancho completo en la barra de acciones rápidas y popover de búsquedas
+  - [ ] Actualizar y escribir pruebas en `src/test/QuickActionsBar.test.tsx` y `src/test/TopbarSearchNavigation.test.tsx` para validar que los botones cubran el ancho total sin huecos y se distribuyan en un máximo de 2 o 3 filas según el espacio disponible
+  - [ ] Refactorizar `src/components/QuickActionsBar.tsx` para que los botones llenen el 100% del ancho (`w-full`, `flex-1`, `grow`), asignando mayor prioridad y peso a los CTAs de conexión remota y ping para que sus labels no se corten
   - [ ] Asegurar que el popover de búsquedas recientes en `src/components/Topbar.tsx` se adapte dinámicamente al ancho de la ventana truncando strings largos con elipsis
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 4: Cabecera Adaptativa en `LivePingConsole.tsx` y Verificación Integral
-- [ ] Task: (TDD) Pruebas y cabecera responsiva en la terminal integrada
-  - [ ] Escribir tests unitarios en `src/test/LivePingConsole.test.tsx` para verificar que la cabecera preserve la legibilidad de la IP/destino en viewports mínimos
-  - [ ] Ajustar la cabecera en `src/components/LivePingConsole.tsx` para que los botones de acción se envuelvan (`flex-wrap`) o colapsen etiquetas textuales en anchos reducidos sin tapar la IP
+- [ ] Task: (TDD) Pruebas y ocultamiento responsivo de IP en cabecera de la terminal integrada
+  - [ ] Escribir tests unitarios en `src/test/LivePingConsole.test.tsx` para verificar que en anchos reducidos se oculte la IP del header para prevenir solapamiento con los botones
+  - [ ] Ajustar la cabecera en `src/components/LivePingConsole.tsx` para ocultar la IP después de determinado ancho (`hidden sm:inline`), preservando exclusivamente los botones de control visibles sin desbordar ni colisionar
 - [ ] Task: Ejecución y validación de la suite completa de calidad y empaquetado
   - [ ] Ejecutar todos los tests unitarios con `npm test` verificando 100% de casos exitosos
   - [ ] Ejecutar `npm run release:check` (`vitest`, `audit:contrast`, `tsc`, `vite build`) asegurando cero errores

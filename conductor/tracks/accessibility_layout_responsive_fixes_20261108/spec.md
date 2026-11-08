@@ -22,8 +22,10 @@ Tras la incorporación del motor de escalado visual (`webFrame.setZoomFactor`) y
   - El switch de "Modo de Alto Contraste" debe coincidir en estructura y espaciados con los switches de "Minimizar a la bandeja" y "Atajo Global".
 
 ### 2.2 Resiliencia y Flexibilidad en `QuickActionsBar.tsx`
-- Implementar un layout verdaderamente responsivo con `flex-wrap` controlado y `gap` consistente que evite quiebres abruptos o huecos vacíos al escalar texto al 110%, 120% y 130%.
-- En anchos mínimos (<= 480px) o con zoom activo, las acciones deben organizarse fluidamente en filas cohesionadas (Fila 1: VNC + Ping; Fila 2: Enlaces de sitio .250/.231; Fila 3: Uptime + Más) asegurando que ningún botón pierda legibilidad ni se desplace fuera del viewport.
+- Implementar un layout de ancho completo en todo momento (`w-full`, `flex-1`, `basis` elástica):
+  - Los botones deben ocupar el 100% del ancho horizontal disponible en cualquier tamaño de ventana, expandiéndose sin dejar espacios vacíos ni huecos laterales.
+  - Al reducirse el ancho o incrementarse el zoom de texto, los elementos se reorganizan de forma limpia y ordenada en dos o como máximo tres filas cohesivas.
+  - Priorizar el ancho de los dos CTAs principales: Conexión Remota Inteligente (VNC/MSRA) y Ping de la terminal activa, asignándoles mayor proporción/peso (`flex-[1.5]` o `flex-2`) para que sus etiquetas y estados textuales se visualicen completos y legibles sin cortes.
 
 ### 2.3 Adaptabilidad de Diálogos (`dialog.tsx`, `SettingsModal.tsx`, `InfoModal.tsx`)
 - Asegurar que `DialogContent` mantenga márgenes seguros en el viewport (`max-h-[calc(100vh-2rem)]`, `max-w-[calc(100vw-2rem)]`) y scroll vertical fluido con `overflow-y-auto`.
@@ -33,9 +35,9 @@ Tras la incorporación del motor de escalado visual (`webFrame.setZoomFactor`) y
 - Ajustar `PopoverContent` y `CommandList` en `Topbar.tsx` para que el ancho se adapte dinámicamente (`min-w-[var(--radix-popover-trigger-width)]`, `max-w-[calc(100vw-2rem)]`) y el contenido de cada ítem trunque con elipsis limpia en vez de desbordar la ventana.
 
 ### 2.5 Header Responsivo en `LivePingConsole.tsx`
-- Refactorizar la cabecera de `LivePingConsole` para que la IP/título y el grupo de acciones se organicen con `flex-wrap` o prioridad elástica:
-  - La IP/título debe tener prioridad de visibilidad (`min-w-0 flex-1 truncate`).
-  - En viewports muy estrechos con zoom alto, los botones de acción deben envolverse o compactarse (usando iconos con tooltips/sr-only en pantallas chicas) para que nunca se encimen sobre la IP.
+- Refactorizar la cabecera de `LivePingConsole`:
+  - En anchos reducidos de ventana (o escalado alto), ocultar dinámicamente el texto de la IP en el encabezado (ej. mediante breakpoint como `hidden sm:inline` o contenedor elástico) dejando exclusivamente los botones de acción para garantizar que nunca ocurra solapamiento ni desborde.
+  - La IP de la estación permanece siempre visible y accesible de forma destacada en la sección superior de identidad (`TerminalIdentity.tsx`).
 
 ---
 
