@@ -103,3 +103,8 @@
 - [x] **Track: Accesibilidad Visual: Escala de Texto y Modo de Alto Contraste**
   *Link: [./tracks/accessibility_scale_high_contrast_20261107/index.md](./tracks/accessibility_scale_high_contrast_20261107/index.md)*
 
+
+---
+
+- [~] **Track: Correcciones de Diseño, Responsividad y Layout con Escalado de Accesibilidad**
+  *Link: [./tracks/accessibility_layout_responsive_fixes_20261108/index.md](./tracks/accessibility_layout_responsive_fixes_20261108/index.md)*
