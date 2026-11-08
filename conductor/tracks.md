@@ -108,3 +108,9 @@
 
 - [x] **Track: Correcciones de Diseño, Responsividad y Layout con Escalado de Accesibilidad**
   *Link: [./tracks/accessibility_layout_responsive_fixes_20261108/index.md](./tracks/accessibility_layout_responsive_fixes_20261108/index.md)*
+
+---
+
+- [ ] **Track: Opción de Ajuste de Línea (Console Line Wrap) en Ajustes y Consola de Resultados**
+  *Link: [./tracks/console_line_wrap_20261108/index.md](./tracks/console_line_wrap_20261108/index.md)*
+
