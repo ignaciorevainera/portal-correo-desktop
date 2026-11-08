@@ -3,11 +3,11 @@
 ## Phases
 
 ### Phase 1: Homogeneización de Estilos en `SettingsModal.tsx`
-- [ ] Task: (TDD) Pruebas y armonización de la sección de Accesibilidad en `SettingsModal`
-  - [ ] Escribir/actualizar tests unitarios en `src/test/SettingsModal.test.tsx` para verificar la coherencia estructural y clases de tarjeta de la sección de accesibilidad
-  - [ ] Refactorizar el renderizado de la sección "Accesibilidad y Visualización" en `src/components/SettingsModal.tsx` adoptando la estructura idéntica de tarjetas (`p-3.5`, `rounded-xl`, `border-border/80`, `bg-muted/20`), labels y separación visual
-  - [ ] Validar que cumpla con `src/test/designContract.test.ts`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: (TDD) Pruebas y armonización de la sección de Accesibilidad en `SettingsModal` (0fe8e34)
+  - [x] Escribir/actualizar tests unitarios en `src/test/SettingsModal.test.tsx` para verificar la coherencia estructural y clases de tarjeta de la sección de accesibilidad
+  - [x] Refactorizar el renderizado de la sección "Accesibilidad y Visualización" en `src/components/SettingsModal.tsx` adoptando la estructura idéntica de tarjetas (`p-3.5`, `rounded-xl`, `border-border/80`, `bg-muted/20`), labels y separación visual
+  - [x] Validar que cumpla con `src/test/designContract.test.ts`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 2: Adaptabilidad y Resiliencia en Diálogos (`InfoModal.tsx`, `SettingsModal.tsx`, `dialog.tsx`)
 - [ ] Task: (TDD) Pruebas y resguardo de viewport en diálogos y reparación de `InfoModal`
