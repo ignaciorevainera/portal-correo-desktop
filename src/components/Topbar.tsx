@@ -596,14 +596,15 @@ export function Topbar({
                   size="sm"
                   onClick={hideToTray}
                   aria-label="Minimizar a bandeja del sistema"
-                  title="Clic: ocultar en bandeja · Clic derecho: cerrar la aplicación"
+                  aria-haspopup="menu"
+                  title="Clic: ocultar en bandeja · Clic derecho: opciones de apagado"
                   className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer px-2"
                 >
                   <Power className="h-4 w-4" />
                 </Button>
               </ContextMenuTrigger>
               <ContextMenuContent
-                className="w-64"
+                className="w-72"
                 aria-label="Opciones de apagado"
               >
                 <ContextMenuLabel>Apagado</ContextMenuLabel>
@@ -613,12 +614,13 @@ export function Topbar({
                   aria-label="Ocultar en bandeja del sistema"
                 >
                   <Minus className="h-3.5 w-3.5 text-muted-foreground" />
-                  Ocultar en bandeja
+                  Ocultar en bandeja del sistema
                 </ContextMenuItem>
+                <ContextMenuSeparator />
                 <ContextMenuItem
+                  variant="destructive"
                   onSelect={() => void quitApp()}
                   aria-label="Cerrar la aplicación definitivamente"
-                  className="text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive"
                 >
                   <Power className="h-3.5 w-3.5" />
                   Cerrar la aplicación definitivamente

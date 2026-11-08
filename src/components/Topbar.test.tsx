@@ -109,6 +109,12 @@ describe("Topbar & Compact Unified Titlebar component", () => {
       name: /minimizar a bandeja del sistema/i,
     });
 
+    expect(power).toHaveAttribute("aria-haspopup", "menu");
+    expect(power).toHaveAttribute(
+      "title",
+      "Clic: ocultar en bandeja · Clic derecho: opciones de apagado",
+    );
+
     fireEvent.contextMenu(power);
 
     const hideItem = await screen.findByRole("menuitem", {
