@@ -90,7 +90,7 @@ export function InfoModal({
                   {appVersion}
                 </Badge>
               </div>
-              <DialogDescription className="text-xs text-muted-foreground break-words leading-relaxed">
+              <DialogDescription className="text-xs text-muted-foreground wrap-break-word leading-relaxed">
                 Consola técnica de soporte y monitoreo corporativo
               </DialogDescription>
             </div>
@@ -113,7 +113,7 @@ export function InfoModal({
                   >
                     <div className="flex items-start gap-2.5 min-w-0">
                       <Icon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                      <span className="text-xs text-foreground/90 leading-snug break-words">
+                      <span className="text-xs text-foreground/90 leading-snug wrap-break-word">
                         {item.label}
                       </span>
                     </div>
