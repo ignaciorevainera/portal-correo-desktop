@@ -324,6 +324,15 @@ export async function hideToTray(): Promise<void> {
   }
 }
 
+export async function quitApp(): Promise<void> {
+  const api = getElectronAPI();
+  if (api && api.quitApp) {
+    try {
+      await api.quitApp();
+    } catch {}
+  }
+}
+
 export async function stopPing(): Promise<void> {
   const api = getElectronAPI();
   if (api && api.stopPing) {

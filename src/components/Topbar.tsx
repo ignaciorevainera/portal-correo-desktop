@@ -27,6 +27,7 @@ import { APP_VERSION_LABEL } from "@/lib/appVersion";
 import {
   minimizeWindow,
   hideToTray,
+  quitApp,
 } from "../services/electronClient";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +57,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { classifySearch } from "@/lib/usernames";
 import {
   loadRecentSearches,
@@ -578,18 +587,46 @@ export function Topbar({
               <Minus className="h-4 w-4" />
             </Button>
 
-            {/* Apagado / Minimizar a bandeja del sistema */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={hideToTray}
-              aria-label="Minimizar a bandeja del sistema"
-              title="Ocultar en bandeja del sistema (Turn Off)"
-              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer px-2"
-            >
-              <Power className="h-4 w-4" />
-            </Button>
+            {/* Apagado: clic oculta en bandeja; clic derecho abre opciones */}
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={hideToTray}
+                  aria-label="Minimizar a bandeja del sistema"
+                  aria-haspopup="menu"
+                  title="Clic: ocultar en bandeja · Clic derecho: opciones de apagado"
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer px-2"
+                >
+                  <Power className="h-4 w-4" />
+                </Button>
+              </ContextMenuTrigger>
+              <ContextMenuContent
+                className="w-72"
+                aria-label="Opciones de apagado"
+              >
+                <ContextMenuLabel>Apagado</ContextMenuLabel>
+                <ContextMenuSeparator />
+                <ContextMenuItem
+                  onSelect={() => void hideToTray()}
+                  aria-label="Ocultar en bandeja del sistema"
+                >
+                  <Minus className="h-3.5 w-3.5 text-muted-foreground" />
+                  Ocultar en bandeja del sistema
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+                <ContextMenuItem
+                  variant="destructive"
+                  onSelect={() => void quitApp()}
+                  aria-label="Cerrar la aplicación definitivamente"
+                >
+                  <Power className="h-3.5 w-3.5" />
+                  Cerrar la aplicación definitivamente
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           </div>
         </div>
       </header>

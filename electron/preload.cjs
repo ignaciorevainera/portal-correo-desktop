@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   maximizeWindow: () => ipcRenderer.invoke('pcd:window-maximize'),
   closeWindow: () => ipcRenderer.invoke('pcd:window-close'),
   hideToTray: () => ipcRenderer.invoke('pcd:window-hide-tray'),
+  quitApp: () => ipcRenderer.invoke('pcd:quit-app'),
   openExternal: (url) => ipcRenderer.invoke('pcd:open-external', url),
   ping: (target, continuous) => ipcRenderer.send('pcd:ping-start', target, continuous),
   stopPing: () => ipcRenderer.invoke('pcd:ping-stop'),
