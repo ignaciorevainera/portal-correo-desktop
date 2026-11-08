@@ -26,12 +26,14 @@ afterEach(() => {
 });
 
 describe('preferencias de interfaz persistidas por el proceso principal', () => {
-  it('usa bandeja y atajo activos cuando no hay archivo', () => {
+  it('usa bandeja, atajo y accesibilidad activos cuando no hay archivo', () => {
     const prefs = loadUiPreferences(makeUserDataDir());
 
     expect(prefs).toEqual({ ...DEFAULTS, stored: false });
     expect(prefs.minimizeToTray).toBe(true);
     expect(prefs.globalHotkeyEnabled).toBe(true);
+    expect(prefs.textScale).toBe('100');
+    expect(prefs.highContrast).toBe(false);
   });
 
   it('persiste cambios y los recupera en la siguiente lectura', () => {
@@ -40,16 +42,22 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
     const saved = saveUiPreferences(dir, {
       minimizeToTray: false,
       globalHotkeyEnabled: false,
+      textScale: '120',
+      highContrast: true,
     });
     expect(saved).toMatchObject({
       minimizeToTray: false,
       globalHotkeyEnabled: false,
+      textScale: '120',
+      highContrast: true,
       stored: true,
     });
 
     expect(loadUiPreferences(dir)).toEqual({
       minimizeToTray: false,
       globalHotkeyEnabled: false,
+      textScale: '120',
+      highContrast: true,
       stored: true,
     });
   });
@@ -58,11 +66,15 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
     const dir = makeUserDataDir();
 
     saveUiPreferences(dir, { globalHotkeyEnabled: false });
+    saveUiPreferences(dir, { textScale: '110' });
+    saveUiPreferences(dir, { highContrast: true });
     saveUiPreferences(dir, { minimizeToTray: false });
 
     expect(loadUiPreferences(dir)).toMatchObject({
       minimizeToTray: false,
       globalHotkeyEnabled: false,
+      textScale: '110',
+      highContrast: true,
       stored: true,
     });
   });
@@ -75,12 +87,19 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
 
     fs.writeFileSync(
       path.join(dir, 'ui-preferences.json'),
-      JSON.stringify({ minimizeToTray: 'no', globalHotkeyEnabled: 'false' })
+      JSON.stringify({
+        minimizeToTray: 'no',
+        globalHotkeyEnabled: 'false',
+        textScale: 'invalid',
+        highContrast: 'true',
+      })
     );
 
     expect(loadUiPreferences(dir)).toMatchObject({
       minimizeToTray: true,
       globalHotkeyEnabled: false,
+      textScale: '100',
+      highContrast: true,
       stored: true,
     });
   });
@@ -90,6 +109,8 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
     expect(normalizePreferences({ minimizeToTray: false })).toEqual({
       minimizeToTray: false,
       globalHotkeyEnabled: true,
+      textScale: '100',
+      highContrast: false,
     });
   });
 });

@@ -8,24 +8,19 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
-    error: null,
-    errorInfo: null,
   };
 
-  public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorInfo: null };
+  public static getDerivedStateFromError(): State {
+    return { hasError: true };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("[ErrorBoundary caught an error]", error, errorInfo);
-    this.setState({ errorInfo });
   }
 
   public handleReload = () => {
@@ -33,33 +28,44 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+    this.setState({ hasError: false });
   };
 
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="flex h-screen w-screen flex-col items-center justify-center bg-background p-6 text-foreground select-none">
-          <div className="max-w-md w-full rounded-lg border border-destructive/40 bg-card p-6 space-y-4">
+        <div className="flex min-h-screen w-full items-center justify-center bg-background p-5 text-foreground sm:p-6">
+          <section className="flex w-full max-w-lg flex-col gap-5 rounded-lg border border-destructive/40 bg-card p-6">
             <div className="flex items-center gap-3 text-destructive">
-              <AlertTriangle className="h-6 w-6 shrink-0" />
-              <h2 className="text-lg font-bold font-heading">
-                Ocurrió un error inesperado
-              </h2>
+              <AlertTriangle className="h-6 w-6 shrink-0" aria-hidden="true" />
+              <h1 className="text-lg font-bold font-heading text-balance">
+                La aplicación encontró un problema
+              </h1>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              La aplicación encontró un fallo en la interfaz y evitó cerrarse
-              abruptamente. Podés recargar la ventana para reanudar el estado.
+
+            <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
+              Algo falló mientras se mostraba esta pantalla. Podés volver a
+              intentar o recargar la ventana. Si el problema se repite, contactá
+              a soporte técnico.
             </p>
-            {this.state.error && (
-              <pre className="max-h-40 overflow-auto rounded-md bg-muted/80 p-3 font-mono text-micro text-destructive leading-tight border border-border">
-                {this.state.error.toString()}
-                {this.state.errorInfo?.componentStack}
-              </pre>
-            )}
-            <div className="flex items-center justify-end gap-2 pt-2">
+
+            <div className="space-y-2 rounded-md border border-border/70 bg-muted/30 p-4 text-left">
+              <h2 className="text-xs font-semibold text-foreground">
+                Qué podés hacer
+              </h2>
+              <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-pretty text-muted-foreground">
+                <li>Elegí Reintentar para volver a cargar la pantalla.</li>
+                <li>Si no responde, elegí Recargar app.</li>
+                <li>
+                  Si el problema persiste, reiniciá la aplicación y avisá a
+                  soporte técnico.
+                </li>
+              </ul>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
               <Button
-                variant="outline"
+                variant="default"
                 size="sm"
                 onClick={this.handleReset}
                 className="text-xs cursor-pointer"
@@ -67,7 +73,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 Reintentar
               </Button>
               <Button
-                variant="default"
+                variant="outline"
                 size="sm"
                 onClick={this.handleReload}
                 className="text-xs gap-1.5 cursor-pointer"
@@ -76,7 +82,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 Recargar app
               </Button>
             </div>
-          </div>
+          </section>
         </div>
       );
     }

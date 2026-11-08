@@ -78,6 +78,8 @@ export interface RemoteProbeResult {
 export interface UiPreferences {
   minimizeToTray: boolean;
   globalHotkeyEnabled: boolean;
+  textScale?: '100' | '110' | '120' | '130';
+  highContrast?: boolean;
   /** false cuando todavía no existe archivo guardado (migración). */
   stored?: boolean;
 }

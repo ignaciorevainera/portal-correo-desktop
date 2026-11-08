@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webFrame } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getSecurityStatus: () => ipcRenderer.invoke('pcd:security-status'),
@@ -81,4 +81,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Preferencias que aplica el proceso principal
   getUiPreferences: () => ipcRenderer.invoke('pcd:ui-preferences-get'),
   setUiPreferences: (patch) => ipcRenderer.invoke('pcd:ui-preferences-set', patch),
+  setZoomFactor: (factor) => { try { webFrame.setZoomFactor(factor); } catch {} },
+  getZoomFactor: () => { try { return webFrame.getZoomFactor(); } catch { return 1; } },
 });

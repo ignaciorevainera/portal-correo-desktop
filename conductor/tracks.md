@@ -93,8 +93,13 @@
 - [x] **Track: Ping de Sitio: Router .250 automatico y Servidor .231 manual**
   *Link: [./tracks/site_link_ping_20261101/index.md](./tracks/site_link_ping_20261101/index.md)*
 
-
 ---
 
 - [x] **Track: Optimización Integral de Rendimiento, SQL/IPC, Cold Start, Escáner de Subred y Renderizado**
   *Link: [./tracks/app_performance_optimization_20261106/index.md](./tracks/app_performance_optimization_20261106/index.md)*
+
+---
+
+- [x] **Track: Accesibilidad Visual: Escala de Texto y Modo de Alto Contraste**
+  *Link: [./tracks/accessibility_scale_high_contrast_20261107/index.md](./tracks/accessibility_scale_high_contrast_20261107/index.md)*
+

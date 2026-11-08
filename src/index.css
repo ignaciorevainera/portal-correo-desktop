@@ -959,3 +959,22 @@ h1, h2, h3, h4 {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* Modo de Alto Contraste (.high-contrast) */
+.high-contrast {
+  --border: oklch(0.2 0 0);
+  --input: oklch(0.2 0 0);
+  --ring: oklch(0 0 0);
+  --muted-foreground: oklch(0.25 0 0);
+}
+
+.dark.high-contrast, .high-contrast.dark, .high-contrast .dark {
+  --border: oklch(0.85 0 0);
+  --input: oklch(0.85 0 0);
+  --ring: oklch(1 0 0);
+  --muted-foreground: oklch(0.85 0 0);
+}
+
+.high-contrast * {
+  border-color: var(--border);
+}
