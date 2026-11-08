@@ -11,15 +11,15 @@
   - [x] Ejecutar pruebas y validar que pasen (Green).
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [b4d1e58]
 
-## Phase 2: Integración en Interfaz de Usuario y Ajustes (`SettingsModal`)
-- [ ] Task: Test-Driven Development para el control de `consoleWrap` en `SettingsModal` (Red Phase)
-  - [ ] Escribir pruebas en `src/components/SettingsModal.test.tsx` verificando el renderizado del Switch "Ajuste de línea en consola", su estado inicial y la invocación de guardado.
-  - [ ] Confirmar fallo esperado de las pruebas (Red).
-- [ ] Task: Implementación del switch de ajuste de línea en `SettingsModal` (Green Phase)
-  - [ ] Añadir el Switch y Label accesible dentro del bloque "Accesibilidad y Visualización" de `SettingsModal.tsx`.
-  - [ ] Conectar el estado local y los handlers de cambio con `saveUiPreferences` y `saveDefaultConsoleWrap`.
-  - [ ] Ejecutar pruebas y validar que pasen (Green).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 2: Integración en Interfaz de Usuario y Ajustes (`SettingsModal`) [checkpoint: 562773d]
+- [x] Task: Test-Driven Development para el control de `consoleWrap` en `SettingsModal` (Red Phase) [562773d]
+  - [x] Escribir pruebas en `src/test/SettingsModal.test.tsx` verificando el renderizado del Switch "Ajuste de línea en consola", su estado inicial y la invocación de guardado.
+  - [x] Confirmar fallo esperado de las pruebas (Red).
+- [x] Task: Implementación del switch de ajuste de línea en `SettingsModal` (Green Phase) [562773d]
+  - [x] Añadir el Switch y Label accesible dentro del bloque "Accesibilidad y Visualización" de `SettingsModal.tsx`.
+  - [x] Conectar el estado local y los handlers de cambio con `saveUiPreferences` y `saveDefaultConsoleWrap`.
+  - [x] Ejecutar pruebas y validar que pasen (Green).
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [562773d]
 
 ## Phase 3: Soporte de Line Wrap en la Consola de Resultados (`LivePingConsole`)
 - [ ] Task: Test-Driven Development para el renderizado condicional de wrap en `LivePingConsole` (Red Phase)
