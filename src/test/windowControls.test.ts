@@ -4,6 +4,7 @@ import {
   maximizeWindow,
   closeWindow,
   hideToTray,
+  quitApp,
   openExternalUrl,
   stopPing,
 } from "../services/electronClient";
@@ -65,6 +66,14 @@ describe("Window Controls & External Link Contracts", () => {
       expect(closeMock).toHaveBeenCalledTimes(1);
     });
 
+    it("calls electronAPI.quitApp to close the app definitively", async () => {
+      const quitMock = vi.fn().mockResolvedValue(true);
+      (window as any).electronAPI = { quitApp: quitMock };
+
+      await quitApp();
+      expect(quitMock).toHaveBeenCalledTimes(1);
+    });
+
     it("calls electronAPI.openExternal with destination URL", async () => {
       const openExternalMock = vi.fn().mockResolvedValue(true);
       (window as any).electronAPI = {
@@ -81,6 +90,10 @@ describe("Window Controls & External Link Contracts", () => {
     it("gracefully handles minimizeWindow and closeWindow without throwing", async () => {
       await expect(minimizeWindow()).resolves.not.toThrow();
       await expect(closeWindow()).resolves.not.toThrow();
+    });
+
+    it("gracefully handles quitApp without electronAPI", async () => {
+      await expect(quitApp()).resolves.not.toThrow();
     });
 
     it("calls window.open as fallback for openExternalUrl", async () => {

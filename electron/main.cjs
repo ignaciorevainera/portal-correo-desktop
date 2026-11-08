@@ -428,6 +428,11 @@ ipcMain.handle('pcd:window-hide-tray', (event) => {
   if (win) win.hide();
 });
 
+ipcMain.handle('pcd:quit-app', () => {
+  app.isQuiting = true;
+  app.quit();
+});
+
 ipcMain.handle('pcd:open-external', async (_event, url) => {
   if (url && typeof url === 'string') {
     await shell.openExternal(url);
