@@ -114,3 +114,9 @@
 - [ ] **Track: Opción de Ajuste de Línea (Console Line Wrap) en Ajustes y Consola de Resultados**
   *Link: [./tracks/console_line_wrap_20261108/index.md](./tracks/console_line_wrap_20261108/index.md)*
 
+---
+
+- [ ] **Track: Copiado Granular por Bloques en Hover para Consola Principal (LivePingConsole)**
+  *Link: [./tracks/console_block_hover_copy_20261108/index.md](./tracks/console_block_hover_copy_20261108/index.md)*
+
+
