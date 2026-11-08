@@ -834,4 +834,100 @@ describe('LivePingConsole Component', () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Proceso ping detenido/)).toBeInTheDocument();
   });
+
+  it('aplica whitespace-pre y overflow-x-auto cuando consoleWrap es false por defecto', () => {
+    let dataHandler: any;
+    vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
+      dataHandler = onData;
+      return () => {};
+    });
+
+    render(
+      <LivePingConsole
+        ip="192.0.2.200"
+        isPinging={true}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    act(() => {
+      dataHandler?.("Linea muy larga de diagnóstico sin saltos de linea");
+    });
+
+    const scrollContainer = screen.getByTestId('terminal-scroll-container');
+    expect(scrollContainer.className).toContain('overflow-x-auto');
+    expect(scrollContainer.className).not.toContain('overflow-x-hidden');
+
+    const lineEl = screen.getByText("Linea muy larga de diagnóstico sin saltos de linea");
+    expect(lineEl.className).toContain('whitespace-pre');
+    expect(lineEl.className).not.toContain('whitespace-pre-wrap');
+    expect(lineEl.className).not.toContain('break-words');
+  });
+
+  it('aplica whitespace-pre-wrap, break-words y overflow-x-hidden cuando consoleWrap es true', () => {
+    let dataHandler: any;
+    vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
+      dataHandler = onData;
+      return () => {};
+    });
+
+    render(
+      <LivePingConsole
+        ip="192.0.2.201"
+        isPinging={true}
+        wrap={true}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    act(() => {
+      dataHandler?.("Linea muy larga que debe ajustarse automáticamente con saltos suaves");
+    });
+
+    const scrollContainer = screen.getByTestId('terminal-scroll-container');
+    expect(scrollContainer.className).toContain('overflow-x-hidden');
+    expect(scrollContainer.className).not.toContain('overflow-x-auto');
+
+    const lineEl = screen.getByText("Linea muy larga que debe ajustarse automáticamente con saltos suaves");
+    expect(lineEl.className).toContain('whitespace-pre-wrap');
+    expect(lineEl.className).toContain('break-words');
+    expect(lineEl.className).not.toContain('whitespace-pre ');
+  });
+
+  it('reacciona dinámicamente al evento pcd:console-wrap-changed si no se pasa prop explícita', () => {
+    let dataHandler: any;
+    vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
+      dataHandler = onData;
+      return () => {};
+    });
+
+    render(
+      <LivePingConsole
+        ip="192.0.2.202"
+        isPinging={true}
+        onTogglePing={vi.fn()}
+      />
+    );
+
+    act(() => {
+      dataHandler?.("Linea reactiva al evento global de wrap");
+    });
+
+    const scrollContainer = screen.getByTestId('terminal-scroll-container');
+    expect(scrollContainer.className).toContain('overflow-x-auto');
+
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('pcd:console-wrap-changed', {
+          detail: { consoleWrap: true },
+        })
+      );
+    });
+
+    expect(scrollContainer.className).toContain('overflow-x-hidden');
+    const lineEl = screen.getByText("Linea reactiva al evento global de wrap");
+    expect(lineEl.className).toContain('whitespace-pre-wrap');
+    expect(lineEl.className).toContain('break-words');
+  });
+
 });
