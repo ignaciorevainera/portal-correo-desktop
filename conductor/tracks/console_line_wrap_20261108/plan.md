@@ -21,16 +21,16 @@
   - [x] Ejecutar pruebas y validar que pasen (Green).
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [562773d]
 
-## Phase 3: Soporte de Line Wrap en la Consola de Resultados (`LivePingConsole`)
-- [ ] Task: Test-Driven Development para el renderizado condicional de wrap en `LivePingConsole` (Red Phase)
-  - [ ] Escribir pruebas en `src/components/LivePingConsole.test.tsx` verificando que con `consoleWrap = true` se apliquen las clases de wrap (`whitespace-pre-wrap break-words`) y con `false` se mantenga `whitespace-pre overflow-x-auto`.
-  - [ ] Verificar fallo esperado de las pruebas (Red).
-- [ ] Task: Implementación de la reactividad y estilos de wrap en `LivePingConsole` (Green Phase)
-  - [ ] Integrar la lectura y sincronización reactiva de `consoleWrap` en `LivePingConsole.tsx` (escuchando el evento o recibiendo el estado).
-  - [ ] Aplicar las clases dinámicas de wrap y ajuste de scroll en el contenedor y líneas de salida para todos los diagnósticos (Ping, Tracert, Nbtstat, ARP, Net User).
-  - [ ] Propagar la preferencia en `App.tsx` para garantizar que la app principal y componentes futuros compartan la misma configuración.
-  - [ ] Ejecutar pruebas de `LivePingConsole` y validar que pasen (Green).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+## Phase 3: Soporte de Line Wrap en la Consola de Resultados (`LivePingConsole`) [checkpoint: 1fd0433]
+- [x] Task: Test-Driven Development para el renderizado condicional de wrap en `LivePingConsole` (Red Phase) [1fd0433]
+  - [x] Escribir pruebas en `src/test/LivePingConsole.test.tsx` verificando que con `consoleWrap = true` se apliquen las clases de wrap (`whitespace-pre-wrap break-words`) y con `false` se mantenga `whitespace-pre overflow-x-auto`.
+  - [x] Verificar fallo esperado de las pruebas (Red).
+- [x] Task: Implementación de la reactividad y estilos de wrap en `LivePingConsole` (Green Phase) [1fd0433]
+  - [x] Integrar la lectura y sincronización reactiva de `consoleWrap` en `LivePingConsole.tsx` (escuchando el evento o recibiendo el estado).
+  - [x] Aplicar las clases dinámicas de wrap y ajuste de scroll en el contenedor y líneas de salida para todos los diagnósticos (Ping, Tracert, Nbtstat, ARP, Net User).
+  - [x] Propagar la preferencia en `App.tsx` para garantizar que la app principal y componentes futuros compartan la misma configuración.
+  - [x] Ejecutar pruebas de `LivePingConsole` y validar que pasen (Green).
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [1fd0433]
 
 ## Phase 4: Verificación Integral de Sistema, Regresión y Documentación
 - [ ] Task: Ejecución de la suite completa de pruebas y auditoría
