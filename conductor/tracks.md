@@ -111,7 +111,7 @@
 
 ---
 
-- [ ] **Track: Opción de Ajuste de Línea (Console Line Wrap) en Ajustes y Consola de Resultados**
+- [~] **Track: Opción de Ajuste de Línea (Console Line Wrap) en Ajustes y Consola de Resultados**
   *Link: [./tracks/console_line_wrap_20261108/index.md](./tracks/console_line_wrap_20261108/index.md)*
 
 ---
