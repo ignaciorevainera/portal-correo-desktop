@@ -1,14 +1,14 @@
 # Implementation Plan: Opción de Ajuste de Línea (Console Line Wrap) en Ajustes y Consola de Resultados
 
 ## Phase 1: Capa de Persistencia y Preferencias (Main Process y Helpers)
-- [ ] Task: Test-Driven Development para `uiPreferences.cjs` y `@/lib/preferences.ts` (Red Phase)
-  - [ ] Escribir pruebas unitarias en `test/uiPreferences.test.cjs` para la clave `consoleWrap` (valor por defecto `false`, normalización booleana, persistencia y recuperación).
-  - [ ] Escribir pruebas unitarias en `src/test/preferences.test.ts` para `loadDefaultConsoleWrap`, `saveDefaultConsoleWrap` y emisión del evento reactivo `pcd:console-wrap-changed`.
-  - [ ] Ejecutar pruebas y confirmar fallo esperado (Red).
-- [ ] Task: Implementación de la propiedad `consoleWrap` (Green Phase)
-  - [ ] Actualizar `electron/uiPreferences.cjs` para incluir `consoleWrap` en `DEFAULTS` y `normalizePreferences`.
-  - [ ] Implementar helpers en `src/lib/preferences.ts` para lectura, guardado y disparo del evento `CustomEvent("pcd:console-wrap-changed")`.
-  - [ ] Ejecutar pruebas y validar que pasen (Green).
+- [x] Task: Test-Driven Development para `uiPreferences.cjs` y `@/lib/preferences.ts` (Red Phase) [b4d1e58]
+  - [x] Escribir pruebas unitarias en `src/test/uiPreferences.test.ts` para la clave `consoleWrap` (valor por defecto `false`, normalización booleana, persistencia y recuperación).
+  - [x] Escribir pruebas unitarias en `src/test/preferences.test.ts` para `loadDefaultConsoleWrap`, `saveDefaultConsoleWrap` y emisión del evento reactivo `pcd:console-wrap-changed`.
+  - [x] Ejecutar pruebas y confirmar fallo esperado (Red).
+- [x] Task: Implementación de la propiedad `consoleWrap` (Green Phase) [b4d1e58]
+  - [x] Actualizar `electron/uiPreferences.cjs` para incluir `consoleWrap` en `DEFAULTS` y `normalizePreferences`.
+  - [x] Implementar helpers en `src/lib/preferences.ts` para lectura, guardado y disparo del evento `CustomEvent("pcd:console-wrap-changed")`.
+  - [x] Ejecutar pruebas y validar que pasen (Green).
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Integración en Interfaz de Usuario y Ajustes (`SettingsModal`)
