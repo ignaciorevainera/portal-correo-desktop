@@ -95,6 +95,37 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     expect(traySpy).toHaveBeenCalledTimes(1);
   });
 
+  it("ofrece ocultar en bandeja o cerrar la app desde el menú del botón de apagado", async () => {
+    const hideSpy = vi.spyOn(electronClient, "hideToTray").mockResolvedValue();
+    const quitSpy = vi.spyOn(electronClient, "quitApp").mockResolvedValue();
+
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    const power = screen.getByRole("button", {
+      name: /minimizar a bandeja del sistema/i,
+    });
+
+    fireEvent.contextMenu(power);
+
+    const hideItem = await screen.findByRole("menuitem", {
+      name: /ocultar en bandeja/i,
+    });
+    fireEvent.click(hideItem);
+    expect(hideSpy).toHaveBeenCalledTimes(1);
+    expect(quitSpy).not.toHaveBeenCalled();
+
+    fireEvent.contextMenu(power);
+    const quitItem = await screen.findByRole("menuitem", {
+      name: /cerrar la aplicación definitivamente/i,
+    });
+    fireEvent.click(quitItem);
+    expect(quitSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("provides direct 1-click VNC action on terminal suggestions and omits redundant inline ping or AD consult buttons", () => {
     localStorage.setItem(
       "pcd_recent_searches",
