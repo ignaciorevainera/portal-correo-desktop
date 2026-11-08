@@ -85,4 +85,17 @@ describe("InfoModal Component", () => {
     fireEvent.click(closeButtons[0]);
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
+  it("garantiza contención en viewport y scroll adaptativo en pantallas reducidas o zoom alto", () => {
+    const { container } = render(<InfoModal isOpen={true} onClose={vi.fn()} />);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.className).toContain("max-h-[calc(100vh-2rem)]");
+    expect(dialog.className).toContain("flex");
+    expect(dialog.className).toContain("flex-col");
+    expect(dialog.className).toContain("overflow-hidden");
+
+    const scrollContainer = dialog.querySelector(".overflow-y-auto");
+    expect(scrollContainer).toBeInTheDocument();
+    expect(scrollContainer?.className).toContain("flex-1");
+  });
 });

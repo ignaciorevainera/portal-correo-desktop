@@ -245,7 +245,7 @@ export function SettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-155 max-sm:max-w-[calc(100vw-1.5rem)] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-card text-card-foreground border-border">
+      <DialogContent className="sm:max-w-155 max-sm:max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-2rem)] flex flex-col p-0 gap-0 overflow-hidden bg-card text-card-foreground border-border">
         <DialogHeader className="p-4 bg-muted/40 border-b border-border shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

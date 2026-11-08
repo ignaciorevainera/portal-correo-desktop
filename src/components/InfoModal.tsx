@@ -67,11 +67,11 @@ export function InfoModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md max-sm:max-w-[calc(100vw-1.5rem)] p-0 overflow-hidden border border-border/80">
+      <DialogContent className="max-w-md max-sm:max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-2rem)] flex flex-col p-0 overflow-hidden border border-border/80">
         {/* Cabecera Minimalista con Identidad de Marca */}
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60 bg-muted/20">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60 bg-muted/20 shrink-0">
           <div className="flex items-center gap-3">
-            <IconWell className="border border-primary/20">
+            <IconWell className="border border-primary/20 shrink-0">
               <img
                 src={logoIcon}
                 alt="Correo Argentino"
@@ -85,7 +85,7 @@ export function InfoModal({
                 </DialogTitle>
                 <Badge
                   variant="secondary"
-                  className="text-micro font-mono px-1.5 py-0 h-4 font-semibold"
+                  className="text-micro font-mono px-1.5 py-0 h-4 font-semibold shrink-0"
                 >
                   {appVersion}
                 </Badge>
@@ -97,8 +97,8 @@ export function InfoModal({
           </div>
         </DialogHeader>
 
-        {/* Contenido / Capacidades Principales (sin márgenes verticales y con espaciado amplio entre items) */}
-        <div className="px-6 py-0 text-xs">
+        {/* Contenido / Capacidades Principales con Scroll Adaptativo */}
+        <div className="px-6 py-0 text-xs overflow-y-auto flex-1">
           <div className="py-5 space-y-3">
             <span className="text-micro font-semibold text-muted-foreground block">
               Capacidades Principales
@@ -109,11 +109,11 @@ export function InfoModal({
                 return (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between gap-3 text-foreground"
+                    className="flex items-start justify-between gap-3 text-foreground"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-xs text-foreground/90 leading-snug">
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      <Icon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                      <span className="text-xs text-foreground/90 leading-snug break-words">
                         {item.label}
                       </span>
                     </div>
@@ -139,13 +139,13 @@ export function InfoModal({
               onClick={handleOpenPortalMda}
               aria-label="Abrir Portal MDA"
               title="Ir a Portal MDA (Inventario de Terminales en la red corporativa)"
-              className="w-full justify-between text-xs h-9 cursor-pointer"
+              className="w-full justify-between text-xs h-9 cursor-pointer gap-2"
             >
-              <span className="flex items-center gap-2">
-                <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                <span>Portal MDA</span>
+              <span className="flex items-center gap-2 min-w-0 truncate">
+                <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="truncate">Portal MDA</span>
               </span>
-              <span className="text-micro text-muted-foreground">
+              <span className="text-micro text-muted-foreground shrink-0">
                 Inventario de terminales
               </span>
             </Button>
@@ -153,7 +153,7 @@ export function InfoModal({
         </div>
 
         {/* Footer Minimalista */}
-        <DialogFooter className="px-6 py-4 border-t border-border/60 bg-muted/20 flex items-center justify-end">
+        <DialogFooter className="px-6 py-4 border-t border-border/60 bg-muted/20 flex items-center justify-end shrink-0">
           <Button
             type="button"
             variant="outline"
