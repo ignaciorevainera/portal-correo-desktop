@@ -10,11 +10,11 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 2: Adaptabilidad y Resiliencia en Diálogos (`InfoModal.tsx`, `SettingsModal.tsx`, `dialog.tsx`)
-- [ ] Task: (TDD) Pruebas y resguardo de viewport en diálogos y reparación de `InfoModal`
-  - [ ] Escribir tests unitarios en `src/test/InfoModal.test.tsx` y `src/test/dialogPrimitive.test.tsx` validando contención en viewports chicos y scroll interno
-  - [ ] Mejorar `DialogContent` en `src/components/ui/dialog.tsx` asegurando márgenes seguros (`max-h-[calc(100vh-2rem)]`, `max-w-[calc(100vw-2rem)]`) y scroll adaptativo
-  - [ ] Rediseñar el interior de `src/components/InfoModal.tsx` para que las capacidades y atajos utilicen layout flexible (`flex-wrap`, scroll vertical si es necesario) sin cortarse
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: (TDD) Pruebas y resguardo de viewport en diálogos y reparación de `InfoModal` (2fc7070)
+  - [x] Escribir tests unitarios en `src/test/InfoModal.test.tsx` y `src/test/dialogPrimitive.test.tsx` validando contención en viewports chicos y scroll interno
+  - [x] Mejorar `DialogContent` en `src/components/ui/dialog.tsx` asegurando márgenes seguros (`max-h-[calc(100vh-2rem)]`, `max-w-[calc(100vw-2rem)]`) y scroll adaptativo
+  - [x] Rediseñar el interior de `src/components/InfoModal.tsx` para que las capacidades y atajos utilicen layout flexible (`flex-wrap`, scroll vertical si es necesario) sin cortarse
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 3: Layout Responsivo de `QuickActionsBar.tsx` y `Topbar.tsx`
 - [ ] Task: (TDD) Pruebas y layout fluido de ancho completo en la barra de acciones rápidas y popover de búsquedas
