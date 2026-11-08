@@ -62,6 +62,17 @@ function normalizePreferences(raw) {
  * previo; el renderer lo usa para migrar valores de versiones anteriores que
  * solo vivían en localStorage.
  */
+function scaleToZoomFactor(scale) {
+  switch (scale) {
+    case '110': return 1.1;
+    case '120': return 1.2;
+    case '130': return 1.3;
+    case '100':
+    default:
+      return 1.0;
+  }
+}
+
 function loadUiPreferences(userDataDir) {
   if (!userDataDir) {
     return { ...DEFAULTS, stored: false };
@@ -109,4 +120,5 @@ module.exports = {
   normalizePreferences,
   loadUiPreferences,
   saveUiPreferences,
+  scaleToZoomFactor,
 };

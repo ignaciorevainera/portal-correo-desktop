@@ -25,7 +25,7 @@ const { createConfigProvider, ConfigError } = require('./configProvider.cjs');
 const { evaluateGate, describeEnvironment } = require('./securityGate.cjs');
 const { migrateLegacyConfig } = require('./migration.cjs');
 const { RELAUNCH_FLAG, isCompatEnabled, shouldRetryWithoutSandbox, buildRelaunchArgs } = require('./compatMode.cjs');
-const { loadUiPreferences, saveUiPreferences } = require('./uiPreferences.cjs');
+const { loadUiPreferences, saveUiPreferences, scaleToZoomFactor } = require('./uiPreferences.cjs');
 
 // ---------------------------------------------------------------------------
 // Modo de renderizado (GPU vs. software)
@@ -369,6 +369,10 @@ function createWindow() {
   });
 
   win.webContents.on('did-finish-load', () => {
+    try {
+      const prefs = getUiPreferences();
+      win.webContents.setZoomFactor(scaleToZoomFactor(prefs.textScale));
+    } catch {}
     windowLoaded = true;
     if (loadWatchdog) clearTimeout(loadWatchdog);
   });
@@ -868,6 +872,11 @@ ipcMain.handle('pcd:ui-preferences-set', (_event, patch) => {
   // El atajo global aplica de inmediato; el cierre de ventana lee la
   // preferencia en cada evento `close`.
   registerGlobalSearchShortcut(mainWindow);
+  if (mainWindow && !mainWindow.isDestroyed() && patch && patch.textScale) {
+    try {
+      mainWindow.webContents.setZoomFactor(scaleToZoomFactor(patch.textScale));
+    } catch {}
+  }
   return uiPreferences;
 });
 

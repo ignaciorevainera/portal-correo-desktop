@@ -114,3 +114,14 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
     });
   });
 });
+
+describe('scaleToZoomFactor', () => {
+  it('convierte escalas válidas a factores numéricos de zoom', () => {
+    const { scaleToZoomFactor } = require('../../electron/uiPreferences.cjs');
+    expect(scaleToZoomFactor('100')).toBe(1.0);
+    expect(scaleToZoomFactor('110')).toBe(1.1);
+    expect(scaleToZoomFactor('120')).toBe(1.2);
+    expect(scaleToZoomFactor('130')).toBe(1.3);
+    expect(scaleToZoomFactor('unknown')).toBe(1.0);
+  });
+});

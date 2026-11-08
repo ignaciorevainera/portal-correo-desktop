@@ -1,6 +1,7 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from '../App';
+import * as electronClient from '../services/electronClient';
 
 describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
   const originalWindow = global.window;
@@ -171,5 +172,20 @@ describe('App Initial State, Zero-Preload & Search Scroll Reset', () => {
     expect(
       screen.getByRole('combobox', { name: /buscar terminal/i }),
     ).toHaveFocus();
+  });
+  it('sincroniza preferencias de Electron (escala y contraste) al arrancar si están disponibles', async () => {
+    const prefsSpy = vi.spyOn(electronClient, 'loadUiPreferences').mockResolvedValue({
+      textScale: '120',
+      highContrast: true,
+      minimizeToTray: true,
+      globalHotkeyEnabled: true,
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(prefsSpy).toHaveBeenCalled();
+      expect(document.documentElement.classList.contains('high-contrast')).toBe(true);
+    });
   });
 });

@@ -21,10 +21,16 @@ describe("InfoModal Component", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Portal Correo Desktop")).toBeInTheDocument();
     expect(screen.getByText("v2.1.0")).toBeInTheDocument();
-    expect(
-      screen.getByText("Consola técnica de soporte y monitoreo corporativo"),
-    ).toBeInTheDocument();
-    expect(screen.getByAltText("Correo Argentino")).toBeInTheDocument();
+    const desc = screen.getByText("Consola técnica de soporte y monitoreo corporativo");
+    expect(desc).toBeInTheDocument();
+    expect(desc.className).not.toContain("truncate");
+    expect(desc.className).toContain("break-words");
+
+    const logo = screen.getByAltText("Correo Argentino");
+    expect(logo).toBeInTheDocument();
+    const logoContainer = logo.parentElement;
+    expect(logoContainer?.className).toContain("hidden");
+    expect(logoContainer?.className).toContain("sm:flex");
     expect(screen.getByRole("dialog").className).toContain(
       "max-sm:max-w-[calc(100vw-1.5rem)]",
     );

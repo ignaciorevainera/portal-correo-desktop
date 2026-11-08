@@ -346,4 +346,27 @@ describe('SettingsModal Component', () => {
     expect(savePrefsSpy).toHaveBeenCalledWith(expect.objectContaining({ textScale: '120' }));
     expect(savePrefsSpy).toHaveBeenCalledWith(expect.objectContaining({ highContrast: true }));
   });
+
+  it("adapta la primera sección de actualizaciones a columna responsiva y usa botones compactos sin overflow en toggle groups", () => {
+    render(<SettingsModal isOpen onClose={vi.fn()} currentVersion="1.0.0" />);
+
+    const checkUpdatesBtn = screen.getByRole("button", { name: /buscar actualizaciones/i });
+    expect(checkUpdatesBtn.className).toContain("w-full");
+    expect(checkUpdatesBtn.className).toContain("sm:w-auto");
+    const updateCard = checkUpdatesBtn.parentElement;
+    expect(updateCard?.className).toContain("flex-col");
+    expect(updateCard?.className).toContain("sm:flex-row");
+
+    const standardPingBtn = screen.getByRole("radio", { name: /estándar \(4 paquetes\)/i });
+    expect(standardPingBtn.className).toContain("h-7");
+    expect(standardPingBtn.className).toContain("text-micro");
+    const pingToggleGroup = standardPingBtn.closest('[role="radiogroup"]');
+    expect(pingToggleGroup?.className).toContain("flex-wrap");
+
+    const scale100Btn = screen.getByRole("radio", { name: /100%/i });
+    expect(scale100Btn.className).toContain("h-7");
+    expect(scale100Btn.className).toContain("text-micro");
+    const scaleToggleGroup = scale100Btn.closest('[role="radiogroup"]');
+    expect(scaleToggleGroup?.className).toContain("flex-wrap");
+  });
 });

@@ -330,6 +330,21 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     });
     expect(document.activeElement).toBe(trigger);
   });
+
+  it("el menú compacto previene desbordamiento en viewport angosto con clase max-w", async () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>,
+    );
+
+    fireEvent.keyDown(
+      screen.getByRole("button", { name: /más opciones de la aplicación/i }),
+      { key: "Enter" },
+    );
+    const menuContent = await screen.findByRole("menu");
+    expect(menuContent.className).toContain("max-w-[calc(100vw-1.5rem)]");
+  });
 });
 
 it("renders settings button in topbar and opens settings modal on click or F10 shortcut", () => {

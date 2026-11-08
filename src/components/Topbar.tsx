@@ -513,7 +513,7 @@ export function Topbar({
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-60">
+              <DropdownMenuContent align="end" collisionPadding={12} className="w-60 max-w-[calc(100vw-1.5rem)]">
                 <DropdownMenuItem
                   onSelect={() => onOpenSettings?.()}
                   aria-keyshortcuts="F10"

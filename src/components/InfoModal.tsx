@@ -71,7 +71,7 @@ export function InfoModal({
         {/* Cabecera Minimalista con Identidad de Marca */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60 bg-muted/20 shrink-0">
           <div className="flex items-center gap-3">
-            <IconWell className="border border-primary/20 shrink-0">
+            <IconWell className="border border-primary/20 shrink-0 hidden sm:flex">
               <img
                 src={logoIcon}
                 alt="Correo Argentino"
@@ -79,7 +79,7 @@ export function InfoModal({
               />
             </IconWell>
             <div className="space-y-0.5 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <DialogTitle className="text-sm font-bold font-heading text-foreground tracking-tight">
                   Portal Correo Desktop
                 </DialogTitle>
@@ -90,7 +90,7 @@ export function InfoModal({
                   {appVersion}
                 </Badge>
               </div>
-              <DialogDescription className="text-xs text-muted-foreground truncate">
+              <DialogDescription className="text-xs text-muted-foreground break-words leading-relaxed">
                 Consola técnica de soporte y monitoreo corporativo
               </DialogDescription>
             </div>

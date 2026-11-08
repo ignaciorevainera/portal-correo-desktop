@@ -273,7 +273,7 @@ export function SettingsModal({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="text-xs font-medium text-foreground">
                     Versión actual: v{currentVersion}
@@ -287,7 +287,7 @@ export function SettingsModal({
                   size="sm"
                   onClick={handleCheckUpdates}
                   disabled={isChecking}
-                  className="text-xs font-semibold cursor-pointer gap-1.5 h-8"
+                  className="text-xs font-semibold cursor-pointer gap-1.5 h-8 w-full sm:w-auto shrink-0"
                 >
                   <RefreshCw
                     className={`h-3.5 w-3.5 ${isChecking ? "animate-spin" : ""}`}
@@ -535,19 +535,19 @@ export function SettingsModal({
                 variant="outline"
                 size="sm"
                 aria-label="Modo de ping predeterminado"
-                className="pt-1"
+                className="pt-1 justify-start flex-wrap gap-1.5"
               >
                 <ToggleGroupItem
                   value="standard"
                   aria-label="Estándar (4 paquetes)"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   Estándar (4 paquetes)
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="infinite"
                   aria-label="Continuo (-t)"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   Continuo (-t)
                 </ToggleGroupItem>
@@ -582,33 +582,33 @@ export function SettingsModal({
                 variant="outline"
                 size="sm"
                 aria-label="Tamaño de texto e interfaz"
-                className="pt-1"
+                className="pt-1 justify-start flex-wrap gap-1.5"
               >
                 <ToggleGroupItem
                   value="100"
                   aria-label="100% Estándar"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   100%
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="110"
                   aria-label="110% Mediano"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   110%
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="120"
                   aria-label="120% Grande"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   120%
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="130"
                   aria-label="130% Extra grande"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   130%
                 </ToggleGroupItem>
