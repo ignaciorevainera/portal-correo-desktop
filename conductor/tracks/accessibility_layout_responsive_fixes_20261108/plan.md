@@ -24,10 +24,10 @@
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 4: Cabecera Adaptativa en `LivePingConsole.tsx` y Verificación Integral
-- [ ] Task: (TDD) Pruebas y ocultamiento responsivo de IP en cabecera de la terminal integrada
-  - [ ] Escribir tests unitarios en `src/test/LivePingConsole.test.tsx` para verificar que en anchos reducidos se oculte la IP del header para prevenir solapamiento con los botones
-  - [ ] Ajustar la cabecera en `src/components/LivePingConsole.tsx` para ocultar la IP después de determinado ancho (`hidden sm:inline`), preservando exclusivamente los botones de control visibles sin desbordar ni colisionar
-- [ ] Task: Ejecución y validación de la suite completa de calidad y empaquetado
-  - [ ] Ejecutar todos los tests unitarios con `npm test` verificando 100% de casos exitosos
-  - [ ] Ejecutar `npm run release:check` (`vitest`, `audit:contrast`, `tsc`, `vite build`) asegurando cero errores
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: (TDD) Pruebas y ocultamiento responsivo de IP en cabecera de la terminal integrada (bcc45d7)
+  - [x] Escribir tests unitarios en `src/test/LivePingConsole.test.tsx` para verificar que en anchos reducidos se oculte la IP del header para prevenir solapamiento con los botones
+  - [x] Ajustar la cabecera en `src/components/LivePingConsole.tsx` para ocultar la IP después de determinado ancho (`hidden sm:inline`), preservando exclusivamente los botones de control visibles sin desbordar ni colisionar
+- [x] Task: Ejecución y validación de la suite completa de calidad y empaquetado (bcc45d7)
+  - [x] Ejecutar todos los tests unitarios con `npm test` verificando 100% de casos exitosos
+  - [x] Ejecutar `npm run release:check` (`vitest`, `audit:contrast`, `tsc`, `vite build`) asegurando cero errores
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
