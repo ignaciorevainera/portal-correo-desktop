@@ -369,4 +369,26 @@ describe('SettingsModal Component', () => {
     const scaleToggleGroup = scale100Btn.closest('[role="radiogroup"]');
     expect(scaleToggleGroup?.className).toContain("flex-wrap");
   });
+
+  it('permite alternar el ajuste de línea en consola persistiendo en UI preferences', async () => {
+    const savePrefsSpy = vi.spyOn(electronClient, 'saveUiPreferences').mockResolvedValue({
+      minimizeToTray: true,
+      globalHotkeyEnabled: true,
+      textScale: '100',
+      highContrast: false,
+      consoleWrap: true,
+      stored: true,
+    });
+
+    render(<SettingsModal isOpen onClose={vi.fn()} currentVersion="1.0.0" />);
+
+    expect(screen.getByLabelText(/ajuste de línea en consola/i)).toBeInTheDocument();
+    const wrapSwitch = screen.getByRole('switch', { name: /ajuste de línea en consola/i });
+    expect(wrapSwitch).toBeInTheDocument();
+    expect(wrapSwitch).not.toBeChecked();
+
+    fireEvent.click(wrapSwitch);
+
+    expect(savePrefsSpy).toHaveBeenCalledWith(expect.objectContaining({ consoleWrap: true }));
+  });
 });

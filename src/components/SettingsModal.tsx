@@ -51,6 +51,8 @@ import {
   saveDefaultTextScale,
   loadDefaultHighContrast,
   saveDefaultHighContrast,
+  loadDefaultConsoleWrap,
+  saveDefaultConsoleWrap,
 } from "@/lib/preferences";
 import { applyHighContrastClass } from "@/lib/highContrast";
 import { applyTextScale } from "@/lib/textScale";
@@ -105,6 +107,7 @@ export function SettingsModal({
 
   const [textScale, setTextScale] = useState<TextScale>(loadDefaultTextScale);
   const [highContrast, setHighContrast] = useState<boolean>(loadDefaultHighContrast);
+  const [consoleWrap, setConsoleWrap] = useState<boolean>(loadDefaultConsoleWrap);
 
   useEffect(() => {
     localStorage.setItem("pcd_pref_tray", String(minimizeToTray));
@@ -128,6 +131,10 @@ export function SettingsModal({
     applyHighContrastClass(highContrast);
   }, [highContrast]);
 
+  useEffect(() => {
+    saveDefaultConsoleWrap(consoleWrap);
+  }, [consoleWrap]);
+
   const handleTextScaleChange = (scale: TextScale) => {
     setTextScale(scale);
     void saveUiPreferences({ textScale: scale });
@@ -136,6 +143,11 @@ export function SettingsModal({
   const handleHighContrastChange = (enabled: boolean) => {
     setHighContrast(enabled);
     void saveUiPreferences({ highContrast: enabled });
+  };
+
+  const handleConsoleWrapChange = (enabled: boolean) => {
+    setConsoleWrap(enabled);
+    void saveUiPreferences({ consoleWrap: enabled });
   };
 
   // El proceso principal aplica estas preferencias (atajo global y cierre de
@@ -153,6 +165,7 @@ export function SettingsModal({
           setGlobalHotkeyEnabled(prefs.globalHotkeyEnabled);
           if (prefs.textScale) setTextScale(prefs.textScale);
           if (typeof prefs.highContrast === 'boolean') setHighContrast(prefs.highContrast);
+          if (typeof prefs.consoleWrap === 'boolean') setConsoleWrap(prefs.consoleWrap);
           return;
         }
 
@@ -633,6 +646,28 @@ export function SettingsModal({
                   checked={highContrast}
                   onCheckedChange={handleHighContrastChange}
                   aria-label="Modo de Alto Contraste"
+                />
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+              <div className="text-xs font-bold text-foreground">
+                Ajuste de Línea en Consola
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="cursor-pointer space-y-0.5">
+                  <Label htmlFor="console-wrap" className="text-xs font-medium text-foreground">
+                    Ajuste de línea en consola
+                  </Label>
+                  <p className="text-micro text-muted-foreground">
+                    Ajusta automáticamente las líneas de resultados de diagnóstico y ping con saltos de línea suaves para evitar el desplazamiento horizontal.
+                  </p>
+                </div>
+                <Switch
+                  id="console-wrap"
+                  checked={consoleWrap}
+                  onCheckedChange={handleConsoleWrapChange}
+                  aria-label="Ajuste de línea en consola"
                 />
               </div>
             </div>
