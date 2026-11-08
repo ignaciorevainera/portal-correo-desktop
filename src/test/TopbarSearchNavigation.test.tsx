@@ -687,4 +687,20 @@ describe('Topbar Search and Keyboard Navigation', () => {
     expect(panel.className).toContain("data-open:animate-none");
     expect(panel.className).toContain("data-closed:animate-none");
   });
+  it('adapta el ancho del popover de búsquedas recientes con margen seguro de viewport', () => {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(['PC-TEST-CON-NOMBRE-LARGO-DE-TERMINAL']));
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>
+    );
+
+    const searchInput = screen.getByPlaceholderText(/buscar terminal/i);
+    fireEvent.focus(searchInput);
+
+    const listbox = screen.getByRole('listbox');
+    const popoverContent = listbox.closest('[data-slot="popover-content"]');
+    expect(popoverContent?.className).toContain('max-w-[calc(100vw-1.5rem)]');
+    expect(popoverContent?.className).toContain('min-w-70');
+  });
 });
