@@ -4,7 +4,7 @@
  * El modo de ping predeterminado se lee en cada carga de terminal, así que un
  * cambio en Ajustes aplica en la búsqueda siguiente sin recargar la ventana.
  *
- * La escala de texto y el modo de alto contraste se respaldan aquí para respuesta
+ * La escala de texto, el modo de alto contraste y el wrap de consola se respaldan aquí para respuesta
  * inmediata y se sincronizan con `uiPreferences` de Electron para persistencia global.
  */
 
@@ -14,10 +14,14 @@ export type TextScale = "100" | "110" | "120" | "130";
 export const PING_MODE_KEY = "pcd_pref_ping_mode";
 export const TEXT_SCALE_KEY = "pcd_pref_text_scale";
 export const HIGH_CONTRAST_KEY = "pcd_pref_high_contrast";
+export const CONSOLE_WRAP_KEY = "pcd_pref_console_wrap";
 
 export const DEFAULT_PING_MODE: PingMode = "standard";
 export const DEFAULT_TEXT_SCALE: TextScale = "100";
 export const DEFAULT_HIGH_CONTRAST: boolean = false;
+export const DEFAULT_CONSOLE_WRAP: boolean = false;
+
+export const CONSOLE_WRAP_EVENT = "pcd:console-wrap-changed";
 
 function isPingMode(value: unknown): value is PingMode {
   return value === "standard" || value === "infinite";
@@ -76,5 +80,35 @@ export function saveDefaultHighContrast(enabled: boolean): void {
     localStorage.setItem(HIGH_CONTRAST_KEY, String(enabled));
   } catch {
     // Sin almacenamiento la preferencia no persiste, pero no rompe la sesión.
+  }
+}
+
+export function loadDefaultConsoleWrap(): boolean {
+  try {
+    const stored = localStorage.getItem(CONSOLE_WRAP_KEY);
+    if (stored !== null) return stored === "true";
+    return DEFAULT_CONSOLE_WRAP;
+  } catch {
+    return DEFAULT_CONSOLE_WRAP;
+  }
+}
+
+export function saveDefaultConsoleWrap(enabled: boolean): void {
+  try {
+    localStorage.setItem(CONSOLE_WRAP_KEY, String(enabled));
+  } catch {
+    // Sin almacenamiento la preferencia no persiste, pero no rompe la sesión.
+  }
+
+  if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+    try {
+      window.dispatchEvent(
+        new CustomEvent(CONSOLE_WRAP_EVENT, {
+          detail: { consoleWrap: enabled },
+        })
+      );
+    } catch {
+      // Entornos de prueba o ventanas sin soporte de CustomEvent
+    }
   }
 }

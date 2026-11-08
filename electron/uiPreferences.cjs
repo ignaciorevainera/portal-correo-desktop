@@ -7,6 +7,7 @@
  *  - `globalHotkeyEnabled`: registrar o no el atajo global Ctrl + Espacio.
  *  - `textScale`: escala de visualización / texto ("100" | "110" | "120" | "130").
  *  - `highContrast`: modo de alto contraste reforzado.
+ *  - `consoleWrap`: ajuste de línea automático en la consola de resultados.
  *
  * Se guardan en un JSON dentro de `userData` para que el arranque aplique el
  * último valor elegido por el operador antes de que cargue el renderer.
@@ -24,6 +25,7 @@ const DEFAULTS = Object.freeze({
   globalHotkeyEnabled: true,
   textScale: '100',
   highContrast: false,
+  consoleWrap: false,
 });
 
 function preferencesPath(userDataDir) {
@@ -54,6 +56,7 @@ function normalizePreferences(raw) {
     ),
     textScale: asTextScale(source.textScale, DEFAULTS.textScale),
     highContrast: asBoolean(source.highContrast, DEFAULTS.highContrast),
+    consoleWrap: asBoolean(source.consoleWrap, DEFAULTS.consoleWrap),
   };
 }
 

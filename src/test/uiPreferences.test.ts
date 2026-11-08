@@ -34,6 +34,7 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
     expect(prefs.globalHotkeyEnabled).toBe(true);
     expect(prefs.textScale).toBe('100');
     expect(prefs.highContrast).toBe(false);
+    expect(prefs.consoleWrap).toBe(false);
   });
 
   it('persiste cambios y los recupera en la siguiente lectura', () => {
@@ -44,12 +45,14 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
       globalHotkeyEnabled: false,
       textScale: '120',
       highContrast: true,
+      consoleWrap: true,
     });
     expect(saved).toMatchObject({
       minimizeToTray: false,
       globalHotkeyEnabled: false,
       textScale: '120',
       highContrast: true,
+      consoleWrap: true,
       stored: true,
     });
 
@@ -58,6 +61,7 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
       globalHotkeyEnabled: false,
       textScale: '120',
       highContrast: true,
+      consoleWrap: true,
       stored: true,
     });
   });
@@ -68,6 +72,7 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
     saveUiPreferences(dir, { globalHotkeyEnabled: false });
     saveUiPreferences(dir, { textScale: '110' });
     saveUiPreferences(dir, { highContrast: true });
+    saveUiPreferences(dir, { consoleWrap: true });
     saveUiPreferences(dir, { minimizeToTray: false });
 
     expect(loadUiPreferences(dir)).toMatchObject({
@@ -75,6 +80,7 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
       globalHotkeyEnabled: false,
       textScale: '110',
       highContrast: true,
+      consoleWrap: true,
       stored: true,
     });
   });
@@ -92,6 +98,7 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
         globalHotkeyEnabled: 'false',
         textScale: 'invalid',
         highContrast: 'true',
+        consoleWrap: 'true',
       })
     );
 
@@ -100,6 +107,7 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
       globalHotkeyEnabled: false,
       textScale: '100',
       highContrast: true,
+      consoleWrap: true,
       stored: true,
     });
   });
@@ -111,6 +119,7 @@ describe('preferencias de interfaz persistidas por el proceso principal', () => 
       globalHotkeyEnabled: true,
       textScale: '100',
       highContrast: false,
+      consoleWrap: false,
     });
   });
 });
