@@ -2,11 +2,11 @@
 
 ## Phases
 
-### Phase 1: Motor de Segmentación de Bloques y Lógica de Extracción de Texto (TDD)
+### Phase 1: Motor de Segmentación de Bloques y Lógica de Extracción de Texto (TDD) [checkpoint: 9b6a627]
 - [x] Task: (TDD) Pruebas y función utilitaria para segmentar líneas en bloques (9b6a627)
   - [x] Escribir pruebas unitarias en `src/test/consoleBlockSegmentation.test.ts` que verifiquen la segmentación correcta de arrays de `ConsoleLine` en bloques con ID estable, comando inicial, líneas de respuesta y mensaje de finalización
   - [x] Implementar la función de segmentación `groupConsoleLinesIntoBlocks(lines: ConsoleLine[]): ConsoleBlock[]` con tipado riguroso, manejo de líneas previas y tolerancia a recorte circular de buffer
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ### Phase 2: Renderizado Interactivo en `LivePingConsole`, Estilos Hover y Botón de Copiado (TDD)
 - [ ] Task: (TDD) Pruebas y renderizado del componente de bloque con hover y botón de copia
