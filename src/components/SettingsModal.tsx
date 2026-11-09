@@ -51,6 +51,8 @@ import {
   saveDefaultTextScale,
   loadDefaultHighContrast,
   saveDefaultHighContrast,
+  loadDefaultConsoleWrap,
+  saveDefaultConsoleWrap,
 } from "@/lib/preferences";
 import { applyHighContrastClass } from "@/lib/highContrast";
 import { applyTextScale } from "@/lib/textScale";
@@ -105,6 +107,7 @@ export function SettingsModal({
 
   const [textScale, setTextScale] = useState<TextScale>(loadDefaultTextScale);
   const [highContrast, setHighContrast] = useState<boolean>(loadDefaultHighContrast);
+  const [consoleWrap, setConsoleWrap] = useState<boolean>(loadDefaultConsoleWrap);
 
   useEffect(() => {
     localStorage.setItem("pcd_pref_tray", String(minimizeToTray));
@@ -128,6 +131,10 @@ export function SettingsModal({
     applyHighContrastClass(highContrast);
   }, [highContrast]);
 
+  useEffect(() => {
+    saveDefaultConsoleWrap(consoleWrap);
+  }, [consoleWrap]);
+
   const handleTextScaleChange = (scale: TextScale) => {
     setTextScale(scale);
     void saveUiPreferences({ textScale: scale });
@@ -136,6 +143,11 @@ export function SettingsModal({
   const handleHighContrastChange = (enabled: boolean) => {
     setHighContrast(enabled);
     void saveUiPreferences({ highContrast: enabled });
+  };
+
+  const handleConsoleWrapChange = (enabled: boolean) => {
+    setConsoleWrap(enabled);
+    void saveUiPreferences({ consoleWrap: enabled });
   };
 
   // El proceso principal aplica estas preferencias (atajo global y cierre de
@@ -153,6 +165,7 @@ export function SettingsModal({
           setGlobalHotkeyEnabled(prefs.globalHotkeyEnabled);
           if (prefs.textScale) setTextScale(prefs.textScale);
           if (typeof prefs.highContrast === 'boolean') setHighContrast(prefs.highContrast);
+          if (typeof prefs.consoleWrap === 'boolean') setConsoleWrap(prefs.consoleWrap);
           return;
         }
 
@@ -245,7 +258,7 @@ export function SettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-155 max-sm:max-w-[calc(100vw-1.5rem)] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-card text-card-foreground border-border">
+      <DialogContent className="sm:max-w-155 max-sm:max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-2rem)] flex flex-col p-0 gap-0 overflow-hidden bg-card text-card-foreground border-border">
         <DialogHeader className="p-4 bg-muted/40 border-b border-border shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -273,7 +286,7 @@ export function SettingsModal({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="text-xs font-medium text-foreground">
                     Versión actual: v{currentVersion}
@@ -287,7 +300,7 @@ export function SettingsModal({
                   size="sm"
                   onClick={handleCheckUpdates}
                   disabled={isChecking}
-                  className="text-xs font-semibold cursor-pointer gap-1.5 h-8"
+                  className="text-xs font-semibold cursor-pointer gap-1.5 h-8 w-full sm:w-auto shrink-0"
                 >
                   <RefreshCw
                     className={`h-3.5 w-3.5 ${isChecking ? "animate-spin" : ""}`}
@@ -535,19 +548,19 @@ export function SettingsModal({
                 variant="outline"
                 size="sm"
                 aria-label="Modo de ping predeterminado"
-                className="pt-1"
+                className="pt-1 justify-start flex-wrap gap-1.5"
               >
                 <ToggleGroupItem
                   value="standard"
                   aria-label="Estándar (4 paquetes)"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   Estándar (4 paquetes)
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="infinite"
                   aria-label="Continuo (-t)"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   Continuo (-t)
                 </ToggleGroupItem>
@@ -559,7 +572,7 @@ export function SettingsModal({
           <section className="space-y-3">
             <div className="flex items-center gap-2 border-b border-border/60 pb-2">
               <Eye className="h-4 w-4 text-link" />
-              <h3 className="text-micro font-semibold tracking-wider text-muted-foreground">
+              <h3 className="overline-label text-foreground">
                 Accesibilidad y Visualización
               </h3>
             </div>
@@ -582,33 +595,33 @@ export function SettingsModal({
                 variant="outline"
                 size="sm"
                 aria-label="Tamaño de texto e interfaz"
-                className="pt-1 justify-start gap-1.5"
+                className="pt-1 justify-start flex-wrap gap-1.5"
               >
                 <ToggleGroupItem
                   value="100"
                   aria-label="100% Estándar"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   100%
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="110"
                   aria-label="110% Mediano"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   110%
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="120"
                   aria-label="120% Grande"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   120%
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="130"
                   aria-label="130% Extra grande"
-                  className="cursor-pointer text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  className="cursor-pointer text-micro h-7 px-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   130%
                 </ToggleGroupItem>
@@ -616,6 +629,9 @@ export function SettingsModal({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+              <div className="text-xs font-bold text-foreground">
+                Alto Contraste Visual
+              </div>
               <div className="flex items-start justify-between gap-3">
                 <div className="cursor-pointer space-y-0.5">
                   <Label htmlFor="high-contrast" className="text-xs font-medium text-foreground">
@@ -630,6 +646,28 @@ export function SettingsModal({
                   checked={highContrast}
                   onCheckedChange={handleHighContrastChange}
                   aria-label="Modo de Alto Contraste"
+                />
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+              <div className="text-xs font-bold text-foreground">
+                Ajuste de Línea en Consola
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="cursor-pointer space-y-0.5">
+                  <Label htmlFor="console-wrap" className="text-xs font-medium text-foreground">
+                    Ajuste de línea en consola
+                  </Label>
+                  <p className="text-micro text-muted-foreground">
+                    Ajusta automáticamente las líneas de resultados de diagnóstico y ping con saltos de línea suaves para evitar el desplazamiento horizontal.
+                  </p>
+                </div>
+                <Switch
+                  id="console-wrap"
+                  checked={consoleWrap}
+                  onCheckedChange={handleConsoleWrapChange}
+                  aria-label="Ajuste de línea en consola"
                 />
               </div>
             </div>

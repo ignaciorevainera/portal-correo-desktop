@@ -11,7 +11,7 @@
    - Conexión por VNC Viewer con generación limpia y segura de configuraciones temporales.
    - Lanzamiento de Asistencia Remota de Windows (MSRA / `offerRA`) sin bloqueos de interfaz.
    - Monitor de conectividad y Ping en vivo con estadísticas de latencia, incluyendo ping automático al router del sitio (`x.x.x.250`) al consultar equipos y botones split dedicados para ping estándar (-4) y continuo (-t) al router (`.250`) y al servidor de transacciones (`.231`) con prefijos identificadores (`[ROUTER .250]` y `[SERVIDOR .231]`).
-   - Consola General de Diagnóstico de Red con historial continuo acumulativo (streaming asíncrono para Ping estándar, Ping continuo -t, Nbtstat -A, Tracert -d y ARP -a) y control de detención unificado.
+   - Consola General de Diagnóstico de Red con historial continuo acumulativo (streaming asíncrono para Ping estándar, Ping continuo -t, Nbtstat -A, Tracert -d y ARP -a), control de detención unificado y opción configurable de ajuste de línea (line wrap) para visualización sin desplazamiento horizontal.
    - Historial y estado de tiempo de actividad (Uptime) de la estación.
 3. **Gestión de Alertas y Operaciones de Terminal:**
    - Consulta de alertas activas asociadas a la terminal.

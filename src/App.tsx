@@ -48,6 +48,7 @@ import {
   GateStatus,
   checkIsAdmin,
   stopPing,
+  loadUiPreferences,
   saveUiPreferences,
 } from "./services/electronClient";
 import { TerminalData } from "./types/terminal";
@@ -74,7 +75,7 @@ import {
   splitUsernames,
 } from "@/lib/usernames";
 import { updateRecentSearchKind } from "@/lib/recentSearches";
-import { loadDefaultPingMode, loadDefaultTextScale, saveDefaultTextScale, loadDefaultHighContrast } from "@/lib/preferences";
+import { loadDefaultPingMode, loadDefaultTextScale, saveDefaultTextScale, loadDefaultHighContrast, saveDefaultHighContrast } from "@/lib/preferences";
 import { getNextTextScale, getPrevTextScale, applyTextScale } from "@/lib/textScale";
 import { applyHighContrastClass } from "@/lib/highContrast";
 import { APP_VERSION } from "@/lib/appVersion";
@@ -153,6 +154,24 @@ export default function App(): React.JSX.Element {
   useEffect(() => {
     applyTextScale(loadDefaultTextScale());
     applyHighContrastClass(loadDefaultHighContrast());
+
+    // Sincronizar preferencias del proceso principal si existen
+    loadUiPreferences()
+      .then((prefs) => {
+        if (prefs) {
+          if (prefs.textScale) {
+            setAppTextScale(prefs.textScale);
+            saveDefaultTextScale(prefs.textScale);
+            applyTextScale(prefs.textScale);
+          }
+          if (typeof prefs.highContrast === "boolean") {
+            saveDefaultHighContrast(prefs.highContrast);
+            applyHighContrastClass(prefs.highContrast);
+
+          }
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const mainRef = useRef<HTMLElement>(null);

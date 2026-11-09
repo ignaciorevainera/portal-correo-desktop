@@ -16,6 +16,10 @@ import {
   subscribeToDiagnosticCommand,
 } from "../services/electronClient";
 import { currentPingLines, summarizePingLogs } from "@/lib/pingSummary";
+import {
+  loadDefaultConsoleWrap,
+  CONSOLE_WRAP_EVENT,
+} from "@/lib/preferences";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -49,6 +53,11 @@ interface LivePingConsoleProps {
   targetLabel?: string;
   fill?: boolean;
   onRerun?: () => void;
+  /**
+   * Ajuste de línea en la consola de resultados. Si no se provee, lee y
+   * escucha automáticamente la preferencia global del operador.
+   */
+  wrap?: boolean;
 }
 
 export interface ConsoleLine {
@@ -110,6 +119,7 @@ export function LivePingConsole({
   targetLabel,
   fill = false,
   onRerun,
+  wrap: explicitWrap,
 }: LivePingConsoleProps): React.JSX.Element {
   const [lines, setLines] = useState<ConsoleLine[]>([]);
   const nextLineIdRef = useRef(1);
@@ -117,6 +127,34 @@ export function LivePingConsole({
   const [copiedAll, setCopiedAll] = useState(false);
   const [copiedLast, setCopiedLast] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
+  const [isWrapActive, setIsWrapActive] = useState<boolean>(() => {
+    return typeof explicitWrap === "boolean" ? explicitWrap : loadDefaultConsoleWrap();
+  });
+
+  useEffect(() => {
+    if (typeof explicitWrap === "boolean") {
+      setIsWrapActive(explicitWrap);
+    }
+  }, [explicitWrap]);
+
+  useEffect(() => {
+    if (typeof explicitWrap === "boolean") return;
+
+    const handleWrapChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ consoleWrap?: boolean }>;
+      if (typeof customEvent?.detail?.consoleWrap === "boolean") {
+        setIsWrapActive(customEvent.detail.consoleWrap);
+      } else {
+        setIsWrapActive(loadDefaultConsoleWrap());
+      }
+    };
+
+    window.addEventListener(CONSOLE_WRAP_EVENT, handleWrapChange);
+    return () => {
+      window.removeEventListener(CONSOLE_WRAP_EVENT, handleWrapChange);
+    };
+  }, [explicitWrap]);
+
   const onPingCompleteRef = useRef(onPingComplete);
   onPingCompleteRef.current = onPingComplete;
   const onDiagnosticCompleteRef = useRef(onDiagnosticComplete);
@@ -423,7 +461,7 @@ export function LivePingConsole({
                 }`}
               />
               <HeaderIcon className="h-3.5 w-3.5 text-link shrink-0" />
-              <span className="font-mono text-xs font-bold text-foreground truncate">
+              <span className="font-mono text-xs font-bold text-foreground truncate hidden sm:inline">
                 {headerLabel}
               </span>
             </button>
@@ -538,7 +576,9 @@ export function LivePingConsole({
             data-testid="terminal-scroll-container"
             className={`${
               fill ? "flex-1 min-h-0" : "h-[50vh]"
-            } overflow-y-auto overflow-x-auto p-3 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
+            } overflow-y-auto ${
+              isWrapActive ? "overflow-x-hidden" : "overflow-x-auto"
+            } p-3 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
           >
             {lines.length === 0 ? (
               <div className="h-full flex items-center justify-center text-console-muted font-sans text-xs">
@@ -551,7 +591,11 @@ export function LivePingConsole({
                 <div
                   key={line.id}
                   data-line-id={line.id}
-                  className={`whitespace-pre font-mono ${line.tone}`}
+                  className={`${
+                    isWrapActive
+                      ? "whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                      : "whitespace-pre"
+                  } font-mono ${line.tone}`}
                 >
                   {line.text}
                 </div>

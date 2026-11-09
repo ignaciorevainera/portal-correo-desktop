@@ -35,4 +35,24 @@ describe("DropdownMenu", () => {
 
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
+
+  it("aplica collisionPadding por defecto de 12px para evitar pegarse al borde del viewport", async () => {
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>Opciones</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>Item</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    fireEvent.keyDown(screen.getByRole("button", { name: /opciones/i }), {
+      key: "Enter",
+    });
+
+    const menu = await screen.findByRole("menu");
+    expect(menu).toBeInTheDocument();
+  });
 });

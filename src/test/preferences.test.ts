@@ -7,10 +7,15 @@ import {
   DEFAULT_TEXT_SCALE,
   TEXT_SCALE_KEY,
   HIGH_CONTRAST_KEY,
+  CONSOLE_WRAP_KEY,
+  DEFAULT_CONSOLE_WRAP,
   loadDefaultTextScale,
   saveDefaultTextScale,
   loadDefaultHighContrast,
   saveDefaultHighContrast,
+  loadDefaultConsoleWrap,
+  saveDefaultConsoleWrap,
+  CONSOLE_WRAP_EVENT,
   TextScale,
 } from "@/lib/preferences";
 
@@ -83,6 +88,38 @@ describe("preferencias del operador", () => {
     expect(loadDefaultHighContrast()).toBe(false);
   });
 
+  it("sin valor guardado usa consoleWrap en false por defecto", () => {
+    expect(loadDefaultConsoleWrap()).toBe(false);
+    expect(DEFAULT_CONSOLE_WRAP).toBe(false);
+  });
+
+  it("persiste y lee el ajuste de consoleWrap y dispara el evento reactivo", () => {
+    const eventHandler = vi.fn();
+    window.addEventListener(CONSOLE_WRAP_EVENT, eventHandler);
+
+    saveDefaultConsoleWrap(true);
+    expect(localStorage.getItem(CONSOLE_WRAP_KEY)).toBe("true");
+    expect(loadDefaultConsoleWrap()).toBe(true);
+    expect(eventHandler).toHaveBeenCalledTimes(1);
+    expect(eventHandler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        detail: { consoleWrap: true },
+      })
+    );
+
+    saveDefaultConsoleWrap(false);
+    expect(localStorage.getItem(CONSOLE_WRAP_KEY)).toBe("false");
+    expect(loadDefaultConsoleWrap()).toBe(false);
+    expect(eventHandler).toHaveBeenCalledTimes(2);
+    expect(eventHandler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        detail: { consoleWrap: false },
+      })
+    );
+
+    window.removeEventListener(CONSOLE_WRAP_EVENT, eventHandler);
+  });
+
   it("no rompe si localStorage no está disponible", () => {
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new Error("sin almacenamiento");
@@ -90,6 +127,7 @@ describe("preferencias del operador", () => {
     expect(loadDefaultPingMode()).toBe("standard");
     expect(loadDefaultTextScale()).toBe("100");
     expect(loadDefaultHighContrast()).toBe(false);
+    expect(loadDefaultConsoleWrap()).toBe(false);
 
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
       throw new Error("sin almacenamiento");
@@ -97,5 +135,6 @@ describe("preferencias del operador", () => {
     expect(() => saveDefaultPingMode("infinite")).not.toThrow();
     expect(() => saveDefaultTextScale("120")).not.toThrow();
     expect(() => saveDefaultHighContrast(true)).not.toThrow();
+    expect(() => saveDefaultConsoleWrap(true)).not.toThrow();
   });
 });

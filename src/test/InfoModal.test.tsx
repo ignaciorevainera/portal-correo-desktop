@@ -21,10 +21,16 @@ describe("InfoModal Component", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Portal Correo Desktop")).toBeInTheDocument();
     expect(screen.getByText("v2.1.0")).toBeInTheDocument();
-    expect(
-      screen.getByText("Consola técnica de soporte y monitoreo corporativo"),
-    ).toBeInTheDocument();
-    expect(screen.getByAltText("Correo Argentino")).toBeInTheDocument();
+    const desc = screen.getByText("Consola técnica de soporte y monitoreo corporativo");
+    expect(desc).toBeInTheDocument();
+    expect(desc.className).not.toContain("truncate");
+    expect(desc.className).toContain("break-words");
+
+    const logo = screen.getByAltText("Correo Argentino");
+    expect(logo).toBeInTheDocument();
+    const logoContainer = logo.parentElement;
+    expect(logoContainer?.className).toContain("hidden");
+    expect(logoContainer?.className).toContain("sm:flex");
     expect(screen.getByRole("dialog").className).toContain(
       "max-sm:max-w-[calc(100vw-1.5rem)]",
     );
@@ -111,5 +117,18 @@ describe("InfoModal Component", () => {
     expect(closeButtons.length).toBeGreaterThanOrEqual(1);
     fireEvent.click(closeButtons[0]);
     expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+  it("garantiza contención en viewport y scroll adaptativo en pantallas reducidas o zoom alto", () => {
+    const { container } = render(<InfoModal isOpen={true} onClose={vi.fn()} />);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.className).toContain("max-h-[calc(100vh-2rem)]");
+    expect(dialog.className).toContain("flex");
+    expect(dialog.className).toContain("flex-col");
+    expect(dialog.className).toContain("overflow-hidden");
+
+    const scrollContainer = dialog.querySelector(".overflow-y-auto");
+    expect(scrollContainer).toBeInTheDocument();
+    expect(scrollContainer?.className).toContain("flex-1");
   });
 });

@@ -380,7 +380,7 @@ export function Topbar({
               align="start"
               sideOffset={4}
               aria-label="Resultados de búsqueda"
-              className="w-[var(--radix-popover-trigger-width)] p-0 data-open:animate-none data-closed:animate-none"
+              className="w-[max(var(--radix-popover-trigger-width),280px)] min-w-70 max-w-[calc(100vw-1.5rem)] p-0 data-open:animate-none data-closed:animate-none"
               onOpenAutoFocus={(event) => event.preventDefault()}
               onFocusOutside={(event) => {
                 // El panel se abre con el foco en el buscador (que vive fuera del
@@ -522,7 +522,7 @@ export function Topbar({
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-60">
+              <DropdownMenuContent align="end" collisionPadding={12} className="w-60 max-w-[calc(100vw-1.5rem)]">
                 <DropdownMenuItem
                   onSelect={() => onOpenSettings?.()}
                   aria-keyshortcuts="F10"

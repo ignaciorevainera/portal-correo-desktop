@@ -103,3 +103,20 @@
 - [x] **Track: Accesibilidad Visual: Escala de Texto y Modo de Alto Contraste**
   *Link: [./tracks/accessibility_scale_high_contrast_20261107/index.md](./tracks/accessibility_scale_high_contrast_20261107/index.md)*
 
+
+---
+
+- [x] **Track: Correcciones de Diseño, Responsividad y Layout con Escalado de Accesibilidad**
+  *Link: [./tracks/accessibility_layout_responsive_fixes_20261108/index.md](./tracks/accessibility_layout_responsive_fixes_20261108/index.md)*
+
+---
+
+- [x] **Track: Opción de Ajuste de Línea (Console Line Wrap) en Ajustes y Consola de Resultados**
+  *Link: [./tracks/console_line_wrap_20261108/index.md](./tracks/console_line_wrap_20261108/index.md)*
+
+---
+
+- [ ] **Track: Copiado Granular por Bloques en Hover para Consola Principal (LivePingConsole)**
+  *Link: [./tracks/console_block_hover_copy_20261108/index.md](./tracks/console_block_hover_copy_20261108/index.md)*
+
+

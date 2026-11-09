@@ -311,7 +311,7 @@ describe('SettingsModal Component', () => {
     fireEvent.click(testBtn);
     expect(testSqlSpy).toHaveBeenCalledTimes(1);
   });
-  it('permite seleccionar escala de texto y activar modo de alto contraste', async () => {
+  it('permite seleccionar escala de texto y activar modo de alto contraste con formato armónico de tarjetas', async () => {
     const savePrefsSpy = vi.spyOn(electronClient, 'saveUiPreferences').mockResolvedValue({
       minimizeToTray: true,
       globalHotkeyEnabled: true,
@@ -328,9 +328,12 @@ describe('SettingsModal Component', () => {
       />
     );
 
-    expect(screen.getByRole('heading', { name: /accesibilidad y visualización/i })).toBeInTheDocument();
+    const heading = screen.getByRole('heading', { name: /accesibilidad y visualización/i });
+    expect(heading).toBeInTheDocument();
+    expect(heading).toHaveClass('overline-label', 'text-foreground');
+
     expect(screen.getByText(/tamaño de texto e interfaz/i)).toBeInTheDocument();
-    expect(screen.getByText(/modo de alto contraste/i)).toBeInTheDocument();
+    expect(screen.getByText(/alto contraste visual/i)).toBeInTheDocument();
 
     const scale120Btn = screen.getByRole('radio', { name: /120%/i });
     expect(scale120Btn).toBeInTheDocument();
@@ -342,5 +345,50 @@ describe('SettingsModal Component', () => {
 
     expect(savePrefsSpy).toHaveBeenCalledWith(expect.objectContaining({ textScale: '120' }));
     expect(savePrefsSpy).toHaveBeenCalledWith(expect.objectContaining({ highContrast: true }));
+  });
+
+  it("adapta la primera sección de actualizaciones a columna responsiva y usa botones compactos sin overflow en toggle groups", () => {
+    render(<SettingsModal isOpen onClose={vi.fn()} currentVersion="1.0.0" />);
+
+    const checkUpdatesBtn = screen.getByRole("button", { name: /buscar actualizaciones/i });
+    expect(checkUpdatesBtn.className).toContain("w-full");
+    expect(checkUpdatesBtn.className).toContain("sm:w-auto");
+    const updateCard = checkUpdatesBtn.parentElement;
+    expect(updateCard?.className).toContain("flex-col");
+    expect(updateCard?.className).toContain("sm:flex-row");
+
+    const standardPingBtn = screen.getByRole("radio", { name: /estándar \(4 paquetes\)/i });
+    expect(standardPingBtn.className).toContain("h-7");
+    expect(standardPingBtn.className).toContain("text-micro");
+    const pingToggleGroup = standardPingBtn.closest('[role="radiogroup"]');
+    expect(pingToggleGroup?.className).toContain("flex-wrap");
+
+    const scale100Btn = screen.getByRole("radio", { name: /100%/i });
+    expect(scale100Btn.className).toContain("h-7");
+    expect(scale100Btn.className).toContain("text-micro");
+    const scaleToggleGroup = scale100Btn.closest('[role="radiogroup"]');
+    expect(scaleToggleGroup?.className).toContain("flex-wrap");
+  });
+
+  it('permite alternar el ajuste de línea en consola persistiendo en UI preferences', async () => {
+    const savePrefsSpy = vi.spyOn(electronClient, 'saveUiPreferences').mockResolvedValue({
+      minimizeToTray: true,
+      globalHotkeyEnabled: true,
+      textScale: '100',
+      highContrast: false,
+      consoleWrap: true,
+      stored: true,
+    });
+
+    render(<SettingsModal isOpen onClose={vi.fn()} currentVersion="1.0.0" />);
+
+    expect(screen.getByLabelText(/ajuste de línea en consola/i)).toBeInTheDocument();
+    const wrapSwitch = screen.getByRole('switch', { name: /ajuste de línea en consola/i });
+    expect(wrapSwitch).toBeInTheDocument();
+    expect(wrapSwitch).not.toBeChecked();
+
+    fireEvent.click(wrapSwitch);
+
+    expect(savePrefsSpy).toHaveBeenCalledWith(expect.objectContaining({ consoleWrap: true }));
   });
 });
