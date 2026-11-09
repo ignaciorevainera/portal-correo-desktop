@@ -116,7 +116,7 @@
 
 ---
 
-- [~] **Track: Copiado Granular por Bloques en Hover para Consola Principal (LivePingConsole)**
+- [x] **Track: Copiado Granular por Bloques en Hover para Consola Principal (LivePingConsole)**
   *Link: [./tracks/console_block_hover_copy_20261108/index.md](./tracks/console_block_hover_copy_20261108/index.md)*
 
 
