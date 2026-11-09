@@ -5,8 +5,7 @@
 1.  **The Plan is the Source of Truth:** All work must be tracked in `plan.md`
 2.  **The Tech Stack is Deliberate:** Changes to the tech stack must be
     documented in `tech-stack.md` *before* implementation
-3.  **Test-Driven Development:** Write unit tests before implementing
-    functionality
+3.  **Test-Driven Development & E2E Quality Gates:** Write unit tests before implementing functionality. For user interfaces and Electron workflows, write or maintain end-to-end (E2E) tests in e2e/specs/ using Page Object Models. All E2E tests must pass before completing a track.
 4.  **High Code Coverage:** Aim for >80% code coverage for all modules
 5.  **User Experience First:** Every decision should prioritize user experience
 6.  **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use

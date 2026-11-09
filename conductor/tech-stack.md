@@ -35,7 +35,9 @@
 - **KACE & Wake-on-LAN Bridge:** Módulo `electron/kaceBridge.cjs` para invocación validada de Wake-on-LAN (`kwol.exe` o socket UDP) y sincronización forzada de inventario corporativo (`runkbot.exe 4 0`).
 
 ## 5. Testing & Tooling
-- **Unit & Service Testing:** Vitest para pruebas unitarias de IPC, validaciones, auditoría Zero-Secrets y servicios SQL.
+- **Unit & Service Testing:** Vitest para pruebas unitarias de lógica pura, parsers, validaciones, auditoría Zero-Secrets y servicios SQL (`npm test`).
+- **End-to-End (E2E) Testing:** Playwright Test Suite (`npm run test:e2e`, `npm run test:e2e:ui`) con arquitectura Page Object Model (POM) en `e2e/pom/` y Test Harness de IPC dual (Mock por defecto / Live opcional con `PCD_E2E_MODE=mock|live`).
+- **Quality Gates:** Obligatorio para Conductor y enlazado al pipeline de pre-release (`npm run release:check`) que bloquea `release:build` si algún test E2E o unitario falla.
 - **Code Quality:** ESLint + Prettier.
 - **Packaging & Distribution:** `electron-builder` para generar ejecutables portables o instaladores NSIS para Windows 10/11 x64.
 
