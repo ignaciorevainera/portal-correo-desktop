@@ -1,7 +1,9 @@
 const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, globalShortcut, clipboard, dialog, net, screen } = require('electron');
 
 // Verificación anticipada de instancia única antes de inicializar módulos pesados
-const gotTheLock = typeof app?.requestSingleInstanceLock === 'function' ? app.requestSingleInstanceLock() : true;
+// En entornos de testing E2E (--e2e-mock o PCD_E2E_MODE=mock) se ignora el single instance lock
+const isE2eMock = process.argv.includes('--e2e-mock') || String(process.env.PCD_E2E_MODE || '').toLowerCase() === 'mock';
+const gotTheLock = isE2eMock || (typeof app?.requestSingleInstanceLock === 'function' ? app.requestSingleInstanceLock() : true);
 if (!gotTheLock) {
   app.quit();
   if (typeof process.exit === 'function') {
@@ -34,6 +36,7 @@ const {
   loadMonitorPreferences,
   saveMonitorPreferences,
 } = require('./monitorPreferences.cjs');
+const testHarness = require('./testHarness.cjs');
 
 // ---------------------------------------------------------------------------
 // Modo de renderizado (GPU vs. software)
@@ -165,6 +168,11 @@ function initializeBootstrap() {
 }
 
 async function runGate() {
+  if (testHarness.isMockMode) {
+    gateState = testHarness.getMockGateState();
+    logger.info('Gate en modo E2E mock autorizado automáticamente');
+    return gateState;
+  }
   try {
     if (!gateProvider) {
       gateProvider = createConfigProvider(bootstrapConfig, {
@@ -539,6 +547,32 @@ ipcMain.handle('pcd:status', async () => {
 });
 
 ipcMain.handle('pcd:search-terminal', async (_event, query) => {
+  if (testHarness.isMockMode) {
+    const mockRaw = testHarness.getMockTerminal(query);
+    if (mockRaw) {
+      const data = {
+        pc: mockRaw.pc || '',
+        ip: mockRaw.ip || '',
+        mac: mockRaw.Macadrress || mockRaw.mac || '',
+        os: mockRaw.Sist_operativo || mockRaw.os || '',
+        servicePack: mockRaw.ServPack || mockRaw.servicePack || '',
+        cpuModel: mockRaw.ModeloYprocesador || mockRaw.cpuModel || '',
+        ram: mockRaw.ram || '',
+        antivirusVersion: mockRaw.version_AV || mockRaw.antivirusVersion || '',
+        ieVersion: mockRaw.IE || mockRaw.ieVersion || '',
+        userNt: mockRaw.userNt || '',
+        architecture: mockRaw.Arquitectura || mockRaw.architecture || '',
+        surveyDate: mockRaw.Fecha_Relevada || mockRaw.surveyDate || '',
+        uptimeText: mockRaw.uptimeText || 'Sin registro en vivo',
+        location: mockRaw.location || '',
+        costCenter: mockRaw.costCenter || '',
+        alerts: mockRaw.alerts || [],
+        resetHistory: mockRaw.resetHistory || [],
+      };
+      return { source: 'sql', data };
+    }
+  }
+
   try {
     const raw = await dbService.getTerminalInfo(query);
     if (raw) {
