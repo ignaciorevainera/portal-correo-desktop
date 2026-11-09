@@ -469,15 +469,14 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     const ping = screen.getByRole("button", { name: /^iniciar ping$/i });
     expect(ping.parentElement?.className).toContain("max-md:order-2");
 
-    expect(
-      screen.getByRole("button", { name: /más acciones/i }).className,
-    ).toContain("max-md:order-3");
-
     const secondary = screen.getByTestId("secondary-actions");
     expect(secondary.className).toContain("contents");
     expect(secondary.className).toContain("max-md:flex");
     expect(secondary.className).toContain("max-md:basis-full");
     expect(secondary.className).toContain("max-md:order-4");
+
+    const moreBtn = screen.getByRole("button", { name: /más acciones/i });
+    expect(secondary.contains(moreBtn)).toBe(true);
 
     const router = screen.getByRole("button", {
       name: /hacer ping al router \.250/i,
@@ -488,7 +487,7 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     const uptime = container.querySelector('[title^="Uptime:"]');
     expect(uptime).not.toBeNull();
     expect(secondary.contains(uptime!)).toBe(true);
-    expect(uptime?.className).toContain("sm:order-last");
+    expect(moreBtn.compareDocumentPosition(uptime!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     for (const group of [router.parentElement, server.parentElement, uptime]) {
       expect(group?.className).toContain("max-md:flex-1");

@@ -395,24 +395,7 @@ export function QuickActionsBar({
             </>
           )}
 
-          {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
-          <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-md:flex-1 max-md:justify-center sm:order-last"
-            title={`Uptime: ${terminal.uptimeText || "N/D"}`}
-            aria-busy={isRefreshingUptime}
-          >
-            {isRefreshingUptime ? (
-              <RotateCcw className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />
-            ) : (
-              <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            )}
-            <span className="font-mono font-semibold text-foreground truncate max-w-25 text-micro">
-              {terminal.uptimeText || "N/D"}
-            </span>
-          </div>
-        </div>
-
-        {/* Menú "Más": acciones secundarias agrupadas sin competir con las primarias */}
+          {/* Menú "Más": acciones secundarias agrupadas sin competir con las primarias */}
         <Popover open={isMoreOpen} onOpenChange={setIsMoreOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -422,7 +405,7 @@ export function QuickActionsBar({
               size="sm"
               aria-label="Más acciones"
               title="Más acciones"
-              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0 max-md:order-3"
+              className="h-8 px-2.5 text-xs font-semibold bg-muted text-foreground border-border hover:bg-muted/80 cursor-pointer gap-1 shrink-0"
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
               <span>Más</span>
@@ -542,6 +525,25 @@ export function QuickActionsBar({
             )}
           </PopoverContent>
         </Popover>
+
+          {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-md:flex-1 max-md:justify-center"
+            title={`Uptime: ${terminal.uptimeText || "N/D"}`}
+            aria-busy={isRefreshingUptime}
+          >
+            {isRefreshingUptime ? (
+              <RotateCcw className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />
+            ) : (
+              <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            )}
+            <span className="font-mono font-semibold text-foreground truncate max-w-25 text-micro">
+              {terminal.uptimeText || "N/D"}
+            </span>
+          </div>
+        </div>
+
+        
       </div>
     </div>
   );
