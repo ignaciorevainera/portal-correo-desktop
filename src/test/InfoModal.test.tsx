@@ -24,7 +24,7 @@ describe("InfoModal Component", () => {
     const desc = screen.getByText("Consola técnica de soporte y monitoreo corporativo");
     expect(desc).toBeInTheDocument();
     expect(desc.className).not.toContain("truncate");
-    expect(desc.className).toContain("break-words");
+    expect(desc.className).toContain("wrap-break-word");
 
     const logo = screen.getByAltText("Correo Argentino");
     expect(logo).toBeInTheDocument();
