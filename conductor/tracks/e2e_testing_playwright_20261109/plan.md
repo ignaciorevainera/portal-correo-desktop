@@ -1,6 +1,6 @@
 # Implementation Plan: Suite de Pruebas E2E con Playwright para Electron, Test Harness Mock/Live y Quality Gates
 
-## Phase 1: Infraestructura E2E, Configuración de Playwright y Test Harness en Electron
+## Phase 1: Infraestructura E2E, Configuración de Playwright y Test Harness en Electron [checkpoint: e478354]
 Configurar la base técnica para ejecutar pruebas automatizadas con Playwright levantando la instancia real de Electron y proveyendo un mecanismo de inyección de datos determinista sin dependencias externas.
 
 - [x] Task: Instalación y configuración de Playwright para Electron [60a4b92]
@@ -13,7 +13,7 @@ Configurar la base técnica para ejecutar pruebas automatizadas con Playwright l
   - [x] Crear fixtures iniciales en `e2e/fixtures/mockData.ts` (equipos `PC-DEMO-001`, alertas, respuestas de ping/nbtstat/arp y subred)
 - [x] Task: Smoke test del lanzador de Electron [e478354]
   - [x] Escribir prueba mínima que valide que `_electron.launch` levanta la ventana principal en modo mock y la cierra sin errores
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ---
 
