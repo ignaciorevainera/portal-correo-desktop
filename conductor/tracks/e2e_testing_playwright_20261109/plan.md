@@ -24,9 +24,9 @@ Crear abstracciones mantenibles y tipadas para que cada pantalla o componente de
   - [x] Crear `e2e/pom/MainWindowPOM.ts` con selectores para Topbar, input de búsqueda, controles de ventana (minimizar/cerrar) y tarjetas de identidad de terminal
 - [x] Task: Implementar ConsolePOM [1853396]
   - [x] Crear `e2e/pom/ConsolePOM.ts` con selectores y acciones para inicio/detención de ping continuo, lectura de líneas del buffer y copiado de bloques en hover
-- [~] Task: Implementar SettingsModalPOM
-  - [ ] Crear `e2e/pom/SettingsModalPOM.ts` con métodos para abrir diálogo de ajustes, alternar preferencias (line wrap, alto contraste, escala) y guardar
-- [ ] Task: Implementar SubnetScannerPOM
+- [x] Task: Implementar SettingsModalPOM [63c05d5]
+  - [x] Crear `e2e/pom/SettingsModalPOM.ts` con métodos para abrir diálogo de ajustes, alternar preferencias (line wrap, alto contraste, escala) y guardar
+- [~] Task: Implementar SubnetScannerPOM
   - [ ] Crear `e2e/pom/SubnetScannerPOM.ts` con métodos para abrir el Drawer de subred, disparar escaneo y esperar la lista de hosts detectados
 - [ ] Task: Implementar MonitorWindowPOM
   - [ ] Crear `e2e/pom/MonitorWindowPOM.ts` con soporte para detectar la segunda ventana Electron (`monitor.html`), validar su contenido y cerrarla
