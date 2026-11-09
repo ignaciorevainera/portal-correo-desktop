@@ -57,14 +57,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuLabel,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
 import { classifySearch } from "@/lib/usernames";
 import {
   loadRecentSearches,
@@ -104,12 +96,53 @@ export function Topbar({
   const [isOpen, setIsOpen] = useState(false);
   const [activeValue, setActiveValue] = useState<string>("");
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isPowerMenuOpen, setIsPowerMenuOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() =>
     loadRecentSearches(),
   );
   const { theme, toggleTheme } = useTheme();
   const inputRef = useRef<HTMLInputElement>(null);
   const searchGroupRef = useRef<HTMLDivElement>(null);
+  const powerMenuRef = useRef<HTMLDivElement>(null);
+
+  // El menú de apagado se ancla al botón (no al cursor) y enfoca su primer ítem.
+  useEffect(() => {
+    if (!isPowerMenuOpen) return;
+
+    const timer = window.setTimeout(() => {
+      powerMenuRef.current
+        ?.querySelector<HTMLElement>('[role="menuitem"]')
+        ?.focus();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [isPowerMenuOpen]);
+
+  const handlePowerMenuKeyDown = (
+    event: React.KeyboardEvent<HTMLDivElement>,
+  ): void => {
+    const items = Array.from(
+      powerMenuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ??
+        [],
+    );
+    if (items.length === 0) return;
+
+    const current = items.indexOf(document.activeElement as HTMLElement);
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      items[(current + 1) % items.length]?.focus();
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      items[(current - 1 + items.length) % items.length]?.focus();
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      items[0]?.focus();
+    } else if (event.key === "End") {
+      event.preventDefault();
+      items[items.length - 1]?.focus();
+    }
+  };
 
   // cmdk sobrescribe el id de la lista con el suyo; el `aria-controls` del
   // input necesita un id estable, así que lo fijamos al montarse la lista.
@@ -587,46 +620,78 @@ export function Topbar({
               <Minus className="h-4 w-4" />
             </Button>
 
-            {/* Apagado: clic oculta en bandeja; clic derecho abre opciones */}
-            <ContextMenu>
-              <ContextMenuTrigger asChild>
+            {/* Apagado: clic oculta; clic derecho abre un menú anclado al botón */}
+            <Popover open={isPowerMenuOpen} onOpenChange={setIsPowerMenuOpen}>
+              <PopoverAnchor asChild>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={hideToTray}
+                  onContextMenu={(event) => {
+                    event.preventDefault();
+                    setIsPowerMenuOpen(true);
+                  }}
                   aria-label="Minimizar a bandeja del sistema"
                   aria-haspopup="menu"
+                  aria-expanded={isPowerMenuOpen}
                   title="Clic: ocultar en bandeja · Clic derecho: opciones de apagado"
                   className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer px-2"
                 >
                   <Power className="h-4 w-4" />
                 </Button>
-              </ContextMenuTrigger>
-              <ContextMenuContent
-                className="w-72"
+              </PopoverAnchor>
+              <PopoverContent
+                align="end"
+                side="bottom"
+                sideOffset={6}
+                collisionPadding={12}
+                className="w-72 p-1"
                 aria-label="Opciones de apagado"
               >
-                <ContextMenuLabel>Apagado</ContextMenuLabel>
-                <ContextMenuSeparator />
-                <ContextMenuItem
-                  onSelect={() => void hideToTray()}
-                  aria-label="Ocultar en bandeja del sistema"
+                <div
+                  ref={powerMenuRef}
+                  role="menu"
+                  aria-label="Opciones de apagado"
+                  onKeyDown={handlePowerMenuKeyDown}
+                  className="flex flex-col gap-1"
                 >
-                  <Minus className="h-3.5 w-3.5 text-muted-foreground" />
-                  Ocultar en bandeja del sistema
-                </ContextMenuItem>
-                <ContextMenuSeparator />
-                <ContextMenuItem
-                  variant="destructive"
-                  onSelect={() => void quitApp()}
-                  aria-label="Cerrar la aplicación definitivamente"
-                >
-                  <Power className="h-3.5 w-3.5" />
-                  Cerrar la aplicación definitivamente
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
+                  <div className="px-2 py-1 text-micro font-semibold text-muted-foreground">
+                    Apagado
+                  </div>
+                  <Separator />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    role="menuitem"
+                    aria-label="Ocultar en bandeja del sistema"
+                    onClick={() => {
+                      setIsPowerMenuOpen(false);
+                      void hideToTray();
+                    }}
+                    className="h-8 w-full cursor-pointer justify-start gap-2 px-2 text-sm font-normal"
+                  >
+                    <Minus className="h-3.5 w-3.5 text-muted-foreground" />
+                    Ocultar en bandeja del sistema
+                  </Button>
+                  <Separator />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    role="menuitem"
+                    aria-label="Cerrar la aplicación definitivamente"
+                    onClick={() => {
+                      setIsPowerMenuOpen(false);
+                      void quitApp();
+                    }}
+                    className="h-8 w-full cursor-pointer justify-start gap-2 px-2 text-sm font-normal text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Power className="h-3.5 w-3.5" />
+                    Cerrar la aplicación definitivamente
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </header>

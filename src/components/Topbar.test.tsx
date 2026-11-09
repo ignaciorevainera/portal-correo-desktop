@@ -110,6 +110,7 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     });
 
     expect(power).toHaveAttribute("aria-haspopup", "menu");
+    expect(power).toHaveAttribute("aria-expanded", "false");
     expect(power).toHaveAttribute(
       "title",
       "Clic: ocultar en bandeja · Clic derecho: opciones de apagado",
@@ -120,6 +121,13 @@ describe("Topbar & Compact Unified Titlebar component", () => {
     const hideItem = await screen.findByRole("menuitem", {
       name: /ocultar en bandeja/i,
     });
+
+    const menu = screen.getByRole("menu", {
+      name: /opciones de apagado/i,
+    });
+    expect(power).toHaveAttribute("aria-expanded", "true");
+    expect(menu.closest('[data-slot="popover-content"]')).not.toBeNull();
+
     fireEvent.click(hideItem);
     expect(hideSpy).toHaveBeenCalledTimes(1);
     expect(quitSpy).not.toHaveBeenCalled();
