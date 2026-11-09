@@ -7,11 +7,11 @@ Configurar la base técnica para ejecutar pruebas automatizadas con Playwright l
   - [x] Instalar `@playwright/test` en devDependencies
   - [x] Crear `playwright.config.ts` con configuración para Electron (timeout, reporter, traces/screenshots/videos `on-failure` en `e2e/test-results`)
   - [x] Configurar TypeScript y paths para la carpeta `e2e/`
-- [x] Task: Implementar Test Harness y modo dual (`PCD_E2E_MODE`) en el proceso Main [0a612d6]
+- [x] Task: Implementar Test Harness y modo dual (`PCD_E2E_MODE`) en el proceso Main [05b68fe]
   - [x] Crear módulo `electron/testHarness.cjs` para interceptar consultas de base de datos y comandos Win32 cuando `PCD_E2E_MODE === 'mock'`
   - [x] Conectar `testHarness` en `electron/main.cjs` para inyectar fixtures predeterminadas de forma segura y transparente
   - [x] Crear fixtures iniciales en `e2e/fixtures/mockData.ts` (equipos `PC-DEMO-001`, alertas, respuestas de ping/nbtstat/arp y subred)
-- [x] Task: Smoke test del lanzador de Electron [c340e7c]
+- [x] Task: Smoke test del lanzador de Electron [e478354]
   - [x] Escribir prueba mínima que valide que `_electron.launch` levanta la ventana principal en modo mock y la cierra sin errores
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
