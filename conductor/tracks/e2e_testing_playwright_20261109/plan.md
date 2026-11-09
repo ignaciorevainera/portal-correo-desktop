@@ -17,7 +17,7 @@ Configurar la base técnica para ejecutar pruebas automatizadas con Playwright l
 
 ---
 
-## Phase 2: Page Object Models (POM) y Helpers Reutilizables de Interacción
+## Phase 2: Page Object Models (POM) y Helpers Reutilizables de Interacción [checkpoint: 62d03b4]
 Crear abstracciones mantenibles y tipadas para que cada pantalla o componente del sistema sea interactuable desde los tests E2E sin duplicar selectores ni lógica.
 
 - [x] Task: Implementar MainWindowPOM [e6ace50]
@@ -30,7 +30,7 @@ Crear abstracciones mantenibles y tipadas para que cada pantalla o componente de
   - [x] Crear `e2e/pom/SubnetScannerPOM.ts` con métodos para abrir el Drawer de subred, disparar escaneo y esperar la lista de hosts detectados
 - [x] Task: Implementar MonitorWindowPOM [62d03b4]
   - [x] Crear `e2e/pom/MonitorWindowPOM.ts` con soporte para detectar la segunda ventana Electron (`monitor.html`), validar su contenido y cerrarla
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [62d03b4]
 
 ---
 
