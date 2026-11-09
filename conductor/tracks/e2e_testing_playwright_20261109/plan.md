@@ -39,9 +39,9 @@ Desarrollar los casos de prueba E2E de punta a punta cubriendo todos los flujos 
 
 - [x] Task: Test E2E de Ciclo de Vida y Ventana Principal [403660d]
   - [x] Crear `e2e/specs/01-lifecycle.spec.ts` validando arranque sin marco, título, botones de ventana y estado inicial limpio
-- [~] Task: Test E2E de Búsqueda de Terminal y Renderizado Técnico
-  - [ ] Crear `e2e/specs/02-search-and-terminal.spec.ts` validando ingreso de consulta por hostname e IP, resolución IPC y pintado de datos/badges
-- [ ] Task: Test E2E de Consola de Diagnóstico de Red y Copiado de Bloques
+- [x] Task: Test E2E de Búsqueda de Terminal y Renderizado Técnico [e92a35a]
+  - [x] Crear `e2e/specs/02-search-and-terminal.spec.ts` validando ingreso de consulta por hostname e IP, resolución IPC y pintado de datos/badges
+- [~] Task: Test E2E de Consola de Diagnóstico de Red y Copiado de Bloques
   - [ ] Crear `e2e/specs/03-network-console.spec.ts` validando ejecución de ping en vivo, streaming continuo, botón detener y copiado en 1 clic de bloques
 - [ ] Task: Test E2E de Modal de Ajustes y Persistencia de Preferencias
   - [ ] Crear `e2e/specs/04-settings.spec.ts` validando apertura, cambio de switches y aplicación de estilos/preferencias
