@@ -472,6 +472,7 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     const secondary = screen.getByTestId("secondary-actions");
     expect(secondary.className).toContain("contents");
     expect(secondary.className).toContain("max-md:flex");
+    expect(secondary.className).toContain("max-md:flex-wrap");
     expect(secondary.className).toContain("max-md:basis-full");
     expect(secondary.className).toContain("max-md:order-4");
 

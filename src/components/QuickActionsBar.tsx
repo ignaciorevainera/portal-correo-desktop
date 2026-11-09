@@ -143,12 +143,12 @@ export function QuickActionsBar({
   const diagnosticSectionId = useId();
 
   return (
-    <div className="w-full flex flex-col gap-1">
+    <div className="w-full flex flex-col gap-1 min-w-0">
       {/* Barra de Acciones Rápida y Adaptativa: Todos los botones y Uptime en el mismo contenedor */}
       {/* En ancho compacto `order` cambia el orden visual, no el de tabulación:
           el foco recorre .250/.231 antes de llegar a "Más". Se acepta para no
           alterar el orden de escritorio. */}
-      <div className="flex items-center flex-wrap gap-1 w-full">
+      <div className="flex items-center flex-wrap gap-1 w-full min-w-0">
         {/* Split Button Inteligente de Conexión Remota con grow */}
         <div
           className="relative flex items-center min-w-45 flex-1 grow max-md:order-1"
@@ -333,11 +333,11 @@ export function QuickActionsBar({
         {/* Secundarias: fila propia en compacto, inline en escritorio */}
         <div
           data-testid="secondary-actions"
-          className="contents max-md:order-4 max-md:flex max-md:basis-full max-md:items-center max-md:gap-1"
+          className="contents max-md:order-4 max-md:flex max-md:flex-wrap max-md:basis-full max-md:items-center max-md:gap-1 min-w-0"
         >
           {siteTargets.isValid && onLaunchSitePing && (
             <>
-              <div className="flex rounded-md shrink-0 max-md:flex-1">
+              <div className="flex rounded-md shrink-0 max-md:flex-1 min-w-24">
                 <Button
                   type="button"
                   variant="outline"
@@ -365,7 +365,7 @@ export function QuickActionsBar({
                 </Button>
               </div>
 
-              <div className="flex rounded-md shrink-0 max-md:flex-1">
+              <div className="flex rounded-md shrink-0 max-md:flex-1 min-w-24">
                 <Button
                   type="button"
                   variant="outline"
@@ -528,7 +528,7 @@ export function QuickActionsBar({
 
           {/* Chip de Uptime: sólo estado, el refresco vive en el menú "Más" */}
           <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-md:flex-1 max-md:justify-center"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border/80 text-xs h-8 shrink-0 max-md:flex-1 max-md:justify-center min-w-0"
             title={`Uptime: ${terminal.uptimeText || "N/D"}`}
             aria-busy={isRefreshingUptime}
           >
@@ -537,7 +537,7 @@ export function QuickActionsBar({
             ) : (
               <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             )}
-            <span className="font-mono font-semibold text-foreground truncate max-w-25 text-micro">
+            <span className="font-mono font-semibold text-foreground truncate max-w-full text-micro min-w-0">
               {terminal.uptimeText || "N/D"}
             </span>
           </div>
