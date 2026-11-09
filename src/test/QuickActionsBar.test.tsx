@@ -446,7 +446,7 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     });
   });
 
-  it("agrupa y llena la segunda fila de acciones por debajo de 768 px", () => {
+  it("mantiene distribución fluida y flexible con flex-wrap para permitir quiebres de 1 a 3 filas", () => {
     const { container } = render(
       <QuickActionsBar
         terminal={terminal}
@@ -462,19 +462,16 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     const remote = screen.getByRole("button", {
       name: /conexión remota inteligente/i,
     });
-    expect(remote.closest("div.relative")?.className).toContain(
-      "max-md:order-1",
-    );
+    expect(remote.closest("div.relative")?.className).toContain("flex-1");
+    expect(remote.closest("div.relative")?.className).toContain("grow");
 
     const ping = screen.getByRole("button", { name: /^iniciar ping$/i });
-    expect(ping.parentElement?.className).toContain("max-md:order-2");
+    expect(ping.parentElement?.className).toContain("flex-1");
+    expect(ping.parentElement?.className).toContain("grow");
 
     const secondary = screen.getByTestId("secondary-actions");
     expect(secondary.className).toContain("contents");
-    expect(secondary.className).toContain("max-md:flex");
-    expect(secondary.className).toContain("max-md:flex-wrap");
-    expect(secondary.className).toContain("max-md:basis-full");
-    expect(secondary.className).toContain("max-md:order-4");
+    expect(secondary.className).toContain("flex-wrap");
 
     const moreBtn = screen.getByRole("button", { name: /más acciones/i });
     expect(secondary.contains(moreBtn)).toBe(true);
@@ -491,19 +488,14 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     expect(moreBtn.compareDocumentPosition(uptime!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     for (const group of [router.parentElement, server.parentElement, uptime]) {
-      expect(group?.className).toContain("max-md:flex-1");
+      expect(group?.className).toContain("flex-1");
+      expect(group?.className).toContain("grow");
     }
-    expect(router.className).toContain("max-md:flex-1");
-    expect(server.className).toContain("max-md:flex-1");
-    expect(
-      screen.getByRole("button", { name: /ping continuo -t router \.250/i })
-        .className,
-    ).not.toContain("max-md:flex-1");
 
     expect(container.querySelector('[class*="flex-wrap"]')).not.toBeNull();
   });
 
-  it("llena la fila secundaria con el chip de uptime cuando no hay enlaces del sitio", () => {
+  it("mantiene el chip de uptime con flex-1 y grow cuando no hay enlaces del sitio", () => {
     const { container } = render(
       <QuickActionsBar
         terminal={{ ...terminal, ip: "hostname-solo" }}
@@ -520,7 +512,8 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     ).toBeNull();
 
     const uptime = container.querySelector('[title^="Uptime:"]');
-    expect(uptime?.className).toContain("max-md:flex-1");
+    expect(uptime?.className).toContain("flex-1");
+    expect(uptime?.className).toContain("grow");
   });
 });
 
