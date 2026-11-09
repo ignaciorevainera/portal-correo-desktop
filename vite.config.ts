@@ -17,7 +17,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
-    exclude: ['**/node_modules/**', '**/dist/**', '**/.agents/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.agents/**', '**/e2e/**'],
   },
   build: {
     rollupOptions: {
