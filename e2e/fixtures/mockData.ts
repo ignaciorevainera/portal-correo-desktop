@@ -21,18 +21,52 @@ export const MOCK_TERMINAL_DEMO = {
     {
       id: 'ALT-101',
       title: 'Espacio en disco bajo en C:',
-      type: 'warning',
-      timestamp: '2026-11-09 09:30:00',
+      description: 'Menos del 10% disponible',
+      operator: 'operador.demo',
+      date: '2026-11-09 09:30:00',
+      active: true,
     },
   ],
   resetHistory: [
     {
       id: 'RST-01',
-      requestedBy: 'operador.demo',
-      date: '2026-11-01',
-      status: 'completed',
+      operator: 'operador.demo',
+      date: '2026-11-01 14:00:00',
+      reason: 'Reinicio programado',
+      result: 'Completado OK',
     },
   ],
+};
+
+export const MOCK_TERMINALS = [
+  MOCK_TERMINAL_DEMO,
+  {
+    pc: 'PC-DEMO-002',
+    ip: '192.0.2.102',
+    mac: '00:1A:2B:3C:4D:5F',
+    os: 'Windows 10 Pro',
+    servicePack: '22H2',
+    cpuModel: 'Intel Core i5-11400 @ 2.60GHz',
+    ram: '8 GB',
+    antivirusVersion: 'Defender 4.18.24080.9',
+    ieVersion: '11.0.19041.1',
+    userNt: 'CORREO\\operador.sucursal',
+    architecture: '64-bit',
+    surveyDate: '2026-11-09 11:00:00',
+    uptimeText: '2d 08h 15m',
+    location: 'Sucursal Retiro - Box 4',
+    costCenter: 'Operaciones',
+    alerts: [],
+    resetHistory: [],
+  },
+];
+
+export const MOCK_GATE_STATUS = {
+  status: 'READY' as const,
+  code: 'AUTHORIZED' as const,
+  message: 'Conexión corporativa validada y activa',
+  source: 'unc' as const,
+  configPath: '\\\\DEMO.INTERNAL\\netlogon\\portal\\config.json',
 };
 
 export const MOCK_SUBNET_HOSTS = [
