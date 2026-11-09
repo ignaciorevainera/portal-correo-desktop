@@ -20,9 +20,9 @@ Configurar la base técnica para ejecutar pruebas automatizadas con Playwright l
 ## Phase 2: Page Object Models (POM) y Helpers Reutilizables de Interacción
 Crear abstracciones mantenibles y tipadas para que cada pantalla o componente del sistema sea interactuable desde los tests E2E sin duplicar selectores ni lógica.
 
-- [ ] Task: Implementar MainWindowPOM
-  - [ ] Crear `e2e/pom/MainWindowPOM.ts` con selectores para Topbar, input de búsqueda, controles de ventana (minimizar/cerrar) y tarjetas de identidad de terminal
-- [ ] Task: Implementar ConsolePOM
+- [x] Task: Implementar MainWindowPOM [e6ace50]
+  - [x] Crear `e2e/pom/MainWindowPOM.ts` con selectores para Topbar, input de búsqueda, controles de ventana (minimizar/cerrar) y tarjetas de identidad de terminal
+- [~] Task: Implementar ConsolePOM
   - [ ] Crear `e2e/pom/ConsolePOM.ts` con selectores y acciones para inicio/detención de ping continuo, lectura de líneas del buffer y copiado de bloques en hover
 - [ ] Task: Implementar SettingsModalPOM
   - [ ] Crear `e2e/pom/SettingsModalPOM.ts` con métodos para abrir diálogo de ajustes, alternar preferencias (line wrap, alto contraste, escala) y guardar
