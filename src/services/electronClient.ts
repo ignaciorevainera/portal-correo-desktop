@@ -80,6 +80,7 @@ export interface UiPreferences {
   globalHotkeyEnabled: boolean;
   textScale?: '100' | '110' | '120' | '130';
   highContrast?: boolean;
+  consoleWrap?: boolean;
   /** false cuando todavía no existe archivo guardado (migración). */
   stored?: boolean;
 }
