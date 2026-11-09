@@ -43,9 +43,9 @@ Desarrollar los casos de prueba E2E de punta a punta cubriendo todos los flujos 
   - [x] Crear `e2e/specs/02-search-and-terminal.spec.ts` validando ingreso de consulta por hostname e IP, resolución IPC y pintado de datos/badges
 - [x] Task: Test E2E de Consola de Diagnóstico de Red y Copiado de Bloques [498785c]
   - [x] Crear `e2e/specs/03-network-console.spec.ts` validando ejecución de ping en vivo, streaming continuo, botón detener y copiado en 1 clic de bloques
-- [~] Task: Test E2E de Modal de Ajustes y Persistencia de Preferencias
-  - [ ] Crear `e2e/specs/04-settings.spec.ts` validando apertura, cambio de switches y aplicación de estilos/preferencias
-- [ ] Task: Test E2E de Escáner de Subred (Drawer)
+- [x] Task: Test E2E de Modal de Ajustes y Persistencia de Preferencias [529da7d]
+  - [x] Crear `e2e/specs/04-settings.spec.ts` validando apertura, cambio de switches y aplicación de estilos/preferencias
+- [~] Task: Test E2E de Escáner de Subred (Drawer)
   - [ ] Crear `e2e/specs/05-subnet-scanner.spec.ts` validando apertura de Drawer, progreso de barrido y visualización de terminales encontradas
 - [ ] Task: Test E2E Multiventana de Monitor
   - [ ] Crear `e2e/specs/06-monitor-window.spec.ts` validando lanzamiento de `monitor.html`, sincronización y cierre seguro
