@@ -931,7 +931,7 @@ describe('LivePingConsole Component', () => {
   });
 
   describe('Console Block Hover and Copy Interaction', () => {
-    it('renders output lines segmented into hoverable blocks with data-testid="console-block"', () => {
+    it('renders output lines segmented into hoverable blocks with data-testid="console-block" and selection disabled', () => {
       let dataHandler: any;
       vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
         dataHandler = onData;
@@ -951,22 +951,25 @@ describe('LivePingConsole Component', () => {
         dataHandler?.("Respuesta desde 192.0.2.55: bytes=32 tiempo=1ms");
       });
 
+      // Selección de texto desactivada en el contenedor de la consola
+      const scrollContainer = screen.getByTestId('terminal-scroll-container');
+      expect(scrollContainer.className).toContain('select-none');
+
       const blocks = screen.getAllByTestId('console-block');
       expect(blocks.length).toBeGreaterThanOrEqual(1);
 
       const firstBlock = blocks[0];
       expect(firstBlock).toHaveAttribute('data-block-id');
-      expect(firstBlock.className).toContain('group');
-      expect(firstBlock.className).toContain('relative');
-
-      // Botón flotante de copiar bloque visible en hover
-      const copyBlockBtn = screen.getByRole('button', { name: /copiar bloque/i });
-      expect(copyBlockBtn).toBeInTheDocument();
-      expect(copyBlockBtn.className).toContain('opacity-0');
-      expect(copyBlockBtn.className).toContain('group-hover:opacity-100');
+      expect(firstBlock).toHaveAttribute('role', 'button');
+      expect(firstBlock).toHaveAttribute('tabindex', '0');
+      expect(firstBlock.className).toContain('cursor-pointer');
+      expect(firstBlock.className).toContain('select-none');
+      expect(firstBlock.className).toContain('hover:bg-black/60');
+      // Sin bordes decorativos en hover
+      expect(firstBlock.className).not.toContain('border-border');
     });
 
-    it('copies only the specific block content to clipboard when block copy button is clicked', async () => {
+    it('copies only the specific block content to clipboard when clicking anywhere on that block', async () => {
       const writeTextMock = vi.fn().mockResolvedValue(undefined);
       Object.assign(navigator, {
         clipboard: {
@@ -1029,12 +1032,9 @@ describe('LivePingConsole Component', () => {
       const blocks = screen.getAllByTestId('console-block');
       expect(blocks).toHaveLength(2);
 
-      const blockCopyButtons = screen.getAllByRole('button', { name: /copiar bloque/i });
-      expect(blockCopyButtons).toHaveLength(2);
-
-      // Clic en el botón de copiar del segundo bloque (Tracert)
+      // Clic directo en cualquier parte del segundo bloque (Tracert)
       await act(async () => {
-        fireEvent.click(blockCopyButtons[1]);
+        fireEvent.click(blocks[1]);
       });
 
       expect(writeTextMock).toHaveBeenCalledTimes(1);

@@ -432,8 +432,8 @@ export function LivePingConsole({
     };
   }, []);
 
-  const handleCopyBlock = async (block: ConsoleBlock, event: React.MouseEvent): Promise<void> => {
-    event.stopPropagation();
+  const handleCopyBlock = async (block: ConsoleBlock, event?: React.SyntheticEvent): Promise<void> => {
+    event?.stopPropagation();
     const text = extractBlockText(block);
     if (!text) return;
     try {
@@ -605,7 +605,7 @@ export function LivePingConsole({
               fill ? "flex-1 min-h-0" : "h-[50vh]"
             } overflow-y-auto ${
               isWrapActive ? "overflow-x-hidden" : "overflow-x-auto"
-            } p-3 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-text`}
+            } p-3 bg-console-bg font-mono text-micro leading-relaxed text-console-muted select-none`}
           >
             {lines.length === 0 ? (
               <div className="h-full flex items-center justify-center text-console-muted font-sans text-xs">
@@ -621,27 +621,21 @@ export function LivePingConsole({
                     key={block.id}
                     data-testid="console-block"
                     data-block-id={block.id}
-                    className="group relative rounded-md p-1.5 -mx-1.5 mb-1.5 transition-colors hover:bg-muted/10 border border-transparent hover:border-border/40 last:mb-0"
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => handleCopyBlock(block, e)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleCopyBlock(block, e);
+                      }
+                    }}
+                    aria-label={`Copiar bloque${block.commandText ? ` de ${block.commandText}` : ""}`}
+                    title={isCopied ? "¡Bloque copiado al portapapeles!" : "Clic para copiar este bloque"}
+                    className={`rounded-md p-1.5 -mx-1.5 mb-1.5 transition-colors cursor-pointer select-none ${
+                      isCopied ? "bg-black/90" : "hover:bg-black/60"
+                    } last:mb-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50`}
                   >
-                    {/* Botón flotante compacto (solo icono) para copiar el bloque, visible en hover */}
-                    <div className="absolute top-1.5 right-1.5 z-10 pointer-events-auto">
-                      <Button
-                        type="button"
-                        variant={isCopied ? "secondary" : "outline"}
-                        size="icon-xs"
-                        onClick={(e) => handleCopyBlock(block, e)}
-                        aria-label={`Copiar bloque${block.commandText ? ` de ${block.commandText}` : ""}`}
-                        title={isCopied ? "¡Bloque copiado!" : "Copiar este bloque de resultados"}
-                        className="shadow-xs bg-card/95 hover:bg-muted border-border/80 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        {isCopied ? (
-                          <Check className="h-3 w-3 text-success shrink-0" />
-                        ) : (
-                          <Copy className="h-3 w-3 text-muted-foreground hover:text-foreground shrink-0" />
-                        )}
-                      </Button>
-                    </div>
-
                     {block.lines.map((line) => (
                       <div
                         key={line.id}
