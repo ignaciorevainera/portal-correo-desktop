@@ -2,7 +2,8 @@ import { Page, Locator, expect } from '@playwright/test';
 
 export class ConsolePOM {
   readonly page: Page;
-  readonly consoleContainer: Locator;
+  readonly consoleCard: Locator;
+  readonly consoleHeader: Locator;
   readonly stopButton: Locator;
   readonly clearButton: Locator;
   readonly copyLastButton: Locator;
@@ -11,11 +12,12 @@ export class ConsolePOM {
 
   constructor(page: Page) {
     this.page = page;
-    this.consoleContainer = page.locator('#ping-console-scroll-container, [aria-label="Resultados de diagnóstico y conectividad"]');
-    this.stopButton = page.getByRole('button', { name: /detener/i });
-    this.clearButton = page.getByRole('button', { name: /limpiar/i });
-    this.copyLastButton = page.getByRole('button', { name: /copiar último/i });
-    this.copyLogsButton = page.getByRole('button', { name: /copiar logs/i });
+    this.consoleCard = page.locator('[data-testid="live-ping-console"]');
+    this.consoleHeader = page.locator('[data-testid="console-header"]');
+    this.stopButton = this.consoleHeader.getByRole('button', { name: /detener ping en vivo/i });
+    this.clearButton = this.consoleHeader.getByRole('button', { name: /limpiar logs/i });
+    this.copyLastButton = this.consoleHeader.getByRole('button', { name: /copiar último bloque/i });
+    this.copyLogsButton = this.consoleHeader.getByRole('button', { name: /copiar logs de ping/i });
     this.commandBlocks = page.locator('[data-command-block]');
   }
 

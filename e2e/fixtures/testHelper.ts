@@ -24,22 +24,39 @@ export async function setupElectronMock(page: Page, options: HarnessOptions = {}
     const listeners: Record<string, Function[]> = {};
 
     (window as any).electronAPI = {
-      pingStart: (ip: string) => {
-        (window as any).__recordIpcCall('pingStart', [ip]);
-        // Simular eventos de ping continuos vía onPingData
+      ping: (target: string, continuous: boolean) => {
+        (window as any).__recordIpcCall('ping', [target, continuous]);
         if (listeners['ping-data']) {
           setTimeout(() => {
-            listeners['ping-data']?.forEach((cb) => cb(`Haciendo ping a ${ip} con 32 bytes de datos:`));
-            listeners['ping-data']?.forEach((cb) => cb(`Respuesta desde ${ip}: bytes=32 tiempo=14ms TTL=126`));
-            listeners['ping-data']?.forEach((cb) => cb(`Respuesta desde ${ip}: bytes=32 tiempo=12ms TTL=126`));
+            listeners['ping-data']?.forEach((cb) => cb(`Haciendo ping a ${target} con 32 bytes de datos:`));
+            listeners['ping-data']?.forEach((cb) => cb(`Respuesta desde ${target}: bytes=32 tiempo=14ms TTL=126`));
+            listeners['ping-data']?.forEach((cb) => cb(`Respuesta desde ${target}: bytes=32 tiempo=12ms TTL=126`));
           }, 50);
         }
       },
-      pingStop: () => {
-        (window as any).__recordIpcCall('pingStop', []);
+      stopPing: () => {
+        (window as any).__recordIpcCall('stopPing', []);
         if (listeners['ping-data']) {
           listeners['ping-data']?.forEach((cb) => cb('Ping detenido por el usuario.'));
         }
+      },
+      onPingEnd: (cb: (code: number) => void) => {
+        if (!listeners['ping-end']) listeners['ping-end'] = [];
+        listeners['ping-end'].push(cb);
+      },
+      startCommand: (payload: any) => {
+        (window as any).__recordIpcCall('startCommand', [payload]);
+      },
+      stopCommand: () => {
+        (window as any).__recordIpcCall('stopCommand', []);
+      },
+      onCommandData: (cb: (text: string) => void) => {
+        if (!listeners['cmd-data']) listeners['cmd-data'] = [];
+        listeners['cmd-data'].push(cb);
+      },
+      onCommandEnd: (cb: (code: number) => void) => {
+        if (!listeners['cmd-end']) listeners['cmd-end'] = [];
+        listeners['cmd-end'].push(cb);
       },
       searchTerminal: async (query: string) => {
         (window as any).__recordIpcCall('searchTerminal', [query]);
