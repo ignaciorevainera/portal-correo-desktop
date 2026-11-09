@@ -27,7 +27,7 @@ export class MainWindowPOM {
     this.powerButton = page.getByRole('button', { name: /minimizar a bandeja del sistema/i });
     this.closeButton = page.getByRole('button', { name: /cerrar la aplicación definitivamente/i });
     this.themeToggle = page.getByRole('button', { name: /alternar tema/i });
-    this.settingsButton = page.getByRole('button', { name: /abrir configuración/i });
+    this.settingsButton = page.getByRole('button', { name: /abrir ajustes y configuración/i });
     this.infoButton = page.getByRole('button', { name: /abrir información del sistema/i });
     this.terminalHostnameBadge = page.locator('[data-slot="badge"]').first();
     this.terminalIpBadge = page.locator('text=/^192\\./').first();
