@@ -930,4 +930,123 @@ describe('LivePingConsole Component', () => {
     expect(lineEl.className).toContain('break-words');
   });
 
+  describe('Console Block Hover and Copy Interaction', () => {
+    it('renders output lines segmented into hoverable blocks with data-testid="console-block"', () => {
+      let dataHandler: any;
+      vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData) => {
+        dataHandler = onData;
+        return () => {};
+      });
+
+      render(
+        <LivePingConsole
+          ip="192.0.2.55"
+          isPinging={true}
+          pingMode="standard"
+          onTogglePing={vi.fn()}
+        />
+      );
+
+      act(() => {
+        dataHandler?.("Respuesta desde 192.0.2.55: bytes=32 tiempo=1ms");
+      });
+
+      const blocks = screen.getAllByTestId('console-block');
+      expect(blocks.length).toBeGreaterThanOrEqual(1);
+
+      const firstBlock = blocks[0];
+      expect(firstBlock).toHaveAttribute('data-block-id');
+      expect(firstBlock.className).toContain('group');
+      expect(firstBlock.className).toContain('relative');
+
+      // Botón flotante de copiar bloque visible en hover
+      const copyBlockBtn = screen.getByRole('button', { name: /copiar bloque/i });
+      expect(copyBlockBtn).toBeInTheDocument();
+      expect(copyBlockBtn.className).toContain('opacity-0');
+      expect(copyBlockBtn.className).toContain('group-hover:opacity-100');
+    });
+
+    it('copies only the specific block content to clipboard when block copy button is clicked', async () => {
+      const writeTextMock = vi.fn().mockResolvedValue(undefined);
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: writeTextMock,
+        },
+      });
+
+      let dataHandler: any;
+      let pingCompleteHandler: any;
+      vi.spyOn(electronClient, 'subscribeToPing').mockImplementation((_target, onData, onEnd) => {
+        dataHandler = onData;
+        pingCompleteHandler = onEnd;
+        return () => {};
+      });
+
+      let diagHandler: any;
+      let diagCompleteHandler: any;
+      vi.spyOn(electronClient, 'subscribeToDiagnosticCommand').mockImplementation((_cmd, _target, onData, onEnd) => {
+        diagHandler = onData;
+        diagCompleteHandler = onEnd;
+        return () => {};
+      });
+
+      const { rerender } = render(
+        <LivePingConsole
+          ip="192.0.2.55"
+          isPinging={true}
+          pingMode="standard"
+          onTogglePing={vi.fn()}
+        />
+      );
+
+      // Salida bloque 1: Ping
+      act(() => {
+        dataHandler?.("Respuesta desde 192.0.2.55: bytes=32 tiempo=1ms");
+        pingCompleteHandler?.(0);
+      });
+
+      // Ejecutar segundo comando (Tracert)
+      rerender(
+        <LivePingConsole
+          ip="192.0.2.55"
+          isPinging={false}
+          activeCommand={{
+            id: 'cmd-tracert-1',
+            command: 'tracert',
+            target: '192.0.2.55',
+            argsText: 'tracert -d 192.0.2.55',
+            timestamp: '12:00:10',
+          }}
+          onTogglePing={vi.fn()}
+        />
+      );
+
+      act(() => {
+        diagHandler?.("  1    <1 ms    <1 ms  192.0.2.55");
+        diagCompleteHandler?.(0);
+      });
+
+      const blocks = screen.getAllByTestId('console-block');
+      expect(blocks).toHaveLength(2);
+
+      const blockCopyButtons = screen.getAllByRole('button', { name: /copiar bloque/i });
+      expect(blockCopyButtons).toHaveLength(2);
+
+      // Clic en el botón de copiar del segundo bloque (Tracert)
+      await act(async () => {
+        fireEvent.click(blockCopyButtons[1]);
+      });
+
+      expect(writeTextMock).toHaveBeenCalledTimes(1);
+      const copiedText = writeTextMock.mock.calls[0][0];
+      expect(copiedText).toContain("tracert -d 192.0.2.55");
+      expect(copiedText).toContain("192.0.2.55");
+      // NO debe incluir la cabecera del ping del primer bloque
+      expect(copiedText).not.toContain("ping -n 4 192.0.2.55");
+
+      // Anuncio accesible en el DOM
+      expect(screen.getByRole('status')).toHaveTextContent(/bloque copiado al portapapeles/i);
+    });
+  });
+
 });

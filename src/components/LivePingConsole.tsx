@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Square,
   Trash2,
@@ -16,6 +16,11 @@ import {
   subscribeToDiagnosticCommand,
 } from "../services/electronClient";
 import { currentPingLines, summarizePingLogs } from "@/lib/pingSummary";
+import {
+  groupConsoleLinesIntoBlocks,
+  extractBlockText,
+  ConsoleBlock,
+} from "@/lib/consoleBlocks";
 import {
   loadDefaultConsoleWrap,
   CONSOLE_WRAP_EVENT,
@@ -415,6 +420,38 @@ export function LivePingConsole({
   const HeaderIcon = isAccountMode ? UserRound : Activity;
   const headerLabel = isAccountMode ? `Cuenta AD · ${targetLabel ?? ""}` : ip;
 
+  const blocks = useMemo(() => groupConsoleLinesIntoBlocks(lines), [lines]);
+  const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
+  const copiedBlockTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedBlockTimerRef.current) {
+        clearTimeout(copiedBlockTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleCopyBlock = async (block: ConsoleBlock, event: React.MouseEvent): Promise<void> => {
+    event.stopPropagation();
+    const text = extractBlockText(block);
+    if (!text) return;
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        setCopiedBlockId(block.id);
+        if (copiedBlockTimerRef.current) {
+          clearTimeout(copiedBlockTimerRef.current);
+        }
+        copiedBlockTimerRef.current = setTimeout(() => {
+          setCopiedBlockId(null);
+        }, 2000);
+      }
+    } catch (err) {
+      console.warn("Error al copiar bloque:", err);
+    }
+  };
+
   return (
     <Collapsible asChild open={isOpen} onOpenChange={setIsOpen}>
       <Card
@@ -425,11 +462,13 @@ export function LivePingConsole({
         }`}
       >
         <span role="status" aria-live="polite" className="sr-only">
-          {copiedLast
+          {copiedBlockId
             ? "Bloque copiado al portapapeles"
-            : copiedAll
-              ? "Logs copiados al portapapeles"
-              : ""}
+            : copiedLast
+              ? "Bloque copiado al portapapeles"
+              : copiedAll
+                ? "Logs copiados al portapapeles"
+                : ""}
         </span>
 
         {/* Barra de Controles Superior: cabecera colapsable y acciones */}
@@ -575,19 +614,56 @@ export function LivePingConsole({
                   : "Selecciona una acción (Ping, Ping -t, Nbtstat, Tracert, ARP) en la barra superior para iniciar diagnóstico."}
               </div>
             ) : (
-              lines.map((line) => (
-                <div
-                  key={line.id}
-                  data-line-id={line.id}
-                  className={`${
-                    isWrapActive
-                      ? "whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
-                      : "whitespace-pre"
-                  } font-mono ${line.tone}`}
-                >
-                  {line.text}
-                </div>
-              ))
+              blocks.map((block) => {
+                const isCopied = copiedBlockId === block.id;
+                return (
+                  <div
+                    key={block.id}
+                    data-testid="console-block"
+                    data-block-id={block.id}
+                    className="group relative rounded-md p-1.5 -mx-1.5 mb-1.5 transition-colors hover:bg-muted/10 border border-transparent hover:border-border/40 last:mb-0"
+                  >
+                    {/* Botón flotante para copiar el bloque, visible en hover */}
+                    <div className="absolute top-1.5 right-1.5 z-10 pointer-events-auto">
+                      <Button
+                        type="button"
+                        variant={isCopied ? "secondary" : "outline"}
+                        size="xs"
+                        onClick={(e) => handleCopyBlock(block, e)}
+                        aria-label={`Copiar bloque${block.commandText ? ` de ${block.commandText}` : ""}`}
+                        title="Copiar este bloque de resultados"
+                        className="h-6 px-1.5 text-micro font-sans flex items-center gap-1 shadow-xs bg-card/95 hover:bg-card border-border/80 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        {isCopied ? (
+                          <>
+                            <Check className="h-3 w-3 text-success shrink-0" />
+                            <span className="text-[10px] font-medium text-success">Copiado</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <span className="text-[10px] font-medium text-muted-foreground">Copiar bloque</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {block.lines.map((line) => (
+                      <div
+                        key={line.id}
+                        data-line-id={line.id}
+                        className={`${
+                          isWrapActive
+                            ? "whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                            : "whitespace-pre"
+                        } font-mono ${line.tone}`}
+                      >
+                        {line.text}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })
             )}
           </div>
         </CollapsibleContent>
