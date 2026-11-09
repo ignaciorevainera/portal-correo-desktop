@@ -6,6 +6,9 @@ import {
   Network,
   UserCheck,
   ExternalLink,
+  Layers,
+  Sliders,
+  Eye,
 } from "lucide-react";
 import {
   Dialog,
@@ -43,12 +46,17 @@ export function InfoModal({
       shortcut: "Ctrl + F",
     },
     {
+      icon: Layers,
+      label: "Monitores flotantes independientes de diagnóstico (hasta 4 ventanas)",
+      shortcut: "Ctrl + Shift + Espacio",
+    },
+    {
       icon: UserCheck,
       label: "Consulta de cuenta Active Directory (net user) por username",
     },
     {
       icon: Activity,
-      label: "Diagnóstico ICMP en vivo (estándar y continuo -t)",
+      label: "Diagnóstico ICMP en vivo (estándar, continuo -t y enlaces de sucursal)",
     },
     {
       icon: Monitor,
@@ -57,6 +65,16 @@ export function InfoModal({
     {
       icon: Network,
       label: "Escaneo inteligente de subred y enlaces de sucursal",
+    },
+    {
+      icon: Eye,
+      label: "Accesibilidad y visualización (Alto Contraste y escala de texto)",
+      shortcut: "Ctrl + / -",
+    },
+    {
+      icon: Sliders,
+      label: "Ajustes del aplicativo y diagnóstico corporativo",
+      shortcut: "F10",
     },
   ];
 
@@ -118,7 +136,7 @@ export function InfoModal({
                       </span>
                     </div>
                     {item.shortcut && (
-                      <Kbd className="text-micro px-1.5 py-0.5 h-4 shrink-0">
+                      <Kbd className="text-micro px-1.5 py-0.5 h-4 shrink-0 whitespace-nowrap">
                         {item.shortcut}
                       </Kbd>
                     )}

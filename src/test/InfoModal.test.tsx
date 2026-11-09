@@ -30,25 +30,52 @@ describe("InfoModal Component", () => {
     );
   });
 
-  it("renders key capabilities list including net user for username and shortcut kbd badge", () => {
+  it("renders key capabilities list including floating monitors, net user and keyboard shortcuts", () => {
     render(<InfoModal isOpen={true} onClose={vi.fn()} />);
 
     expect(
       screen.getByText("Búsqueda rápida de puestos de trabajo e IPs"),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText("Consulta de cuenta Active Directory (net user) por username"),
-    ).toBeInTheDocument();
     expect(screen.getByText("Ctrl + F")).toBeInTheDocument();
+
     expect(
-      screen.getByText("Diagnóstico ICMP en vivo (estándar y continuo -t)"),
+      screen.getByText(
+        "Monitores flotantes independientes de diagnóstico (hasta 4 ventanas)",
+      ),
     ).toBeInTheDocument();
+    expect(screen.getByText("Ctrl + Shift + Espacio")).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        "Consulta de cuenta Active Directory (net user) por username",
+      ),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        "Diagnóstico ICMP en vivo (estándar, continuo -t y enlaces de sucursal)",
+      ),
+    ).toBeInTheDocument();
+
     expect(
       screen.getByText("Asistencia remota integrada (VNC Viewer y MSRA)"),
     ).toBeInTheDocument();
+
     expect(
       screen.getByText("Escaneo inteligente de subred y enlaces de sucursal"),
     ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        "Accesibilidad y visualización (Alto Contraste y escala de texto)",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Ctrl + / -")).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Ajustes del aplicativo y diagnóstico corporativo"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("F10")).toBeInTheDocument();
 
     // Verificamos que las secciones y textos eliminados no estén presentes
     expect(screen.queryByText(/gerencia de tecnología/i)).not.toBeInTheDocument();
