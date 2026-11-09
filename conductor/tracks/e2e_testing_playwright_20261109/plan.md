@@ -28,8 +28,8 @@ Crear abstracciones mantenibles y tipadas para que cada pantalla o componente de
   - [x] Crear `e2e/pom/SettingsModalPOM.ts` con métodos para abrir diálogo de ajustes, alternar preferencias (line wrap, alto contraste, escala) y guardar
 - [x] Task: Implementar SubnetScannerPOM [e56003c]
   - [x] Crear `e2e/pom/SubnetScannerPOM.ts` con métodos para abrir el Drawer de subred, disparar escaneo y esperar la lista de hosts detectados
-- [~] Task: Implementar MonitorWindowPOM
-  - [ ] Crear `e2e/pom/MonitorWindowPOM.ts` con soporte para detectar la segunda ventana Electron (`monitor.html`), validar su contenido y cerrarla
+- [x] Task: Implementar MonitorWindowPOM [62d03b4]
+  - [x] Crear `e2e/pom/MonitorWindowPOM.ts` con soporte para detectar la segunda ventana Electron (`monitor.html`), validar su contenido y cerrarla
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ---
