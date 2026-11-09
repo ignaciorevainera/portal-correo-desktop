@@ -45,6 +45,7 @@
 - **In-Memory Caching:** Caché TTL en memoria (8 segundos) para sondeo de puertos remotos (`probeRemotePorts`) y resolución en caché de rutas de ejecutables locales (`getVncViewerPath`), reduciendo I/O de disco repetitivo.
 - **Subnet Scanner Engine:** Worker Pool deslizante continuo (16 tareas concurrentes) con arquitectura de descubrimiento en dos fases: reporte instantáneo del host vivo (`alive: true`) seguido de resolución asíncrona de nombre NetBIOS/DNS, y estrangulamiento de eventos de progreso (40 ms) para evitar saturación del puente IPC.
 - **Renderer React 19 Optimization:**
+  - Motor de segmentación determinística de bloques (`groupConsoleLinesIntoBlocks`) con memoización (`useMemo`), IDs estables y copiado en 1 clic tolerante a recorte circular de buffer.
   - Modelo de buffer circular con IDs monótonos estables (`{ id, text, tone }`) en `LivePingConsole`, eliminando re-renderizados masivos en buffers de 400 líneas.
   - Auto-scroll sincronizado con el ciclo de refresco del navegador mediante `requestAnimationFrame`.
   - Memorización con `React.memo` en vistas de ficha técnica (`TerminalIdentity`, `TerminalDetailsGrid`, `ActivityPanel`).
