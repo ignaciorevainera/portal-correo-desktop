@@ -20,8 +20,8 @@
   - [x] Integrar el micro-estado de copiado por bloque (con timeout de 2000 ms), clases Tailwind (`group relative hover:bg-muted/10 rounded-md transition-colors`, botón flotante `opacity-0 group-hover:opacity-100`) y anuncio accesible
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-### Phase 3: Verificación Integral, Rendimiento y Quality Gate
-- [ ] Task: Ejecución y validación de la suite completa de calidad y empaquetado
-  - [ ] Ejecutar todos los tests unitarios con `npm test` verificando 100% de casos exitosos
-  - [ ] Ejecutar `npm run release:check` (`vitest`, `audit:contrast`, `tsc`, `vite build`) asegurando cero errores
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+### Phase 3: Verificación Integral, Rendimiento y Quality Gate [checkpoint: 91a8950]
+- [x] Task: Ejecución y validación de la suite completa de calidad y empaquetado (91a8950)
+  - [x] Ejecutar todos los tests unitarios con `npm test` verificando 100% de casos exitosos
+  - [x] Ejecutar `npm run release:check` (`vitest`, `audit:contrast`, `tsc`, `vite build`) asegurando cero errores
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
