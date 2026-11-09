@@ -23,6 +23,52 @@ export async function setupElectronMock(page: Page, options: HarnessOptions = {}
   await page.addInitScript((mockData: { terminals: typeof MOCK_TERMINALS; gate: typeof MOCK_GATE_STATUS; hosts: typeof MOCK_SUBNET_HOSTS }) => {
     const listeners: Record<string, Function[]> = {};
 
+    (window as any).monitorAPI = {
+      getContext: async () => ({
+        target: '192.0.2.101',
+        label: 'PC-DEMO-001',
+        pinned: false,
+      }),
+      startPing: () => {
+        (window as any).__recordIpcCall('startPing', []);
+        if (listeners['ping-data']) {
+          setTimeout(() => {
+            listeners['ping-data']?.forEach((cb) => cb('Respuesta desde 192.0.2.101: bytes=32 tiempo=15ms TTL=126'));
+          }, 50);
+        }
+      },
+      stopPing: async () => {
+        (window as any).__recordIpcCall('stopPing', []);
+        return true;
+      },
+      onPingData: (cb: (text: string) => void) => {
+        if (!listeners['ping-data']) listeners['ping-data'] = [];
+        listeners['ping-data'].push(cb);
+        return () => {};
+      },
+      onPingEnd: (cb: (code: number | null) => void) => {
+        if (!listeners['ping-end']) listeners['ping-end'] = [];
+        listeners['ping-end'].push(cb);
+        return () => {};
+      },
+      setPinned: async (pinned: boolean) => {
+        (window as any).__recordIpcCall('setPinned', [pinned]);
+        return true;
+      },
+      close: async () => {
+        (window as any).__recordIpcCall('close', []);
+        return true;
+      },
+      copyText: async (text: string) => {
+        (window as any).__recordIpcCall('copyText', [text]);
+        return true;
+      },
+      connectRemote: async () => {
+        (window as any).__recordIpcCall('connectRemote', []);
+        return { success: true, methodUsed: 'vnc' };
+      },
+    };
+
     (window as any).electronAPI = {
       ping: (target: string, continuous: boolean) => {
         (window as any).__recordIpcCall('ping', [target, continuous]);
@@ -134,6 +180,28 @@ export async function setupElectronMock(page: Page, options: HarnessOptions = {}
       },
       abortSubnetScan: () => {
         (window as any).__recordIpcCall('abortSubnetScan', []);
+      },
+      // Monitor window API
+      getMonitorContext: async () => ({
+        target: '192.0.2.101',
+        label: 'PC-DEMO-001',
+      }),
+      startPing: () => {
+        (window as any).__recordIpcCall('startPing', []);
+        if (listeners['ping-data']) {
+          listeners['ping-data'].forEach((cb) => cb('Respuesta desde 192.0.2.101: bytes=32 tiempo=15ms TTL=126'));
+        }
+      },
+      toggleAlwaysOnTop: async () => {
+        (window as any).__recordIpcCall('toggleAlwaysOnTop', []);
+        return true;
+      },
+      copyText: async (text: string) => {
+        (window as any).__recordIpcCall('copyText', [text]);
+        return true;
+      },
+      close: async () => {
+        (window as any).__recordIpcCall('close', []);
       },
       onContextMenuAction: (cb: (action: string) => void) => {
         if (!listeners['context-menu-action']) listeners['context-menu-action'] = [];

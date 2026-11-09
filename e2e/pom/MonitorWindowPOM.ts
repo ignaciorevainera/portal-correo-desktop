@@ -2,17 +2,21 @@ import { Page, Locator, expect } from '@playwright/test';
 
 export class MonitorWindowPOM {
   readonly page: Page;
-  readonly targetLabel: Locator;
+  readonly header: Locator;
   readonly closeButton: Locator;
   readonly pinButton: Locator;
+  readonly copyButton: Locator;
+  readonly stopRestartButton: Locator;
   readonly consoleLog: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.targetLabel = page.locator('header, [data-slot="card-title"], h1, h2').first();
-    this.closeButton = page.getByRole('button', { name: /cerrar/i }).first();
-    this.pinButton = page.getByRole('button', { name: /fijar|desfijar|pin/i }).first();
-    this.consoleLog = page.locator('#monitor-console, [aria-label*="consola"], pre').first();
+    this.header = page.locator('header').first();
+    this.closeButton = page.getByRole('button', { name: /cerrar monitor/i });
+    this.pinButton = page.getByRole('button', { name: /mantener visible|dejar de mantener visible/i });
+    this.copyButton = page.getByRole('button', { name: /copiar logs del monitor/i });
+    this.stopRestartButton = page.getByRole('button', { name: /detener ping|reiniciar ping/i });
+    this.consoleLog = page.locator('[role="log"]');
   }
 
   async togglePin(): Promise<void> {
