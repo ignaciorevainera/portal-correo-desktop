@@ -11,7 +11,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1, // Electron app instance testing requires sequential execution
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  retries: 1, // Retrying on Windows file locks or brief process spawning contention
   reporter: [
     ['list'],
     ['html', { outputFolder: 'e2e/test-results/html-report', open: 'never' }],
