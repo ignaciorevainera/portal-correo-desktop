@@ -20,6 +20,7 @@ import {
   loadDefaultConsoleWrap,
   CONSOLE_WRAP_EVENT,
 } from "@/lib/preferences";
+import { sanitizePingText } from "@/lib/pingLog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -64,19 +65,6 @@ export interface ConsoleLine {
   id: number;
   text: string;
   tone: string;
-}
-
-function sanitizePingText(text: string): string {
-  if (!text) return "";
-  return text
-    .replace(/Estad[\ufffd\?s]?sticas/gi, "Estadísticas")
-    .replace(/M[\ufffd\?a]?ximo/gi, "Máximo")
-    .replace(/M[\ufffd\?i]?nimo/gi, "Mínimo")
-    .replace(/milise[\ufffd\?]?gundos/gi, "milisegundos")
-    .replace(/perdid[\ufffd\?]?s/gi, "perdidos")
-    .replace(/recibid[\ufffd\?]?s/gi, "recibidos")
-    .replace(/enviad[\ufffd\?]?s/gi, "enviados")
-    .replace(/aproximad[\ufffd\?]?s/gi, "aproximados");
 }
 
 function classifyTone(line: string, insideGlobalGroupsRef: { current: boolean }): string {

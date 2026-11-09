@@ -11,6 +11,11 @@ import {
   subscribeToDiagnosticCommand,
   stopDiagnosticCommand,
   DiagnosticCommandType,
+  openMonitorCurrent,
+  setMonitorTarget,
+  subscribeToMonitorNotice,
+  subscribeToMonitorRemoteResult,
+  isMonitorShortcutRegistered,
 } from './electronClient';
 
 describe('electronClient (Unified bridge with security gate & browser mock fallback)', () => {
@@ -134,6 +139,94 @@ describe('electronClient (Unified bridge with security gate & browser mock fallb
       expect(onEnd).toHaveBeenCalledWith(0);
 
       vi.useRealTimers();
+    });
+  });
+
+  describe('Monitor bridge', () => {
+    it('envía el target del monitor a electronAPI', () => {
+      const setTarget = vi.fn();
+      (global as any).window.electronAPI = { setMonitorTarget: setTarget };
+
+      setMonitorTarget({ target: '192.0.2.100', label: 'WS-CORP-100' });
+
+      expect(setTarget).toHaveBeenCalledWith({
+        target: '192.0.2.100',
+        label: 'WS-CORP-100',
+      });
+    });
+
+    it('no falla sin electronAPI', async () => {
+      delete (global as any).window.electronAPI;
+
+      expect(() => setMonitorTarget(null)).not.toThrow();
+      await expect(openMonitorCurrent()).resolves.toEqual({
+        ok: false,
+        reason: 'unavailable',
+      });
+    });
+
+    it('abre el monitor actual vía electronAPI', async () => {
+      const open = vi.fn().mockResolvedValue({ ok: true });
+      (global as any).window.electronAPI = { openMonitorCurrent: open };
+
+      await expect(openMonitorCurrent()).resolves.toEqual({ ok: true });
+      expect(open).toHaveBeenCalledTimes(1);
+    });
+
+    it('se suscribe a los avisos del monitor', () => {
+      const unsubscribe = vi.fn();
+      const onNotice = vi.fn().mockReturnValue(unsubscribe);
+      (global as any).window.electronAPI = { onMonitorNotice: onNotice };
+      const callback = vi.fn();
+
+      const unsub = subscribeToMonitorNotice(callback);
+
+      expect(onNotice).toHaveBeenCalledWith(callback);
+      unsub();
+      expect(unsubscribe).toHaveBeenCalled();
+    });
+
+    it('se suscribe al resultado remoto', () => {
+      const unsubscribe = vi.fn();
+      const onResult = vi.fn().mockReturnValue(unsubscribe);
+      (global as any).window.electronAPI = {
+        onMonitorRemoteResult: onResult,
+      };
+      const callback = vi.fn();
+
+      const unsub = subscribeToMonitorRemoteResult(callback);
+
+      expect(onResult).toHaveBeenCalledWith(callback);
+      unsub();
+      expect(unsubscribe).toHaveBeenCalled();
+    });
+  });
+
+  describe('isMonitorShortcutRegistered', () => {
+    it('devuelve true cuando electronAPI lo informa', async () => {
+      const check = vi.fn().mockResolvedValue(true);
+      (global as any).window.electronAPI = {
+        isMonitorShortcutRegistered: check,
+      };
+
+      await expect(isMonitorShortcutRegistered()).resolves.toBe(true);
+      expect(check).toHaveBeenCalledTimes(1);
+    });
+
+    it('devuelve false cuando electronAPI lo informa', async () => {
+      const check = vi.fn().mockResolvedValue(false);
+      (global as any).window.electronAPI = {
+        isMonitorShortcutRegistered: check,
+      };
+
+      await expect(isMonitorShortcutRegistered()).resolves.toBe(false);
+      expect(check).toHaveBeenCalledTimes(1);
+    });
+
+    it('devuelve false sin electronAPI', async () => {
+      delete (global as any).window.electronAPI;
+
+      await expect(isMonitorShortcutRegistered()).resolves.toBe(false);
     });
   });
 });

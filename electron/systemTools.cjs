@@ -279,7 +279,7 @@ async function launchRemoteSmart(targetIpOrHost, options = {}) {
 
     if (probe.vncPort) {
       const vncLauncher = options.mockLaunchVnc || launchVnc;
-      const res = vncLauncher(cleanHost, probe.vncPort);
+      const res = vncLauncher(cleanHost, probe.vncPort, { vncPassword: options.vncPassword || '' });
       return {
         ...res,
         methodUsed: 'vnc',

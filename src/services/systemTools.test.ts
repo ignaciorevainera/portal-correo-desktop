@@ -203,7 +203,7 @@ describe('systemTools orchestration & security sanitization', () => {
       expect(res.success).toBe(true);
       expect(res.methodUsed).toBe('vnc');
       expect(res.portUsed).toBe(5901);
-      expect(mockVnc).toHaveBeenCalledWith('192.0.2.101', 5901);
+      expect(mockVnc).toHaveBeenCalledWith('192.0.2.101', 5901, { vncPassword: '' });
       expect(mockMsra).not.toHaveBeenCalled();
     });
 
@@ -250,6 +250,28 @@ describe('systemTools orchestration & security sanitization', () => {
       expect(res.methodUsed).toBe('none');
       expect(res.vncClosed).toBe(true);
       expect(res.msraAvailable).toBe(false);
+    });
+
+    it('forwarda la clave VNC al lanzador inteligente', async () => {
+      const mockVnc = vi.fn().mockReturnValue({ success: true, processId: 1002 });
+
+      const res = await launchRemoteSmart('192.0.2.104', {
+        mockProbe: {
+          host: '192.0.2.104',
+          vncPort: 5901,
+          port5901Open: true,
+          port5900Open: false,
+          msraAvailable: false,
+          recommendedMethod: 'vnc',
+        },
+        mockLaunchVnc: mockVnc,
+        vncPassword: 'clave-secreta',
+      });
+
+      expect(res.success).toBe(true);
+      expect(mockVnc).toHaveBeenCalledWith('192.0.2.104', 5901, {
+        vncPassword: 'clave-secreta',
+      });
     });
   });
 

@@ -80,6 +80,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // SQL connection channel
   testSqlConnection: () => ipcRenderer.invoke('pcd:test-sql-connection'),
   // Preferencias que aplica el proceso principal
+  setMonitorTarget: (payload) =>
+    ipcRenderer.send('pcd:monitor-target-set', payload),
+  openMonitorCurrent: () => ipcRenderer.invoke('pcd:monitor-open-current'),
+  isMonitorShortcutRegistered: () =>
+    ipcRenderer.invoke('pcd:monitor-shortcut-status'),
+  onMonitorNotice: (callback) => {
+    const listener = (_event, payload) => callback(payload);
+    ipcRenderer.on('pcd:monitor-notice', listener);
+    return () => ipcRenderer.removeListener('pcd:monitor-notice', listener);
+  },
+  onMonitorRemoteResult: (callback) => {
+    const listener = (_event, payload) => callback(payload);
+    ipcRenderer.on('pcd:monitor-remote-result', listener);
+    return () =>
+      ipcRenderer.removeListener('pcd:monitor-remote-result', listener);
+  },
   getUiPreferences: () => ipcRenderer.invoke('pcd:ui-preferences-get'),
   setUiPreferences: (patch) => ipcRenderer.invoke('pcd:ui-preferences-set', patch),
   setZoomFactor: (factor) => { try { webFrame.setZoomFactor(factor); } catch {} },

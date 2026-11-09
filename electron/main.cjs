@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, globalShortcut, clipboard, dialog, net } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, globalShortcut, clipboard, dialog, net, screen } = require('electron');
 
 // Verificación anticipada de instancia única antes de inicializar módulos pesados
 const gotTheLock = typeof app?.requestSingleInstanceLock === 'function' ? app.requestSingleInstanceLock() : true;
@@ -26,6 +26,14 @@ const { evaluateGate, describeEnvironment } = require('./securityGate.cjs');
 const { migrateLegacyConfig } = require('./migration.cjs');
 const { RELAUNCH_FLAG, isCompatEnabled, shouldRetryWithoutSandbox, buildRelaunchArgs } = require('./compatMode.cjs');
 const { loadUiPreferences, saveUiPreferences, scaleToZoomFactor } = require('./uiPreferences.cjs');
+const { createPingSessions } = require('./pingSessions.cjs');
+const { createMonitorManager } = require('./monitorWindows.cjs');
+const { createMonitorShortcut } = require('./monitorShortcut.cjs');
+const { createMonitorRemote } = require('./monitorRemote.cjs');
+const {
+  loadMonitorPreferences,
+  saveMonitorPreferences,
+} = require('./monitorPreferences.cjs');
 
 // ---------------------------------------------------------------------------
 // Modo de renderizado (GPU vs. software)
@@ -90,6 +98,7 @@ function relaunchWithoutSandbox(reason) {
     console.error('[Compat] No se pudo programar el relanzamiento:', err && err.message);
   }
 
+  shutdownChildProcesses();
   app.exit(0);
 }
 
@@ -103,14 +112,24 @@ let tray = null;
 // Preferencias que el proceso principal debe respetar (bandeja y atajo global).
 // Se cargan una sola vez, al crear la ventana, y se actualizan por IPC.
 let uiPreferences = null;
-let activePingProcess = null;
-let currentPingSessionId = 0;
 let activeSubnetAbortController = null;
 let downloadedInstallerPath = null;
+let mainWindow = null;
+let monitorManager = null;
+let monitorShortcut = null;
+let monitorRemote = null;
+let lastMonitorTarget = null;
+let pingSessions = null;
+let flashFocusBound = false;
 
 app.isQuiting = false;
 
 const logger = createLogger({ scope: 'main' });
+
+pingSessions = createPingSessions({
+  executePing: systemTools.executePing,
+  logger,
+});
 
 let gateState = null;
 let gateProvider = null;
@@ -269,6 +288,7 @@ function createTray(win) {
       label: 'Cerrar',
       click: () => {
         app.isQuiting = true;
+        closeAllMonitors();
         app.quit();
       },
     },
@@ -326,19 +346,32 @@ function createWindow() {
     }
   });
 
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  win.webContents.on('will-navigate', (event, url) => {
+    try {
+      const current = win.webContents.getURL();
+      if (new URL(url).origin !== new URL(current).origin) {
+        event.preventDefault();
+      }
+    } catch {
+      event.preventDefault();
+    }
+  });
+
   createTray(win);
 
   win.on('close', (event) => {
     if (app.isQuiting) return;
 
     if (getUiPreferences().minimizeToTray) {
+      closeAllMonitors();
       event.preventDefault();
       win.hide();
       return false;
     }
 
-    // Sin bandeja, cerrar la ventana termina la aplicación.
     app.isQuiting = true;
+    closeAllMonitors();
   });
 
   win.hookWindowMessage(0x0116, () => {
@@ -361,11 +394,16 @@ function createWindow() {
   let loadWatchdog = null;
 
   win.webContents.on('render-process-gone', (_event, details) => {
+    lastMonitorTarget = null;
     if (details && details.reason === 'launch-failed') {
       relaunchWithoutSandbox('el renderer no pudo lanzarse');
       return;
     }
     console.error('[Renderer] El proceso terminó:', details && details.reason);
+  });
+
+  win.webContents.on('did-start-loading', () => {
+    lastMonitorTarget = null;
   });
 
   win.webContents.on('did-finish-load', () => {
@@ -378,6 +416,7 @@ function createWindow() {
   });
 
   win.on('closed', () => {
+    lastMonitorTarget = null;
     if (loadWatchdog) clearTimeout(loadWatchdog);
   });
 
@@ -429,6 +468,7 @@ ipcMain.handle('pcd:window-close', (event) => {
 
 ipcMain.handle('pcd:window-hide-tray', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
+  closeAllMonitors();
   if (win) win.hide();
 });
 
@@ -566,50 +606,12 @@ ipcMain.handle('pcd:launch-remote-smart', async (_event, target) => {
   return await systemTools.launchRemoteSmart(target, { vncPassword });
 });
 
-ipcMain.on('pcd:ping-start', async (event, target, continuous) => {
-  currentPingSessionId++;
-  const thisSessionId = currentPingSessionId;
-
-  if (activePingProcess) {
-    try {
-      activePingProcess.kill();
-    } catch {}
-    activePingProcess = null;
-  }
-
-  const pingOptions = continuous ? { continuous: true } : 4;
-
-  const proc = systemTools.executePing(
-    target,
-    pingOptions,
-    (data) => {
-      if (thisSessionId !== currentPingSessionId) return;
-      if (!event.sender.isDestroyed()) {
-        event.sender.send('pcd:ping-data', data);
-      }
-    },
-    (code) => {
-      if (thisSessionId !== currentPingSessionId) return;
-      activePingProcess = null;
-      if (!event.sender.isDestroyed()) {
-        event.sender.send('pcd:ping-end', code);
-      }
-    }
-  );
-
-  activePingProcess = proc;
+ipcMain.on('pcd:ping-start', (event, target, continuous) => {
+  pingSessions.start(event.sender, target, Boolean(continuous));
 });
 
-ipcMain.handle('pcd:ping-stop', () => {
-  currentPingSessionId++;
-  if (activePingProcess) {
-    try {
-      activePingProcess.kill();
-    } catch {}
-    activePingProcess = null;
-    return true;
-  }
-  return false;
+ipcMain.handle('pcd:ping-stop', (event) => {
+  return pingSessions.stop(event.sender);
 });
 
 // Diagnostic Commands IPC Handlers (ping, nbtstat, tracert, arp)
@@ -628,14 +630,7 @@ function stopActiveDiagnosticProcess() {
 
 ipcMain.on('pcd:cmd-start', async (event, payload) => {
   const { command, target, options } = payload || {};
-  currentPingSessionId++;
-  // Detener proceso anterior de ping o diagnóstico si estuviera corriendo
-  if (activePingProcess) {
-    try {
-      activePingProcess.kill();
-    } catch {}
-    activePingProcess = null;
-  }
+  pingSessions.stop(event.sender);
   stopActiveDiagnosticProcess();
 
   const onData = (data) => {
@@ -667,6 +662,106 @@ ipcMain.on('pcd:cmd-start', async (event, payload) => {
 
 ipcMain.handle('pcd:cmd-stop', () => {
   return stopActiveDiagnosticProcess();
+});
+
+// Monitor flotante de ping: IPC del renderer compacto
+ipcMain.on('pcd:monitor-ping-start', (event) => {
+  const target = monitorManager ? monitorManager.getTarget(event.sender) : null;
+  if (!target) {
+    if (!event.sender.isDestroyed()) {
+      event.sender.send('pcd:ping-end', 1);
+    }
+    return;
+  }
+  pingSessions.start(event.sender, target, true);
+});
+
+ipcMain.handle('pcd:monitor-ping-stop', (event) => {
+  return pingSessions.stop(event.sender);
+});
+
+ipcMain.handle('pcd:monitor-context', (event) => {
+  return monitorManager ? monitorManager.getContext(event.sender) : null;
+});
+
+ipcMain.handle('pcd:monitor-set-pinned', (event, pinned) => {
+  return monitorManager
+    ? monitorManager.setPinned(event.sender, Boolean(pinned))
+    : false;
+});
+
+ipcMain.handle('pcd:monitor-close', (event) => {
+  return monitorManager ? monitorManager.close(event.sender) : false;
+});
+
+ipcMain.handle('pcd:monitor-copy', (event, text) => {
+  if (!monitorManager || !monitorManager.getTarget(event.sender)) return false;
+  if (typeof text !== 'string' || !text || text.length > 200000) return false;
+  try {
+    clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+});
+
+ipcMain.handle('pcd:monitor-connect-remote', async (event) => {
+  if (!monitorRemote) {
+    return {
+      success: false,
+      methodUsed: 'none',
+      message: 'Monitor no disponible.',
+    };
+  }
+  return monitorRemote.connect(event.sender);
+});
+
+ipcMain.on('pcd:monitor-target-set', (event, payload) => {
+  if (
+    !mainWindow ||
+    mainWindow.isDestroyed() ||
+    event.sender !== mainWindow.webContents ||
+    event.senderFrame !== mainWindow.webContents.mainFrame
+  ) {
+    return;
+  }
+  if (!payload || typeof payload !== 'object') {
+    lastMonitorTarget = null;
+    return;
+  }
+  try {
+    const target = systemTools.sanitizeHostOrIp(payload.target);
+    const label = String(payload.label || target).slice(0, 120);
+    lastMonitorTarget = { target, label };
+  } catch {
+    lastMonitorTarget = null;
+  }
+});
+
+ipcMain.handle('pcd:monitor-open-current', (event) => {
+  if (
+    !mainWindow ||
+    mainWindow.isDestroyed() ||
+    event.sender !== mainWindow.webContents ||
+    event.senderFrame !== mainWindow.webContents.mainFrame
+  ) {
+    return { ok: false, reason: 'forbidden' };
+  }
+  return monitorShortcut
+    ? monitorShortcut.handle()
+    : { ok: false, reason: 'unavailable' };
+});
+
+ipcMain.handle('pcd:monitor-shortcut-status', (event) => {
+  if (
+    !mainWindow ||
+    mainWindow.isDestroyed() ||
+    event.sender !== mainWindow.webContents ||
+    event.senderFrame !== mainWindow.webContents.mainFrame
+  ) {
+    return false;
+  }
+  return globalShortcut.isRegistered('CommandOrControl+Shift+Space');
 });
 
 // Subnet Scanner IPC Handlers
@@ -828,6 +923,9 @@ ipcMain.handle('pcd:install-update-now', async () => {
 
 app.on('before-quit', () => {
   app.isQuiting = true;
+  closeAllMonitors();
+  stopActiveDiagnosticProcess();
+  if (pingSessions) pingSessions.stopAll();
   if (app.isReady()) {
     globalShortcut.unregisterAll();
   }
@@ -868,7 +966,125 @@ function registerGlobalSearchShortcut(win) {
   }
 }
 
-let mainWindow = null;
+function closeAllMonitors() {
+  if (monitorManager) monitorManager.closeAll();
+}
+
+function shutdownChildProcesses() {
+  try {
+    closeAllMonitors();
+  } catch {}
+  try {
+    stopActiveDiagnosticProcess();
+  } catch {}
+  try {
+    if (pingSessions) pingSessions.stopAll();
+  } catch {}
+}
+
+function notifyMainWindow(channel, payload) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const webContents = mainWindow.webContents;
+  if (!webContents || webContents.isDestroyed()) return;
+  webContents.send(channel, payload);
+}
+
+function flashMainWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isFocused()) return;
+  mainWindow.flashFrame(true);
+  if (flashFocusBound) return;
+  flashFocusBound = true;
+  mainWindow.once('focus', () => {
+    flashFocusBound = false;
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    mainWindow.flashFrame(false);
+  });
+}
+
+function loadMonitorRenderer(win) {
+  const isDev = !app.isPackaged || process.env.NODE_ENV === 'development';
+  const devUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
+  const devMonitorUrl = `${devUrl.replace(/\/$/, '')}/monitor.html`;
+  const distMonitor = path.join(__dirname, '../dist/monitor.html');
+
+  if (isDev) {
+    return win.loadURL(devMonitorUrl).catch(() => {
+      if (!win.isDestroyed()) return win.loadFile(distMonitor);
+    });
+  }
+  return win.loadFile(distMonitor).catch(() => {
+    if (!win.isDestroyed()) return win.loadURL(devMonitorUrl);
+  });
+}
+
+function createMonitorInfrastructure() {
+  monitorManager = createMonitorManager({
+    BrowserWindow,
+    screen,
+    getMainWindow: () => mainWindow,
+    loadRenderer: loadMonitorRenderer,
+    preloadPath: path.join(__dirname, 'monitor-preload.cjs'),
+    iconPath: getAppIconPath(),
+    loadPreferences: () => loadMonitorPreferences(app.getPath('userData')),
+    savePreferences: (patch) =>
+      saveMonitorPreferences(app.getPath('userData'), patch),
+    notify: (payload) => notifyMainWindow('pcd:monitor-notice', payload),
+    onClosed: (webContentsId) => pingSessions.stopById(webContentsId),
+    logger,
+    maxMonitors: 4,
+  });
+
+  monitorShortcut = createMonitorShortcut({
+    getMainWindow: () => mainWindow,
+    getLastTarget: () => lastMonitorTarget,
+    openMonitor: (payload) => monitorManager.open(payload),
+    focusSearch: (win) => {
+      if (win && !win.isDestroyed()) {
+        win.webContents.send('pcd:trigger-autofocus-search', {
+          isValid: false,
+          query: '',
+          type: 'none',
+          autoSearch: false,
+        });
+      }
+    },
+    logger,
+  });
+
+  monitorRemote = createMonitorRemote({
+    getTarget: (webContents) => monitorManager.getTarget(webContents),
+    launchRemoteSmart: systemTools.launchRemoteSmart,
+    resolveVncSecret,
+    notifyMain: (payload) =>
+      notifyMainWindow('pcd:monitor-remote-result', payload),
+    flashMain: flashMainWindow,
+    isMainMinimized: () =>
+      Boolean(
+        mainWindow && !mainWindow.isDestroyed() && mainWindow.isMinimized(),
+      ),
+    logger,
+  });
+}
+
+function registerMonitorShortcut() {
+  if (globalShortcut.isRegistered('CommandOrControl+Shift+Space')) return;
+  try {
+    const registered = globalShortcut.register(
+      'CommandOrControl+Shift+Space',
+      () => {
+        if (monitorShortcut) monitorShortcut.handle();
+      },
+    );
+    if (!registered) {
+      logger.warn('No se pudo registrar CommandOrControl+Shift+Space');
+    }
+  } catch (err) {
+    logger.warn('Error al registrar CommandOrControl+Shift+Space', {
+      error: err && err.message,
+    });
+  }
+}
 
 ipcMain.handle('pcd:ui-preferences-get', () => getUiPreferences());
 
@@ -895,12 +1111,16 @@ app.on('second-instance', () => {
 
 app.whenReady().then(() => {
   mainWindow = createWindow();
+  createMonitorInfrastructure();
   registerGlobalSearchShortcut(mainWindow);
+  registerMonitorShortcut();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       mainWindow = createWindow();
+      createMonitorInfrastructure();
       registerGlobalSearchShortcut(mainWindow);
+      registerMonitorShortcut();
     }
   });
 });

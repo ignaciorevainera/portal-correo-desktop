@@ -50,6 +50,11 @@ import {
   stopPing,
   loadUiPreferences,
   saveUiPreferences,
+  setMonitorTarget,
+  openMonitorCurrent,
+  subscribeToMonitorNotice,
+  subscribeToMonitorRemoteResult,
+  isMonitorShortcutRegistered,
 } from "./services/electronClient";
 import { TerminalData } from "./types/terminal";
 import { Search, SearchX, RotateCcw } from "lucide-react";
@@ -199,6 +204,80 @@ export default function App(): React.JSX.Element {
     return () => {
       unsubHotkey();
     };
+  }, []);
+
+  useEffect(() => {
+    if (terminal?.ip) {
+      setMonitorTarget({
+        target: terminal.ip,
+        label: terminal.pc || terminal.ip,
+      });
+    } else {
+      setMonitorTarget(null);
+    }
+  }, [terminal?.ip, terminal?.pc]);
+
+  useEffect(() => {
+    const unsubscribeNotice = subscribeToMonitorNotice((notice) => {
+      if (notice.kind === "limit") {
+        toast.warning("Máximo de monitores alcanzado", {
+          description: notice.message,
+        });
+        return;
+      }
+      toast.error("No se pudo abrir el monitor", {
+        description: notice.message,
+      });
+    });
+
+    const unsubscribeRemote = subscribeToMonitorRemoteResult((result) => {
+      if (result.success) {
+        if (result.methodUsed === "vnc") {
+          toast.success(
+            result.message ||
+              `VNC iniciado hacia ${result.target ?? "el equipo"}`,
+          );
+        } else if (result.methodUsed === "msra") {
+          toast.info(
+            result.message ||
+              `Asistencia Remota iniciada hacia ${result.target ?? "el equipo"}`,
+          );
+        } else {
+          toast.success(result.message || "Conexión remota iniciada");
+        }
+        return;
+      }
+      toast.error(result.message || "Sin acceso remoto directo", {
+        duration: 10000,
+      });
+    });
+
+    return () => {
+      unsubscribeNotice();
+      unsubscribeRemote();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleMonitorShortcut = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.code === "Space") {
+        event.preventDefault();
+        // Si el proceso principal registró el atajo global, él abre el monitor;
+        // el fallback local solo actúa cuando no hay atajo global activo.
+        isMonitorShortcutRegistered()
+          .then((registered) => {
+            if (!registered) {
+              openMonitorCurrent().catch(() => {});
+            }
+          })
+          .catch(() => {});
+      }
+    };
+
+    window.addEventListener("keydown", handleMonitorShortcut);
+    return () =>
+      window.removeEventListener("keydown", handleMonitorShortcut);
   }, []);
 
   const handleProbeRemote = async (ipOrHost: string) => {
