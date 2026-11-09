@@ -37,9 +37,9 @@ Crear abstracciones mantenibles y tipadas para que cada pantalla o componente de
 ## Phase 3: Implementación de la Suite de Pruebas E2E (Flujos Críticos y Cobertura Expandida)
 Desarrollar los casos de prueba E2E de punta a punta cubriendo todos los flujos acordados en la especificación.
 
-- [ ] Task: Test E2E de Ciclo de Vida y Ventana Principal
-  - [ ] Crear `e2e/specs/01-lifecycle.spec.ts` validando arranque sin marco, título, botones de ventana y estado inicial limpio
-- [ ] Task: Test E2E de Búsqueda de Terminal y Renderizado Técnico
+- [x] Task: Test E2E de Ciclo de Vida y Ventana Principal [403660d]
+  - [x] Crear `e2e/specs/01-lifecycle.spec.ts` validando arranque sin marco, título, botones de ventana y estado inicial limpio
+- [~] Task: Test E2E de Búsqueda de Terminal y Renderizado Técnico
   - [ ] Crear `e2e/specs/02-search-and-terminal.spec.ts` validando ingreso de consulta por hostname e IP, resolución IPC y pintado de datos/badges
 - [ ] Task: Test E2E de Consola de Diagnóstico de Red y Copiado de Bloques
   - [ ] Crear `e2e/specs/03-network-console.spec.ts` validando ejecución de ping en vivo, streaming continuo, botón detener y copiado en 1 clic de bloques
