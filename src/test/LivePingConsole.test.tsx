@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { toast } from 'sonner';
 import { LivePingConsole } from '../components/LivePingConsole';
 import * as electronClient from '../services/electronClient';
 
@@ -1032,6 +1033,8 @@ describe('LivePingConsole Component', () => {
       const blocks = screen.getAllByTestId('console-block');
       expect(blocks).toHaveLength(2);
 
+      const toastSpy = vi.spyOn(toast, 'success');
+
       // Clic directo en cualquier parte del segundo bloque (Tracert)
       await act(async () => {
         fireEvent.click(blocks[1]);
@@ -1043,6 +1046,11 @@ describe('LivePingConsole Component', () => {
       expect(copiedText).toContain("192.0.2.55");
       // NO debe incluir la cabecera del ping del primer bloque
       expect(copiedText).not.toContain("ping -n 4 192.0.2.55");
+
+      // Notificación toast emergente y tinte verde sutil en el bloque copiado
+      expect(toastSpy).toHaveBeenCalledWith("Bloque copiado al portapapeles");
+      expect(blocks[1].className).toContain("bg-console-success/15");
+      expect(blocks[1].className).toContain("ring-console-success/40");
 
       // Anuncio accesible en el DOM
       expect(screen.getByRole('status')).toHaveTextContent(/bloque copiado al portapapeles/i);

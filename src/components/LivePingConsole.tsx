@@ -26,6 +26,7 @@ import {
   CONSOLE_WRAP_EVENT,
 } from "@/lib/preferences";
 import { sanitizePingText } from "@/lib/pingLog";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -440,6 +441,7 @@ export function LivePingConsole({
       if (navigator?.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
         setCopiedBlockId(block.id);
+        toast.success("Bloque copiado al portapapeles");
         if (copiedBlockTimerRef.current) {
           clearTimeout(copiedBlockTimerRef.current);
         }
@@ -633,7 +635,9 @@ export function LivePingConsole({
                     aria-label={`Copiar bloque${block.commandText ? ` de ${block.commandText}` : ""}`}
                     title={isCopied ? "¡Bloque copiado al portapapeles!" : "Clic para copiar este bloque"}
                     className={`rounded-md p-1.5 -mx-1.5 mb-1.5 transition-colors cursor-pointer select-none ${
-                      isCopied ? "bg-black/90" : "hover:bg-black/60"
+                      isCopied
+                        ? "bg-console-success/15 ring-1 ring-console-success/40"
+                        : "hover:bg-black/60"
                     } last:mb-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50`}
                   >
                     {block.lines.map((line) => (
