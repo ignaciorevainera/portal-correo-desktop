@@ -34,7 +34,7 @@ Crear abstracciones mantenibles y tipadas para que cada pantalla o componente de
 
 ---
 
-## Phase 3: Implementación de la Suite de Pruebas E2E (Flujos Críticos y Cobertura Expandida)
+## Phase 3: Implementación de la Suite de Pruebas E2E (Flujos Críticos y Cobertura Expandida) [checkpoint: d1bcc3e]
 Desarrollar los casos de prueba E2E de punta a punta cubriendo todos los flujos acordados en la especificación.
 
 - [x] Task: Test E2E de Ciclo de Vida y Ventana Principal [403660d]
@@ -47,9 +47,9 @@ Desarrollar los casos de prueba E2E de punta a punta cubriendo todos los flujos 
   - [x] Crear `e2e/specs/04-settings.spec.ts` validando apertura, cambio de switches y aplicación de estilos/preferencias
 - [x] Task: Test E2E de Escáner de Subred (Drawer) [5d2db9d]
   - [x] Crear `e2e/specs/05-subnet-scanner.spec.ts` validando apertura de Drawer, progreso de barrido y visualización de terminales encontradas
-- [~] Task: Test E2E Multiventana de Monitor
-  - [ ] Crear `e2e/specs/06-monitor-window.spec.ts` validando lanzamiento de `monitor.html`, sincronización y cierre seguro
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Test E2E Multiventana de Monitor [d1bcc3e]
+  - [x] Crear `e2e/specs/06-monitor-window.spec.ts` validando lanzamiento de `monitor.html`, sincronización y cierre seguro
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [d1bcc3e]
 
 ---
 
