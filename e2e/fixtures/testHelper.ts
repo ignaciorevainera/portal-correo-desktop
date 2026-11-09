@@ -117,13 +117,23 @@ export async function setupElectronMock(page: Page, options: HarnessOptions = {}
         if (!listeners['cmd-data']) listeners['cmd-data'] = [];
         listeners['cmd-data'].push(cb);
       },
-      onSubnetProgress: (cb: (prog: any) => void) => {
-        if (!listeners['subnet-progress']) listeners['subnet-progress'] = [];
-        listeners['subnet-progress'].push(cb);
-      },
       onSubnetHostFound: (cb: (host: any) => void) => {
         if (!listeners['subnet-host-found']) listeners['subnet-host-found'] = [];
         listeners['subnet-host-found'].push(cb);
+        return () => {};
+      },
+      onSubnetProgress: (cb: (prog: any) => void) => {
+        if (!listeners['subnet-progress']) listeners['subnet-progress'] = [];
+        listeners['subnet-progress'].push(cb);
+        return () => {};
+      },
+      onSubnetDone: (cb: (summary: any) => void) => {
+        if (!listeners['subnet-done']) listeners['subnet-done'] = [];
+        listeners['subnet-done'].push(cb);
+        return () => {};
+      },
+      abortSubnetScan: () => {
+        (window as any).__recordIpcCall('abortSubnetScan', []);
       },
       onContextMenuAction: (cb: (action: string) => void) => {
         if (!listeners['context-menu-action']) listeners['context-menu-action'] = [];
