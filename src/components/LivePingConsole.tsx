@@ -623,27 +623,21 @@ export function LivePingConsole({
                     data-block-id={block.id}
                     className="group relative rounded-md p-1.5 -mx-1.5 mb-1.5 transition-colors hover:bg-muted/10 border border-transparent hover:border-border/40 last:mb-0"
                   >
-                    {/* Botón flotante para copiar el bloque, visible en hover */}
+                    {/* Botón flotante compacto (solo icono) para copiar el bloque, visible en hover */}
                     <div className="absolute top-1.5 right-1.5 z-10 pointer-events-auto">
                       <Button
                         type="button"
                         variant={isCopied ? "secondary" : "outline"}
-                        size="xs"
+                        size="icon-xs"
                         onClick={(e) => handleCopyBlock(block, e)}
                         aria-label={`Copiar bloque${block.commandText ? ` de ${block.commandText}` : ""}`}
-                        title="Copiar este bloque de resultados"
-                        className="h-6 px-1.5 text-micro font-sans flex items-center gap-1 shadow-xs bg-card/95 hover:bg-card border-border/80 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                        title={isCopied ? "¡Bloque copiado!" : "Copiar este bloque de resultados"}
+                        className="shadow-xs bg-card/95 hover:bg-muted border-border/80 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         {isCopied ? (
-                          <>
-                            <Check className="h-3 w-3 text-success shrink-0" />
-                            <span className="text-[10px] font-medium text-success">Copiado</span>
-                          </>
+                          <Check className="h-3 w-3 text-success shrink-0" />
                         ) : (
-                          <>
-                            <Copy className="h-3 w-3 text-muted-foreground shrink-0" />
-                            <span className="text-[10px] font-medium text-muted-foreground">Copiar bloque</span>
-                          </>
+                          <Copy className="h-3 w-3 text-muted-foreground hover:text-foreground shrink-0" />
                         )}
                       </Button>
                     </div>
