@@ -3,10 +3,10 @@
 ## Phase 1: Infraestructura E2E, Configuración de Playwright y Test Harness en Electron
 Configurar la base técnica para ejecutar pruebas automatizadas con Playwright levantando la instancia real de Electron y proveyendo un mecanismo de inyección de datos determinista sin dependencias externas.
 
-- [ ] Task: Instalación y configuración de Playwright para Electron
-  - [ ] Instalar `@playwright/test` en devDependencies
-  - [ ] Crear `playwright.config.ts` con configuración para Electron (timeout, reporter, traces/screenshots/videos `on-failure` en `e2e/test-results`)
-  - [ ] Configurar TypeScript y paths para la carpeta `e2e/`
+- [x] Task: Instalación y configuración de Playwright para Electron [60a4b92]
+  - [x] Instalar `@playwright/test` en devDependencies
+  - [x] Crear `playwright.config.ts` con configuración para Electron (timeout, reporter, traces/screenshots/videos `on-failure` en `e2e/test-results`)
+  - [x] Configurar TypeScript y paths para la carpeta `e2e/`
 - [ ] Task: Implementar Test Harness y modo dual (`PCD_E2E_MODE`) en el proceso Main
   - [ ] Crear módulo `electron/testHarness.cjs` para interceptar consultas de base de datos y comandos Win32 cuando `PCD_E2E_MODE === 'mock'`
   - [ ] Conectar `testHarness` en `electron/main.cjs` para inyectar fixtures predeterminadas de forma segura y transparente
