@@ -22,12 +22,12 @@
   - [x] Activar el hook en `src/App.tsx` condicionado a que el Gate de Seguridad esté en estado `READY`.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [4eb6558]
 
-### Fase 3: Verificación E2E, Regresiones y Quality Gates
-- [ ] Task: Coexistencia con Test Harness E2E
-  - [ ] Garantizar que en modo E2E mock (`PCD_E2E_MODE=mock` o `isE2eMock`) el auto-updater respete el entorno de pruebas sin bloquear la navegación de Playwright.
-  - [ ] Añadir o actualizar escenarios en `e2e/specs/` para cubrir la aparición y descarte del toast de actualización.
-- [ ] Task: Ejecución de Quality Gates Completos
-  - [ ] Ejecutar `npm test` (pruebas unitarias y cobertura >85%).
-  - [ ] Ejecutar `npm run build` (verificación de tipos de TypeScript y bundle de Vite).
-  - [ ] Ejecutar `npm run test:e2e` (suite completa de Playwright para Electron).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+### Fase 3: Verificación E2E, Regresiones y Quality Gates [checkpoint: 3f010e0]
+- [x] Task: Coexistencia con Test Harness E2E [3f010e0]
+  - [x] Garantizar que en modo E2E mock (`PCD_E2E_MODE=mock` o `isE2eMock`) el auto-updater respete el entorno de pruebas sin bloquear la navegación de Playwright.
+  - [x] Añadir o actualizar escenarios en `e2e/specs/` para cubrir la aparición y descarte del toast de actualización.
+- [x] Task: Ejecución de Quality Gates Completos [3f010e0]
+  - [x] Ejecutar `npm test` (pruebas unitarias y cobertura >85%).
+  - [x] Ejecutar `npm run build` (verificación de tipos de TypeScript y bundle de Vite).
+  - [x] Ejecutar `npm run test:e2e` (suite completa de Playwright para Electron).
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [3f010e0]
