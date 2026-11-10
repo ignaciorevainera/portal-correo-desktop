@@ -126,7 +126,7 @@
 
 ---
 
-- [ ] **Track: Detección Automática de Actualizaciones en Background con Notificaciones Toast Interactivas (Sonner)**
+- [~] **Track: Detección Automática de Actualizaciones en Background con Notificaciones Toast Interactivas (Sonner)**
   *Link: [./tracks/auto_updater_toast_notifications_20261109/index.md](./tracks/auto_updater_toast_notifications_20261109/index.md)*
 
 
