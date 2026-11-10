@@ -16,7 +16,7 @@
 ---
 
 ## Phase 3: Verificación Integral de Tiempos, Limpieza y Quality Gates
-- [~] Task: Ejecutar `npm test` y verificar reducción drástica de tiempo y eliminación de advertencias `act(...)`
-- [ ] Task: Ejecutar `npm run test:e2e` confirmando que todas las specs (00 a 09) pasen en verde
-- [ ] Task: Ejecutar `npm run release:check` para validar el gate final
+- [x] Task: Ejecutar `npm test` y verificar reducción drástica de tiempo y eliminación de advertencias `act(...)`
+- [x] Task: Ejecutar `npm run test:e2e` confirmando que todas las specs (00 a 09) pasen en verde
+- [x] Task: Ejecutar `npm run release:check` para validar el gate final
 - [ ] Task: Phase Verification & Checkpoint
