@@ -1,16 +1,16 @@
 # Plan de Implementación (`plan.md`)
 ## Track: `auto_updater_toast_notifications_20261109`
 
-### Fase 1: Lógica Desacoplada y Estado del Auto-Updater (`useAutoUpdateNotifier`)
-- [ ] Task: Pruebas Unitarias para el Manejador de Notificación de Actualizaciones (TDD Red)
-  - [ ] Escribir tests en `src/test/useAutoUpdateNotifier.test.ts` para verificar la ejecución diferida (delay de 4s).
-  - [ ] Validar que si `hasUpdate: false` o falla la red, el sistema permanece silente sin disparar notificaciones intrusivas.
-  - [ ] Validar que si el usuario elige "Ahora no", se registre la clave en `sessionStorage` y se ignore en la sesión.
-  - [ ] Ejecutar vitest y confirmar la fase roja (fallo esperado).
-- [ ] Task: Implementación del Hook `useAutoUpdateNotifier` (TDD Green & Refactor)
-  - [ ] Implementar `src/hooks/useAutoUpdateNotifier.ts` con control de ciclo de vida, chequeo diferido y soporte de descarte por sesión.
-  - [ ] Ejecutar vitest y confirmar que todos los tests unitarios pasen a verde.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+### Fase 1: Lógica Desacoplada y Estado del Auto-Updater (`useAutoUpdateNotifier`) [checkpoint: c20164e]
+- [x] Task: Pruebas Unitarias para el Manejador de Notificación de Actualizaciones (TDD Red) [47aca90]
+  - [x] Escribir tests en `src/test/useAutoUpdateNotifier.test.ts` para verificar la ejecución diferida (delay de 4s).
+  - [x] Validar que si `hasUpdate: false` o falla la red, el sistema permanece silente sin disparar notificaciones intrusivas.
+  - [x] Validar que si el usuario elige "Ahora no", se registre la clave en `sessionStorage` y se ignore en la sesión.
+  - [x] Ejecutar vitest y confirmar la fase roja (fallo esperado).
+- [x] Task: Implementación del Hook `useAutoUpdateNotifier` (TDD Green & Refactor) [c20164e]
+  - [x] Implementar `src/hooks/useAutoUpdateNotifier.ts` con control de ciclo de vida, chequeo diferido y soporte de descarte por sesión.
+  - [x] Ejecutar vitest y confirmar que todos los tests unitarios pasen a verde.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [c20164e]
 
 ### Fase 2: Integración de Toasts Interactivos (Sonner) y Flujos de Descarga/Reinicio
 - [ ] Task: Pruebas de Renderizado e Interacción de Toasts (TDD Red)
