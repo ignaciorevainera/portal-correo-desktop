@@ -12,15 +12,15 @@
   - [x] Ejecutar vitest y confirmar que todos los tests unitarios pasen a verde.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [c20164e]
 
-### Fase 2: Integración de Toasts Interactivos (Sonner) y Flujos de Descarga/Reinicio
-- [ ] Task: Pruebas de Renderizado e Interacción de Toasts (TDD Red)
-  - [ ] Escribir tests unitarios que simulen las interacciones con `toast` de Sonner (clic en "Descargar", clic en "Ahora no", clic en "Instalar y reiniciar").
-  - [ ] Validar el reporte de progreso de descarga y el disparo del toast final de confirmación.
-- [ ] Task: Conexión de Notificaciones Toast y Activación en `App.tsx` (TDD Green)
-  - [ ] Diseñar los toasts interactivos con Sonner respetando la estética del preset Shadcn (`action` y `cancel`).
-  - [ ] Conectar los manejadores `startDownloadUpdate` e `installUpdateNow`.
-  - [ ] Activar el hook en `src/App.tsx` condicionado a que el Gate de Seguridad esté en estado `READY`.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+### Fase 2: Integración de Toasts Interactivos (Sonner) y Flujos de Descarga/Reinicio [checkpoint: 4eb6558]
+- [x] Task: Pruebas de Renderizado e Interacción de Toasts (TDD Red) [9c05ae9]
+  - [x] Escribir tests unitarios que simulen las interacciones con `toast` de Sonner (clic en "Descargar", clic en "Ahora no", clic en "Instalar y reiniciar").
+  - [x] Validar el reporte de progreso de descarga y el disparo del toast final de confirmación.
+- [x] Task: Conexión de Notificaciones Toast y Activación en `App.tsx` (TDD Green) [4eb6558]
+  - [x] Diseñar los toasts interactivos con Sonner respetando la estética del preset Shadcn (`action` y `cancel`).
+  - [x] Conectar los manejadores `startDownloadUpdate` e `installUpdateNow`.
+  - [x] Activar el hook en `src/App.tsx` condicionado a que el Gate de Seguridad esté en estado `READY`.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) [4eb6558]
 
 ### Fase 3: Verificación E2E, Regresiones y Quality Gates
 - [ ] Task: Coexistencia con Test Harness E2E
