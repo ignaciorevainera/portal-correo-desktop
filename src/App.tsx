@@ -85,6 +85,7 @@ import { getNextTextScale, getPrevTextScale, applyTextScale } from "@/lib/textSc
 import { applyHighContrastClass } from "@/lib/highContrast";
 import { APP_VERSION } from "@/lib/appVersion";
 import { deriveSiteTargets } from "@/utils/siteTargets";
+import { useAutoUpdateNotifier } from "./hooks/useAutoUpdateNotifier";
 
 export default function App(): React.JSX.Element {
   const [selectedPc, setSelectedPc] = useState<string>("");
@@ -155,6 +156,13 @@ export default function App(): React.JSX.Element {
 
   // Inicialización de escala de texto y alto contraste desde almacenamiento
   const [appTextScale, setAppTextScale] = useState(loadDefaultTextScale);
+
+  // Verificación diferida de actualizaciones en segundo plano con notificación Toast interactiva
+  useAutoUpdateNotifier({
+    isGateReady: gate?.status === "READY",
+    delayMs: 4000,
+    enableToast: true,
+  });
 
   useEffect(() => {
     applyTextScale(loadDefaultTextScale());
