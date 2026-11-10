@@ -7,16 +7,16 @@
 
 ---
 
-## Phase 2: Poda de Archivos de Prueba JSDOM 100% Redundantes
-- [~] Task: Eliminar suites de integración JSDOM redundantes de ciclo de vida (`src/App.test.tsx`, `src/test/AppInitialState.test.tsx`)
-- [ ] Task: Eliminar suites de componentes redundantes con E2E (`SettingsModal.test.tsx`, `SubnetScannerDrawer.test.tsx`, `LivePingConsole.test.tsx`, `MonitorIntegration.test.tsx`, `MonitorWindow.test.tsx`, `Topbar.test.tsx`, `OperatorContextMenu.test.tsx`, `InfoModal.test.tsx`)
-- [ ] Task: Eliminar suites de autoupdate JSDOM redundantes (`useAutoUpdateNotifier.test.ts`, `useAutoUpdateNotifierToast.test.ts`)
-- [ ] Task: Phase Verification & Checkpoint
+## Phase 2: Poda de Archivos de Prueba JSDOM 100% Redundantes [checkpoint: 2709ba9]
+- [x] Task: Eliminar suites de integración JSDOM redundantes de ciclo de vida (`src/App.test.tsx`, `src/test/AppInitialState.test.tsx`) [3d85138]
+- [x] Task: Eliminar suites de componentes redundantes con E2E (`SettingsModal.test.tsx`, `SubnetScannerDrawer.test.tsx`, `LivePingConsole.test.tsx`, `MonitorIntegration.test.tsx`, `MonitorWindow.test.tsx`, `Topbar.test.tsx`, `OperatorContextMenu.test.tsx`, `InfoModal.test.tsx`) [84b809c]
+- [x] Task: Eliminar suites de autoupdate JSDOM redundantes (`useAutoUpdateNotifier.test.ts`, `useAutoUpdateNotifierToast.test.ts`) [2709ba9]
+- [x] Task: Phase Verification & Checkpoint [2709ba9]
 
 ---
 
 ## Phase 3: Verificación Integral de Tiempos, Limpieza y Quality Gates
-- [ ] Task: Ejecutar `npm test` y verificar reducción drástica de tiempo y eliminación de advertencias `act(...)`
+- [~] Task: Ejecutar `npm test` y verificar reducción drástica de tiempo y eliminación de advertencias `act(...)`
 - [ ] Task: Ejecutar `npm run test:e2e` confirmando que todas las specs (00 a 09) pasen en verde
 - [ ] Task: Ejecutar `npm run release:check` para validar el gate final
 - [ ] Task: Phase Verification & Checkpoint
