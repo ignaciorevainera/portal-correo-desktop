@@ -124,5 +124,11 @@
 - [x] **Track: Suite de Pruebas E2E con Playwright para Electron, Test Harness Mock/Live y Quality Gates**
   *Link: [./tracks/e2e_testing_playwright_20261109/index.md](./tracks/e2e_testing_playwright_20261109/index.md)*
 
+---
+
+- [ ] **Track: Detección Automática de Actualizaciones en Background con Notificaciones Toast Interactivas (Sonner)**
+  *Link: [./tracks/auto_updater_toast_notifications_20261109/index.md](./tracks/auto_updater_toast_notifications_20261109/index.md)*
+
+
 
 
