@@ -126,6 +126,11 @@
 
 ---
 
+- [~] **Track: Racionalización de la Suite de Pruebas: Poda de JSDOM Redundante y Migración a Playwright E2E**
+  *Link: [./tracks/test_suite_rationalization_20261110/index.md](./tracks/test_suite_rationalization_20261110/index.md)*
+
+---
+
 - [x] **Track: Detección Automática de Actualizaciones en Background con Notificaciones Toast Interactivas (Sonner)**
   *Link: [./tracks/auto_updater_toast_notifications_20261109/index.md](./tracks/auto_updater_toast_notifications_20261109/index.md)*
 
