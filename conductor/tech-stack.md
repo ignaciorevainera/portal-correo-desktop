@@ -13,6 +13,7 @@
 - **Component Primitives:** Shadcn UI (`@/components/ui/button`, `@/components/ui/card`, `@/components/ui/badge`, `@/components/ui/input`) construidos sobre Radix UI (`@radix-ui/react-slot`) y utilidades `cn`.
 - **Operator Context Menu:** Menú contextual propio integrado con clic derecho para acciones en 1 clic.
 - **Icons:** `lucide-react`.
+- **In-App Auto Updater Hook:** Hook desacoplado `useAutoUpdateNotifier` con invocación diferida (4s tras Gate `READY`), integración interactiva de Toasts con Sonner (`action`/`cancel`), descarte por sesión y monitoreo de descarga en background.
 
 ## 3. Data Access, Security & Backend Services (Main Process)
 - **Database Engine:** Microsoft SQL Server Corporativo (configurado externamente vía `cmda.config.json` o `.env`).
