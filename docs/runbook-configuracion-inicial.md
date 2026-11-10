@@ -221,13 +221,17 @@ es el archivo local (no existe, está mal formado o le falta `dbPassword`).
 
 ## Fase 4 — Empaquetar y probar el camino real
 
-Requiere red para electron-builder:
+Requiere red para electron-builder. `npm run release:build` ejecuta antes el gate
+completo (`release:check`): auditoría de secretos, contraste, build de producción y la
+suite E2E de Playwright. La primera vez en un equipo hace falta instalar el navegador
+de pruebas:
 
 ```powershell
+npx playwright install chromium
 npm run release:build
 ```
 
-Instalar `release\Portal Correo Desktop-Corporativo-*.exe` en un equipo de la red:
+Instalar `release\Portal Correo Desktop Setup <version>.exe` en un equipo de la red:
 
 | Escenario | Resultado esperado |
 | --- | --- |
@@ -257,7 +261,17 @@ Subir los `.sha256` con ese nombre exacto, al lado de su `.exe`: el actualizador
 npm run release:checksums
 ```
 
-Copiar también el `.exe` a `\\<EQUIPO>\portal-correo-desktop-public$\` como espejo interno.
+Copiar también el `.exe` y su `.sha256` al espejo interno. En el equipo que aloja la
+configuración (`C:\portal-correo-desktop\config`) el espejo es la carpeta hermana:
+
+```powershell
+C:\portal-correo-desktop\public\updates
+```
+
+Esa carpeta todavía no está publicada como share SMB: la única share activa es
+`portal-correo-desktop-config$`. Para que otras PC lean el espejo por red hay que crear
+`\\<EQUIPO>\portal-correo-desktop-public$\` apuntando a `C:\portal-correo-desktop\public`
+(requiere administrador y definir permisos de lectura).
 
 ---
 
