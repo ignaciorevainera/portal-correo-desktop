@@ -3,6 +3,76 @@ import { cn } from "cn"
 import { ContextMenu as ContextMenuPrimitive } from "radix-ui"
 import { ChevronRightIcon, CheckIcon } from "lucide-react"
 
+const DEFAULT_VIEWPORT_GUTTER = 16;
+
+export function clampEventToViewport(
+  event: React.MouseEvent | React.PointerEvent,
+  gutter = DEFAULT_VIEWPORT_GUTTER,
+): void {
+  if (typeof window === "undefined") return;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  if (!vw || !vh) return;
+
+  const candidateX =
+    typeof event.clientX === "number" && !Number.isNaN(event.clientX)
+      ? event.clientX
+      : typeof (event.nativeEvent as MouseEvent | undefined)?.clientX === "number" &&
+          !Number.isNaN((event.nativeEvent as MouseEvent).clientX)
+        ? (event.nativeEvent as MouseEvent).clientX
+        : undefined;
+
+  const candidateY =
+    typeof event.clientY === "number" && !Number.isNaN(event.clientY)
+      ? event.clientY
+      : typeof (event.nativeEvent as MouseEvent | undefined)?.clientY === "number" &&
+          !Number.isNaN((event.nativeEvent as MouseEvent).clientY)
+        ? (event.nativeEvent as MouseEvent).clientY
+        : undefined;
+
+  if (candidateX === undefined || candidateY === undefined) return;
+
+  const effectiveGutterX = Math.min(gutter, Math.max(0, Math.floor(vw / 4)));
+  const effectiveGutterY = Math.min(gutter, Math.max(0, Math.floor(vh / 4)));
+
+  const clampedX = Math.max(
+    effectiveGutterX,
+    Math.min(candidateX, Math.max(effectiveGutterX, vw - effectiveGutterX)),
+  );
+  const clampedY = Math.max(
+    effectiveGutterY,
+    Math.min(candidateY, Math.max(effectiveGutterY, vh - effectiveGutterY)),
+  );
+
+  try {
+    Object.defineProperty(event, "clientX", {
+      value: clampedX,
+      configurable: true,
+    });
+    Object.defineProperty(event, "clientY", {
+      value: clampedY,
+      configurable: true,
+    });
+  } catch {
+    // en entornos donde el evento esté congelado
+  }
+
+  if (event.nativeEvent) {
+    try {
+      Object.defineProperty(event.nativeEvent, "clientX", {
+        value: clampedX,
+        configurable: true,
+      });
+      Object.defineProperty(event.nativeEvent, "clientY", {
+        value: clampedY,
+        configurable: true,
+      });
+    } catch {
+      // noop
+    }
+  }
+}
+
 function ContextMenu({
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Root>) {
@@ -11,15 +81,33 @@ function ContextMenu({
 
 function ContextMenuTrigger({
   className,
+  onContextMenu,
+  onPointerDown,
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Trigger>) {
+  const handleContextMenu = (
+    event: React.MouseEvent<HTMLSpanElement>,
+  ): void => {
+    clampEventToViewport(event);
+    onContextMenu?.(event);
+  };
+
+  const handlePointerDown = (
+    event: React.PointerEvent<HTMLSpanElement>,
+  ): void => {
+    clampEventToViewport(event);
+    onPointerDown?.(event);
+  };
+
   return (
     <ContextMenuPrimitive.Trigger
       data-slot="context-menu-trigger"
       className={cn("select-none", className)}
+      onContextMenu={handleContextMenu}
+      onPointerDown={handlePointerDown}
       {...props}
     />
-  )
+  );
 }
 
 function ContextMenuGroup({
@@ -67,11 +155,14 @@ function ContextMenuContent({
       <ContextMenuPrimitive.Content
         data-slot="context-menu-content"
         collisionPadding={collisionPadding}
-        className={cn("z-50 max-h-(--radix-context-menu-content-available-height) min-w-36 origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", className )}
+        className={cn(
+          "z-50 max-h-[var(--radix-context-menu-content-available-height,calc(100vh-2rem))] min-w-36 max-w-[calc(100vw-1.5rem)] origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-75 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-98 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-98",
+          className,
+        )}
         {...props}
       />
     </ContextMenuPrimitive.Portal>
-  )
+  );
 }
 
 function ContextMenuItem({
@@ -89,7 +180,7 @@ function ContextMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "group/context-menu-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-inset:pl-8 data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 focus:*:[svg]:text-accent-foreground data-[variant=destructive]:*:[svg]:text-destructive",
+        "group/context-menu-item relative flex cursor-default items-center gap-2 rounded-sm px-2.5 py-1 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-inset:pl-8 data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5 focus:*:[svg]:text-accent-foreground data-[variant=destructive]:*:[svg]:text-destructive",
         className
       )}
       {...props}
@@ -110,7 +201,7 @@ function ContextMenuSubTrigger({
       data-slot="context-menu-sub-trigger"
       data-inset={inset}
       className={cn(
-        "flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-inset:pl-8 data-open:bg-accent data-open:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "flex cursor-default items-center rounded-sm px-2.5 py-1 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-inset:pl-8 data-open:bg-accent data-open:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
         className
       )}
       {...props}
@@ -123,15 +214,20 @@ function ContextMenuSubTrigger({
 
 function ContextMenuSubContent({
   className,
+  collisionPadding = 8,
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.SubContent>) {
   return (
     <ContextMenuPrimitive.SubContent
       data-slot="context-menu-sub-content"
-      className={cn("z-50 min-w-32 origin-(--radix-context-menu-content-transform-origin) overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", className )}
+      collisionPadding={collisionPadding}
+      className={cn(
+        "z-50 max-h-[var(--radix-context-menu-content-available-height,calc(100vh-2rem))] min-w-32 max-w-[calc(100vw-1.5rem)] origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg duration-75 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-98 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-98",
+        className,
+      )}
       {...props}
     />
-  )
+  );
 }
 
 function ContextMenuCheckboxItem({
@@ -148,7 +244,7 @@ function ContextMenuCheckboxItem({
       data-slot="context-menu-checkbox-item"
       data-inset={inset}
       className={cn(
-        "relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-inset:pl-8 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex cursor-default items-center gap-2 rounded-sm py-1 pr-7 pl-2 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-inset:pl-8 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
         className
       )}
       checked={checked}
@@ -178,7 +274,7 @@ function ContextMenuRadioItem({
       data-slot="context-menu-radio-item"
       data-inset={inset}
       className={cn(
-        "relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-inset:pl-8 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex cursor-default items-center gap-2 rounded-sm py-1 pr-7 pl-2 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-inset:pl-8 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
         className
       )}
       {...props}
@@ -206,7 +302,7 @@ function ContextMenuLabel({
       data-slot="context-menu-label"
       data-inset={inset}
       className={cn(
-        "px-2 py-1.5 text-xs font-medium text-muted-foreground data-inset:pl-8",
+        "px-2.5 py-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground data-inset:pl-8",
         className
       )}
       {...props}
@@ -221,7 +317,7 @@ function ContextMenuSeparator({
   return (
     <ContextMenuPrimitive.Separator
       data-slot="context-menu-separator"
-      className={cn("-mx-1 my-1 h-px bg-border", className)}
+      className={cn("-mx-1 my-0.5 h-px bg-border", className)}
       {...props}
     />
   )
@@ -235,7 +331,7 @@ function ContextMenuShortcut({
     <span
       data-slot="context-menu-shortcut"
       className={cn(
-        "ml-auto text-xs tracking-widest text-muted-foreground group-focus/context-menu-item:text-accent-foreground",
+        "ml-auto text-2xs tracking-wider text-muted-foreground group-focus/context-menu-item:text-accent-foreground",
         className
       )}
       {...props}

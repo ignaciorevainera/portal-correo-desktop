@@ -46,7 +46,10 @@ export function OperatorContextMenu({
 
   if (!terminal) {
     return (
-      <ContextMenuContent className="w-56" aria-label="Acciones del operador">
+      <ContextMenuContent
+        className="w-52 max-w-[calc(100vw-1.5rem)] text-xs"
+        aria-label="Acciones del operador"
+      >
         <ContextMenuItem onSelect={onOpenPortalMda} aria-label="Abrir Portal MDA">
           <ExternalLink className="h-3.5 w-3.5 text-link" />
           Abrir Portal MDA
@@ -58,7 +61,10 @@ export function OperatorContextMenu({
   const accountCount = splitUsernames(terminal.userNt).length;
 
   return (
-    <ContextMenuContent className="w-56" aria-label="Acciones del operador">
+    <ContextMenuContent
+      className="w-52 max-w-[calc(100vw-1.5rem)] text-xs"
+      aria-label="Acciones del operador"
+    >
       <ContextMenuLabel>Acciones · {terminal.pc}</ContextMenuLabel>
       <ContextMenuSeparator />
 

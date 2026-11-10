@@ -35,3 +35,21 @@ if (typeof globalThis.requestAnimationFrame !== 'function') {
     value: (handle: number) => clearTimeout(handle),
   });
 }
+
+// jsdom no implementa PointerEvent y Radix UI escucha eventos de puntero.
+if (!('PointerEvent' in globalThis)) {
+  class PointerEventStub extends MouseEvent {
+    pointerId: number;
+    pointerType: string;
+    constructor(type: string, params: PointerEventInit = {}) {
+      super(type, params);
+      this.pointerId = params.pointerId ?? 0;
+      this.pointerType = params.pointerType ?? 'mouse';
+    }
+  }
+  Object.defineProperty(globalThis, 'PointerEvent', {
+    writable: true,
+    configurable: true,
+    value: PointerEventStub,
+  });
+}

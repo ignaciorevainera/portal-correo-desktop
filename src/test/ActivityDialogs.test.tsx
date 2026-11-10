@@ -183,4 +183,13 @@ describe("NetUserChooserDialog accesibilidad", () => {
       screen.queryByText(/solo letras y números, sin dominio ni símbolos/i),
     ).not.toBeInTheDocument();
   });
+
+  it("NewAlertDialog estructura el contenido con scroll independiente y footer fijo", () => {
+    render(<NewAlertDialog open onOpenChange={vi.fn()} onSubmit={vi.fn()} />);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveClass("flex", "flex-col", "overflow-hidden");
+    expect(dialog.querySelector("form")).toHaveClass("overflow-y-auto", "flex-1");
+    expect(dialog.querySelector("[data-slot='dialog-footer']")).toHaveClass("shrink-0");
+  });
 });

@@ -95,8 +95,8 @@ export function NewAlertDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-md max-sm:max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-2rem)] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-5 pb-3 border-b border-border/60 shrink-0">
           <DialogTitle className="text-lg">Registrar nueva alerta</DialogTitle>
           <DialogDescription>
             Queda asociada a la terminal activa y al operador que la registra.
@@ -104,6 +104,8 @@ export function NewAlertDialog({
         </DialogHeader>
 
         <form
+          id="new-alert-form"
+          className="px-6 py-4 overflow-y-auto flex-1"
           onSubmit={(event) => {
             event.preventDefault();
             submit();
@@ -159,7 +161,7 @@ export function NewAlertDialog({
           </FieldGroup>
         </form>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="px-6 py-3 border-t border-border/60 shrink-0 gap-2 bg-card">
           <Button
             type="button"
             variant="ghost"
@@ -168,7 +170,13 @@ export function NewAlertDialog({
           >
             Cancelar
           </Button>
-          <Button type="button" size="sm" disabled={!valid} onClick={submit}>
+          <Button
+            type="submit"
+            form="new-alert-form"
+            size="sm"
+            disabled={!valid}
+            onClick={submit}
+          >
             Registrar alerta
           </Button>
         </DialogFooter>
@@ -205,8 +213,8 @@ export function RequestResetDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-md max-sm:max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-2rem)] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-5 pb-3 border-b border-border/60 shrink-0">
           <DialogTitle className="text-lg">Pedir reset de cuenta AD</DialogTitle>
           <DialogDescription>
             La solicitud se envía a la cola de reseteos de la terminal activa.
@@ -214,6 +222,8 @@ export function RequestResetDialog({
         </DialogHeader>
 
         <form
+          id="request-reset-form"
+          className="px-6 py-4 overflow-y-auto flex-1"
           onSubmit={(event) => {
             event.preventDefault();
             submit();
@@ -236,7 +246,7 @@ export function RequestResetDialog({
           </FieldGroup>
         </form>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="px-6 py-3 border-t border-border/60 shrink-0 gap-2 bg-card">
           <Button
             type="button"
             variant="ghost"
@@ -245,7 +255,13 @@ export function RequestResetDialog({
           >
             Cancelar
           </Button>
-          <Button type="button" size="sm" disabled={!valid} onClick={submit}>
+          <Button
+            type="submit"
+            form="request-reset-form"
+            size="sm"
+            disabled={!valid}
+            onClick={submit}
+          >
             Enviar solicitud
           </Button>
         </DialogFooter>
@@ -284,13 +300,15 @@ export function CloseAlertDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
+      <AlertDialogContent className="max-w-md max-sm:max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-2rem)] flex flex-col p-0 gap-0 overflow-hidden">
+        <AlertDialogHeader className="px-6 pt-5 pb-3 border-b border-border/60 shrink-0 text-left">
           <AlertDialogTitle>Cerrar alerta</AlertDialogTitle>
-          <AlertDialogDescription>{alertTitle}</AlertDialogDescription>
+          <AlertDialogDescription className="line-clamp-2">{alertTitle}</AlertDialogDescription>
         </AlertDialogHeader>
 
         <form
+          id="close-alert-form"
+          className="px-6 py-4 overflow-y-auto flex-1"
           onSubmit={(event) => {
             event.preventDefault();
             submit();
@@ -314,9 +332,15 @@ export function CloseAlertDialog({
           </FieldGroup>
         </form>
 
-        <AlertDialogFooter className="gap-2">
+        <AlertDialogFooter className="px-6 py-3 border-t border-border/60 shrink-0 gap-2 bg-card">
           <AlertDialogCancel variant="ghost" size="sm">Cancelar</AlertDialogCancel>
-          <Button type="button" size="sm" disabled={!valid} onClick={submit}>
+          <Button
+            type="submit"
+            form="close-alert-form"
+            size="sm"
+            disabled={!valid}
+            onClick={submit}
+          >
             Confirmar cierre
           </Button>
         </AlertDialogFooter>
