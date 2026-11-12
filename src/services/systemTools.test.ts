@@ -273,6 +273,31 @@ describe('systemTools orchestration & security sanitization', () => {
         vncPassword: 'clave-secreta',
       });
     });
+
+    it('does not fall back to MSRA when the terminal is a Linux machine even if MSRA ports seem open', async () => {
+      const mockVnc = vi.fn();
+      const mockMsra = vi.fn();
+
+      const res = await launchRemoteSmart('192.0.2.105', {
+        mockProbe: {
+          host: '192.0.2.105',
+          vncPort: null,
+          port5901Open: false,
+          port5900Open: false,
+          msraAvailable: true,
+          recommendedMethod: 'msra',
+        },
+        mockLaunchVnc: mockVnc,
+        mockLaunchMsra: mockMsra,
+        isLinux: true,
+      });
+
+      expect(res.success).toBe(false);
+      expect(res.methodUsed).toBe('none');
+      expect(mockMsra).not.toHaveBeenCalled();
+      expect(res.message).toContain('Linux');
+      expect(res.message).toContain('5901/5900 no responden');
+    });
   });
 
   describe('launchVncSmart', () => {

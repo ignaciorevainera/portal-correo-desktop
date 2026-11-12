@@ -10,7 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   launchVnc: (target) => ipcRenderer.invoke('pcd:launch-vnc', target),
   launchMsra: (target) => ipcRenderer.invoke('pcd:launch-msra', target),
   probeRemote: (target) => ipcRenderer.invoke('pcd:probe-remote', target),
-  launchRemoteSmart: (target) => ipcRenderer.invoke('pcd:launch-remote-smart', target),
+  launchRemoteSmart: (target, options) => ipcRenderer.invoke('pcd:launch-remote-smart', target, options),
   minimizeWindow: () => ipcRenderer.invoke('pcd:window-minimize'),
   maximizeWindow: () => ipcRenderer.invoke('pcd:window-maximize'),
   closeWindow: () => ipcRenderer.invoke('pcd:window-close'),

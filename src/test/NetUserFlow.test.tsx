@@ -142,23 +142,35 @@ describe("Net user flow", () => {
     );
   });
 
-  it("falls back to the account console when a short username is not a terminal", async () => {
+  it("does not auto-trigger net user when a terminal is not found, shows empty state with manual button", async () => {
     const { startCommand, searchTerminal } = mockApi({
       source: "sql",
       data: null,
     });
     render(<App />);
-    await search("juan");
+    await search("TTBUE07P");
 
     expect(searchTerminal).toHaveBeenCalledTimes(1);
-    expect(await screen.findByText(/Cuenta AD · juan/)).toBeInTheDocument();
     expect(
-      screen.queryByText(/No se encontró la terminal/i),
-    ).not.toBeInTheDocument();
+      await screen.findByText(/No se encontró la terminal/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Si se trata de una terminal Linux o transaccional/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Cuenta AD ·/)).not.toBeInTheDocument();
+    expect(startCommand).not.toHaveBeenCalled();
 
+    const consultButton = screen.getByRole("button", {
+      name: /Consultar «TTBUE07P» como cuenta AD/i,
+    });
+    expect(consultButton).toBeInTheDocument();
+
+    fireEvent.click(consultButton);
+
+    expect(await screen.findByText(/Cuenta AD · TTBUE07P/)).toBeInTheDocument();
     await waitFor(() =>
       expect(startCommand).toHaveBeenCalledWith(
-        expect.objectContaining({ command: "netuser", target: "juan" }),
+        expect.objectContaining({ command: "netuser", target: "TTBUE07P" }),
       ),
     );
   });

@@ -273,11 +273,11 @@ export async function probeRemoteStatus(target: string): Promise<RemoteProbeResu
   };
 }
 
-export async function launchSmartRemoteClient(target: string): Promise<ToolExecutionResult> {
+export async function launchSmartRemoteClient(target: string, options?: any): Promise<ToolExecutionResult> {
   const api = getElectronAPI();
   if (api && api.launchRemoteSmart) {
     try {
-      return await api.launchRemoteSmart(target);
+      return await api.launchRemoteSmart(target, options);
     } catch (err: any) {
       return { success: false, methodUsed: 'none', message: err.message };
     }

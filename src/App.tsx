@@ -57,7 +57,7 @@ import {
   isMonitorShortcutRegistered,
 } from "./services/electronClient";
 import { TerminalData } from "./types/terminal";
-import { Search, SearchX, RotateCcw } from "lucide-react";
+import { Search, SearchX, RotateCcw, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { Kbd } from "@/components/ui/kbd";
@@ -328,18 +328,6 @@ export default function App(): React.JSX.Element {
     searchTerminalUnified(selectedPc)
       .then((res) => {
         if (!res.data) {
-          if (isValidUsername(selectedPc)) {
-            updateRecentSearchKind(selectedPc, "account");
-            setTerminal(null);
-            setNotFoundTerm(null);
-            setRemoteProbe(null);
-            setIsPinging(false);
-            setIsLoading(false);
-            setAccountQuery(selectedPc);
-            runNetUser(selectedPc);
-            return;
-          }
-
           setTerminal(null);
           setNotFoundTerm(selectedPc);
           setRemoteProbe(null);
@@ -651,10 +639,23 @@ export default function App(): React.JSX.Element {
   const handleLaunchSmartRemote = async (
     targetOverride?: string,
   ): Promise<void> => {
-    const target = targetOverride || terminal?.ip || terminal?.pc;
+    // Prefer IP if valid IPv4, fallback to pc
+    const ipv4Regex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+    const preferredTarget = (terminal?.ip && ipv4Regex.test(terminal.ip.trim()))
+      ? terminal.ip.trim()
+      : (terminal?.ip || terminal?.pc);
+    const target = targetOverride || preferredTarget;
     if (!target) return;
 
-    const res = await launchSmartRemoteClient(target);
+    const isLinuxTerminal = Boolean(
+      terminal?.os?.toLowerCase().includes("linux") ||
+      terminal?.os?.toLowerCase().includes("relevada")
+    );
+
+    const res = await launchSmartRemoteClient(target, {
+      isLinux: isLinuxTerminal,
+      os: terminal?.os,
+    });
     if (res.probe) {
       setRemoteProbe(res.probe);
     }
@@ -679,7 +680,11 @@ export default function App(): React.JSX.Element {
   };
 
   const handleLaunchVnc = async (targetOverride?: string): Promise<void> => {
-    const target = targetOverride || terminal?.ip || terminal?.pc;
+    const ipv4Regex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+    const preferredTarget = (terminal?.ip && ipv4Regex.test(terminal.ip.trim()))
+      ? terminal.ip.trim()
+      : (terminal?.ip || terminal?.pc);
+    const target = targetOverride || preferredTarget;
     if (!target) return;
 
     const res = await launchVncClient(target);
@@ -826,24 +831,25 @@ export default function App(): React.JSX.Element {
             </div>
           ) : notFoundTerm ? (
             <Empty className="flex-1 min-h-80 border border-dashed">
-              <EmptyHeader>
+              <EmptyHeader className="max-w-md">
                 <EmptyMedia variant="icon">
                   <SearchX aria-hidden="true" className="text-warning/80" />
                 </EmptyMedia>
-                <EmptyTitle role="heading" aria-level={2}>
+                <EmptyTitle role="heading" aria-level={2} className="text-sm font-medium">
                   No se encontró la terminal &ldquo;
                   <span className="font-mono font-bold text-foreground">
                     {notFoundTerm}
                   </span>
                   &rdquo;
                 </EmptyTitle>
-                <EmptyDescription>
+                <EmptyDescription className="text-xs/relaxed text-muted-foreground">
                   No existe un registro técnico para este equipo o dirección IP
-                  en la base corporativa. Verificá la ortografía del Hostname o
-                  el alcance de red.
+                  en la base corporativa. Si se trata de una terminal Linux o
+                  transaccional, podés consultarla directamente por su dirección
+                  IP.
                 </EmptyDescription>
               </EmptyHeader>
-              <EmptyContent>
+              <EmptyContent className="flex flex-row flex-wrap items-center justify-center gap-2 max-w-none">
                 <Button
                   variant="outline"
                   size="xs"
@@ -854,6 +860,24 @@ export default function App(): React.JSX.Element {
                   <RotateCcw className="h-3 w-3" />
                   <span>Limpiar búsqueda</span>
                 </Button>
+                {isValidUsername(notFoundTerm) && (
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={() => {
+                      updateRecentSearchKind(notFoundTerm, "account");
+                      const term = notFoundTerm;
+                      setNotFoundTerm(null);
+                      setAccountQuery(term);
+                      runNetUser(term);
+                    }}
+                    aria-label={`Consultar «${notFoundTerm}» como cuenta AD`}
+                    className="text-xs font-sans gap-1.5 h-7 px-3 border-border bg-background/50 hover:bg-muted cursor-pointer"
+                  >
+                    <UserRound className="h-3 w-3 text-muted-foreground" />
+                    <span>Consultar &laquo;{notFoundTerm}&raquo; como cuenta AD</span>
+                  </Button>
+                )}
               </EmptyContent>
             </Empty>
           ) : !terminal ? (

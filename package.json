@@ -68,6 +68,9 @@
       "public/**/*",
       "package.json"
     ],
+    "asarUnpack": [
+      "resources/bin/**/*"
+    ],
     "win": {
       "target": [
         "nsis",

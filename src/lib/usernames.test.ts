@@ -44,6 +44,12 @@ describe("usernames", () => {
     expect(classifySearch("192.0.2.101")).toBe("terminal");
     expect(classifySearch("PCDEMO01")).toBe("terminal");
     expect(classifySearch("TERM01")).toBe("terminal");
+    expect(classifySearch("TTBUE07P")).toBe("terminal");
+    expect(classifySearch("TTBUE07P-D")).toBe("terminal");
+    expect(classifySearch("B1617FRPU0001")).toBe("terminal");
+    expect(classifySearch("B1757CLCU0002")).toBe("terminal");
+    expect(classifySearch("I1161STM002")).toBe("terminal");
+    expect(classifySearch("C1274AGEP0625")).toBe("terminal");
     expect(classifySearch("juan")).toBe("terminal");
     expect(classifySearch("")).toBe("terminal");
     expect(classifySearch(null)).toBe("terminal");

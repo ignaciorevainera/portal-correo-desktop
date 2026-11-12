@@ -632,12 +632,12 @@ ipcMain.handle('pcd:launch-msra', async (_event, target) => {
 });
 
 ipcMain.handle('pcd:probe-remote', async (_event, target) => {
-  return await systemTools.probeRemotePorts(target, 800);
+  return await systemTools.probeRemotePorts(target, 1500);
 });
 
-ipcMain.handle('pcd:launch-remote-smart', async (_event, target) => {
+ipcMain.handle('pcd:launch-remote-smart', async (_event, target, options = {}) => {
   const vncPassword = await resolveVncSecret();
-  return await systemTools.launchRemoteSmart(target, { vncPassword });
+  return await systemTools.launchRemoteSmart(target, { ...options, vncPassword, timeoutMs: 1500 });
 });
 
 ipcMain.on('pcd:ping-start', (event, target, continuous) => {

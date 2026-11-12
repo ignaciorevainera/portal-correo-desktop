@@ -134,6 +134,12 @@
 - [x] **Track: Detección Automática de Actualizaciones en Background con Notificaciones Toast Interactivas (Sonner)**
   *Link: [./tracks/auto_updater_toast_notifications_20261109/index.md](./tracks/auto_updater_toast_notifications_20261109/index.md)*
 
+---
+
+- [~] **Track: Corrección de Resolución de Terminales Linux / VNC y Lanzamiento Remoto**
+  *Link: [./tracks/linux_vnc_resolution_and_remote_launch_fix_20261112/index.md](./tracks/linux_vnc_resolution_and_remote_launch_fix_20261112/index.md)*
+
+
 
 
 

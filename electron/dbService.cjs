@@ -115,10 +115,43 @@ async function getTerminalInfo(query) {
   infoReq.input('pc', sqlMod.VarChar(100), targetPc);
   const infoRes = await infoReq.execute('CMDA_Trae_Info_DE_PC_PARAmesa_T');
 
-  if (!infoRes.recordset || infoRes.recordset.length === 0) {
+  let mainData = null;
+  if (infoRes.recordset && infoRes.recordset.length > 0) {
+    mainData = infoRes.recordset[0];
+  } else {
+    // Fallback: Consultar en Fecha_Relevada_PCs por coincidencia de hostname
+    try {
+      const fbReq = p.request();
+      fbReq.input('pc', sqlMod.VarChar(100), targetPc);
+      const fbRes = await fbReq.query(
+        'SELECT TOP 1 pc, ip, Fecha_Relevada FROM Fecha_Relevada_PCs WHERE pc = @pc OR pc LIKE @pc + \'%\' ORDER BY Fecha_Relevada DESC'
+      );
+      if (fbRes.recordset && fbRes.recordset.length > 0 && fbRes.recordset[0].pc) {
+        const row = fbRes.recordset[0];
+        mainData = {
+          pc: row.pc.trim(),
+          ip: row.ip ? row.ip.trim() : '',
+          Fecha_Relevada: row.Fecha_Relevada || '',
+          Sist_operativo: 'Estación Linux / Transaccional (Fecha_Relevada)',
+          cpuModel: 'Terminal Relevada en Red Corporativa',
+          Macadrress: '-',
+          ServPack: '-',
+          ram: '-',
+          version_AV: '-',
+          IE: '-',
+          userNt: 'Operador / Local',
+          Arquitectura: '-',
+          uptimeText: 'Activa según relevamiento',
+        };
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!mainData) {
     return null;
   }
-  const mainData = infoRes.recordset[0];
 
   // 2. Ejecución concurrente de Stored Procedures secundarios (Promise.allSettled)
   const fetchLocation = async () => {

@@ -156,13 +156,16 @@ function clearVncViewerPathCache() {
   cachedVncViewerPath = null;
 }
 
-function getVncViewerPath() {
+function getVncViewerPath(options = {}) {
   if (cachedVncViewerPath) return cachedVncViewerPath;
   const appPath = path.resolve(__dirname, '..');
+  const resPath = options.resourcesPath || (typeof process !== 'undefined' ? process.resourcesPath : null);
   const possiblePaths = [
+    resPath ? path.join(resPath, 'app.asar.unpacked', 'resources', 'bin', 'vncviewer.exe') : null,
+    resPath ? path.join(resPath, 'bin', 'vncviewer.exe') : null,
     path.join(appPath, 'resources', 'bin', 'vncviewer.exe'),
     path.join('C:', 'Cmda', 'vncviewer.exe'),
-  ];
+  ].filter(Boolean);
 
   for (const p of possiblePaths) {
     if (fs.existsSync(p)) {
@@ -226,7 +229,7 @@ function clearProbeCache() {
   probeCache.clear();
 }
 
-async function probeRemotePorts(host, timeoutMs = 800, options = {}) {
+async function probeRemotePorts(host, timeoutMs = 1500, options = {}) {
   const cleanHost = sanitizeHostOrIp(host);
   const now = Date.now();
   if (!options.bypassCache && probeCache.has(cleanHost)) {
@@ -274,8 +277,13 @@ async function probeRemotePorts(host, timeoutMs = 800, options = {}) {
 async function launchRemoteSmart(targetIpOrHost, options = {}) {
   try {
     const cleanHost = sanitizeHostOrIp(targetIpOrHost);
+    const isLinux = Boolean(
+      options.isLinux ||
+      (options.os && /linux/i.test(options.os)) ||
+      (options.terminal && options.terminal.os && /linux/i.test(options.terminal.os))
+    );
     const probe =
-      options.mockProbe || (await probeRemotePorts(cleanHost, options.timeoutMs || 600));
+      options.mockProbe || (await probeRemotePorts(cleanHost, options.timeoutMs || 1500));
 
     if (probe.vncPort) {
       const vncLauncher = options.mockLaunchVnc || launchVnc;
@@ -289,7 +297,7 @@ async function launchRemoteSmart(targetIpOrHost, options = {}) {
       };
     }
 
-    if (probe.msraAvailable) {
+    if (!isLinux && probe.msraAvailable) {
       const msraLauncher = options.mockLaunchMsra || launchMsra;
       const res = msraLauncher(cleanHost);
       return {
@@ -304,9 +312,11 @@ async function launchRemoteSmart(targetIpOrHost, options = {}) {
       success: false,
       methodUsed: 'none',
       vncClosed: true,
-      msraAvailable: false,
+      msraAvailable: isLinux ? false : probe.msraAvailable,
       probe,
-      message: `Sin acceso remoto directo en ${cleanHost} (Puertos VNC 5901/5900 y MSRA cerrados).`,
+      message: isLinux
+        ? `Sin acceso remoto directo a estación Linux en ${cleanHost} (Puertos VNC 5901/5900 no responden).`
+        : `Sin acceso remoto directo en ${cleanHost} (Puertos VNC 5901/5900 y MSRA cerrados).`,
     };
   } catch (err) {
     return {
@@ -345,7 +355,7 @@ function launchVnc(targetIpOrHost, port = 5901, options = {}) {
       } catch {
         // el visor ya lo eliminó o no existe
       }
-    }, 2000);
+    }, 10000);
 
     return { success: true, processId: proc.pid, configPath: tempConfigPath, portUsed: port };
   } catch (err) {

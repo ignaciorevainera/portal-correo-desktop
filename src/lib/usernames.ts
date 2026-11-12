@@ -23,7 +23,7 @@ export function splitUsernames(raw: string | null | undefined): string[] {
 
 export type SearchKind = "terminal" | "account";
 
-const HOST_PREFIX = /^(PC|WS|TERM|SRV|NB|SUC)/i;
+const HOST_PREFIX = /^(PC|WS|TERM|SRV|NB|SUC|TT|[A-Z]\d{2,})/i;
 
 export function classifySearch(raw: string | null | undefined): SearchKind {
   if (typeof raw !== "string") return "terminal";

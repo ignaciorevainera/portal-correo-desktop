@@ -10,10 +10,13 @@ function isIpAddress(query) {
 }
 
 function getNormalizedDomainSuffix(explicitDomain) {
-  const raw =
+  let raw =
     explicitDomain !== undefined
       ? explicitDomain
       : configManager.getConfig().corporateDomain || '';
+  if (!raw && typeof process !== 'undefined' && process.env) {
+    raw = process.env.USERDNSDOMAIN || '';
+  }
   const trimmed = String(raw || '').trim().replace(/^\./, '');
   return trimmed ? `.${trimmed}` : '';
 }

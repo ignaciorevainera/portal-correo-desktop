@@ -72,4 +72,47 @@ describe('dbService (Electron node SQL service - Zero-Secrets)', () => {
     expect(result.ip).toBe('192.0.2.101');
     expect(mockRequest.input).toHaveBeenCalledWith('pc', expect.anything(), 'PC-DEMO-001');
   });
+
+  it('falls back to Fecha_Relevada_PCs when CMDA_Trae_Info returns empty for a Linux/transaccional hostname', async () => {
+    const mockExecute = vi.fn().mockImplementation((spName) => {
+      if (spName === 'CMDA_Trae_Info_DE_PC_PARAmesa_T') {
+        return Promise.resolve({ recordset: [] });
+      }
+      return Promise.resolve({ recordset: [] });
+    });
+
+    const mockQuery = vi.fn().mockImplementation((sql) => {
+      if (typeof sql === 'string' && sql.includes('Fecha_Relevada_PCs')) {
+        return Promise.resolve({
+          recordset: [
+            {
+              pc: 'TTBUE07P',
+              ip: '10.20.30.40',
+              Fecha_Relevada: '10/11/2026',
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ recordset: [] });
+    });
+
+    const mockRequest = {
+      input: vi.fn().mockReturnThis(),
+      execute: mockExecute,
+      query: mockQuery,
+    };
+
+    const mockPool = {
+      connected: true,
+      request: vi.fn().mockReturnValue(mockRequest),
+    };
+
+    vi.spyOn(dbService, 'getPool').mockResolvedValue(mockPool as any);
+
+    const result = await dbService.getTerminalInfo('TTBUE07P');
+    expect(result).not.toBeNull();
+    expect(result.pc).toBe('TTBUE07P');
+    expect(result.ip).toBe('10.20.30.40');
+    expect(result.Sist_operativo).toContain('Linux');
+  });
 });
