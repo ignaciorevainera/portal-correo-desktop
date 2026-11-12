@@ -41,12 +41,12 @@ Este track corrige los fallos detectados al consultar y operar terminales con si
 ---
 
 ## Acceptance Criteria
-- [ ] Buscar hostnames como `TTBUE07P`, `TTBUE07P-D`, `B1617FRPU0001`, `B1757CLCU0002`, `I1161STM002` no dispara en ningún caso la consola con `net user`.
-- [ ] Si una terminal Linux/VNC no figura en `CMDA_Trae_Info`, el sistema la localiza a través de `Fecha_Relevada_PCs` o DNS corporativo y la presenta en pantalla con su IP real.
-- [ ] Si una terminal no es encontrada por hostname, la pantalla Empty orienta al operador sugiriendo consultar directamente por IP si se trata de un puesto Linux o transaccional.
-- [ ] Al pulsar "Conectar VNC" o la conexión remota inteligente en una terminal Linux/VNC encontrada por IP o por hostname, se ejecuta efectivamente `vncviewer.exe` apuntando a la IP directa y abriendo la sesión remota en pantalla.
-- [ ] En terminales Linux, el sistema no intenta lanzar `msra.exe` ni emite toasts de éxito falsos cuando el proceso remoto no puede iniciarse.
-- [ ] La suite de pruebas unitarias (`npm test`) y chequeo de empaquetado pasan al 100%.
+- [x] Buscar hostnames como `TTBUE07P`, `TTBUE07P-D`, `B1617FRPU0001`, `B1757CLCU0002`, `I1161STM002` no dispara en ningún caso la consola con `net user`.
+- [x] Si una terminal Linux/VNC no figura en `CMDA_Trae_Info`, el sistema la localiza a través de `Fecha_Relevada_PCs` o DNS corporativo y la presenta en pantalla con su IP real.
+- [x] Si una terminal no es encontrada por hostname, la pantalla Empty orienta al operador sugiriendo consultar directamente por IP si se trata de un puesto Linux o transaccional.
+- [x] Al pulsar "Conectar VNC" o la conexión remota inteligente en una terminal Linux/VNC encontrada por IP o por hostname, se ejecuta efectivamente `vncviewer.exe` apuntando a la IP directa y abriendo la sesión remota en pantalla.
+- [x] En terminales Linux, el sistema no intenta lanzar `msra.exe` ni emite toasts de éxito falsos cuando el proceso remoto no puede iniciarse.
+- [x] La suite de pruebas unitarias (`npm test`) y chequeo de empaquetado pasan al 100%.
 
 ---
 

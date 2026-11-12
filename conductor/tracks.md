@@ -136,7 +136,7 @@
 
 ---
 
-- [~] **Track: Corrección de Resolución de Terminales Linux / VNC y Lanzamiento Remoto**
+- [x] **Track: Corrección de Resolución de Terminales Linux / VNC y Lanzamiento Remoto**
   *Link: [./tracks/linux_vnc_resolution_and_remote_launch_fix_20261112/index.md](./tracks/linux_vnc_resolution_and_remote_launch_fix_20261112/index.md)*
 
 
