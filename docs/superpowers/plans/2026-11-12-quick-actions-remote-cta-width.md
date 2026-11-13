@@ -197,6 +197,7 @@ git commit -m "test(e2e): add remote CTA width priority spec (expected red until
 **Files:**
 - Modify: `src/test/QuickActionsBar.test.tsx:462-466`
 - Modify: `src/components/QuickActionsBar.tsx:148-154`
+- Modify: `e2e/specs/11-quick-actions-remote-cta.spec.ts` (guard anti-vacío de la aserción 1 — issue Important del code review de Task 1)
 
 - [ ] **Step 1: Actualizar los asserts del unit test (queda rojo)**
 
@@ -269,20 +270,48 @@ Expected: PASS, todos los tests del archivo.
 Run: `npm test`
 Expected: PASS, sin tests en rojo en ningún archivo.
 
-- [ ] **Step 6: Recompilar `dist/` con el fix**
+- [ ] **Step 6: Endurecer la aserción 1 del spec e2e (guard anti-vacío)**
+
+Fix del code review de Task 1: hoy la aserción 1 pasaría "en vacío" si un refactor eliminara la clase `truncate` (`querySelectorAll` sin matches → `some(...)` = `false`). En `e2e/specs/11-quick-actions-remote-cta.spec.ts`:
+
+1. Agregá al final de la interface `CtaMetrics`:
+
+```typescript
+  truncateCount: number;
+```
+
+2. En `measureCta()`, agregá al objeto de retorno, después de la línea `truncated: ...`:
+
+```typescript
+      truncateCount: truncatable.length,
+```
+
+3. Reemplazá la aserción 1 dentro del loop:
+
+```typescript
+      // 1. Sin truncado: el CTA conserva spans.truncate (guard anti-vacío) y ninguno recorta.
+      expect(metrics.truncateCount, `sin spans.truncate en el CTA a ${width}px`)
+        .toBeGreaterThan(0);
+      expect(metrics.truncated, `label truncado a ${width}px`).toBe(false);
+```
+
+Run: `npx tsc --noEmit`
+Expected: PASS.
+
+- [ ] **Step 7: Recompilar `dist/` con el fix**
 
 Run: `npm run build`
 Expected: PASS (`tsc` sin errores + `vite build` OK).
 
-- [ ] **Step 7: Correr el spec e2e — debe PASAR (verde)**
+- [ ] **Step 8: Correr el spec e2e — debe PASAR (verde)**
 
 Run: `npx playwright test e2e/specs/11-quick-actions-remote-cta.spec.ts`
-Expected: PASS, `1 passed`. Las 4 aserciones validan: sin truncado en los 3 anchos, sin estiramiento entre 1440 y 1024, prioridad de fila en los 3 anchos y sin desborde del viewport.
+Expected: PASS, `1 passed`. Las 4 aserciones + el guard validan: sin truncado (con `spans.truncate` presentes) en los 3 anchos, sin estiramiento entre 1440 y 1024, prioridad de fila en los 3 anchos y sin desborde del viewport.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add src/components/QuickActionsBar.tsx src/test/QuickActionsBar.test.tsx
+git add src/components/QuickActionsBar.tsx src/test/QuickActionsBar.test.tsx e2e/specs/11-quick-actions-remote-cta.spec.ts
 git commit -m "fix(actions): size remote connection CTA to content width (min-w-max) instead of growing"
 ```
 
