@@ -978,3 +978,63 @@ h1, h2, h3, h4 {
 .high-contrast * {
   border-color: var(--border);
 }
+
+/* ---------------------------------------------------------------------------
+   Toasts (Sonner) responsivas
+
+   Sonner inyecta sus estilos en <head> después de esta hoja y usa selectores
+   con alta especificidad, así que acá se redeclaran con especificidad extra
+   (sin `!important`) para que ganen sin depender del orden de carga.
+
+   En ventanas angostas el CTA ("Conectar por MSRA", "Descargar", ...) no debe
+   comprimir el cuerpo del mensaje: cuando el texto sin partir no entra al lado
+   del botón, la fila se corta y el botón baja a su propia fila, dejando el
+   mensaje con todo el ancho disponible. Con mensajes cortos el botón sigue
+   al lado, como siempre.
+   --------------------------------------------------------------------------- */
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  /* Habilita el corte de fila para que el CTA pueda bajar debajo del texto. */
+  flex-wrap: wrap;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-content] {
+  /* flex-basis auto (en vez del 0% de Sonner) para que la fila se corte
+     cuando el texto sin partir no entra junto al botón. */
+  flex: 1 1 auto;
+}
+
+/* El icono queda siempre pegado al texto: se reserva su columna para que no
+   termine solo en una fila. Icono 16px + margen 1px + gap 6px ≈ 1.5rem. */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-icon] + [data-content] {
+  max-width: calc(100% - 1.5rem);
+}
+
+/* Sonner cambia a un layout "mobile" por debajo de 600px: deja de anclar a la
+   derecha, toma 16px por lado y reparte el ancho en porcentaje, así que el toast
+   se corre hacia la izquierda y deja un hueco asimétrico a la derecha.
+   Acá se conserva el posicionamiento nativo de escritorio en cualquier ancho:
+   anclado a la derecha y abajo con el mismo offset, y el mismo ancho acotado
+   por el viewport. El prefijo `html` eleva la especificidad por encima de las
+   reglas de Sonner, que se inyectan después de esta hoja. */
+@media (max-width: 600px) {
+  html [data-sonner-toaster][data-x-position="right"] {
+    left: auto;
+    right: var(--offset-right);
+    width: var(--width);
+  }
+
+  html [data-sonner-toaster][data-x-position="right"] [data-sonner-toast] {
+    left: auto;
+    right: 0;
+    width: 100%;
+  }
+
+  html [data-sonner-toaster][data-y-position="bottom"] {
+    bottom: var(--offset-bottom);
+  }
+
+  html [data-sonner-toaster][data-y-position="top"] {
+    top: var(--offset-top);
+  }
+}
