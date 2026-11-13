@@ -27,7 +27,7 @@ Contexto que el implementador debe conocer (ya verificado):
 - En e2e el probe remoto cae al fallback sin IPC (`src/services/electronClient.ts:259-273`): `recommendedMethod: 'vnc'`, `vncPort: 5901` → el label se estabiliza en `Conectar VNC :5901` y `isProbingRemote` pasa a `false` (`src/App.tsx:291-301`).
 - `tsconfig.json` incluye `e2e` → `npm run build` (que corre `tsc`) type-chequea el spec nuevo.
 - `dist/` debe recompilarse antes de cualquier run de e2e.
-- La app hace auto-ping al cargar una terminal con IP (`src/App.tsx:344-350` → `setIsPinging(true)`), así que en e2e el botón ping principal expone `aria-label="Detener Ping en vivo"` (`src/components/QuickActionsBar.tsx:295`); el locator de la aserción 3 cubre ambos estados del nombre accesible.
+- La app hace auto-ping al cargar una terminal con IP (`src/App.tsx:344-350` → `setIsPinging(true)`), así que en e2e el botón ping principal expone `aria-label="Detener Ping en vivo"` (`src/components/QuickActionsBar.tsx:295`), casi idéntico al botón stop del LivePingConsole (`LivePingConsole.tsx:510`, `"Detener ping en vivo"` con p minúscula) → un regex por aria-label resuelve 2 elementos y truena en strict mode. Por eso la aserción 3 selecciona el ping con `button[title^="Iniciar Ping"]`: el `title` (`QuickActionsBar.tsx:296`) es estático (no depende del estado) y único en todo `src/`.
 
 ---
 
@@ -131,7 +131,7 @@ test.describe('E2E Suite 11: CTA de conexión remota con prioridad de ancho', ()
 
       // 3. Prioridad de fila: el CTA remoto arranca la primera fila de la barra.
       const otrosCtas: Locator[] = [
-        page.getByRole('button', { name: /^(iniciar ping|detener ping en vivo)$/i }),
+        page.locator('button[title^="Iniciar Ping"]'),
         page.getByRole('button', { name: /más acciones/i }),
         page.locator('[title^="Uptime:"]'),
       ];
