@@ -145,13 +145,13 @@ export function QuickActionsBar({
   return (
     <div className="w-full flex flex-col gap-1 min-w-0">
       {/* Barra de Acciones Rápida y Adaptativa: Todos los botones y Uptime en el mismo contenedor */}
-      {/* En ancho compacto `order` cambia el orden visual, no el de tabulación:
-          el foco recorre .250/.231 antes de llegar a "Más". Se acepta para no
-          alterar el orden de escritorio. */}
+      {/* El CTA remoto va primero y a ancho de contenido (min-w-max): nunca se
+          trunca y siempre arranca en la primera fila; el resto se acomoda con
+          flex-wrap. El foco sigue el orden de DOM (.250/.231 antes de "Más"). */}
       <div className="flex items-center flex-wrap gap-1 w-full min-w-0">
-        {/* Split Button Inteligente de Conexión Remota con grow */}
+        {/* Split Button Inteligente de Conexión Remota: ancho al contenido (min-w-max), sin crecer */}
         <div
-          className="relative flex items-center min-w-[170px] flex-1 grow"
+          className="relative flex items-center min-w-max"
           ref={dropdownRef}
         >
           <div className="flex w-full rounded-md">

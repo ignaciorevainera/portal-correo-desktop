@@ -17,6 +17,7 @@ interface CtaMetrics {
   right: number;
   innerWidth: number;
   truncated: boolean;
+  truncateCount: number;
 }
 
 test.beforeAll(async () => {
@@ -56,6 +57,7 @@ async function measureCta(): Promise<CtaMetrics> {
       right: box.right,
       innerWidth: window.innerWidth,
       truncated: truncatable.some((s) => s.scrollWidth > s.clientWidth + 1),
+      truncateCount: truncatable.length,
     };
   });
 }
@@ -83,7 +85,9 @@ test.describe('E2E Suite 11: CTA de conexión remota con prioridad de ancho', ()
       const metrics = await measureCta();
       measures.set(width, metrics);
 
-      // 1. Sin truncado: ningún span.truncate dentro del CTA recorta su texto.
+      // 1. Sin truncado: el CTA conserva spans.truncate (guard anti-vacío) y ninguno recorta.
+      expect(metrics.truncateCount, `sin spans.truncate en el CTA a ${width}px`)
+        .toBeGreaterThan(0);
       expect(metrics.truncated, `label truncado a ${width}px`).toBe(false);
 
       // 3. Prioridad de fila: el CTA remoto arranca la primera fila de la barra.

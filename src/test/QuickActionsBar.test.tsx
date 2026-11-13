@@ -462,8 +462,10 @@ describe('QuickActionsBar & Shortcut Keys', () => {
     const remote = screen.getByRole("button", {
       name: /conexión remota inteligente/i,
     });
-    expect(remote.closest("div.relative")?.className).toContain("flex-1");
-    expect(remote.closest("div.relative")?.className).toContain("grow");
+    // Prioridad del CTA remoto: ancho de contenido (min-w-max), sin crecer.
+    expect(remote.closest("div.relative")?.className).toContain("min-w-max");
+    expect(remote.closest("div.relative")?.className).not.toContain("flex-1");
+    expect(remote.closest("div.relative")?.className).not.toContain("grow");
 
     const ping = screen.getByRole("button", { name: /^iniciar ping$/i });
     expect(ping.parentElement?.className).toContain("flex-1");
