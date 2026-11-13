@@ -332,16 +332,16 @@ Expected: PASS.
 Run: `npm run test:e2e`
 Expected: PASS, todas las specs en verde (incluye la nueva spec 11 y las 10 preexistentes). Esto confirma que el cambio de ancho no afecta el toast responsive de la spec 10 ni ninguna otra flujo.
 
-- [ ] **Step 3 (opcional): Verificación manual visual**
+- [ ] **Step 3 (solo para un humano — los subagentes lo omiten): Verificación manual visual**
 
 Run: `npm run electron:dev`
 En la app: buscar `PC-DEMO-001`, seleccionar la terminal y redimensionar la ventana entre ~420px y pantalla completa.
-Expected: el CTA `Conectar VNC :5901` muestra siempre el label completo, no crece cuando sobra ancho (el sobrante lo absorben Ping/`.250`/`.231`/Uptime) y permanece en la primera fila de la barra.
+Expected: el CTA `Conectar VNC :5901` muestra siempre el label completo, no crece cuando sobra ancho (el sobrante lo absorben Ping/`.250`/`.231`/Uptime) y permanece en la primera fila de la barra. (El comportamiento ya queda cubierto por la spec 11; este paso es validación visual humana, opcional.)
 
 - [ ] **Step 4: Estado final de git**
 
 Run: `git status --short` y `git log --oneline -3`
-Expected: árbol limpio respecto de los archivos del plan (los untracked preexistentes `scripts/debug-toast.mjs`, `scripts/measure-toast.mjs` y `scripts/toast-harness.html` NO se tocan ni se commitean) y los dos commits nuevos visibles.
+Expected: árbol limpio respecto de los archivos del plan — los cambios ajenos preexistentes (` M src/index.css`, `?? e2e/specs/10-responsive-toast.spec.ts`, `?? src/test/toastResponsive.test.ts`, `?? scripts/*`) NO se tocan ni se commitean — y los dos commits de tarea visibles (`496c012` del Task 1 y `6dc5ef4` del Task 2).
 
 ---
 
