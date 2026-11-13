@@ -63,7 +63,7 @@ El umbral de quiebre de la barra se corre ~15-30px a la derecha (piso fijo de
 
 ### 3.2 Tests unitarios (Sección 1, aprobada)
 
-`src/test/QuickActionsBar.test.tsx:462-466`:
+`src/test/QuickActionsBar.test.tsx:462-468`:
 
 ```diff
  const remote = screen.getByRole("button", { name: /conexión remota inteligente/i });
@@ -75,7 +75,7 @@ El umbral de quiebre de la barra se corre ~15-30px a la derecha (piso fijo de
 ```
 
 - Sin cambios en los asserts de Ping, `.250`/`.231`, Uptime (`flex-1 grow`) ni de
-  `contents`/`flex-wrap` (`src/test/QuickActionsBar.test.tsx:468-495`).
+  `contents`/`flex-wrap` (`src/test/QuickActionsBar.test.tsx:470-519`).
 
 ### 3.3 E2E con viewport (Sección 2, aprobada)
 
@@ -96,7 +96,9 @@ no hay ventana nativa que redimensionar.
 
 **Aserciones en cada ancho:**
 
-1. *Sin truncado*: todo `span.truncate` del botón cumple `scrollWidth <= clientWidth + 1`.
+1. *Sin truncado*: todo `span.truncate` del botón cumple `scrollWidth <= clientWidth + 1`,
+   más un guard anti-vacío `truncateCount > 0` (si un refactor eliminara la clase
+   `truncate`, la aserción falla en vez de pasar en vacío).
 2. *Sin estiramiento*: `width(1440) ≈ width(1024)` (±1px; mismo lado del breakpoint `md`
    donde aparece el chip `F2`).
 3. *Prioridad de fila*: la `y` del CTA remoto es la primera entre los CTAs de la barra.
@@ -126,8 +128,9 @@ igual que hoy en `release:check`.
   el CTA queda más angosto que hoy. Aceptado: el requisito es el ancho mínimo
   necesario para el texto (Enfoque 1, aprobado por el usuario).
 - **Ventana < ancho del label** (~200px, muy por debajo del `minWidth: 420` de la app):
-  el contenido desbordaría el contenedor `overflow-hidden` de la app. Fuera de alcance;
-  el `truncate` del label queda como última red de seguridad.
+  el contenido desbordaría y se recortaría en el contenedor `overflow-hidden` de la app.
+  Fuera de alcance; con `min-w-max` el wrapper no puede encoger, así que el `truncate`
+  del label ya no llega a activarse.
 - **Mediciones e2e sensibles al estado del probe:** resolver esperando el label estable
   antes de medir.
 
