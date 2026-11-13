@@ -703,4 +703,15 @@ describe('Topbar Search and Keyboard Navigation', () => {
     expect(popoverContent?.className).toContain('max-w-[calc(100vw-1.5rem)]');
     expect(popoverContent?.className).toContain('min-w-70');
   });
+
+  it('no muestra el badge de estado de conexión de la base de datos', () => {
+    render(
+      <ThemeProvider>
+        <Topbar onSelectTerminal={vi.fn()} />
+      </ThemeProvider>
+    );
+
+    expect(screen.queryByText('Conectado')).not.toBeInTheDocument();
+    expect(screen.queryByText('Sin conexión')).not.toBeInTheDocument();
+  });
 });

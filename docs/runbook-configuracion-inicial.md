@@ -289,8 +289,9 @@ Esa carpeta todavía no está publicada como share SMB: la única share activa e
 
 ## Diagnóstico por código
 
-La pantalla de bloqueo y **Ajustes → Conexión Corporativa** muestran estado, código,
-origen y si se encontró el bootstrap.
+La pantalla de bloqueo muestra estado, código, origen y si se encontró el bootstrap.
+**Ajustes → Conexión Corporativa** sólo muestra el estado de la conexión SQL y permite
+reintentarla; no expone el diagnóstico interno (código, origen ni bootstrap).
 
 | Código | Significado | Qué revisar |
 | --- | --- | --- |

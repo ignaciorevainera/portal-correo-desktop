@@ -21,10 +21,9 @@ import {
   startDownloadUpdate,
   installUpdateNow,
   testSqlConnection,
-  getDiagnostics,
+  checkBackendStatus,
   loadUiPreferences,
   saveUiPreferences,
-  DiagnosticsInfo,
   UpdateCheckResult,
   UpdateDownloadProgress,
   BackendStatus,
@@ -38,6 +37,7 @@ import {
   Sparkles,
   Database,
   Eye,
+  TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import { IconWell } from "./IconWell";
@@ -62,14 +62,12 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentVersion?: string;
-  backendConnected?: boolean;
 }
 
 export function SettingsModal({
   isOpen,
   onClose,
   currentVersion = APP_VERSION,
-  backendConnected = false,
 }: SettingsModalProps): React.JSX.Element {
   const [isChecking, setIsChecking] = useState(false);
   const [updateResult, setUpdateResult] = useState<UpdateCheckResult | null>(
@@ -83,11 +81,10 @@ export function SettingsModal({
   );
 
   // Corporate Config State
-  const [diagnostics, setDiagnostics] = useState<DiagnosticsInfo | null>(null);
+  const [connectionStatus, setConnectionStatus] =
+    useState<BackendStatus | null>(null);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [isTestingConn, setIsTestingConn] = useState(false);
-  const [connTestResult, setConnTestResult] = useState<BackendStatus | null>(
-    null,
-  );
 
   // User Preferences
   const [minimizeToTray, setMinimizeToTray] = useState<boolean>(() => {
@@ -196,12 +193,29 @@ export function SettingsModal({
     void saveUiPreferences({ globalHotkeyEnabled: value });
   };
 
+  // El estado de conexión se consulta al abrir el diálogo para no mostrar un
+  // resultado viejo; el usuario puede reintentarlo desde la misma sección.
   useEffect(() => {
-    if (isOpen) {
-      getDiagnostics()
-        .then(setDiagnostics)
-        .catch(() => setDiagnostics(null));
-    }
+    if (!isOpen) return;
+
+    let cancelled = false;
+    setConnectionStatus(null);
+    setIsCheckingStatus(true);
+
+    checkBackendStatus()
+      .then((status) => {
+        if (!cancelled) setConnectionStatus(status);
+      })
+      .catch(() => {
+        if (!cancelled) setConnectionStatus({ connected: false, mode: "mock" });
+      })
+      .finally(() => {
+        if (!cancelled) setIsCheckingStatus(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen]);
 
   const handleCheckUpdates = async () => {
@@ -243,7 +257,7 @@ export function SettingsModal({
     setIsTestingConn(true);
     try {
       const status = await testSqlConnection();
-      setConnTestResult(status);
+      setConnectionStatus(status);
       if (status.connected) {
         toast.success("Conexión con SQL Server establecida exitosamente.");
       } else {
@@ -251,10 +265,23 @@ export function SettingsModal({
           `No se pudo conectar: ${status.error || "Host o credenciales inaccesibles"}`,
         );
       }
+    } catch {
+      setConnectionStatus({ connected: false, mode: "mock" });
+      toast.error(
+        "No se pudo reintentar la conexión. Verificá la configuración corporativa.",
+      );
     } finally {
       setIsTestingConn(false);
     }
   };
+
+  const isConnected = connectionStatus?.connected === true;
+  const isConnectionKnown = connectionStatus !== null;
+  const connectionLabel = !isConnectionKnown
+    ? "Verificando…"
+    : isConnected
+      ? "SQL Online"
+      : "Modo Offline / Local";
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -419,43 +446,40 @@ export function SettingsModal({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground">
+              <div className="flex items-center justify-between gap-3">
+                <span className="flex items-center gap-2 text-xs font-bold text-foreground">
+                  {!isConnectionKnown ? (
+                    <RefreshCw
+                      className="h-4 w-4 shrink-0 animate-spin text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                  ) : isConnected ? (
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+                  ) : (
+                    <TriangleAlert className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
+                  )}
                   Estado de Conexión SQL
                 </span>
                 <Badge
-                  variant={
-                    backendConnected || connTestResult?.connected
-                      ? "default"
-                      : "secondary"
-                  }
+                  variant={isConnected ? "default" : "secondary"}
                   className="text-micro font-mono"
                 >
-                  {backendConnected || connTestResult?.connected
-                    ? "SQL Online"
-                    : "Modo Offline / Local"}
+                  {connectionLabel}
                 </Badge>
               </div>
 
               <div className="text-xs text-muted-foreground space-y-1">
+                <p role="status" aria-live="polite">
+                  {isConnected
+                    ? "Conexión establecida con el inventario corporativo."
+                    : isConnectionKnown
+                      ? "Sin conexión con el inventario corporativo; la aplicación opera en modo local."
+                      : "Consultando el estado de la conexión…"}
+                </p>
                 <p>
                   La configuración se lee de la red corporativa en cada arranque.
                   No se guarda en este equipo.
                 </p>
-                <div className="mt-2 p-2.5 rounded-md bg-background/60 border border-border/60 font-mono text-micro space-y-1">
-                  <div>
-                    <span className="text-muted-foreground">Estado:</span>{" "}
-                    <strong>{diagnostics?.gate.status || "desconocido"}</strong>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Código:</span>{" "}
-                    {diagnostics?.gate.code || "—"}
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Bootstrap:</span>{" "}
-                    {diagnostics?.bootstrap.found ? "encontrado" : "no encontrado"}
-                  </div>
-                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -464,13 +488,15 @@ export function SettingsModal({
                   size="sm"
                   variant="outline"
                   onClick={handleTestConnection}
-                  disabled={isTestingConn || diagnostics?.gate.status !== "READY"}
+                  disabled={isTestingConn || isCheckingStatus}
                   className="text-xs font-semibold gap-1.5 h-8 cursor-pointer"
                 >
                   <RefreshCw
                     className={`h-3.5 w-3.5 ${isTestingConn ? "animate-spin" : ""}`}
                   />
-                  <span>{isTestingConn ? "Probando..." : "Probar conexión"}</span>
+                  <span>
+                    {isTestingConn ? "Reintentando..." : "Reintentar conexión"}
+                  </span>
                 </Button>
               </div>
             </div>

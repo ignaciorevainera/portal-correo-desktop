@@ -4,7 +4,6 @@ import {
   Search,
   Monitor,
   UserRound,
-  Database,
   HelpCircle,
   Minus,
   Power,
@@ -30,7 +29,6 @@ import {
   quitApp,
 } from "../services/electronClient";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Kbd } from "@/components/ui/kbd";
 import {
@@ -70,8 +68,6 @@ interface TopbarProps {
   onSelectTerminal: (pc: string) => void;
   onSelectAccount?: (user: string) => void;
   onDirectVnc?: (pc: string) => void;
-  backendMode?: "sql" | "mock";
-  serverName?: string;
   onOpenSettings?: () => void;
 }
 
@@ -88,8 +84,6 @@ export function Topbar({
   onSelectTerminal,
   onSelectAccount,
   onDirectVnc,
-  backendMode = "mock",
-  serverName,
   onOpenSettings,
 }: TopbarProps): React.JSX.Element {
   const [query, setQuery] = useState("");
@@ -518,23 +512,6 @@ export function Topbar({
 
         {/* Indicadores de Estado y Acciones Rápidas */}
         <div className="flex items-center gap-2 app-no-drag">
-          {/* Badge de Conexión */}
-          <Badge
-            variant="outline"
-            className="hidden lg:flex h-10 items-center gap-2 rounded-md border-border bg-muted px-3 text-xs font-medium text-foreground"
-            title={serverName || "Modo actual"}
-          >
-            <Database
-              className={`h-3.5 w-3.5 ${backendMode === "sql" ? "text-success" : "text-warning"}`}
-            />
-            <span
-              className={`h-2 w-2 rounded-full ${backendMode === "sql" ? "bg-success animate-pulse" : "bg-warning"}`}
-            />
-            <span>
-              {backendMode === "sql" ? "Conectado" : "Sin conexión"}
-            </span>
-          </Badge>
-
           {/* Grupo de botones compacto para acciones de Topbar */}
           <div
             role="group"

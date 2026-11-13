@@ -17,11 +17,6 @@ describe('App Rendering & Software-Rasterization Optimizations', () => {
       source: 'unc',
       configPath: '\\\\mock\\config.json',
     });
-    vi.spyOn(electronClient, 'checkBackendStatus').mockResolvedValue({
-      connected: true,
-      mode: 'sql',
-      server: 'srv',
-    });
   });
 
   it('does NOT invoke getAllTerminals on initial render of App', async () => {

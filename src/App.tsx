@@ -31,7 +31,6 @@ import {
   closeAlertOnTerminal,
 } from "./services/terminalService";
 import {
-  checkBackendStatus,
   searchTerminalUnified,
   launchVncClient,
   launchMsraClient,
@@ -39,7 +38,6 @@ import {
   launchSmartRemoteClient,
   RemoteProbeResult,
   openExternalUrl,
-  BackendStatus,
   subscribeToAutofocusSearch,
   stopDiagnosticCommand,
   DiagnosticCommandType,
@@ -114,10 +112,6 @@ export default function App(): React.JSX.Element {
       active = false;
     };
   }, []);
-  const [status, setStatus] = useState<BackendStatus>({
-    connected: false,
-    mode: "mock",
-  });
   const [remoteProbe, setRemoteProbe] = useState<RemoteProbeResult | null>(
     null,
   );
@@ -195,10 +189,6 @@ export default function App(): React.JSX.Element {
   );
 
   useEffect(() => {
-    checkBackendStatus()
-      .then(setStatus)
-      .catch(() => {});
-
     // Listen to Global Hotkey Autofocus Search (Ctrl+Space from background)
     const unsubHotkey = subscribeToAutofocusSearch((payload) => {
       window.dispatchEvent(
@@ -748,8 +738,6 @@ export default function App(): React.JSX.Element {
           onSelectTerminal={handleSelectTerminal}
           onSelectAccount={handleOpenAccount}
           onDirectVnc={handleLaunchVnc}
-          backendMode={status.mode}
-          serverName={status.server}
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
 
@@ -991,7 +979,6 @@ export default function App(): React.JSX.Element {
               isOpen={isSettingsOpen}
               onClose={() => setIsSettingsOpen(false)}
               currentVersion={APP_VERSION}
-              backendConnected={status.connected}
             />
           </React.Suspense>
         )}
