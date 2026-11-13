@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Harness de medición — Toasts</title>
+    <!--
+      Réplica exacta del DOM que Sonner renderiza para un toast con acción,
+      usando las mismas clases que src/components/ui/sonner.tsx inyecta.
+      Los CSS (Tailwind del build + estilos de Sonner) los inyecta
+      scripts/measure-toast.mjs con page.addStyleTag, en el mismo orden en que
+      la app los carga (Tailwind primero, Sonner después).
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // Selecciona la variante con ?variant=action | plain
+      const params = new URLSearchParams(location.search);
+      const variant = params.get("variant") || "action";
+
+      const ICON_ERROR =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-destructive shrink-0"><path d="m15 9-6 6"/><path d="m9 9 6 6"/><path d="M2.586 16.726A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2h6.624a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586z"/></svg>';
+
+      const variants = {
+        // Caso reportado: puertos bloqueados + CTA "Conectar por MSRA"
+        action: {
+          icon: ICON_ERROR,
+          title: "Puertos VNC (5901/5900) cerrados en 10.20.30.40.",
+          description: "Asistencia Remota (MSRA) está disponible como alternativa.",
+          action: "Conectar por MSRA",
+          type: "error",
+        },
+        // Caso corto: botón + título breve, sin descripción
+        plain: {
+          icon: ICON_ERROR,
+          title: "Conexión remota exitosa hacia 10.20.30.40",
+          description: null,
+          action: "Conectar por MSRA",
+          type: "error",
+        },
+      };
+
+      const v = variants[variant] || variants.action;
+
+      const iconHtml = v.icon
+        ? `<div data-icon="" class="">${v.icon}</div>`
+        : "";
+
+      const descriptionHtml = v.description
+        ? `<div data-description="" class="group-[.toast]:text-muted-foreground text-2xs leading-relaxed">${v.description}</div>`
+        : "";
+
+      const actionHtml = v.action
+        ? `<button data-button="true" data-action="true" class="group-[.toast]:bg-primary group-[.toast]:text-primary-foreground text-2xs font-semibold px-2 py-1 h-auto rounded-md">${v.action}</button>`
+        : "";
+
+      document.body.innerHTML = `
+        <section aria-label="Sonner Toaster" data-react-aria-top-layer="true" tabindex="-1" aria-live="polite">
+          <ol class="toaster group font-sans max-w-[calc(100vw-1.5rem)]"
+              data-sonner-toaster="true"
+              data-sonner-theme="light"
+              data-y-position="bottom"
+              data-x-position="right"
+              dir="ltr"
+              style="--front-toast-height:0px;--width:min(340px, calc(100vw - 1.5rem));--gap:6px;--offset-right:12px;--offset-bottom:12px;--offset-top:0px;--offset-left:0px;--mobile-offset-right:16px;--mobile-offset-bottom:16px;--mobile-offset-top:16px;--mobile-offset-left:16px;">
+            <li data-sonner-toast="true"
+                data-styled="true"
+                data-rich-colors="true"
+                data-mounted="true"
+                data-front="true"
+                data-expanded="true"
+                data-swiping="false"
+                data-removing="false"
+                data-dismissible="true"
+                data-y-position="bottom"
+                data-x-position="right"
+                data-type="${v.type}"
+                class="group toast group-[.toaster]:bg-card group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-md font-sans text-xs max-w-[calc(100vw-1.5rem)] p-2.5 rounded-lg border">
+              ${iconHtml}
+              <div data-content="" class="">
+                <div data-title="" class="text-xs font-medium">${v.title}</div>
+                ${descriptionHtml}
+              </div>
+              ${actionHtml}
+            </li>
+          </ol>
+        </section>
+      `;
+    </script>
+  </body>
+</html>

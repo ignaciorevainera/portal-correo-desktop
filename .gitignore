@@ -61,3 +61,6 @@ $RECYCLE.BIN/
 .agents/
 skills-lock.json
 
+
+# Capturas generadas por scripts/shot-toast.mjs (regenerables)
+scripts/shots/
