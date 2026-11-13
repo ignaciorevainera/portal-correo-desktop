@@ -176,12 +176,12 @@ Run: `npx playwright test e2e/specs/11-quick-actions-remote-cta.spec.ts`
 Expected: FAIL con:
 
 ```
-Error: el CTA crece con el ancho de la ventana en lugar de mantenerse a ancho de contenido
-Expected: <= 1
-Received: <número claramente > 1>
+Error: label truncado a 1024px
+Expected: false
+Received: true
 ```
 
-Motivo del rojo (comportamiento actual): con `flex-1 grow` el CTA comparte el sobrante, midiendo ~330px a 1440 y ~226px a 1024. Las aserciones 1, 3 y 4 pasan hoy; la 2 es la que drivea el cambio. Si falla una aserción distinta, detenerse y diagnosticar antes de continuar.
+Motivo del rojo (comportamiento actual, verificado empíricamente): con `flex-1 grow` el CTA reparte el sobrante entre 5 items con `grow` — a 1440 recibe ~264px (label completo: a1/a3/a4 pasan) y a 1024 queda ~181px, insuficiente para "Conectar VNC :5901" + chip F2 → el `span.truncate` corta el label y la aserción 1 (corre dentro del loop, antes que la 2) truena primero. Es la misma causa raíz que la aserción 2 (que mediría ~181px vs ~264px → diff > 1): un bug, dos síntomas; tras el fix de Task 2 deben pasar TODAS las aserciones. Si el rojo aparece en otro lugar (otro ancho, otro locator, timeout), detenerse y diagnosticar antes de continuar.
 
 - [ ] **Step 5: Commit del spec en rojo**
 
