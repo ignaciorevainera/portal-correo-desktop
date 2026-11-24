@@ -31,12 +31,16 @@ local no versionado.
    usa las variables de entorno del proceso o ese archivo.
 
 ```bash
-npm install
+npm ci                 # Instala desde package-lock.json, sin deriva de versiones
 npm run dev            # Vite en modo web
 npx electron .         # Escritorio (variables PCD_* o el config local)
 npm run build
 npm test
+npm run audit:deps     # Fallo si hay vulnerabilidades high/critical
 ```
+
+Tras clonar usá `npm ci`, no `npm install`: el lockfile versionado fija las versiones
+auditadas. `npm audit --omit=dev` no alcanza porque Electron se empaqueta en la app.
 
 ### Modelo de configuración en producción
 
